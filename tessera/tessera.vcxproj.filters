@@ -15,15 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="tessera.cpp">
+    <ClCompile Include="internal\tesserascript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tesserascript.cpp">
+    <ClCompile Include="internal\lexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="tesserascript.h">
+    <ClInclude Include="include\tessera\tesserascript.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\lexer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
