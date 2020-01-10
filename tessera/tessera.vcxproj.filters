@@ -18,5 +18,13 @@
     <ClCompile Include="tessera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tesserascript.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="tesserascript.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tessera", "tessera\tessera.vcxproj", "{243289A9-36B1-4647-A04E-7B524B8D1DAC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tessera_workbench", "tessera_workbench\tessera_workbench.vcxproj", "{AD3A0094-248C-4292-B3A9-D9C206302BCA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{243289A9-36B1-4647-A04E-7B524B8D1DAC} = {243289A9-36B1-4647-A04E-7B524B8D1DAC}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
