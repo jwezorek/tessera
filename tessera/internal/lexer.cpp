@@ -1,4 +1,7 @@
 #include "lexer.h"
+#include <regex>
+#include <optional>
+#include <tuple>
 
 namespace
 {
@@ -8,6 +11,26 @@ namespace
             ++iter;
         }
         return iter != end;
+    }
+
+    std::optional<token> lex_keyword(input_iterator_type& iter, input_iterator_type& end) {
+        static std::vector<std::tuple<std::string, token_type>> keywords = {
+            { "tile", token_type::tile},
+            { "vertex", token_type::vertex},
+            { "edge", token_type::edge},
+            { "if", token_type::if_statement},
+            { "else", token_type::else_statement},
+            { "lay", token_type::lay},
+            { "tableau", token_type::tableau},
+        };
+        for (auto [str, tok] : keywords) {
+            auto keyword_sz = str.size();
+            if (end - iter < keyword_sz)
+                continue;
+            if (std::string(iter, iter + keyword_sz) == str)
+                return token(tok /*...*/);
+        }
+        return std::nullopt;
     }
 
     token get_next_token(input_iterator_type i, input_iterator_type end)
