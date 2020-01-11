@@ -28,7 +28,7 @@ namespace
             if (end - iter < keyword_sz)
                 continue;
             if (std::string(iter, iter + keyword_sz) == str)
-                return token(tok /*...*/);
+                return token(tok, iter, iter + keyword_sz);
         }
         return std::nullopt;
     }
@@ -37,7 +37,10 @@ namespace
     {
         if (!skip_space(i, end))
             return token(token_type::eof);
-
+        auto keyword = lex_keyword(i, end);
+        if (keyword.has_value())
+            return keyword.value();
+        return token();
     }
 }
 
@@ -105,7 +108,7 @@ lexer::iterator lexer::iterator::operator++()
 lexer::iterator lexer::iterator::operator++(int)
 {
     iterator t = *this; 
-    ++(*this);
+    curr_tok_ = get_next_token(curr_tok_.end_iter(), end_);
     return t;
 }
 
