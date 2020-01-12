@@ -7,6 +7,7 @@
 using input_iterator_type = std::string::const_iterator;
 
 enum class token_type {
+	nil,
     tile,
     vertex,
     edge,
@@ -28,8 +29,7 @@ enum class token_type {
     lay,
     tableau,
     semicolon,
-    eof,
-    nil
+    eof
 };
 
 struct token {
@@ -41,8 +41,9 @@ private:
     std::string lexeme_;
 
 public:
-
-    token(token_type tt = token_type::nil, input_iterator_type b = input_iterator_type(), input_iterator_type e = input_iterator_type());
+	token();
+	token(token_type tt, input_iterator_type b);
+    token(token_type tt, input_iterator_type b, input_iterator_type e );
     bool operator==(const token rhs) const;
     bool is_type(token_type t) const;
     token_type type() const;
@@ -50,6 +51,8 @@ public:
     input_iterator_type end_iter() const;
     std::string lexeme() const;
 };
+
+std::ostream& operator<<(std::ostream& os, const token& x);
 
 class lexer {
 public:

@@ -1,4 +1,6 @@
 #include "tessera/tesserascript.h"
+#include "lexer.h"
+#include <iostream>
 
 tess::tessera_script::tessera_script()
 {
@@ -21,5 +23,8 @@ int tess::parse_error::line() const
 
 std::variant<tess::tessera_script, tess::parse_error> tess::parse(const std::string& script)
 {
+	lexer lex(script.begin(), script.end());
+	for (auto i = lex.begin(); i != lex.end(); ++i)
+		std::cout << *i << "\n";
     return tess::tessera_script();
 }

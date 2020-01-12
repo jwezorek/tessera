@@ -3,7 +3,8 @@
 
 int main()
 {
-    auto results = tess::parse("aaa bbb hello\n monkey  foo aaa bar\n goodbye\n");
+	std::string script = "if edge lay tableau\n tile else  else else\n";
+    auto results = tess::parse(script);
     std::cout << "hello\n";
 }
 
