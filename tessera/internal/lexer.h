@@ -11,6 +11,8 @@ enum class token_type {
     tile,
     vertex,
     edge,
+	open_brace,
+	close_brace,
     open_curly_brace,
     close_curly_brace,
     open_paren,
@@ -29,6 +31,14 @@ enum class token_type {
     lay,
     tableau,
     semicolon,
+	dot,
+	dollar_sign,
+	assignment,
+	equal,
+	not_equal,
+	and_op,
+	or_op,
+	not_op,
     eof
 };
 
