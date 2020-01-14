@@ -70,20 +70,32 @@ namespace
 		return std::nullopt;
 	}
 
+	std::optional<token> lex_identifier(input_iterator_type& iter, input_iterator_type& end)
+	{
+		std::regex identifier_regex{"[a-zA-Z_][a-zA-Z0-9_]*" };
+		std::smatch m;
+		if (std::regex_search(iter, end, m, identifier_regex, std::regex_constants::match_continuous))
+			return token(token_type::identifier, iter, iter + m[0].str().size());
+		return std::nullopt;
+	}
+
     token get_next_token(input_iterator_type i, input_iterator_type end)
     {
 		if (!skip_space(i, end))
 			return token(token_type::eof, end);
-
-		// do this before punctuation so negative numbers will be lexed as numbers.
-		auto number = lex_number(i, end);
-		if (number.has_value())
-			return number.value();
         
         auto keyword = lex_keyword(i, end);
 		if (keyword.has_value()) {
 			return keyword.value();
 		}
+
+		auto number = lex_number(i, end);
+		if (number.has_value())
+			return number.value();
+
+		auto identifier = lex_identifier(i, end);
+		if (identifier.has_value())
+			return identifier.value();
 
         return token();
     }
@@ -101,6 +113,10 @@ std::ostream& operator<<(std::ostream& os, const token& x)
 	}
 	if (x.type() == token_type::number) {
 		os << "<number:" << x.lexeme() << ">";
+		return os;
+	}
+	if (x.type() == token_type::identifier) {
+		os << "<ident:" << x.lexeme() << ">";
 		return os;
 	}
 	os << "<>";
