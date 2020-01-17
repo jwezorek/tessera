@@ -1,14 +1,20 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <variant>
 
 namespace tess
 {
+    class expression;
+
     class tessera_script
     {
+    private:
+        std::shared_ptr<expression> test_;
+
     public:
-        tessera_script();
+        tessera_script(const std::shared_ptr<expression>& e);
     };
 
     class parse_error
@@ -21,6 +27,4 @@ namespace tess
         const std::string& msg() const;
         int line() const;
     };
-
-    std::variant<tessera_script, parse_error> parse(const std::string& script);
 }

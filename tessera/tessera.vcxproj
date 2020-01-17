@@ -19,12 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="internal\lexer.cpp" />
+    <ClCompile Include="internal\expression.cpp" />
+    <ClCompile Include="internal\parser\parser.cpp" />
+    <ClCompile Include="internal\tessera.cpp" />
     <ClCompile Include="internal\tesserascript.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\tessera\tessera.h" />
     <ClInclude Include="include\tessera\tesserascript.h" />
-    <ClInclude Include="internal\lexer.h" />
+    <ClInclude Include="internal\expression.h" />
+    <ClInclude Include="internal\parser\parser.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -116,7 +120,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>./include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST_DIR);./include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,7 +159,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>./include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST_DIR);./include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
