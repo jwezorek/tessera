@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="internal\expression.cpp" />
+    <ClCompile Include="internal\parser\expr.cpp" />
     <ClCompile Include="internal\parser\parser.cpp" />
     <ClCompile Include="internal\tessera.cpp" />
     <ClCompile Include="internal\tesserascript.cpp" />
@@ -28,6 +29,9 @@
     <ClInclude Include="include\tessera\tessera.h" />
     <ClInclude Include="include\tessera\tesserascript.h" />
     <ClInclude Include="internal\expression.h" />
+    <ClInclude Include="internal\parser\config.h" />
+    <ClInclude Include="internal\parser\expr.h" />
+    <ClInclude Include="internal\parser\expr_def.h" />
     <ClInclude Include="internal\parser\parser.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
