@@ -10,6 +10,6 @@ namespace tess {
         using expr_type = x3::rule<class expr_, std::shared_ptr<expression>>;
         BOOST_SPIRIT_DECLARE(expr_type);
 
-        expr_type expr_parser();
+        const expr_type& expr_parser();
     }
 }

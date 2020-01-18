@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="internal\expression.cpp" />
-    <ClCompile Include="internal\parser\expr.cpp" />
-    <ClCompile Include="internal\parser\parser.cpp" />
-    <ClCompile Include="internal\tessera.cpp" />
     <ClCompile Include="internal\tesserascript.cpp" />
+    <ClCompile Include="internal\tessera.cpp" />
+    <ClCompile Include="internal\parser\parser.cpp" />
+    <ClCompile Include="internal\parser\expr.cpp" />
+    <ClCompile Include="internal\expression.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tessera\tessera.h" />

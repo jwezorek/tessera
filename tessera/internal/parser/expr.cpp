@@ -1,3 +1,5 @@
+//#pragma init_seg(compiler)
+
 #include "expr_def.h"
 #include "config.h"
 

@@ -58,7 +58,7 @@ namespace tess {
         );
     }
 
-    parser::expr_type parser::expr_parser()
+    const parser::expr_type& parser::expr_parser()
     {
         return parser::expr;
     }

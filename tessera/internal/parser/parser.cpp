@@ -9,14 +9,17 @@ namespace x3 = boost::spirit::x3;
 
 namespace tess {
     namespace parser {
-        auto test = x3::string("foo:") >> expr_parser();
+		auto get() {
+			auto test = x3::string("foo:") >> expr_parser();
+			return test;
+		}
     }
 }
 
 std::variant<tess::tessera_script, tess::parse_error> tess::parser::parse(const std::string& input)
 {
     std::tuple<std::string, std::shared_ptr<tess::expression>> expr;
-    auto result = x3::phrase_parse(input.begin(), input.end(), tess::parser::test, x3::ascii::space, expr);
+    auto result = x3::phrase_parse(input.begin(), input.end(), tess::parser::get(), x3::ascii::space, expr);
 
     return tess::tessera_script(std::get<1>(expr));
 }
