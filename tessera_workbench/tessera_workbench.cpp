@@ -6,7 +6,7 @@
 
 int main()
 {
-	std::string script = "foo:22 - foo^2 \n * (1.0 / bar)";
+	std::string script = "foo:22 - foo^2 \n * (1.0 /* blah blah blah */ / bar)";
     auto results = tess::parse(script);
 
     auto script1 = std::get<tess::tessera_script>(results);
