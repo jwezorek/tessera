@@ -1,4 +1,5 @@
 #include "tessera/tesserascript.h"
+#include "expression.h"
 #include <iostream>
 
 tess::parse_error::parse_error(const std::string& msg, int line) :
@@ -18,4 +19,11 @@ int tess::parse_error::line() const
 
 tess::tessera_script::tessera_script(const std::shared_ptr<expression>& e) : test_(e)
 {
+}
+
+double tess::tessera_script::evaluate(const std::unordered_map<std::string, double>& vars) const
+{
+    return test_->eval(
+        tess::eval_ctxt{ vars }
+    );
 }

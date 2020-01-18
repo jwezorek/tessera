@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <variant>
+#include <unordered_map>
 
 namespace tess
 {
@@ -15,6 +16,7 @@ namespace tess
 
     public:
         tessera_script(const std::shared_ptr<expression>& e);
+        double evaluate(const std::unordered_map<std::string, double>& vars) const;
     };
 
     class parse_error
