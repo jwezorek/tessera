@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="internal\error.cpp" />
     <ClCompile Include="internal\tesserascript.cpp" />
     <ClCompile Include="internal\tessera.cpp" />
     <ClCompile Include="internal\parser\parser.cpp" />
@@ -26,6 +27,7 @@
     <ClCompile Include="internal\expression.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\tessera\error.h" />
     <ClInclude Include="include\tessera\tessera.h" />
     <ClInclude Include="include\tessera\tesserascript.h" />
     <ClInclude Include="internal\expression.h" />
