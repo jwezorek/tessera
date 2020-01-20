@@ -8,15 +8,15 @@
 
 int main()
 {
-	std::string script = "foo:(1.0 / monkey + monkey/ bar)";
+	std::string script = "foo:(1.0 / quux + quux/ bar)";
     auto results = tess::parse(script);
 
 	if (std::holds_alternative<tess::tessera_script>(results)) {
 		auto script = std::get<tess::tessera_script>(results);
 		std::unordered_map<std::string, double> vars = {
-		{"foo", 2},
-		{"bar", 1},
-		{"monkey", 4}
+			{"foo", 2},
+			{"bar", 1},
+			{"quux", 4}
 		};
 		std::cout << script.evaluate(vars) << "\n";
 	}
