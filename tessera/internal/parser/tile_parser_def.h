@@ -10,9 +10,6 @@
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
 
-#if _DEBUG
-#include "expr_def.h"
-#endif
 
 namespace x3 = boost::spirit::x3;
 

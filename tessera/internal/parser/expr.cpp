@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef _DEBUG 
+#pragma init_seg(lib) 
+#endif 
+
 #include "expr_def.h"
 #include "config.h"
 
