@@ -1,10 +1,10 @@
 #include "config.h"
 #include "parser.h"
+#include "tile_parser.h"
 #include "expr.h"
 #include "keywords.h"
 #include "../expression.h"
 #include "tessera/error.h"
-#include "tile_parser.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <string>
@@ -15,7 +15,7 @@ namespace tess {
     namespace parser {
 
 		auto get() {
-			auto p = expr_parser();
+			auto p = tile_parser();
 			return p;
 		}
     }

@@ -10,6 +10,10 @@
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
 
+#if _DEBUG
+#include "expr_def.h"
+#endif
+
 namespace x3 = boost::spirit::x3;
 
 namespace tess {
@@ -21,7 +25,7 @@ namespace tess {
         auto make_vertex_decl = [&](auto& ctx) { _val(ctx) = tess::tile_component_declaration("vertex"); };
         auto make_edge_decl = [&](auto& ctx) { _val(ctx) = tess::tile_component_declaration("edge"); };
 
-        rule<class tile_, tess::tile> const tile = "tile";
+        rule<class tile_, x3::unused_type> const tile = "tile";
         rule<class tile_component_decl_, tess::tile_component_declaration>  const tile_component_decl = "tile_component_declaration";
         rule<class vertex_decl_, tess::tile_component_declaration>  const vertex_decl = "vertex_decl";
         rule<class edge_decl_, tess::tile_component_declaration>  const edge_decl = "edge_decl";
@@ -29,12 +33,13 @@ namespace tess {
         auto const vertex_decl_def = (lit(kw_vertex) > identifier_parser() > lit(';'))[make_vertex_decl];
         auto const edge_decl_def = (lit(kw_edge) > identifier_parser() > lit(';'))[make_edge_decl];
         auto const tile_component_decl_def = (vertex_decl | edge_decl);
-        auto const tile_def = (lit(kw_tile) > identifier_parser() > lit('{') > *tile_component_decl > lit('}'))[make_tile];
+        //auto const tile_def = (lit(kw_tile) > identifier_parser() > lit('{') > *tile_component_decl > lit('}'))[make_tile];
+        auto const tile_def = (lit(kw_tile) > identifier_parser() > lit('{') > "stuff" > lit('}'));
 
         BOOST_SPIRIT_DEFINE(
-            vertex_decl,
-            edge_decl,
-            tile_component_decl,
+           // vertex_decl,
+           // edge_decl,
+          //  tile_component_decl,
             tile
         );
 

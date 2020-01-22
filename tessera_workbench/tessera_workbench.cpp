@@ -8,7 +8,7 @@
 
 int main()
 {
-	std::string script = "(quux * 3 + 1)";
+	std::string script = "tile foo { stuff }";
     auto results = tess::parse(script);
 
 	if (std::holds_alternative<tess::tessera_script>(results)) {
