@@ -31,6 +31,12 @@
     <ClCompile Include="internal\error.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
+    <ClCompile Include="internal\parser\tile_parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\tile.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tessera\tessera.h">
@@ -56,6 +62,21 @@
     </ClInclude>
     <ClInclude Include="include\tessera\error.h">
       <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\keywords.h">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\tile_parser.h">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\tile_parser_def.h">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\tile.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\util.h">
+      <Filter>Source Files\parser</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

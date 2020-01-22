@@ -8,19 +8,12 @@
 
 int main()
 {
-	std::string script = "foo:(1.0 / quux + quux/ bar)";
+	std::string script = "(quux * 3 + 1)";
     auto results = tess::parse(script);
 
 	if (std::holds_alternative<tess::tessera_script>(results)) {
-		auto script = std::get<tess::tessera_script>(results);
-		std::unordered_map<std::string, double> vars = {
-			{"foo", 2},
-			{"bar", 1},
-			{"quux", 4}
-		};
-		std::cout << script.evaluate(vars) << "\n";
-	}
-	else {
+		std::cout << "success" << "\n";
+	} else {
 		auto err = std::get<tess::error>(results);
 		std::cout << err << "\n";
 	}
