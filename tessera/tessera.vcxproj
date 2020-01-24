@@ -20,12 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="internal\error.cpp" />
-    <ClCompile Include="internal\parser\tile_parser.cpp" />
     <ClCompile Include="internal\tesserascript.cpp" />
     <ClCompile Include="internal\tessera.cpp" />
     <ClCompile Include="internal\parser\parser.cpp" />
-    <ClCompile Include="internal\parser\expr.cpp" />
     <ClCompile Include="internal\expression.cpp" />
+    <ClCompile Include="internal\text_range.cpp" />
     <ClCompile Include="internal\tile.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -33,14 +32,11 @@
     <ClInclude Include="include\tessera\tessera.h" />
     <ClInclude Include="include\tessera\tesserascript.h" />
     <ClInclude Include="internal\expression.h" />
-    <ClInclude Include="internal\parser\config.h" />
-    <ClInclude Include="internal\parser\expr.h" />
-    <ClInclude Include="internal\parser\expr_def.h" />
-    <ClInclude Include="internal\parser\keywords.h" />
+    <ClInclude Include="internal\parser\expr_parser.h" />
+    <ClInclude Include="internal\parser\expr_parser.cpp" />
     <ClInclude Include="internal\parser\parser.h" />
-    <ClInclude Include="internal\parser\tile_parser.h" />
-    <ClInclude Include="internal\parser\tile_parser_def.h" />
     <ClInclude Include="internal\parser\util.h" />
+    <ClInclude Include="internal\text_range.h" />
     <ClInclude Include="internal\tile.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

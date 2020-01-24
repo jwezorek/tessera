@@ -7,10 +7,12 @@
 #include <string>
 
 namespace tess {
-
     struct eval_ctxt {
         std::unordered_map<std::string, double> variables;
     };
+
+    class expression;
+    using expr_ptr = std::shared_ptr<expression>;
 
     class expression
     {
@@ -40,9 +42,9 @@ namespace tess {
 
     class exponent_expr : public expression
     {
-    private: 
-        std::shared_ptr<tess::expression> base_;
-        std::vector<std::shared_ptr<tess::expression>> exponents_;
+    private:
+        expr_ptr base_;
+        std::vector<expr_ptr> exponents_;
     public:
         exponent_expr(const expression_params& params);
         double eval(const eval_ctxt& ctxt) const override;
@@ -51,7 +53,7 @@ namespace tess {
     class addition_expr : public expression
     {
     private:
-        std::vector<std::tuple<bool,std::shared_ptr<expression>>> terms_;
+        std::vector<std::tuple<bool, expr_ptr>> terms_;
     public:
         addition_expr(const expression_params& terms);
         double eval(const eval_ctxt& ctx) const override;
@@ -60,10 +62,9 @@ namespace tess {
     class multiplication_expr : public expression
     {
     private:
-        std::vector<std::tuple<bool, std::shared_ptr<expression>>> factors_;
+        std::vector<std::tuple<bool, expr_ptr>> factors_;
     public:
         multiplication_expr(const expression_params& terms);
         double eval(const eval_ctxt& ctx) const override;
     };
-
 }

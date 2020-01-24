@@ -1,77 +1,70 @@
-#include "config.h"
+#include "tessera/tesserascript.h"
 #include "parser.h"
-#include "tile_parser.h"
-#include "expr.h"
-#include "keywords.h"
-#include "../expression.h"
-#include "tessera/error.h"
+#include "util.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
-#include <string>
 
 namespace x3 = boost::spirit::x3;
 
 namespace tess {
     namespace parser {
+        struct keywords_t : x3::symbols<x3::unused_type> {
+            keywords_t() {
+                add(kw_if, x3::unused);
+                add(kw_else, x3::unused);
+                add(kw_lay, x3::unused);
+                add(kw_tile, x3::unused);
+                add(kw_vertex, x3::unused);
+                add(kw_edge, x3::unused);
+                add(kw_angle, x3::unused);
+                add(kw_class, x3::unused);
+                add(kw_patch, x3::unused);
+                add(kw_such_that, x3::unused);
+                add(kw_tableau, x3::unused);
+                add(kw_where, x3::unused);
+                add(kw_length, x3::unused);
+                add(kw_pi, x3::unused);
+                add(kw_sqrt, x3::unused);
+            }
+        } const keywords;
 
-		auto get() {
-			auto p = tile_parser();
-			return p;
-		}
+        auto const distinct_keyword = x3::lexeme[keywords >> !(x3::alnum | '_')];
+        auto const unchecked_identifier = x3::lexeme[(x3::alpha | x3::char_('_')) >> *(x3::alnum | x3::char_('_'))];
+        auto const indentifier_str = as<std::string>[unchecked_identifier - distinct_keyword];
+
+        auto const non_brace = x3::char_ - (x3::lit('{') | x3::lit('}'));
+        auto const basic_code_block = x3::char_('{') >> *non_brace >> x3::char_('}');
+        x3::rule<class code_block_, std::string> const code_block = "identifier_expr";
+        auto const code_block_def = x3::raw[x3::lexeme[basic_code_block | x3::char_('{') >> *(*non_brace >> code_block) >> *non_brace >> x3::char_('}')]];
+
+        BOOST_SPIRIT_DEFINE(
+            code_block
+        );
+
+        auto const non_paren = x3::char_ - (x3::lit('(') | x3::lit(')'));
+        auto const parameters = x3::raw[x3::lexeme[x3::char_('(') >> *non_paren >> x3::char_(')')]];
+
+        auto const toplevel_script_entity_kw = (x3::string(kw_tile) | x3::string(kw_patch));
+        auto const toplevel_script_entity = toplevel_script_entity_kw >> indentifier_str >> parameters >> code_block;
+        auto const tableau = x3::string(kw_tableau) >> code_block;
+
     }
-
-	int get_line_number(const std::string& input, std::string::const_iterator iter) {
-		int line_number = 1;
-		for (auto i = input.cbegin(); i <= iter; ++i)
-			if (*i == '\n')
-				++line_number;
-		return line_number;
-	}
-
-	tess::error make_generic_error(const std::string& input, std::string::const_iterator iter) {
-		
-		return { "unknown parsing error.", get_line_number(input,iter) };
-	}
-
-	tess::error exeception_to_err(const std::string& input, std::string::const_iterator iter, std::exception e) {
-		return {
-			e.what(),
-			get_line_number(input,iter)
-		};
-	}
-
-	tess::error make_err(const std::string& input, std::string::const_iterator iter, std::string msg) {
-		return {
-			msg,
-			get_line_number(input,iter)
-		};
-	}
 }
 
-std::variant<tess::tessera_script, tess::error> tess::parser::parse(const std::string& input)
+std::variant<tess::tessera_script, tess::error> tess::parser::parse(const tess::text_range& input)
 {
-	//tess::tessera_script script;
+    tess::tessera_script script;
+    auto iter = input.begin();
+    bool success = false;
 
-	auto iter = input.begin();
-	auto end = input.end();
+    try {
+        success = x3::phrase_parse(iter, input.end(), tess::parser::tableau, x3::space);
+    }
+    catch (...) {
+    }
 
-	bool result = false;
-	
-	try {
-		result = x3::phrase_parse(iter, end,
-			tess::parser::get(),
-			SKIPPER_DEF
-		);
-	}
-	catch (x3::expectation_failure<std::string::const_iterator> e) {
-		return make_err(input, iter, std::string("expectation failure"));
-	} catch (std::exception e) {
-		return exeception_to_err(input, iter, e);
-	}
-
-	if (!result || iter != input.end()) {
-		return make_generic_error(input, iter);
-	} else {
-		return tessera_script();
-	}
+    if (success && iter == input.end())
+        return script;
+    else
+        return input.left_range(iter).make_error("invalid expression");
 }
