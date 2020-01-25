@@ -8,7 +8,10 @@
 
 int main()
 {
-	std::string script = "tile foo { stuff }";
+	std::string script = 
+		"tile triangle { vertex a{ angle: pi / 3 }, b{ angle: pi / 3 }, c{ angle: pi / 3 };\n"
+		"edge left{ c->a }, right{ b->c }, bottom{ a->b }; }\n"
+		"tableau { ttt tttt ttttttttttttt ttttttttttttttt }";
     auto results = tess::parse(script);
 
 	if (std::holds_alternative<tess::tessera_script>(results)) {

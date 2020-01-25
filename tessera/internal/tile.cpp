@@ -1,6 +1,7 @@
 #include "tile.h"
 
-tess::tile::tile(const std::string& name) : name_(name)
+tess::tile::tile(const std::string& name, std::vector<std::string> params, const text_range& source_code) :
+    name_(name), params_(std::move(params)), code_(source_code)
 {
 }
 

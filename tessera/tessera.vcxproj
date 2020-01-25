@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="internal\error.cpp" />
+    <ClCompile Include="internal\patch.cpp" />
+    <ClCompile Include="internal\tableau.cpp" />
     <ClCompile Include="internal\tesserascript.cpp" />
     <ClCompile Include="internal\tessera.cpp" />
     <ClCompile Include="internal\parser\parser.cpp" />
@@ -36,6 +38,8 @@
     <ClInclude Include="internal\parser\expr_parser.cpp" />
     <ClInclude Include="internal\parser\parser.h" />
     <ClInclude Include="internal\parser\util.h" />
+    <ClInclude Include="internal\patch.h" />
+    <ClInclude Include="internal\tableau.h" />
     <ClInclude Include="internal\text_range.h" />
     <ClInclude Include="internal\tile.h" />
   </ItemGroup>

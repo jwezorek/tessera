@@ -32,6 +32,11 @@ std::string::const_iterator tess::text_range::end() const
     return end_;
 }
 
+tess::text_range tess::text_range::sub_range(std::string::const_iterator i1, std::string::const_iterator i2) const
+{
+    return tess::text_range(*input_, i1, i2);
+}
+
 tess::text_range tess::text_range::left_range(std::string::const_iterator i) const
 {
     return tess::text_range(*input_, begin_, i);
@@ -41,3 +46,9 @@ tess::error tess::text_range::make_error(const std::string& msg) const
 {
     return tess::error(msg, get_line_number(*input_, end_));
 }
+
+const std::string& tess::text_range::str() const
+{
+    return *input_;
+}
+
