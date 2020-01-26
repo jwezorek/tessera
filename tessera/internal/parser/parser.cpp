@@ -3,6 +3,7 @@
 #include "../tableau.h"
 #include "../patch.h"
 #include "parser.h"
+#include "exception.h"
 #include "util.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
@@ -46,14 +47,12 @@ namespace tess {
 
         auto make_script = [](auto& ctx) {
             std::vector<std::variant<script_component_specifier, tab_spec>> sections = x3::_attr(ctx);
-            text_range script_source_code = x3::get<text_range>(ctx);
-
             std::optional<tab_spec> tab;
             std::vector<script_component_specifier> tiles_and_patches;
             for (const auto& section : sections) {
                 if (std::holds_alternative<tab_spec>(section)) {
                     if (tab.has_value())
-                        throw script_source_code.make_error("multiple tableau sections");
+                        throw parser::exception("multiple tableau sections");
                     tab = std::get<tab_spec>(section);
                 } else {
                     tiles_and_patches.emplace_back(std::get<script_component_specifier>(section));
@@ -61,9 +60,9 @@ namespace tess {
             }
 
             if (! tab.has_value())
-                throw script_source_code.make_error("no tableau section");
+                throw parser::exception("no tableau section");
 
-            x3::_val(ctx) = tessera_script(script_source_code.str(), tiles_and_patches, tab.value());
+            x3::_val(ctx) = tessera_script( tiles_and_patches, tab.value());
         };
 
         
@@ -82,19 +81,41 @@ namespace tess {
     }
 }
 
+tess::error make_error(tess::text_range script, tess::parser::exception e)
+{
+	int line_number = (e.has_where()) ?
+		tess::text_range(script.begin(), e.where()).get_line_count() :
+		-1;
+	return tess::error(
+		e.what(),
+		line_number
+	);
+}
+
+tess::error make_error(const std::string& msg, tess::text_range script, tess::text_range r)
+{
+	if (script.end() == r.end())
+		return tess::error(msg, -1);
+	return tess::error(msg, r.get_line_count());
+}
+
 std::variant<tess::tessera_script, tess::error> tess::parser::parse(const tess::text_range& input)
 {
+	auto whole_script = tess::text_range(input);
     tessera_script output;
     auto iter = input.begin();
     bool success = false;
 
     try {
-        success = x3::phrase_parse(iter, input.end(), x3::with<tess::text_range>(input)[tessera_script_parser], x3::space, output);
-    } catch (...) {
-    }
+        success = x3::phrase_parse(iter, input.end(), tessera_script_parser, x3::space, output);
+    } catch (tess::parser::exception e) {
+		return make_error(whole_script, e);
+	} catch (...) {
+
+	}
 
     if (success && iter == input.end())
         return output; 
     else
-        return input.left_range(iter).make_error("unknown syntax error");
+        return make_error("unknown syntax error", whole_script, tess::text_range(input.begin(), iter));
 }

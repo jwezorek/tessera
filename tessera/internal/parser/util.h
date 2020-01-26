@@ -33,6 +33,5 @@ namespace tess {
         constexpr auto kw_length = "length";
         constexpr auto kw_pi = "pi";
         constexpr auto kw_sqrt = "sqrt";
-
     }
 }

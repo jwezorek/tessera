@@ -21,13 +21,13 @@ tess::tessera_script::tessera_script()
 {
 }
 
-tess::tessera_script::tessera_script(const std::string& script_code, std::vector<script_component_specifier> sections, tab_spec ts)
+tess::tessera_script::tessera_script(std::vector<script_component_specifier> sections, tab_spec ts)
 {
     impl_ = std::make_shared<script_impl_>();
     for (const auto& section : sections) {
         auto [kind, name, params, iterators] = section;
         auto [begin, end] = iterators;
-        auto implementation = text_range(script_code, begin, end);
+        auto implementation = text_range( begin, end);
 
         if (kind == parser::kw_tile)
             impl_->tiles_.emplace_back(name, params, implementation);
@@ -36,6 +36,6 @@ tess::tessera_script::tessera_script(const std::string& script_code, std::vector
             
     }
     auto [begin, end] = std::get<1>(ts);
-    impl_->tableau_ = tableau(text_range(script_code, begin, end));
+    impl_->tableau_ = tableau(text_range( begin, end));
 }
 

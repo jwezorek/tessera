@@ -18,6 +18,6 @@ namespace tess
 
     public:
         tessera_script();
-        tessera_script(const std::string& source_code, std::vector<script_component_specifier> sections, tab_spec tab);
+        tessera_script(std::vector<script_component_specifier> sections, tab_spec tab);
     };
 }
