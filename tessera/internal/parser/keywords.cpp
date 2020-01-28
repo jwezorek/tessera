@@ -1,5 +1,8 @@
 #include "keywords.h"
 #include <unordered_map>
+#include <cassert>
+
+#define assertm(exp, msg) assert(((void)msg, exp))
 
 tess::parser::kw& tess::parser::operator++(tess::parser::kw& val)
 {
@@ -32,5 +35,6 @@ const std::string& tess::parser::keyword(tess::parser::kw tok)
             {kw::phi,       "phi"},
             {kw::nil,       "nil"}
     };
+    assertm( (keyword_tbl.size() == static_cast<int>(kw::none) - static_cast<int>(kw::if_)), "keyword table is messed up!");
     return keyword_tbl.at(tok);
 }

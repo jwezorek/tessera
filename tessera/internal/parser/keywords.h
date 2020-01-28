@@ -48,19 +48,16 @@ namespace tess {
                 RContext const& rcontext, Attribute& attr) const
             {
                 x3::skip_over(first, last, context);
-                if (first == last)
+
+                if (first == last || (*first != '_' && !isalpha(*first)))
                     return false;
 
-                auto start_of_identifier = first;
-                auto i = first+1;
-                if (i == last || (*i != '_' && !isalpha(*i)))
-                    return false;
-
+                auto i = first;
                 while (++i != last) 
                     if (! isalnum(*i))
                         break;
                 
-                std::string ident_str(start_of_identifier, i);
+                std::string ident_str(first, i);
                 for (auto tok = kw::if_; tok != kw::none; ++tok) {
                     if (ident_str == keyword(tok))
                         return false;
