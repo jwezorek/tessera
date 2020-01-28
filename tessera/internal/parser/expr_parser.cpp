@@ -1,6 +1,7 @@
 #include "../expression.h"
 #include "expr_parser.h"
 #include "util.h"
+#include "keywords.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
 
@@ -19,30 +20,8 @@ namespace tess {
         x3::rule<class factor_, expr_ptr> const factor = "factor";
         x3::rule<class term_, expr_ptr> const term = "term";
         x3::rule<class expr_, expr_ptr> const expr = "expr";
-
-        struct keywords_t : x3::symbols<x3::unused_type> {
-            keywords_t() {
-                add(kw_if, x3::unused);
-                add(kw_else, x3::unused);
-                add(kw_lay, x3::unused);
-                add(kw_tile, x3::unused);
-                add(kw_vertex, x3::unused);
-                add(kw_edge, x3::unused);
-                add(kw_angle, x3::unused);
-                add(kw_class, x3::unused);
-                add(kw_patch, x3::unused);
-                add(kw_such_that, x3::unused);
-                add(kw_tableau, x3::unused);
-                add(kw_where, x3::unused);
-                add(kw_length, x3::unused);
-                add(kw_pi, x3::unused);
-                add(kw_sqrt, x3::unused);
-            }
-        } const keywords;
-
-        auto const distinct_keyword = x3::lexeme[keywords >> !(x3::alnum | '_')];
-        auto const unchecked_identifier = x3::lexeme[(x3::alpha | x3::char_('_')) >> *(x3::alnum | x3::char_('_'))];
-        auto const indentifier_str = as<std::string>[unchecked_identifier - distinct_keyword];
+        
+        auto const indentifier_str = indentifier_str_();
         auto const identifier_expr_def = indentifier_str[make_<variable_expr>];
         auto const number_def = x3::double_[make_<number_expr>];
         auto const basic_expr_def = identifier_expr | number | ('(' >> expr >> ')');
@@ -77,6 +56,6 @@ std::variant<tess::expr_ptr, tess::error> tess::parser::parse_expression(const t
 
     if (success && iter == input.end())
         return output;
-    else 
-        return input.left_range(iter).make_error("invalid expression");
+    else
+        return tess::error("expr error", -1); //TODO
 }

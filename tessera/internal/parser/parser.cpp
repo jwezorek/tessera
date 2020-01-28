@@ -5,6 +5,7 @@
 #include "parser.h"
 #include "exception.h"
 #include "util.h"
+#include "keywords.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <optional>
@@ -13,29 +14,6 @@ namespace x3 = boost::spirit::x3;
 
 namespace tess {
     namespace parser {
-        struct keywords_t : x3::symbols<x3::unused_type> {
-            keywords_t() {
-                add(kw_if, x3::unused);
-                add(kw_else, x3::unused);
-                add(kw_lay, x3::unused);
-                add(kw_tile, x3::unused);
-                add(kw_vertex, x3::unused);
-                add(kw_edge, x3::unused);
-                add(kw_angle, x3::unused);
-                add(kw_class, x3::unused);
-                add(kw_patch, x3::unused);
-                add(kw_such_that, x3::unused);
-                add(kw_tableau, x3::unused);
-                add(kw_where, x3::unused);
-                add(kw_length, x3::unused);
-                add(kw_pi, x3::unused);
-                add(kw_sqrt, x3::unused);
-            }
-        } const keywords;
-
-        auto const distinct_keyword = x3::lexeme[keywords >> !(x3::alnum | '_')];
-        auto const unchecked_identifier = x3::lexeme[(x3::alpha | x3::char_('_')) >> *(x3::alnum | x3::char_('_'))];
-        auto const indentifier_str = as<std::string>[unchecked_identifier - distinct_keyword];
 
         auto const non_brace = x3::char_ - (x3::lit('{') | x3::lit('}'));
         auto const basic_code_block = x3::char_('{') >> *non_brace >> x3::char_('}');
@@ -65,10 +43,10 @@ namespace tess {
             x3::_val(ctx) = tessera_script( tiles_and_patches, tab.value());
         };
 
-        
+        auto const indentifier_str = indentifier_str_();
         auto const parameters = as<std::vector<std::string>>[-(x3::lit('(') >> (indentifier_str% x3::lit(',')) >> x3::lit(')'))];
-        auto const toplevel_script_entity = as<tess::script_component_specifier>[(x3::string(kw_tile) | x3::string(kw_patch)) >> indentifier_str >> parameters >> code_block];
-        auto const tableau_entity = as<tab_spec>[x3::string(kw_tableau) >> code_block];
+        auto const toplevel_script_entity = as<tess::script_component_specifier>[(kw_<kw::tile>() | kw_<kw::patch>()) >> indentifier_str >> parameters >> code_block];
+        auto const tableau_entity = as<tab_spec>[kw_<kw::tableau>() >> code_block];
         auto const script_sections = as<std::vector<std::variant<script_component_specifier, tab_spec>>>[*(toplevel_script_entity | tableau_entity)];
 
         x3::rule<class tessera_script_parser_, tessera_script> const tessera_script_parser = "tessera_script_parser";

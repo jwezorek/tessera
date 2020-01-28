@@ -1,5 +1,6 @@
 #include "tessera/tesserascript.h"
 #include "./parser/util.h"
+#include "./parser/keywords.h"
 #include "tile.h"
 #include "patch.h"
 #include "tableau.h"
@@ -29,9 +30,9 @@ tess::tessera_script::tessera_script(std::vector<script_component_specifier> sec
         auto [begin, end] = iterators;
         auto implementation = text_range( begin, end);
 
-        if (kind == parser::kw_tile)
+        if (kind == parser::keyword(parser::kw::tile))
             impl_->tiles_.emplace_back(name, params, implementation);
-        else if (kind == parser::kw_patch)
+        else if (kind == parser::keyword(parser::kw::patch))
             impl_->tile_patches_.emplace_back(name, params, implementation);
             
     }

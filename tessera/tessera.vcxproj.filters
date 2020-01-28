@@ -43,6 +43,9 @@
     <ClCompile Include="internal\parser\exception.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="internal\parser\keywords.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tessera\tessera.h">
@@ -82,6 +85,9 @@
       <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="internal\parser\exception.h">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\keywords.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
   </ItemGroup>
