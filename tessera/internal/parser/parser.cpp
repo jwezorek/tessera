@@ -30,7 +30,7 @@ namespace tess {
             for (const auto& section : sections) {
                 if (std::holds_alternative<tab_spec>(section)) {
                     if (tab.has_value())
-                        throw parser::exception("multiple tableau sections");
+                        throw parser::exception("script", "multiple tableau sections");
                     tab = std::get<tab_spec>(section);
                 } else {
                     tiles_and_patches.emplace_back(std::get<script_component_specifier>(section));
@@ -38,7 +38,7 @@ namespace tess {
             }
 
             if (! tab.has_value())
-                throw parser::exception("no tableau section");
+                throw parser::exception("script", "no tableau section");
 
             x3::_val(ctx) = tessera_script( tiles_and_patches, tab.value());
         };
@@ -59,25 +59,7 @@ namespace tess {
     }
 }
 
-tess::error make_error(tess::text_range script, tess::parser::exception e)
-{
-	int line_number = (e.has_where()) ?
-		tess::text_range(script.begin(), e.where()).get_line_count() :
-		-1;
-	return tess::error(
-		e.what(),
-		line_number
-	);
-}
-
-tess::error make_error(const std::string& msg, tess::text_range script, tess::text_range r)
-{
-	if (script.end() == r.end())
-		return tess::error(msg, -1);
-	return tess::error(msg, r.get_line_count());
-}
-
-std::variant<tess::tessera_script, tess::error> tess::parser::parse(const tess::text_range& input)
+std::variant<tess::tessera_script, tess::parser::exception> tess::parser::parse(const tess::text_range& input)
 {
 	auto whole_script = tess::text_range(input);
     tessera_script output;
@@ -87,13 +69,16 @@ std::variant<tess::tessera_script, tess::error> tess::parser::parse(const tess::
     try {
         success = x3::phrase_parse(iter, input.end(), tessera_script_parser, x3::space, output);
     } catch (tess::parser::exception e) {
-		return make_error(whole_script, e);
+        e.push_stack_item("script");
+        if (!e.has_where())
+            e.set_where(iter);
+        return e;
 	} catch (...) {
-
 	}
 
-    if (success && iter == input.end())
-        return output; 
-    else
-        return make_error("unknown syntax error", whole_script, tess::text_range(input.begin(), iter));
+    if (success && iter == input.end()) {
+        return output;
+    } else {
+        return tess::parser::exception("script", "unknown syntax error", iter);
+    }
 }

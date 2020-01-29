@@ -22,6 +22,7 @@
     <ClCompile Include="internal\error.cpp" />
     <ClCompile Include="internal\parser\exception.cpp" />
     <ClCompile Include="internal\parser\keywords.cpp" />
+    <ClCompile Include="internal\parser\tile_parser.cpp" />
     <ClCompile Include="internal\patch.cpp" />
     <ClCompile Include="internal\tableau.cpp" />
     <ClCompile Include="internal\tesserascript.cpp" />
@@ -41,6 +42,7 @@
     <ClInclude Include="internal\parser\expr_parser.cpp" />
     <ClInclude Include="internal\parser\keywords.h" />
     <ClInclude Include="internal\parser\parser.h" />
+    <ClInclude Include="internal\parser\tile_parser.h" />
     <ClInclude Include="internal\parser\util.h" />
     <ClInclude Include="internal\patch.h" />
     <ClInclude Include="internal\tableau.h" />

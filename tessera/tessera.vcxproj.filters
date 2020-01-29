@@ -46,6 +46,9 @@
     <ClCompile Include="internal\parser\keywords.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="internal\parser\tile_parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tessera\tessera.h">
@@ -88,6 +91,9 @@
       <Filter>Source Files\parser</Filter>
     </ClInclude>
     <ClInclude Include="internal\parser\keywords.h">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\tile_parser.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
   </ItemGroup>

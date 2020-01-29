@@ -12,5 +12,4 @@ namespace tess {
     public:
         tableau( const text_range& code = {} );
     };
-
 }
