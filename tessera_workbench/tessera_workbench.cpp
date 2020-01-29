@@ -9,8 +9,7 @@
 int main()
 {
 	std::string script = 
-		"tile triangle { vertex a{ angle: pi / 3 }, b{ angle: pi / 3 }, c{ angle: pi / 3 };\n"
-		"edge left{ c->a }, right{ b->c }, bottom{ a->b }; }\n"
+		"tile triangle {  vertex a{angle : pip/3, class : green}, b{angle : pip/3}, c{angle : pip/3}; edge left{ c -> a }, right{ b -> c }, bottom{ a -> b }; }\n"
 		"tableau { ttt tttt ttttttttttttt ttttttttttttttt }";
     auto results = tess::parse(script);
 

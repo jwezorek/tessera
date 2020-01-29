@@ -43,7 +43,7 @@ namespace tess {
     }
 }
 
-std::variant<tess::expr_ptr, tess::error> tess::parser::parse_expression(const tess::text_range& input)
+std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::parse_expression(const tess::text_range& input)
 {
     tess::expr_ptr output;
     auto iter = input.begin();
@@ -51,11 +51,11 @@ std::variant<tess::expr_ptr, tess::error> tess::parser::parse_expression(const t
 
     try {
         success = x3::phrase_parse(iter, input.end(), tess::parser::expr, x3::space, output);
-    } catch (...) { 
+    } catch (...) {
     }
 
-    if (success && iter == input.end())
-        return output;
+    if (success)
+        return { output, iter };
     else
-        return tess::error("expr error", -1); //TODO
+        return { tess::expr_ptr(), iter };
 }

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="internal\error.cpp" />
     <ClCompile Include="internal\parser\exception.cpp" />
+    <ClCompile Include="internal\parser\expr_parser.cpp" />
     <ClCompile Include="internal\parser\keywords.cpp" />
     <ClCompile Include="internal\parser\tile_parser.cpp" />
     <ClCompile Include="internal\patch.cpp" />
@@ -39,7 +40,6 @@
     <ClInclude Include="internal\expression.h" />
     <ClInclude Include="internal\parser\exception.h" />
     <ClInclude Include="internal\parser\expr_parser.h" />
-    <ClInclude Include="internal\parser\expr_parser.cpp" />
     <ClInclude Include="internal\parser\keywords.h" />
     <ClInclude Include="internal\parser\parser.h" />
     <ClInclude Include="internal\parser\tile_parser.h" />

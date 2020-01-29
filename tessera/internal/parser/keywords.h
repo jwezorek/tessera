@@ -39,6 +39,11 @@ namespace tess {
             return x3::string(keyword(e));
         }
 
+        template<kw e>
+        auto kw_lit() {
+            return x3::lit(keyword(e));
+        }
+
         struct indentifier_str_ : x3::parser<indentifier_str_> {
 
             using attribute_type = std::string;

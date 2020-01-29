@@ -49,6 +49,9 @@
     <ClCompile Include="internal\parser\tile_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="internal\parser\expr_parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tessera\tessera.h">
@@ -72,12 +75,6 @@
     <ClInclude Include="internal\parser\util.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
-    <ClInclude Include="internal\parser\expr_parser.h">
-      <Filter>Source Files\parser</Filter>
-    </ClInclude>
-    <ClInclude Include="internal\parser\expr_parser.cpp">
-      <Filter>Source Files\parser</Filter>
-    </ClInclude>
     <ClInclude Include="internal\text_range.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
@@ -94,6 +91,9 @@
       <Filter>Source Files\parser</Filter>
     </ClInclude>
     <ClInclude Include="internal\parser\tile_parser.h">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\expr_parser.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
   </ItemGroup>

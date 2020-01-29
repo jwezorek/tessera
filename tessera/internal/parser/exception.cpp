@@ -11,7 +11,8 @@ tess::parser::exception::exception(const std::string& stack_item, const std::str
 tess::parser::exception::exception(const std::string& stack_item, const std::string& what, std::string::const_iterator where) :
 	what_(what), where_(where)
 {
-	stack_.push_back(stack_item);
+	if (!stack_item.empty())
+		stack_.push_back(stack_item);
 }
 
 bool tess::parser::exception::has_where() const
