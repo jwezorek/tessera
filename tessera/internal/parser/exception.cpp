@@ -1,6 +1,9 @@
 #include "exception.h"
 #include <sstream>
 #include <boost/range/adaptor/reversed.hpp>
+#include <boost/spirit/home/x3.hpp>
+
+namespace x3 = boost::spirit::x3;
 
 tess::parser::exception::exception(const std::string& stack_item, const std::string& what) :
 	what_(what)
@@ -13,6 +16,14 @@ tess::parser::exception::exception(const std::string& stack_item, const std::str
 {
 	if (!stack_item.empty())
 		stack_.push_back(stack_item);
+}
+
+tess::parser::exception::exception(const std::string& stack_item, const x3::expectation_failure<std::string::const_iterator>& e)
+{
+	if (!stack_item.empty())
+		stack_.push_back(stack_item);
+	where_ = e.where();
+	what_ = "expected " + e.which() ;
 }
 
 bool tess::parser::exception::has_where() const

@@ -4,6 +4,14 @@
 #include <optional>
 #include <vector>
 
+namespace boost {
+	namespace spirit {
+		namespace x3 {
+			template<typename T> struct expectation_failure;
+		}
+	}
+}
+
 namespace tess {
 	namespace parser {
 
@@ -14,6 +22,7 @@ namespace tess {
 		public:
 			exception(const std::string& stack_item, const std::string& what);
 			exception(const std::string& stack_item, const std::string& what, std::string::const_iterator where);
+			exception(const std::string& stack_item, const boost::spirit::x3::expectation_failure<std::string::const_iterator>& e);
 			std::string what() const;
 			bool has_where() const;
 			void set_where(std::string::const_iterator);

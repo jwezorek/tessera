@@ -64,16 +64,16 @@ namespace tess {
         const auto identifier_str = indentifier_str_();
 
         x3::rule<class class_field_rule, tess::parser::class_field> const class_field_ = "class_field";
-        auto const class_field__def = kw_<kw::class_>() >> x3::lit(':') >> identifier_str;
+        auto const class_field__def = kw_<kw::class_>() > x3::lit(':') > identifier_str;
 
         x3::rule<class edge_field_rule, tess::parser::edge_field> const edge_field_ = "edge_field";
-        auto const edge_field__def = identifier_str >> x3::lit("->") >> identifier_str;
+        auto const edge_field__def = identifier_str >> x3::lit("->") > identifier_str;
 
         x3::rule<class angle_field_rule, tess::parser::angle_field> const angle_field_ = "angle_field";
-        auto const angle_field__def = (kw_<kw::angle>() >> x3::lit(':') >> expr) | (x3::string("") >> expr);
+        auto const angle_field__def = (kw_<kw::angle>() > x3::lit(':') > expr) | (x3::string("") >> expr);
 
         x3::rule<class length_field_rule, tess::parser::length_field> const length_field_ = "length_field";
-        auto const length_field__def = (kw_<kw::length>() >> x3::lit(':') >> expr) | (x3::string("") >> expr);
+        auto const length_field__def = (kw_<kw::length>() > x3::lit(':') > expr) | (x3::string("") >> expr);
 
         BOOST_SPIRIT_DEFINE(
             class_field_, 
@@ -173,9 +173,9 @@ namespace tess {
                 }
             };
 
-            for (const auto& def : defs) {
+            for (const auto& def : defs) 
                 std::visit(visit_def(v,e), def);
-            }
+            
             return tile_verts_and_edges(v, e);
         }
     }
@@ -190,7 +190,8 @@ std::variant<tess::parser::tile_verts_and_edges, tess::parser::exception> tess::
 
     try {
         success = x3::phrase_parse(iter, input.end(), x3::lit('{') >> tess::parser::ve_definitions_ >> x3::lit('}'), x3::space, output);
-    } catch (...) {
+    } catch (x3::expectation_failure<std::string::const_iterator> ex_fail) {
+        return exception("", ex_fail);
     }
 
     if (!success || iter != input.end())
