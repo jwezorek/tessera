@@ -22,13 +22,17 @@ namespace tess {
         x3::rule<class factor_, expr_ptr> const factor = "factor";
         x3::rule<class term_, expr_ptr> const term = "term";
         x3::rule<class expr_, expr_ptr> const expr = "expr";
-        
+        x3::rule<class special_func_, std::string> const special_func = "special_func";
+        x3::rule<class special_func_expr_, expr_ptr> const special_func_expr = "special_func_expr";
+        x3::rule<class special_func_expr_aux_, std::tuple<std::string, expr_ptr>> const special_func_expr_aux = "special_func_expr_aux";
+
         auto const indentifier_str = indentifier_str_();
         auto const object_ref_expr = object_ref_expr_();
         auto const number_def = x3::double_[make_<number_expr>];
-        auto const special_func = as<std::string>[kw_<kw::sqrt>() | kw_<kw::sin>() | kw_<kw::cos>() | kw_<kw::tan>() | 
-                kw_<kw::arcsin>() | kw_<kw::arccos>() | kw_<kw::arctan>()];
-        auto const special_func_expr = as<std::tuple<std::string, expr_ptr>>[special_func > '(' > expr > ')'][make_<special_function_expr>];
+        auto const special_func_def = kw_<kw::sqrt>() | kw_<kw::sin>() | kw_<kw::cos>() | kw_<kw::tan>() | 
+                kw_<kw::arcsin>() | kw_<kw::arccos>() | kw_<kw::arctan>();
+        auto const special_func_expr_aux_def = special_func > '(' > expr > ')';
+        auto const special_func_expr_def = special_func_expr_aux[make_<special_function_expr>];
         auto const special_num_expr = as<std::string>[(kw_<kw::pi>() | kw_<kw::phi>() | kw_<kw::root_2>())][make_<special_number_expr>];
         auto const basic_expr_def = object_ref_expr | number | special_num_expr | special_func_expr | ('(' >> expr >> ')');
         auto const exp_pair = as<op_expr>[x3::char_("^") >> basic_expr];
@@ -40,6 +44,9 @@ namespace tess {
 
         BOOST_SPIRIT_DEFINE(
             number,
+            special_func,
+            special_func_expr_aux,
+            special_func_expr,
             basic_expr,
             factor,
             term,
