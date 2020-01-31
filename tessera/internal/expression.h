@@ -5,6 +5,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <string>
+#include <variant>
 
 namespace tess {
     struct eval_ctxt {
@@ -64,12 +65,24 @@ namespace tess {
         double eval(const eval_ctxt& ctxt) const override;
     };
 
-    class variable_expr : public expression
+    struct ary_item {
+        std::string name;
+        expr_ptr index;
+    };
+
+    struct place_holder_ary_item {
+        int place_holder;
+        expr_ptr index;
+    };
+
+    using object_ref_item = std::variant<ary_item, place_holder_ary_item, std::string, int>;
+
+    class object_ref_expr : public expression
     {
     private:
-        std::string var_;
+        std::vector<object_ref_item> parts_;
     public:
-        variable_expr(const std::string& v);
+        object_ref_expr(const std::vector<object_ref_item>& parts);
         double eval(const eval_ctxt& ctxt) const override;
     };
 

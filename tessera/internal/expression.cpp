@@ -14,11 +14,14 @@ double tess::number_expr::eval(const eval_ctxt&) const {
 
 /*----------------------------------------------------------------------*/
 
-tess::variable_expr::variable_expr(const std::string& v) : var_(v)
-{}
+tess::object_ref_expr::object_ref_expr(const std::vector<object_ref_item>& parts) : parts_(parts)
+{
+    int aaa;
+    aaa = 5;
+}
 
-double tess::variable_expr::eval(const eval_ctxt& ctxt) const {
-    return ctxt.variables.at(var_);
+double tess::object_ref_expr::eval(const eval_ctxt& ctxt) const {
+    return 0;
 }
 
 /*----------------------------------------------------------------------*/
@@ -118,3 +121,5 @@ double tess::special_function_expr::eval(const eval_ctxt& ctxt) const
 {
     return 0.0;
 }
+
+
