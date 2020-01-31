@@ -24,7 +24,11 @@ namespace tess {
         auto const indentifier_str = indentifier_str_();
         auto const identifier_expr_def = indentifier_str[make_<variable_expr>];
         auto const number_def = x3::double_[make_<number_expr>];
-        auto const basic_expr_def = identifier_expr | number | ('(' >> expr >> ')');
+        auto const special_func = as<std::string>[kw_<kw::sqrt>() | kw_<kw::sin>() | kw_<kw::cos>() | kw_<kw::tan>() | 
+                kw_<kw::arcsin>() | kw_<kw::arccos>() | kw_<kw::arctan>()];
+        auto const special_func_expr = as<std::tuple<std::string, expr_ptr>>[special_func > '(' > expr > ')'][make_<special_function_expr>];
+        auto const special_num_expr = as<std::string>[(kw_<kw::pi>() | kw_<kw::phi>() | kw_<kw::root_2>())][make_<special_number_expr>];
+        auto const basic_expr_def =  identifier_expr | number | special_num_expr | special_func_expr | ('(' >> expr >> ')');
         auto const exp_pair = as<op_expr>[x3::char_("^") >> basic_expr];
         auto const factor_def = as<tess::expression_params>[basic_expr >> *exp_pair][make_<exponent_expr>];
         auto const factor_pair = as<op_expr>[(x3::char_('*') | x3::char_('/')) >> factor];

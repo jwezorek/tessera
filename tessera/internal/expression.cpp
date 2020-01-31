@@ -1,4 +1,6 @@
 #include "expression.h"
+#include "parser/keywords.h"
+#include "parser/exception.h"
 #include <cmath>
 
 /*----------------------------------------------------------------------*/
@@ -66,4 +68,53 @@ double tess::exponent_expr::eval(const eval_ctxt& ctxt) const
     for (const auto& e : exponents_)
         base_val = std::pow(base_val, e->eval(ctxt));
     return base_val;
+}
+
+/*----------------------------------------------------------------------*/
+
+tess::special_number_expr::special_number_expr(const std::string& v) 
+{
+    if (v == parser::keyword(parser::kw::pi))
+        num_ = special_num::pi;
+    else if (v == parser::keyword(parser::kw::phi))
+        num_ = special_num::phi;
+    else if (v == parser::keyword(parser::kw::root_2))
+        num_ = special_num::root_2;
+    else
+        throw parser::exception("expr", "attempted to parse invalid special number");
+}
+
+double tess::special_number_expr::eval(const eval_ctxt& ctxt) const
+{
+    return 0.0;
+}
+
+tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_ptr> param)
+{
+    auto [func_keyword, arg] = param;
+    if (func_keyword == parser::keyword(parser::kw::sqrt))
+        func_ = special_func::sqrt;
+    else if (func_keyword == parser::keyword(parser::kw::sin))
+        func_ = special_func::sin;
+    else if (func_keyword == parser::keyword(parser::kw::cos))
+        func_ = special_func::cos;
+    else if (func_keyword == parser::keyword(parser::kw::tan))
+        func_ = special_func::tan;
+    else if (func_keyword == parser::keyword(parser::kw::arcsin))
+        func_ = special_func::arcsin;
+    else if (func_keyword == parser::keyword(parser::kw::arccos))
+        func_ = special_func::arccos;
+    else if (func_keyword == parser::keyword(parser::kw::arctan))
+        func_ = special_func::arctan;
+    else
+        throw parser::exception("expr", "attempted to parse invalid special function");
+
+    arg_ = arg;
+}
+
+/*----------------------------------------------------------------------*/
+
+double tess::special_function_expr::eval(const eval_ctxt& ctxt) const
+{
+    return 0.0;
 }

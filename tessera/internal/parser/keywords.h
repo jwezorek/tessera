@@ -26,8 +26,12 @@ namespace tess {
             sin,
             cos,
             tan,
+            arcsin,
+            arccos,
+            arctan,
             phi,
             nil,
+            root_2,
             none
         };
 

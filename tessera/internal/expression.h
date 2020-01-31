@@ -29,6 +29,41 @@ namespace tess {
         double eval(const eval_ctxt&) const override;
     };
 
+    enum class special_num {
+        pi,
+        phi,
+        root_2
+    };
+
+    class special_number_expr : public expression
+    {
+    private:
+        special_num num_;
+    public:
+        special_number_expr(const std::string& v);
+        double eval(const eval_ctxt& ctxt) const override;
+    };
+
+    enum class special_func {
+        sqrt,
+        sin,
+        cos,
+        tan,
+        arcsin,
+        arccos,
+        arctan
+    };
+
+    class special_function_expr : public expression
+    {
+    private:
+        special_func func_;
+        expr_ptr arg_;
+    public:
+        special_function_expr(std::tuple<std::string, expr_ptr> param);
+        double eval(const eval_ctxt& ctxt) const override;
+    };
+
     class variable_expr : public expression
     {
     private:

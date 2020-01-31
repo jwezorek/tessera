@@ -27,12 +27,16 @@ const std::string& tess::parser::keyword(tess::parser::kw tok)
             {kw::tableau,   "tableau"},
             {kw::where,     "where"},
             {kw::length,    "length"},
-            {kw::pi,        "pi"},
             {kw::sqrt,      "sqrt"},
             {kw::sin,       "sin"},
             {kw::cos,       "cos"},
             {kw::tan,       "tan"},
+            {kw::arcsin,    "arcsin"},
+            {kw::arccos,    "arccos"},
+            {kw::arctan,    "arctan"},
+            {kw::pi,        "pi"},
             {kw::phi,       "phi"},
+            {kw::root_2,    "root_2"},
             {kw::nil,       "nil"}
     };
     assertm( (keyword_tbl.size() == static_cast<int>(kw::none) - static_cast<int>(kw::if_)), "keyword table is messed up!");
