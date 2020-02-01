@@ -55,6 +55,9 @@
     <ClCompile Include="internal\parser\object_ref_expr_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="internal\parser\cond_expr_parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tessera\tessera.h">
@@ -100,6 +103,9 @@
       <Filter>Source Files\parser</Filter>
     </ClInclude>
     <ClInclude Include="internal\parser\object_ref_expr_parser.h">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\cond_expr_parser.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
   </ItemGroup>

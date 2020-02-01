@@ -115,4 +115,51 @@ namespace tess {
         multiplication_expr(const expression_params& terms);
         double eval(const eval_ctxt& ctx) const override;
     };
+
+	class and_expr : public expression
+	{
+	private:
+		std::vector<expr_ptr> conjuncts_;
+	public:
+		and_expr(const std::vector<expr_ptr> conjuncts);
+		double eval(const eval_ctxt& ctx) const override;
+	};
+
+	class or_expr : public expression
+	{
+	private:
+		std::vector<expr_ptr> disjuncts_;
+	public:
+		or_expr(const std::vector<expr_ptr> disjuncts);
+		double eval(const eval_ctxt& ctx) const override;
+	};
+
+	class equality_expr : public expression
+	{
+	private:
+		std::vector<expr_ptr> operands_;
+	public:
+		equality_expr(const std::vector<expr_ptr> operands);
+		double eval(const eval_ctxt& ctx) const override;
+	};
+
+	enum class relation_op
+	{
+		ne,	
+		gt,	
+		lt,	
+		ge,	
+		le
+	};
+
+	class relation_expr : public expression
+	{
+	private:
+		expr_ptr lhs_;
+		relation_op op_;
+		expr_ptr rhs_;
+	public:
+		relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> param);
+		double eval(const eval_ctxt& ctx) const override;
+	};
 }

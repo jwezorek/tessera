@@ -7,6 +7,14 @@ namespace x3 = boost::spirit::x3;
 
 namespace tess {
     namespace parser {
+
+		static constexpr auto equ = "==";
+		static constexpr auto not_equ = "!=";
+		static constexpr auto lt = "<";
+		static constexpr auto gt = ">";
+		static constexpr auto le = "<=";
+		static constexpr auto ge = "=>";
+
         enum class kw {
             if_,
             else_,
@@ -32,6 +40,9 @@ namespace tess {
             phi,
             nil,
             root_2,
+			and_,
+			or_,
+			not_,
             none
         };
 

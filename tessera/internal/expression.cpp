@@ -115,11 +115,55 @@ tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_
     arg_ = arg;
 }
 
-/*----------------------------------------------------------------------*/
-
 double tess::special_function_expr::eval(const eval_ctxt& ctxt) const
 {
     return 0.0;
 }
 
+/*----------------------------------------------------------------------*/
 
+tess::and_expr::and_expr(const std::vector<expr_ptr> conjuncts) :
+	conjuncts_(conjuncts)
+{
+}
+
+double tess::and_expr::eval(const eval_ctxt& ctx) const
+{
+	return 0.0;
+}
+
+/*----------------------------------------------------------------------*/
+
+tess::equality_expr::equality_expr(const std::vector<expr_ptr> operands) :
+	operands_(operands)
+{
+}
+
+double tess::equality_expr::eval(const eval_ctxt& ctx) const
+{
+	return 0.0;
+}
+
+/*----------------------------------------------------------------------*/
+
+tess::or_expr::or_expr(const std::vector<expr_ptr> disjuncts) :
+	disjuncts_(disjuncts)
+{
+}
+
+double tess::or_expr::eval(const eval_ctxt& ctx) const
+{
+	return 0.0;
+}
+
+/*----------------------------------------------------------------------*/
+
+tess::relation_expr::relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> param)
+{
+
+}
+
+double tess::relation_expr::eval(const eval_ctxt& ctx) const
+{
+	return 0.0;
+}
