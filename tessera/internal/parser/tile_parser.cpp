@@ -37,6 +37,45 @@ namespace tess {
             expr_ptr len;
         };
 
+        using vert_field_var = std::variant<angle_field, class_field>;
+        using vert_fields = std::vector<vert_field_var>;
+
+        struct vert_definition
+        {
+            std::string name;
+            vert_fields fields;
+
+            vert_definition()
+            {}
+
+            vert_definition(std::string s, vert_fields v) :
+                name(s), fields(v)
+            {}
+
+            vert_definition(std::string s) :
+                name(s)
+            {}
+        };
+
+        using edge_field_var = std::variant<edge_field, length_field, class_field>;
+        using edge_fields = std::vector<edge_field_var>;
+
+        struct edge_definition {
+            std::string name;
+            edge_fields fields;
+
+            edge_definition()
+            {}
+
+            edge_definition(std::string s, edge_fields f) :
+                name(s), fields(f)
+            {}
+
+            edge_definition(std::string s) :
+                name(s)
+            {}
+        };
+
         using boost::fusion::operator<<;
     }
 }
@@ -55,6 +94,14 @@ BOOST_FUSION_ADAPT_STRUCT(tess::parser::angle_field,
 
 BOOST_FUSION_ADAPT_STRUCT(tess::parser::length_field,
     tag, len
+)
+
+BOOST_FUSION_ADAPT_STRUCT(tess::parser::vert_definition,
+    name, fields
+)
+
+BOOST_FUSION_ADAPT_STRUCT(tess::parser::edge_definition,
+    name, fields
 )
 
 namespace tess {
@@ -82,24 +129,20 @@ namespace tess {
             length_field_
         );
 
-        using edge_field_var = std::variant<edge_field, length_field, class_field>;
-        using edge_fields = std::vector< edge_field_var>;
-        using edge_definition = std::tuple<std::string, edge_fields>;
         using edges_definition = std::vector<edge_definition>;
-        using vert_field_var = std::variant<angle_field, class_field>;
-        using vert_fields = std::vector<vert_field_var>;
-        using vert_definition = std::tuple<std::string, vert_fields>;
         using verts_definition = std::vector<vert_definition>;
         using ve_defs_var = std::variant<verts_definition, edges_definition>;
         using ve_definitions = std::vector<ve_defs_var>;
 
         auto const edge_field_var_ = edge_field_ | length_field_ | class_field_  ;
         auto const edge_fields_ = edge_field_var_ % x3::lit(',');
-        auto const edge_definition_ = as<edge_definition>[ identifier_str >> x3::lit('{') >> edge_fields_ >> x3::lit('}') ];
+        auto const basic_edge_def_1 = as<edge_definition>[identifier_str];
+        auto const edge_definition_ = as<edge_definition>[ (identifier_str >> x3::lit('{') >> edge_fields_ >> x3::lit('}')) | basic_edge_def_1 ];
         auto const edges_definition_ = kw_lit<kw::edge>() >> (edge_definition_ % ',') >> ';';
         auto const vert_field_var_ = angle_field_ | class_field_;
         auto const vert_fields_ = vert_field_var_ % x3::lit(',');
-        auto const vert_definition_ = as<vert_definition>[identifier_str >> x3::lit('{') >> vert_fields_ >> x3::lit('}')];
+        auto const basic_vert_def = as<vert_definition>[identifier_str];
+        auto const vert_definition_ = as<vert_definition>[(identifier_str >> x3::lit('{') >> vert_fields_ >> x3::lit('}')) | basic_vert_def];
         auto const verts_definition_ = kw_lit<kw::vertex>() >> (vert_definition_ % ',') >> ';';
         auto const ve_defs_var_ = as<verts_definition>[verts_definition_] | as<edges_definition>[edges_definition_] ;
         auto const ve_definitions_ = *(ve_defs_var_);
@@ -155,19 +198,17 @@ namespace tess {
 
                 void operator()(const verts_definition& verts) {
                     for (const auto& v : verts) {
-                        std::string vertex_name = std::get<0>(v);
+                        std::string vertex_name = v.name;
                         v_[vertex_name].name = vertex_name;
-                        const auto& fields = std::get<1>(v);
-                        for (const auto& field : fields)
+                        for (const auto& field : v.fields)
                             std::visit(visit_vert_field(v_, vertex_name), field);
                     }
                 }
                 void operator()(const edges_definition& edges) {
                     for (const auto& e : edges) {
-                        std::string edge_name = std::get<0>(e);
+                        std::string edge_name = e.name;
                         e_[edge_name].name = edge_name;
-                        const auto& fields = std::get<1>(e);
-                        for (const auto& field : fields)
+                        for (const auto& field : e.fields)
                             std::visit(visit_edge_field(e_, edge_name), field);
                     }
                 }
