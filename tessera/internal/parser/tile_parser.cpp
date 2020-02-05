@@ -107,45 +107,53 @@ BOOST_FUSION_ADAPT_STRUCT(tess::parser::edge_definition,
 namespace tess {
     namespace parser {
 
-        const auto expr = expression_();
-        const auto identifier_str = indentifier_str_();
-
-        x3::rule<class class_field_rule, tess::parser::class_field> const class_field_ = "class_field";
-        auto const class_field__def = kw_<kw::class_>() > x3::lit(':') > identifier_str;
-
-        x3::rule<class edge_field_rule, tess::parser::edge_field> const edge_field_ = "edge_field";
-        auto const edge_field__def = identifier_str >> x3::lit("->") > identifier_str;
-
-        x3::rule<class angle_field_rule, tess::parser::angle_field> const angle_field_ = "angle_field";
-        auto const angle_field__def = (kw_<kw::angle>() > x3::lit(':') > expr) | (x3::string("") >> expr);
-
-        x3::rule<class length_field_rule, tess::parser::length_field> const length_field_ = "length_field";
-        auto const length_field__def = (kw_<kw::length>() > x3::lit(':') > expr) | (x3::string("") >> expr);
-
-        BOOST_SPIRIT_DEFINE(
-            class_field_, 
-            edge_field_, 
-            angle_field_, 
-            length_field_
-        );
-
         using edges_definition = std::vector<edge_definition>;
         using verts_definition = std::vector<vert_definition>;
         using ve_defs_var = std::variant<verts_definition, edges_definition>;
         using ve_definitions = std::vector<ve_defs_var>;
 
-        auto const edge_field_var_ = edge_field_ | length_field_ | class_field_  ;
+        x3::rule<class class_field_rule, tess::parser::class_field> const class_field_ = "class_field";
+        x3::rule<class edge_field_rule, tess::parser::edge_field> const edge_field_ = "edge_field";
+        x3::rule<class angle_field_rule, tess::parser::angle_field> const angle_field_ = "angle_field";
+        x3::rule<class length_field_rule, tess::parser::length_field> const length_field_ = "length_field";
+        x3::rule<class basic_edge_def_1_, edge_definition> basic_edge_def_1 = "basic_edge_def_1";
+        x3::rule<class edge_definition_tag, edge_definition> edge_definition_ = "edge_definition_";
+        x3::rule<class edges_definition_tag, edges_definition> edges_definition_ = "edges_definition_";
+        x3::rule<class basic_vert_def_, vert_definition> basic_vert_def = "basic_vert_def";
+        x3::rule<class vert_definition__, vert_definition> vert_definition_ = "vert_definition_";
+        x3::rule<class verts_definition__, verts_definition>  verts_definition_ = "verts_definition_";
+
+        const auto expr = expression_();
+        const auto identifier_str = indentifier_str_();
+        auto const class_field__def = kw_<kw::class_>() > x3::lit(':') > identifier_str;
+        auto const edge_field__def = identifier_str >> x3::lit("->") > identifier_str;
+        auto const angle_field__def = (kw_<kw::angle>() > x3::lit(':') > expr) | (x3::string("") >> expr);
+        auto const length_field__def = (kw_<kw::length>() > x3::lit(':') > expr) | (x3::string("") >> expr);
+        auto const edge_field_var_ = edge_field_ | length_field_ | class_field_ ;
         auto const edge_fields_ = edge_field_var_ % x3::lit(',');
-        auto const basic_edge_def_1 = as<edge_definition>[identifier_str];
-        auto const edge_definition_ = as<edge_definition>[ (identifier_str >> x3::lit('{') >> edge_fields_ >> x3::lit('}')) | basic_edge_def_1 ];
-        auto const edges_definition_ = kw_lit<kw::edge>() >> (edge_definition_ % ',') >> ';';
+        auto const basic_edge_def_1_def = identifier_str;
+        auto const edge_definition__def = (identifier_str >> x3::lit('{') >> edge_fields_ >> x3::lit('}')) | basic_edge_def_1;
+        auto const edges_definition__def = kw_lit<kw::edge>() >> (edge_definition_ % ',') >> ';';
         auto const vert_field_var_ = angle_field_ | class_field_;
         auto const vert_fields_ = vert_field_var_ % x3::lit(',');
-        auto const basic_vert_def = as<vert_definition>[identifier_str];
-        auto const vert_definition_ = as<vert_definition>[(identifier_str >> x3::lit('{') >> vert_fields_ >> x3::lit('}')) | basic_vert_def];
-        auto const verts_definition_ = kw_lit<kw::vertex>() >> (vert_definition_ % ',') >> ';';
-        auto const ve_defs_var_ = as<verts_definition>[verts_definition_] | as<edges_definition>[edges_definition_] ;
+        auto const basic_vert_def_def = identifier_str;
+        auto const vert_definition__def = (identifier_str >> x3::lit('{') >> vert_fields_ >> x3::lit('}')) | basic_vert_def;
+        auto const verts_definition__def = kw_lit<kw::vertex>() >> (vert_definition_ % ',') >> ';';
+        auto const ve_defs_var_ = verts_definition_ | edges_definition_ ;
         auto const ve_definitions_ = *(ve_defs_var_);
+
+        BOOST_SPIRIT_DEFINE(
+            class_field_,
+            edge_field_,
+            angle_field_,
+            length_field_,
+            basic_edge_def_1,
+            edge_definition_,
+            edges_definition_,
+            basic_vert_def,
+            vert_definition_,
+            verts_definition_
+        );
 
         std::variant<tile_verts_and_edges, exception> unpack(const ve_definitions& defs) {
             using v_map = std::unordered_map<std::string, vertex_fields>;
