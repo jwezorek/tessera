@@ -44,8 +44,8 @@ namespace tess {
         };
 
         auto const indentifier_str = indentifier_str_();
-        auto const parameters = as<std::vector<std::string>>[-(x3::lit('(') >> (indentifier_str% x3::lit(',')) >> x3::lit(')'))];
-        auto const toplevel_script_entity = as<tess::script_component_specifier>[(kw_<kw::tile>() | kw_<kw::patch>()) >> indentifier_str >> parameters >> code_block];
+        auto const parameters = as<std::vector<std::string>>[-(x3::lit('(') >> (indentifier_str % x3::lit(',')) >> x3::lit(')'))];
+        auto const toplevel_script_entity = as<tess::script_component_specifier>[(kw_<kw::tile>() | kw_<kw::patch>()) > indentifier_str >> parameters > code_block];
         auto const tableau_entity = as<tab_spec>[kw_<kw::tableau>() >> code_block];
         auto const script_sections = as<std::vector<std::variant<script_component_specifier, tab_spec>>>[*(toplevel_script_entity | tableau_entity)];
 
@@ -73,8 +73,10 @@ std::variant<tess::tessera_script, tess::parser::exception> tess::parser::parse(
         if (!e.has_where())
             e.set_where(iter);
         return e;
-	} catch (...) {
-	}
+	} catch (x3::expectation_failure<std::string::const_iterator> const& e) {
+        return tess::parser::exception("script", e);
+    } catch (std::exception e) {
+    }
 
     if (success && iter == input.end()) {
         return output;

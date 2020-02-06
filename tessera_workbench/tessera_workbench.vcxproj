@@ -161,6 +161,9 @@
   <ItemGroup>
     <ClCompile Include="tessera_workbench.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="test.tess" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

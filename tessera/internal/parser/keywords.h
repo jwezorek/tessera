@@ -74,7 +74,7 @@ namespace tess {
 
                 auto i = first;
                 while (++i != last) 
-                    if (! isalnum(*i))
+                    if ((! isalnum(*i)) && *i != '_')
                         break;
                 
                 std::string ident_str(first, i);
