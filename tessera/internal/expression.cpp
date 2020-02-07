@@ -171,9 +171,24 @@ double tess::or_expr::eval(const eval_ctxt& ctx) const
 
 /*----------------------------------------------------------------------*/
 
-tess::relation_expr::relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> param)
+tess::relation_expr::relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> param) :
+    lhs_(std::get<0>(param)),
+    op_(relation_op::ne),
+    rhs_(std::get<2>(param))
 {
-
+    auto op = std::get<1>(param);
+    if (op == parser::not_equ)
+        op_ = relation_op::ne;
+    else if (op == parser::ge)
+        op_ = relation_op::ge;
+    else if (op == parser::lt)
+        op_ = relation_op::lt;
+    else if (op == parser::gt)
+        op_ == relation_op::gt;
+    else if (op == parser::le)
+        op_ = relation_op::le;
+    else
+        throw parser::exception("expr", "attempted to parse invalid relation_expr");
 }
 
 double tess::relation_expr::eval(const eval_ctxt& ctx) const
