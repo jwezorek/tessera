@@ -18,6 +18,10 @@ BOOST_FUSION_ADAPT_STRUCT(tess::place_holder_ary_item,
     place_holder, index
 )
 
+BOOST_FUSION_ADAPT_STRUCT(tess::func_call_item,
+    name, args
+)
+
 namespace tess {
     namespace parser
     {
@@ -29,8 +33,9 @@ namespace tess {
         auto const ary_item = as<tess::ary_item>[indentifier_str >> '[' >> expr >> ']'];
         auto const place_holder = x3::lexeme[x3::lit('$') > x3::uint_];
         auto const place_holder_ary_item = as<tess::place_holder_ary_item>[place_holder >> '[' >> expr >> ']'];
+        auto const func_call_item = as<tess::func_call_item>[indentifier_str >> '(' >> (expr % ',') >> ')'];
 
-        auto const object_ref_item = as<tess::object_ref_item>[ary_item | place_holder_ary_item | indentifier_str | place_holder];
+        auto const object_ref_item = as<tess::object_ref_item>[func_call_item | ary_item | place_holder_ary_item | indentifier_str | place_holder];
 
         auto const object_ref_expr = as<tess::expr_ptr>[(object_ref_item % '.')[make_<tess::object_ref_expr>]];
     }

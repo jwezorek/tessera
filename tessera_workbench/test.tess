@@ -7,7 +7,7 @@ patch tri_strip(e, n) {
 	if (n == 1)
 		lay triangle;
 	else
-		lay triangle -> triangle -> tri_strip(nil, n-2) so e <-> $1.left, $2.right<-> $1.right, $3[0].bottom <-> $2.bottom;
+		lay triangle -> triangle -> tri_strip(nil, n-2) such_that e <-> $1.left, $2.right<-> $1.right, $3[0].bottom <-> $2.bottom;
 }
 
 patch tri_grid(e, n) {

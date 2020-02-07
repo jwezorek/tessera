@@ -20,8 +20,6 @@ namespace tess {
         x3::rule<class special_func_, std::string> const special_func = "special_func";
         x3::rule<class special_func_expr_, expr_ptr> const special_func_expr = "special_func_expr";
         x3::rule<class special_func_expr_aux_, std::tuple<std::string, expr_ptr>> const special_func_expr_aux = "special_func_expr_aux";
-        x3::rule<class func_call_aux_, std::tuple<std::string, std::vector<expr_ptr>>> func_call_aux = "func_call_aux";
-        x3::rule<class func_call_, expr_ptr> func_call = "func_call";
 
         auto const expr = expression_();
         auto const indentifier_str = indentifier_str_();
@@ -37,10 +35,8 @@ namespace tess {
         auto const special_func_expr_aux_def = special_func > '(' > expr > ')';
         auto const special_func_expr_def = special_func_expr_aux[make_<special_function_expr>]; 
 
-        auto const func_call_aux_def = indentifier_str >> '(' >> (expr % ',') >> ')';
-        auto const func_call_def = func_call_aux[make_<function_call_expr>];
 
-        auto const basic_expr_def = func_call | object_ref_expr | number | special_num | special_func_expr | ('(' >> expr >> ')');
+        auto const basic_expr_def = object_ref_expr | number | special_num | special_func_expr | ('(' >> expr >> ')');
 
         BOOST_SPIRIT_DEFINE(
             number,
@@ -49,8 +45,6 @@ namespace tess {
             special_func,
             special_func_expr,
             special_func_expr_aux,
-            func_call,
-            func_call_aux,
             basic_expr
         )
     }

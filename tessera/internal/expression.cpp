@@ -122,19 +122,6 @@ double tess::special_function_expr::eval(const eval_ctxt& ctxt) const
 
 /*----------------------------------------------------------------------*/
 
-tess::function_call_expr::function_call_expr(std::tuple<std::string, std::vector<expr_ptr>> params) :
-    func_(std::get<0>(params)),
-    args_(std::get<1>(params))
-{
-}
-
-double tess::function_call_expr::eval(const eval_ctxt& ctx) const
-{
-    return 0.0;
-}
-
-/*----------------------------------------------------------------------*/
-
 tess::and_expr::and_expr(const std::vector<expr_ptr> conjuncts) :
 	conjuncts_(conjuncts)
 {
@@ -184,7 +171,7 @@ tess::relation_expr::relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> p
     else if (op == parser::lt)
         op_ = relation_op::lt;
     else if (op == parser::gt)
-        op_ == relation_op::gt;
+        op_ = relation_op::gt;
     else if (op == parser::le)
         op_ = relation_op::le;
     else
