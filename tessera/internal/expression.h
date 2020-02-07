@@ -65,6 +65,16 @@ namespace tess {
         double eval(const eval_ctxt& ctxt) const override;
     };
 
+    class function_call_expr : public expression
+    {
+    private:
+        std::string func_;
+        std::vector<expr_ptr> args_;
+    public:
+        function_call_expr(std::tuple<std::string, std::vector<expr_ptr>> params);
+        double eval(const eval_ctxt& ctx) const override;
+    };
+
     struct ary_item {
         std::string name;
         expr_ptr index;
