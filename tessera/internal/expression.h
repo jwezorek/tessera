@@ -171,4 +171,11 @@ namespace tess {
 		relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> param);
 		double eval(const eval_ctxt& ctx) const override;
 	};
+
+	class nil_expr : public expression
+	{
+	public:
+		nil_expr();
+		double eval(const eval_ctxt& ctx) const override;
+	};
 }

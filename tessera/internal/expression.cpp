@@ -182,3 +182,12 @@ double tess::relation_expr::eval(const eval_ctxt& ctx) const
 {
 	return 0.0;
 }
+
+tess::nil_expr::nil_expr()
+{
+}
+
+double tess::nil_expr::eval(const eval_ctxt& ctx) const
+{
+	return 0.0;
+}
