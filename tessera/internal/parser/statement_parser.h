@@ -23,7 +23,7 @@ namespace tess {
                 auto [output, iter] = parse_statements(text_range(first, last));
                 first = iter;
                 attr = output;
-                return (output != nullptr);
+                return (!output.empty());
             };
         };
     }

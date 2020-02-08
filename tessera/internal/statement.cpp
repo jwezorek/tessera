@@ -1,7 +1,7 @@
 #include "statement.h"
 
 tess::lay_statement::lay_statement(const lay_params& params) :
-    layees_(params.layees),
+    tiles_(params.tiles),
     such_that_clauses_( params.such_that_clauses )
 {
 }

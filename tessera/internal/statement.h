@@ -22,14 +22,14 @@ namespace tess {
     };
 
     struct lay_params {
-        std::vector<obj_ref_ptr> layees;
+        std::vector<obj_ref_ptr> tiles;
         std::vector<std::tuple<obj_ref_ptr, obj_ref_ptr>> such_that_clauses;
     };
 
     class lay_statement : public statement
     {
     private:
-        std::vector<obj_ref_ptr> layees_;
+        std::vector<obj_ref_ptr> tiles_;
         std::vector<std::tuple<obj_ref_ptr, obj_ref_ptr>> such_that_clauses_;
     public:
         lay_statement(const lay_params& params);

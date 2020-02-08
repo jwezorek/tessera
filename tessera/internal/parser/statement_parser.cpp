@@ -14,7 +14,7 @@
 namespace x3 = boost::spirit::x3;
 
 BOOST_FUSION_ADAPT_STRUCT(tess::lay_params,
-    layees, such_that_clauses
+    tiles, such_that_clauses
 )
 
 BOOST_FUSION_ADAPT_STRUCT(tess::if_params,
@@ -25,7 +25,11 @@ namespace tess {
     namespace parser
     {
         template<typename T>
-        auto make_ = [&](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
+        auto make_ = 
+			[&](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
+
+		auto make_obj_ref = 
+			[](auto& ctx) { _val(ctx) = std::static_pointer_cast<object_ref_expr>( _attr(ctx) ); };
 
         const auto expr = expression_();
         const auto obj_ref_generic = object_ref_expr_();
@@ -38,14 +42,16 @@ namespace tess {
         x3::rule<class if_stmt_aux_, if_params> const if_stmt_aux = "if_stmt_aux";
         x3::rule<class if_stmt_, stmt_ptr> const if_stmt = "if_stmt";
         x3::rule<class stmt, stmt_ptr> const stmt = "statement";
+		x3::rule<class statements_, std::vector<stmt_ptr>> const statements = "statements";
 
-        auto const obj_ref_def = obj_ref_generic;
+        auto const obj_ref_def = obj_ref_generic [make_obj_ref];
         auto const obj_ref_pair_def = obj_ref >> "<->" >> obj_ref;
         auto const lay_stmt_aux_def = kw_lit<kw::lay>() >> (obj_ref% x3::lit("->")) >> kw_lit<kw::such_that>() >> (obj_ref_pair% x3::lit(',')) >> x3::lit(';');
         auto const lay_stmt_def = lay_stmt_aux [make_<tess::lay_statement>];
         auto const if_stmt_aux_def = kw_lit<kw::if_>() >> cond_expr >> stmt >> kw_lit<kw::else_>() >> stmt;
         auto const if_stmt_def = if_stmt_aux [make_<tess::if_statement>];
         auto const stmt_def = lay_stmt | if_stmt;
+		auto const statements_def = +(stmt);
 
         BOOST_SPIRIT_DEFINE(
             obj_ref,
@@ -54,30 +60,28 @@ namespace tess {
             lay_stmt,
             if_stmt_aux,
             if_stmt,
-            stmt
+            stmt,
+			statements
         );
     }
 }
 
 std::tuple<std::vector<tess::stmt_ptr>, std::string::const_iterator> tess::parser::parse_statements(const text_range& input)
 {
-    /*
-    tess::stmt_ptr output;
+    
+	std::vector<stmt_ptr> output;
     auto iter = input.begin();
     bool success = false;
 
     try {
-        success = x3::phrase_parse(iter, input.end(), tess::parser::object_ref_expr, x3::space, output);
-    }
-    catch (...) {
+        success = x3::phrase_parse(iter, input.end(), tess::parser::statements, x3::space, output);
+    } catch (...) {
     }
 
     if (success)
         return { output, iter };
     else
-        return { tess::expr_ptr(), iter };
-    */
-    return { std::vector<tess::stmt_ptr>(), input.begin() };
+		return { std::vector<stmt_ptr>(), iter };
 }
 
 
