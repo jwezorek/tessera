@@ -34,6 +34,7 @@ namespace tess {
         std::vector<std::tuple<obj_ref_ptr, obj_ref_ptr>> such_that_clauses_;
     public:
         lay_statement(const lay_params& params);
+        lay_statement(const std::vector<obj_ref_ptr>& tiles);
         void execute(exec_ctxt&) const;
     };
 

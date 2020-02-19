@@ -6,6 +6,11 @@ tess::lay_statement::lay_statement(const lay_params& params) :
 {
 }
 
+tess::lay_statement::lay_statement(const std::vector<obj_ref_ptr>& tiles) :
+    tiles_(tiles)
+{
+}
+
 void tess::lay_statement::execute(exec_ctxt&) const
 {
 }

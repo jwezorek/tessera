@@ -1,5 +1,5 @@
 tile triangle {
-	vertex a{angle : pi/3, class : green}, b{angle : pi/3}, c{angle : pi/3};
+	vertex a{angle : pi/3}, b{angle : pi/3}, c{angle : pi/3};
 	edge left{ c -> a }, right{ b -> c }, bottom{ a -> b };
 }
 
@@ -12,7 +12,7 @@ patch tri_strip(e, n) {
 
 patch tri_grid(e, n) {
 	if (n == 1)
-		lay tri_strip(nil, 1)
+		lay tri_strip(nil, 1);
 	else
 		lay tri_strip(e, n) -> tri_grid( $1[1].left, n-1);
 }
