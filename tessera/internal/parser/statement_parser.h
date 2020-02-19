@@ -2,15 +2,18 @@
 
 #include "../statement.h"
 #include "../text_range.h"
+#include "exception.h"
 #include <boost/spirit/home/x3.hpp>
 #include <tuple>
 #include <vector>
+#include <variant>
 
 namespace x3 = boost::spirit::x3;
 
 namespace tess {
     namespace parser {
-        std::tuple<std::vector<tess::stmt_ptr>, std::string::const_iterator> parse_statements(const text_range& input);
+        std::variant<stmts, exception> parse_statements(const text_range& input);
+        std::tuple<stmts, std::string::const_iterator> parse_statements_aux(const text_range& input);
 
         struct statement_ : x3::parser<statement_> {
 
@@ -20,7 +23,7 @@ namespace tess {
             bool parse(Iterator& first, Iterator const& last, Context const& context,
                 RContext const& rcontext, Attribute& attr) const
             {
-                auto [output, iter] = parse_statements(text_range(first, last));
+                auto [output, iter] = parse_statements_aux(text_range(first, last));
                 first = iter;
                 attr = output;
                 return (!output.empty());

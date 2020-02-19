@@ -66,17 +66,14 @@ namespace tess {
     }
 }
 
-std::tuple<std::vector<tess::stmt_ptr>, std::string::const_iterator> tess::parser::parse_statements(const text_range& input)
+std::tuple<tess::stmts, std::string::const_iterator> tess::parser::parse_statements_aux(const text_range& input)
 {
     
-	std::vector<stmt_ptr> output;
+    tess::stmts output;
     auto iter = input.begin();
     bool success = false;
 
-    try {
-        success = x3::phrase_parse(iter, input.end(), tess::parser::statements, x3::space, output);
-    } catch (...) {
-    }
+    success = x3::phrase_parse(iter, input.end(), tess::parser::statements, x3::space, output);
 
     if (success)
         return { output, iter };
@@ -84,4 +81,21 @@ std::tuple<std::vector<tess::stmt_ptr>, std::string::const_iterator> tess::parse
 		return { std::vector<stmt_ptr>(), iter };
 }
 
+std::variant<tess::stmts, tess::parser::exception> tess::parser::parse_statements(const tess::text_range& input)
+{
+    tess::stmts output;
+    bool success = false;
+    auto iter = input.begin();
 
+    try {
+        success = x3::phrase_parse(iter, input.end(), x3::lit('{') >> tess::parser::statements >> x3::lit('}'), x3::space, output);
+    }
+    catch (x3::expectation_failure<std::string::const_iterator> ex_fail) {
+        return exception("", ex_fail);
+    }
+
+    if (!success || iter != input.end())
+        return exception("", "syntax error", iter);
+
+    return output;
+}

@@ -14,6 +14,7 @@ namespace tess {
 
     class statement;
     using stmt_ptr = std::shared_ptr<statement>;
+    using stmts = std::vector<std::shared_ptr<statement>>;
 
     class statement
     {
