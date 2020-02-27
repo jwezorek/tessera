@@ -6,11 +6,10 @@
 #include <unordered_map>
 #include <string>
 #include <variant>
+#include "execution_ctxt.h"
+#include "expr_value.h"
 
 namespace tess {
-    struct eval_ctxt {
-        std::unordered_map<std::string, double> variables;
-    };
 
     class expression;
     using expr_ptr = std::shared_ptr<expression>;
@@ -18,16 +17,17 @@ namespace tess {
     class expression
     {
     public:
-        virtual double eval(const eval_ctxt&) const = 0;
+        virtual expr_value eval(const execution_ctxt&) const = 0;
     };
 
     class number_expr : public expression
     {
     private:
-        double val_;
+        int val_;
     public:
-        number_expr(double v);
-        double eval(const eval_ctxt&) const override;
+        number_expr(int v);
+        number_expr(double v); 
+        expr_value eval(const execution_ctxt&) const override;
     };
 
     enum class special_num {
@@ -42,7 +42,7 @@ namespace tess {
         special_num num_;
     public:
         special_number_expr(const std::string& v);
-        double eval(const eval_ctxt& ctxt) const override;
+        expr_value eval(const execution_ctxt& ctxt) const override;
     };
 
     enum class special_func {
@@ -62,7 +62,7 @@ namespace tess {
         expr_ptr arg_;
     public:
         special_function_expr(std::tuple<std::string, expr_ptr> param);
-        double eval(const eval_ctxt& ctxt) const override;
+        expr_value eval(const execution_ctxt& ctxt) const override;
     };
 
     struct func_call_item
@@ -92,7 +92,7 @@ namespace tess {
         std::vector<object_ref_item> parts_;
     public:
         object_ref_expr(const std::vector<object_ref_item>& parts);
-        double eval(const eval_ctxt& ctxt) const override;
+        expr_value eval(const execution_ctxt& ctxt) const override;
     };
 
     using expression_params = std::tuple<std::shared_ptr<tess::expression>, std::vector<std::tuple<char, std::shared_ptr<tess::expression>>>>;
@@ -104,7 +104,7 @@ namespace tess {
         std::vector<expr_ptr> exponents_;
     public:
         exponent_expr(const expression_params& params);
-        double eval(const eval_ctxt& ctxt) const override;
+        expr_value eval(const execution_ctxt& ctxt) const override;
     };
 
     class addition_expr : public expression
@@ -113,7 +113,7 @@ namespace tess {
         std::vector<std::tuple<bool, expr_ptr>> terms_;
     public:
         addition_expr(const expression_params& terms);
-        double eval(const eval_ctxt& ctx) const override;
+        expr_value eval(const execution_ctxt& ctx) const override;
     };
 
     class multiplication_expr : public expression
@@ -122,7 +122,7 @@ namespace tess {
         std::vector<std::tuple<bool, expr_ptr>> factors_;
     public:
         multiplication_expr(const expression_params& terms);
-        double eval(const eval_ctxt& ctx) const override;
+        expr_value eval(const execution_ctxt& ctx) const override;
     };
 
 	class and_expr : public expression
@@ -131,7 +131,7 @@ namespace tess {
 		std::vector<expr_ptr> conjuncts_;
 	public:
 		and_expr(const std::vector<expr_ptr> conjuncts);
-		double eval(const eval_ctxt& ctx) const override;
+        expr_value eval(const execution_ctxt& ctx) const override;
 	};
 
 	class or_expr : public expression
@@ -140,7 +140,7 @@ namespace tess {
 		std::vector<expr_ptr> disjuncts_;
 	public:
 		or_expr(const std::vector<expr_ptr> disjuncts);
-		double eval(const eval_ctxt& ctx) const override;
+        expr_value eval(const execution_ctxt& ctx) const override;
 	};
 
 	class equality_expr : public expression
@@ -149,7 +149,7 @@ namespace tess {
 		std::vector<expr_ptr> operands_;
 	public:
 		equality_expr(const std::vector<expr_ptr> operands);
-		double eval(const eval_ctxt& ctx) const override;
+        expr_value eval(const execution_ctxt& ctx) const override;
 	};
 
 	enum class relation_op
@@ -169,13 +169,13 @@ namespace tess {
 		expr_ptr rhs_;
 	public:
 		relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> param);
-		double eval(const eval_ctxt& ctx) const override;
+        expr_value eval(const execution_ctxt& ctx) const override;
 	};
 
 	class nil_expr : public expression
 	{
 	public:
 		nil_expr();
-		double eval(const eval_ctxt& ctx) const override;
+        expr_value eval(const execution_ctxt& ctx) const override;
 	};
 }

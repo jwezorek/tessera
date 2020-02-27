@@ -5,23 +5,28 @@
 
 /*----------------------------------------------------------------------*/
 
-tess::number_expr::number_expr(double v) : val_(v)
-{}
+tess::number_expr::number_expr(double v) 
+{
+    throw std::exception("TODO");
+}
 
-double tess::number_expr::eval(const eval_ctxt&) const {
-    return val_;
+tess::number_expr::number_expr(int v) : val_(v)
+{
+}
+
+tess::expr_value tess::number_expr::eval(const tess::execution_ctxt&) const {
+    return {};
 }
 
 /*----------------------------------------------------------------------*/
 
 tess::object_ref_expr::object_ref_expr(const std::vector<object_ref_item>& parts) : parts_(parts)
 {
-    int aaa;
-    aaa = 5;
+
 }
 
-double tess::object_ref_expr::eval(const eval_ctxt& ctxt) const {
-    return 0;
+tess::expr_value tess::object_ref_expr::eval(const tess::execution_ctxt& ctxt) const {
+    return nil_val();
 }
 
 /*----------------------------------------------------------------------*/
@@ -32,11 +37,14 @@ tess::addition_expr::addition_expr(const expression_params& terms) {
         terms_.emplace_back(std::make_tuple(op == '+', expr));
 }
 
-double tess::addition_expr::eval(const tess::eval_ctxt& ctx) const {
+tess::expr_value tess::addition_expr::eval(const tess::execution_ctxt& ctx) const {
+    /*
     double sum = 0;
     for (auto [sign, term] : terms_)
         sum += (sign) ? term->eval(ctx) : -term->eval(ctx);
     return sum;
+    */
+    return nil_val();
 }
 
 /*----------------------------------------------------------------------*/
@@ -47,11 +55,14 @@ tess::multiplication_expr::multiplication_expr(const expression_params& terms) {
         factors_.emplace_back(std::make_tuple(op == '*', expr));
 }
 
-double tess::multiplication_expr::eval(const tess::eval_ctxt& ctx) const {
+tess::expr_value tess::multiplication_expr::eval(const tess::execution_ctxt& ctx) const {
+    /*
     double prod = 1.0;
     for (auto [op, term] : factors_)
         prod *= (op) ? term->eval(ctx) : 1.0 / term->eval(ctx);
     return prod;
+    */
+    return nil_val();
 }
 
 /*----------------------------------------------------------------------*/
@@ -63,14 +74,17 @@ tess::exponent_expr::exponent_expr(const expression_params& params)
         exponents_.emplace_back(expr);
 }
 
-double tess::exponent_expr::eval(const eval_ctxt& ctxt) const
+tess::expr_value tess::exponent_expr::eval(const tess::execution_ctxt& ctxt) const
 {
+    /*
     auto base_val = base_->eval(ctxt);
     if (exponents_.empty())
         return base_val;
     for (const auto& e : exponents_)
         base_val = std::pow(base_val, e->eval(ctxt));
     return base_val;
+    */
+    return nil_val();
 }
 
 /*----------------------------------------------------------------------*/
@@ -87,9 +101,9 @@ tess::special_number_expr::special_number_expr(const std::string& v)
         throw parser::exception("expr", "attempted to parse invalid special number");
 }
 
-double tess::special_number_expr::eval(const eval_ctxt& ctxt) const
+tess::expr_value tess::special_number_expr::eval(const tess::execution_ctxt& ctxt) const
 {
-    return 0.0;
+    return nil_val();
 }
 
 tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_ptr> param)
@@ -115,9 +129,9 @@ tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_
     arg_ = arg;
 }
 
-double tess::special_function_expr::eval(const eval_ctxt& ctxt) const
+tess::expr_value tess::special_function_expr::eval(const tess::execution_ctxt& ctxt) const
 {
-    return 0.0;
+    return nil_val();
 }
 
 /*----------------------------------------------------------------------*/
@@ -127,9 +141,9 @@ tess::and_expr::and_expr(const std::vector<expr_ptr> conjuncts) :
 {
 }
 
-double tess::and_expr::eval(const eval_ctxt& ctx) const
+tess::expr_value tess::and_expr::eval(const tess::execution_ctxt& ctx) const
 {
-	return 0.0;
+    return nil_val();
 }
 
 /*----------------------------------------------------------------------*/
@@ -139,9 +153,9 @@ tess::equality_expr::equality_expr(const std::vector<expr_ptr> operands) :
 {
 }
 
-double tess::equality_expr::eval(const eval_ctxt& ctx) const
+tess::expr_value tess::equality_expr::eval(const tess::execution_ctxt& ctx) const
 {
-	return 0.0;
+    return nil_val();
 }
 
 /*----------------------------------------------------------------------*/
@@ -151,9 +165,9 @@ tess::or_expr::or_expr(const std::vector<expr_ptr> disjuncts) :
 {
 }
 
-double tess::or_expr::eval(const eval_ctxt& ctx) const
+tess::expr_value tess::or_expr::eval(const tess::execution_ctxt& ctx) const
 {
-	return 0.0;
+    return nil_val();
 }
 
 /*----------------------------------------------------------------------*/
@@ -178,16 +192,16 @@ tess::relation_expr::relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> p
         throw parser::exception("expr", "attempted to parse invalid relation_expr");
 }
 
-double tess::relation_expr::eval(const eval_ctxt& ctx) const
+tess::expr_value tess::relation_expr::eval(const tess::execution_ctxt& ctx) const
 {
-	return 0.0;
+    return nil_val();
 }
 
 tess::nil_expr::nil_expr()
 {
 }
 
-double tess::nil_expr::eval(const eval_ctxt& ctx) const
+tess::expr_value tess::nil_expr::eval(const tess::execution_ctxt& ctx) const
 {
-	return 0.0;
+    return nil_val();
 }

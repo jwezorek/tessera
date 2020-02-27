@@ -28,7 +28,7 @@ namespace tess {
         auto const object_ref_expr = object_ref_expr_();
         auto const special_num_aux_def = kw_<kw::pi>() | kw_<kw::phi>() | kw_<kw::root_2>();
         auto const special_num_def = special_num_aux [make_<special_number_expr>];
-        auto const number_def = x3::double_[make_<number_expr>];
+        auto const number_def = x3::int32[make_<number_expr>];
         auto const special_func_def = kw_<kw::sqrt>() | kw_<kw::sin>() | kw_<kw::cos>() | kw_<kw::tan>() |
                                       kw_<kw::arcsin>() | kw_<kw::arccos>() | kw_<kw::arctan>(); 
         auto const special_func_expr_aux_def = special_func > '(' > expr > ')';
