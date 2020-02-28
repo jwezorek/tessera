@@ -153,13 +153,18 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(BOOST_DIR);./include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./third-party/include;$(SYMENGINE_DIR);$(SYMENGINE_DIR)/out/build/x64-Debug;$(BOOST_DIR);./include</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SYMENGINE_DIR)/out/build/x64-Debug/symengine;./third-party/lib;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mpir.lib;symengine.lib;teuchos.lib</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -193,8 +198,9 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(BOOST_DIR);./include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./third-party/include;$(SYMENGINE_DIR);$(SYMENGINE_DIR)/out/build/x64-Release;$(BOOST_DIR);./include</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -202,6 +208,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SYMENGINE_DIR)/out/build/x64-Release/symengine;./third-party/lib;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mpir.lib;symengine.lib</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
