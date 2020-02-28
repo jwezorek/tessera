@@ -5,6 +5,10 @@ tess::error::error(const std::string& msg, int line) :
 {
 }
 
+tess::error::error(const std::string& msg)
+{
+}
+
 const std::string& tess::error::msg() const
 {
 	return msg_;

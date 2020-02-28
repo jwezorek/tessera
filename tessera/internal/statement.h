@@ -1,6 +1,8 @@
 #pragma once
 
 #include "expression.h"
+#include "execution_ctxt.h"
+#include "expr_value.h"
 #include <memory>
 #include <vector>
 #include <tuple>
@@ -9,8 +11,6 @@
 #include <variant>
 
 namespace tess {
-    struct exec_ctxt {
-    };
 
     class statement;
     using stmt_ptr = std::shared_ptr<statement>;
@@ -19,7 +19,7 @@ namespace tess {
     class statement
     {
     public:
-        virtual void execute(exec_ctxt&) const = 0;
+        virtual expr_value execute(execution_ctxt&) const = 0;
     };
 
     struct lay_params {
@@ -35,7 +35,7 @@ namespace tess {
     public:
         lay_statement(const lay_params& params);
         lay_statement(const std::vector<obj_ref_ptr>& tiles);
-        void execute(exec_ctxt&) const;
+        expr_value execute(execution_ctxt&) const override;
     };
 
     struct if_params {
@@ -52,7 +52,7 @@ namespace tess {
         stmt_ptr else_clause_;
     public:
         if_statement(const if_params& params);
-        void execute(exec_ctxt&) const;
+        expr_value execute(execution_ctxt&) const override;
     };
 
 }

@@ -11,8 +11,9 @@ tess::lay_statement::lay_statement(const std::vector<obj_ref_ptr>& tiles) :
 {
 }
 
-void tess::lay_statement::execute(exec_ctxt&) const
+tess::expr_value tess::lay_statement::execute(tess::execution_ctxt&) const
 {
+    return nil_val();
 }
 
 tess::if_statement::if_statement(const if_params& params) :
@@ -22,6 +23,17 @@ tess::if_statement::if_statement(const if_params& params) :
 {
 }
 
-void tess::if_statement::execute(exec_ctxt&) const
+tess::expr_value tess::if_statement::execute(tess::execution_ctxt& ctxt) const
 {
+    auto condition_val = condition_->eval(ctxt);
+    if (std::holds_alternative<error>(condition_val))
+        return condition_val;
+
+    if (!std::holds_alternative<bool_val>(condition_val))
+        return error("if condition must evaluate to a boolean");
+
+    if (std::get<bool_val>(condition_val).value())
+        return then_clause_->execute(ctxt);
+    else
+        return else_clause_->execute(ctxt);
 }

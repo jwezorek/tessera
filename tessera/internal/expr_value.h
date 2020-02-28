@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../include/tessera/error.h"
 #include <variant>
 
 namespace tess {
@@ -17,7 +18,10 @@ namespace tess {
     };
 
     class bool_val {
-
+        bool val_;
+    public:
+        bool_val(bool v);
+        bool value() const;
     };
 
     class edge_val {
@@ -33,5 +37,5 @@ namespace tess {
         nil_val();
     };
 
-    using expr_value = std::variant< tile_val, patch_val, number_val, bool_val, edge_val, vertex_val, nil_val >;
+    using expr_value = std::variant< tile_val, patch_val, number_val, bool_val, edge_val, vertex_val, nil_val, error>;
 }
