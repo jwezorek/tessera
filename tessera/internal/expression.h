@@ -81,10 +81,10 @@ namespace tess {
         expr_ptr index;
     };
 
+	using object_ref_item = std::variant<func_call_item, ary_item, place_holder_ary_item, std::string, int>;
+
     class object_ref_expr;
     using obj_ref_ptr = std::shared_ptr<object_ref_expr>;
-
-    using object_ref_item = std::variant<func_call_item, ary_item, place_holder_ary_item, std::string, int>;
 
     class object_ref_expr : public expression
     {

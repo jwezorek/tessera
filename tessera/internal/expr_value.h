@@ -2,6 +2,7 @@
 
 #include "../include/tessera/error.h"
 #include <variant>
+#include <symengine/expression.h>
 
 namespace tess {
 
@@ -14,7 +15,10 @@ namespace tess {
     };
 
     class number_val {
-
+		SymEngine::Expression val_;
+	public:
+		number_val(int num);
+		SymEngine::Expression value() const;
     };
 
     class bool_val {
@@ -38,4 +42,6 @@ namespace tess {
     };
 
     using expr_value = std::variant< tile_val, patch_val, number_val, bool_val, edge_val, vertex_val, nil_val, error>;
+
+	bool is_object(const expr_value& val);
 }

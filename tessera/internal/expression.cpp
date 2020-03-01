@@ -1,7 +1,11 @@
 #include "expression.h"
+#include "expr_value.h"
 #include "parser/keywords.h"
 #include "parser/exception.h"
+#include <symengine/expression.h>
 #include <cmath>
+
+namespace se = SymEngine;
 
 /*----------------------------------------------------------------------*/
 
@@ -15,7 +19,7 @@ tess::number_expr::number_expr(int v) : val_(v)
 }
 
 tess::expr_value tess::number_expr::eval(const tess::execution_ctxt&) const {
-    return {};
+	return number_val(val_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -25,10 +29,48 @@ tess::object_ref_expr::object_ref_expr(const std::vector<object_ref_item>& parts
 
 }
 
-tess::expr_value tess::object_ref_expr::eval(const tess::execution_ctxt& ctxt) const {
-    return nil_val();
-}
+struct object_ref_item_visitor {
+private:
+	const tess::execution_ctxt& ctxt_;
+public:
+	object_ref_item_visitor(const tess::execution_ctxt& ctxt) : ctxt_(ctxt)
+	{}
 
+	tess::expr_value operator()(const tess::func_call_item& fi)
+	{
+		auto [func, arg_exprs] = fi;
+		std::vector<tess::expr_value> args(arg_exprs.size() );
+		std::transform(arg_exprs.begin(), arg_exprs.end(), args.begin(),
+			[&](const tess::expr_ptr& expr) {
+				return expr->eval(ctxt_);
+			}
+		);
+		return ctxt_.call(func, args);
+	}
+
+	tess::expr_value operator()(const tess::ary_item&  ai)
+	{
+		auto obj = ctxt_.eval(ai.name);
+		if (!tess::is_object(obj))
+			return tess::error(ai.name + " is not array-like.");
+		return {};
+	}
+
+	tess::expr_value operator()(const tess::place_holder_ary_item& phai)
+	{}
+
+	tess::expr_value operator()(const std::string& var)
+	{}
+
+	tess::expr_value operator()(int placeholder)
+	{}
+};
+
+tess::expr_value tess::object_ref_expr::eval(const tess::execution_ctxt& ctxt) const 
+{
+	auto main_obj_ref = parts_[0];
+	return {};
+}
 /*----------------------------------------------------------------------*/
 
 tess::addition_expr::addition_expr(const expression_params& terms) {
