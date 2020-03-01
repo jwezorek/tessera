@@ -9,3 +9,8 @@ tess::expr_value tess::execution_ctxt::eval(const std::string& var) const
 {
 	return expr_value();
 }
+
+tess::expr_value tess::execution_ctxt::get_placeholder(int i) const
+{
+	return expr_value();
+}

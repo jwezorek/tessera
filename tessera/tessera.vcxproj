@@ -156,6 +156,7 @@
       <AdditionalIncludeDirectories>./third-party/include;$(SYMENGINE_DIR);$(SYMENGINE_DIR)/out/build/x64-Debug;$(BOOST_DIR);./include</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DisableSpecificWarnings>4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -201,6 +202,7 @@
       <AdditionalIncludeDirectories>./third-party/include;$(SYMENGINE_DIR);$(SYMENGINE_DIR)/out/build/x64-Release;$(BOOST_DIR);./include</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

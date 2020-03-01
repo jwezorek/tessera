@@ -11,6 +11,7 @@ namespace tess {
 
 		expr_value call(const std::string& func, const std::vector<expr_value>& args) const;
 		expr_value eval(const std::string& var) const;
+		expr_value get_placeholder(int i) const;
     };
 
 }

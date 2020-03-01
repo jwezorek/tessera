@@ -19,15 +19,35 @@ tess::number_val::number_val(int num) :
 {
 }
 
+tess::number_val::number_val(const SymEngine::Expression& expr)
+{
+	val_ = expr;
+}
+
 SymEngine::Expression tess::number_val::value() const
 {
 	return val_;
 }
 
-bool tess::is_object(const expr_value& val)
+bool tess::expr_value::is_object() const
 {
-	return std::holds_alternative<tile_val>(val) ||
-		std::holds_alternative<patch_val>(val) ||
-		std::holds_alternative<vertex_val>(val) ||
-		std::holds_alternative<edge_val>(val);
+	return std::holds_alternative<tile_val>(*this) ||
+		std::holds_alternative<patch_val>(*this) ||
+		std::holds_alternative<vertex_val>(*this) ||
+		std::holds_alternative<edge_val>(*this);
+}
+
+tess::expr_value tess::expr_value::get_ary_item(int index) const
+{
+	return expr_value();
+}
+
+tess::expr_value tess::expr_value::get_field(const std::string& field) const
+{
+	return expr_value();
+}
+
+tess::expr_value tess::expr_value::get_field(const std::string& field, int ary_item_index) const
+{
+	return expr_value();
 }

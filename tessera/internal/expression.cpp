@@ -19,7 +19,7 @@ tess::number_expr::number_expr(int v) : val_(v)
 }
 
 tess::expr_value tess::number_expr::eval(const tess::execution_ctxt&) const {
-	return number_val(val_);
+	return tess::expr_value{ number_val(val_) };
 }
 
 /*----------------------------------------------------------------------*/
@@ -27,6 +27,26 @@ tess::expr_value tess::number_expr::eval(const tess::execution_ctxt&) const {
 tess::object_ref_expr::object_ref_expr(const std::vector<object_ref_item>& parts) : parts_(parts)
 {
 
+}
+
+std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
+{
+	auto index_val = expr->eval(ctxt);
+	if (!std::holds_alternative<tess::number_val>(index_val))
+		return std::nullopt;
+	return static_cast<int>(
+		se::eval_double(
+			std::get<tess::number_val>(index_val).value()
+		)
+	);
+}
+
+std::optional<se::Expression> eval_number_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
+{
+	auto val = expr->eval(ctxt);
+	if (!std::holds_alternative<tess::number_val>(val))
+		return std::nullopt;
+	return std::get<tess::number_val>(val).value();
 }
 
 struct object_ref_item_visitor {
@@ -50,26 +70,68 @@ public:
 
 	tess::expr_value operator()(const tess::ary_item&  ai)
 	{
+		auto index = eval_integer_expr(ai.index, ctxt_);
+		if (!index.has_value())
+			return tess::expr_value{ tess::error("array index must be a number") };
 		auto obj = ctxt_.eval(ai.name);
-		if (!tess::is_object(obj))
-			return tess::error(ai.name + " is not array-like.");
-		return {};
+		if (!obj.is_object()) 
+			return tess::expr_value{ tess::error(ai.name + " is not array-like.") };
+		
+		return obj.get_ary_item(index.value());
 	}
 
 	tess::expr_value operator()(const tess::place_holder_ary_item& phai)
-	{}
+	{
+		auto [place_holder, ary_index_expr] = phai;
+		auto index = eval_integer_expr(phai.index, ctxt_);
+		if (!index.has_value())
+			return tess::expr_value{ tess::error("array index must be a number") };
+		auto obj = ctxt_.get_placeholder(phai.place_holder);
+		if (!obj.is_object())
+			return tess::expr_value{ tess::error("$" + std::to_string(phai.place_holder) + " is not array-like.") };
+
+		return obj.get_ary_item(index.value());
+	}
 
 	tess::expr_value operator()(const std::string& var)
-	{}
+	{
+		return ctxt_.eval(var);
+	}
 
 	tess::expr_value operator()(int placeholder)
-	{}
+	{
+		return ctxt_.get_placeholder(placeholder);
+	}
 };
 
 tess::expr_value tess::object_ref_expr::eval(const tess::execution_ctxt& ctxt) const 
 {
 	auto main_obj_ref = parts_[0];
-	return {};
+	auto visitor = object_ref_item_visitor(ctxt);
+	auto main_obj = std::visit(visitor, main_obj_ref);
+	if (!main_obj.is_object())
+		return tess::expr_value{ tess::error( "not an object.") };
+
+	if (parts_.size() == 1)
+		return main_obj;
+
+	auto current_obj = main_obj;
+	for (auto i = 1; i < parts_.size(); ++i) {
+		const auto& part = parts_[i];
+		if (std::holds_alternative<std::string>(part)) {
+			current_obj = current_obj.get_field(std::get<std::string>(part));
+		} else if (std::holds_alternative<tess::ary_item>(part)) {
+			auto [field_name, index_expr] = std::get<tess::ary_item>(part);
+			auto index = eval_integer_expr(index_expr, ctxt);
+			if (!index.has_value())
+				return tess::expr_value{ tess::error("array index must be a number") };
+			current_obj = current_obj.get_field(field_name, index.value());
+		} else {
+			return tess::expr_value{ tess::error("invalid object reference expression") };
+		}
+	}
+
+	return current_obj;
 }
 /*----------------------------------------------------------------------*/
 
@@ -79,14 +141,17 @@ tess::addition_expr::addition_expr(const expression_params& terms) {
         terms_.emplace_back(std::make_tuple(op == '+', expr));
 }
 
-tess::expr_value tess::addition_expr::eval(const tess::execution_ctxt& ctx) const {
-    /*
-    double sum = 0;
-    for (auto [sign, term] : terms_)
-        sum += (sign) ? term->eval(ctx) : -term->eval(ctx);
-    return sum;
-    */
-    return nil_val();
+tess::expr_value tess::addition_expr::eval(const tess::execution_ctxt& ctxt) const {
+
+	se::Expression sum(0);
+
+	for (auto [sign, term_expr] : terms_) {
+		auto term = eval_number_expr(term_expr, ctxt);
+		if (!term.has_value())
+			return tess::expr_value{ tess::error("non-number in numeric expression (+)") };
+		sum += (sign) ? term.value() : -term.value();
+	}
+	return tess::expr_value{ tess::number_val(sum) };
 }
 
 /*----------------------------------------------------------------------*/
@@ -97,14 +162,17 @@ tess::multiplication_expr::multiplication_expr(const expression_params& terms) {
         factors_.emplace_back(std::make_tuple(op == '*', expr));
 }
 
-tess::expr_value tess::multiplication_expr::eval(const tess::execution_ctxt& ctx) const {
-    /*
-    double prod = 1.0;
-    for (auto [op, term] : factors_)
-        prod *= (op) ? term->eval(ctx) : 1.0 / term->eval(ctx);
-    return prod;
-    */
-    return nil_val();
+tess::expr_value tess::multiplication_expr::eval(const tess::execution_ctxt& ctxt) const {
+
+	se::Expression product(1);
+
+	for (auto [op, factor_expr] : factors_) {
+		auto factor = eval_number_expr(factor_expr, ctxt);
+		if (!factor.has_value())
+			return tess::expr_value{ tess::error("non-number in numeric expression (*)") };
+		product *= (op) ? factor.value() : se::Expression(1) / factor.value();
+	}
+	return tess::expr_value{ tess::number_val(product) };
 }
 
 /*----------------------------------------------------------------------*/
@@ -118,15 +186,22 @@ tess::exponent_expr::exponent_expr(const expression_params& params)
 
 tess::expr_value tess::exponent_expr::eval(const tess::execution_ctxt& ctxt) const
 {
-    /*
-    auto base_val = base_->eval(ctxt);
-    if (exponents_.empty())
-        return base_val;
-    for (const auto& e : exponents_)
-        base_val = std::pow(base_val, e->eval(ctxt));
-    return base_val;
-    */
-    return nil_val();
+    
+    auto base_val = eval_number_expr(base_, ctxt);
+	if (!base_val.has_value())
+		return tess::expr_value{ tess::error("non-number in numeric expression (^)") };
+	if (exponents_.empty())
+		return tess::expr_value{ tess::number_val( base_val.value() ) };
+
+	auto power = base_val.value();
+	for (const auto& exponent_expr : exponents_) {
+		auto exp = eval_number_expr(exponent_expr, ctxt);
+		if ( exp.has_value() )
+			return tess::expr_value{ tess::error("non-number in numeric expression (^)") };
+		power = se::pow(power, exp.value() );
+	}
+    return tess::expr_value{ tess::number_val(power) };
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -145,7 +220,15 @@ tess::special_number_expr::special_number_expr(const std::string& v)
 
 tess::expr_value tess::special_number_expr::eval(const tess::execution_ctxt& ctxt) const
 {
-    return nil_val();
+	switch (num_) {
+		case special_num::pi:
+			return tess::expr_value{ tess::number_val(se::Expression(se::pi)) };
+		case special_num::phi:
+			return tess::expr_value{ tess::number_val(se::Expression("(1 + sqrt(5)) / 2")) };
+		case special_num::root_2:
+			return tess::expr_value{ tess::number_val(se::Expression("sqrt(2)")) };
+	}
+	return tess::expr_value{ tess::error("Unknown special number.") };
 }
 
 tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_ptr> param)
@@ -173,7 +256,7 @@ tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_
 
 tess::expr_value tess::special_function_expr::eval(const tess::execution_ctxt& ctxt) const
 {
-    return nil_val();
+    return tess::expr_value{ nil_val() };
 }
 
 /*----------------------------------------------------------------------*/
@@ -185,7 +268,7 @@ tess::and_expr::and_expr(const std::vector<expr_ptr> conjuncts) :
 
 tess::expr_value tess::and_expr::eval(const tess::execution_ctxt& ctx) const
 {
-    return nil_val();
+    return tess::expr_value{ nil_val() };
 }
 
 /*----------------------------------------------------------------------*/
@@ -197,7 +280,7 @@ tess::equality_expr::equality_expr(const std::vector<expr_ptr> operands) :
 
 tess::expr_value tess::equality_expr::eval(const tess::execution_ctxt& ctx) const
 {
-    return nil_val();
+    return tess::expr_value{ nil_val() };
 }
 
 /*----------------------------------------------------------------------*/
@@ -209,7 +292,7 @@ tess::or_expr::or_expr(const std::vector<expr_ptr> disjuncts) :
 
 tess::expr_value tess::or_expr::eval(const tess::execution_ctxt& ctx) const
 {
-    return nil_val();
+    return tess::expr_value{ nil_val() };
 }
 
 /*----------------------------------------------------------------------*/
@@ -236,7 +319,7 @@ tess::relation_expr::relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> p
 
 tess::expr_value tess::relation_expr::eval(const tess::execution_ctxt& ctx) const
 {
-    return nil_val();
+    return tess::expr_value{ nil_val() };
 }
 
 tess::nil_expr::nil_expr()
@@ -245,5 +328,5 @@ tess::nil_expr::nil_expr()
 
 tess::expr_value tess::nil_expr::eval(const tess::execution_ctxt& ctx) const
 {
-    return nil_val();
+    return tess::expr_value{ nil_val() };
 }
