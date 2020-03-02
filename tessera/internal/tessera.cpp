@@ -151,8 +151,15 @@ namespace {
 	}
 }
 
+template<typename T>
+bool eval_bool_expr(T expr) {
+    const auto& bool_exp = *expr;
+    return se::eval_double(bool_exp) == 1.0;
+}
+
 void test_sym_engine()
 {
+
     auto to_line_seg_matrix = to_line_seg({ {2, 2},{4,4} });
 
     auto p1 = apply_matrix(to_line_seg_matrix, { Expr(0), Expr(0) });
@@ -199,6 +206,23 @@ void test_sym_engine()
 
 
     std::cout << output << " == " << se::eval_double(output) << "\n";
+
+    /*
+    se::Expression three("1+1+1");
+    se::Expression eight("2 ** 3");
+    se::Expression one_hundred("50+50");
+    se::Expression phi("(1 + sqrt(5)) / 2");
+
+    std::cout << eight << " > " << three << " => " << 
+        ((se::Gt(eight, three) == se::boolTrue) ? "true" : "false") << "\n";
+
+    auto foo = se::Gt(phi, one_hundred);
+    const auto& foo2 = *foo;
+    auto test = eval_bool_expr(se::Gt( one_hundred, phi ));
+    std::cout << test << "\n";
+    int aaa;
+    aaa=4;
+    */
 }
 
 std::variant<tess::tessera_script, tess::error> tess::parse(const std::string& script)

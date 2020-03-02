@@ -3,9 +3,32 @@
 #include "parser/keywords.h"
 #include "parser/exception.h"
 #include <symengine/expression.h>
+#include <symengine/logic.h>
 #include <cmath>
 
 namespace se = SymEngine;
+
+template<typename T>
+bool eval_bool(T a) {
+	const auto& bool_exp = *a;
+	return se::eval_double(bool_exp) == 1.0;
+}
+
+std::optional<se::Expression> eval_number_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
+{
+	auto val = expr->eval(ctxt);
+	if (!std::holds_alternative<tess::number_val>(val))
+		return std::nullopt;
+	return std::get<tess::number_val>(val).value();
+}
+
+std::optional<bool> eval_bool(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
+{
+	auto val = expr->eval(ctxt);
+	if (!std::holds_alternative<tess::bool_val>(val))
+		return std::nullopt;
+	return std::get<tess::bool_val>(val).value();
+}
 
 /*----------------------------------------------------------------------*/
 
@@ -39,14 +62,6 @@ std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, const tess::exe
 			std::get<tess::number_val>(index_val).value()
 		)
 	);
-}
-
-std::optional<se::Expression> eval_number_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
-{
-	auto val = expr->eval(ctxt);
-	if (!std::holds_alternative<tess::number_val>(val))
-		return std::nullopt;
-	return std::get<tess::number_val>(val).value();
 }
 
 struct object_ref_item_visitor {
@@ -109,11 +124,11 @@ tess::expr_value tess::object_ref_expr::eval(const tess::execution_ctxt& ctxt) c
 	auto main_obj_ref = parts_[0];
 	auto visitor = object_ref_item_visitor(ctxt);
 	auto main_obj = std::visit(visitor, main_obj_ref);
-	if (!main_obj.is_object())
-		return tess::expr_value{ tess::error( "not an object.") };
-
 	if (parts_.size() == 1)
 		return main_obj;
+
+	if (!main_obj.is_object())
+		return tess::expr_value{ tess::error( "not an object.") };
 
 	auto current_obj = main_obj;
 	for (auto i = 1; i < parts_.size(); ++i) {
@@ -256,7 +271,39 @@ tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_
 
 tess::expr_value tess::special_function_expr::eval(const tess::execution_ctxt& ctxt) const
 {
-    return tess::expr_value{ nil_val() };
+	auto possible_arg = eval_number_expr(arg_, ctxt);
+	if (possible_arg.has_value())
+		return tess::expr_value{ tess::error("non-number in special function") };
+
+	auto arg = possible_arg.value();
+	se::Expression e;
+	switch (func_)
+	{
+		case special_func::arccos:
+			e = se::acos(arg);
+			break;
+		case special_func::arcsin:
+			e = se::asin(arg);
+			break;
+		case special_func::arctan:
+			e = se::atan(arg);
+			break;
+		case special_func::cos:
+			e = se::cos(arg);
+			break;
+		case special_func::sin:
+			e = se::sin(arg);
+			break;
+		case special_func::sqrt:
+			e = se::sqrt(arg);
+			break;
+		case special_func::tan:
+			e = se::tan(arg);
+			break;
+		default:
+			return tess::expr_value{ tess::error("Unknown special function") };
+	}
+	return tess::expr_value{ tess::number_val(e) };
 }
 
 /*----------------------------------------------------------------------*/
@@ -268,7 +315,14 @@ tess::and_expr::and_expr(const std::vector<expr_ptr> conjuncts) :
 
 tess::expr_value tess::and_expr::eval(const tess::execution_ctxt& ctx) const
 {
-    return tess::expr_value{ nil_val() };
+	for (const auto& conjunct : conjuncts_) {
+		auto val = eval_bool(conjunct, ctx);
+		if (! val.has_value())
+			return tess::expr_value{ tess::error("non-boolean typed expression in logical-and expression") };
+		if (!val.value())
+			return tess::expr_value{ tess::bool_val(false) };
+	}
+	return tess::expr_value{ tess::bool_val(true) };
 }
 
 /*----------------------------------------------------------------------*/
@@ -280,7 +334,20 @@ tess::equality_expr::equality_expr(const std::vector<expr_ptr> operands) :
 
 tess::expr_value tess::equality_expr::eval(const tess::execution_ctxt& ctx) const
 {
-    return tess::expr_value{ nil_val() };
+	std::vector<se::Expression> expressions;
+	expressions.reserve(operands_.size());
+	for (const auto& op : operands_) {
+		auto val = eval_number_expr(op, ctx);
+		if (!val.has_value())
+			return tess::expr_value{ tess::error("non-number typed expression in an equality expr") };
+		expressions.push_back(val.value());
+	}
+	auto first = expressions.front();
+	for (int i = 1; i < expressions.size(); ++i)
+		if (! eval_bool( se::Eq(first, expressions[i])) )
+			return tess::expr_value{ tess::bool_val(false) };
+
+	return tess::expr_value{ tess::bool_val(true) };
 }
 
 /*----------------------------------------------------------------------*/
@@ -292,7 +359,14 @@ tess::or_expr::or_expr(const std::vector<expr_ptr> disjuncts) :
 
 tess::expr_value tess::or_expr::eval(const tess::execution_ctxt& ctx) const
 {
-    return tess::expr_value{ nil_val() };
+	for (const auto& disjunct : disjuncts_) {
+		auto val = eval_bool(disjunct, ctx);
+		if (!val.has_value())
+			return tess::expr_value{ tess::error("non-boolean typed expression in logical-or expression") };
+		if (val.value())
+			return tess::expr_value{ tess::bool_val(true) };
+	}
+	return tess::expr_value{ tess::bool_val(false) };
 }
 
 /*----------------------------------------------------------------------*/
@@ -319,7 +393,34 @@ tess::relation_expr::relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> p
 
 tess::expr_value tess::relation_expr::eval(const tess::execution_ctxt& ctx) const
 {
-    return tess::expr_value{ nil_val() };
+	auto maybe_lhs = eval_number_expr(lhs_, ctx);
+	if (! maybe_lhs.has_value())
+		return tess::expr_value{ tess::error("non-number typed expression in relational expression") };
+	auto maybe_rhs = eval_number_expr(rhs_, ctx);
+	if (!maybe_rhs.has_value())
+		return tess::expr_value{ tess::error("non-number typed expression in relational expression") };
+	auto lhs = maybe_lhs.value();
+	auto rhs = maybe_rhs.value();
+
+	bool result;
+	switch (op_) {
+		case relation_op::ge:
+			result = eval_bool(se::Ge(lhs, rhs));
+			break;
+		case relation_op::gt:
+			result = eval_bool(se::Gt(lhs, rhs));
+			break;
+		case relation_op::le:
+			result = eval_bool(se::Le(lhs, rhs));
+			break;
+		case relation_op::lt:
+			result = eval_bool(se::Lt(lhs, rhs));
+			break;
+		case relation_op::ne:
+			result = eval_bool(se::Ne(lhs, rhs));
+			break;
+	}
+	return tess::expr_value{ tess::bool_val(result) };
 }
 
 tess::nil_expr::nil_expr()
