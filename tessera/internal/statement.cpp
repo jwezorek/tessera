@@ -29,10 +29,10 @@ tess::expr_value tess::if_statement::execute(tess::execution_ctxt& ctxt) const
     if (std::holds_alternative<error>(condition_val))
         return condition_val;
 
-    if (!std::holds_alternative<bool_val>(condition_val))
+    if (!std::holds_alternative<bool>(condition_val))
 		return tess::expr_value{ error("if condition must evaluate to a boolean") };
 
-    if (std::get<bool_val>(condition_val).value())
+    if (std::get<bool>(condition_val))
         return then_clause_->execute(ctxt);
     else
         return else_clause_->execute(ctxt);

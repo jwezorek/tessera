@@ -6,27 +6,14 @@
 
 namespace tess {
 
+    using number = SymEngine::Expression;
+
     class tile_val {
 
     };
 
     class patch_val {
 
-    };
-
-    class number_val {
-		SymEngine::Expression val_;
-	public:
-		number_val(int num);
-		number_val(const SymEngine::Expression& expr);
-		SymEngine::Expression value() const;
-    };
-
-    class bool_val {
-        bool val_;
-    public:
-        bool_val(bool v);
-        bool value() const;
     };
 
     class edge_val {
@@ -42,7 +29,7 @@ namespace tess {
         nil_val();
     };
 
-	using expr_val_var = std::variant< tile_val, patch_val, number_val, bool_val, edge_val, vertex_val, nil_val, error>;
+	using expr_val_var = std::variant< tile_val, patch_val, number, bool, edge_val, vertex_val, nil_val, error>;
 	class expr_value : public expr_val_var
 	{
 	public:

@@ -17,17 +17,29 @@ bool eval_bool(T a) {
 std::optional<se::Expression> eval_number_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
 {
 	auto val = expr->eval(ctxt);
-	if (!std::holds_alternative<tess::number_val>(val))
+	if (!std::holds_alternative<tess::number>(val))
 		return std::nullopt;
-	return std::get<tess::number_val>(val).value();
+	return std::get<tess::number>(val);
+}
+
+std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
+{
+	auto index_val = expr->eval(ctxt);
+	if (!std::holds_alternative<tess::number>(index_val))
+		return std::nullopt;
+	return static_cast<int>(
+		se::eval_double(
+			std::get<tess::number>(index_val)
+		)
+	);
 }
 
 std::optional<bool> eval_bool(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
 {
 	auto val = expr->eval(ctxt);
-	if (!std::holds_alternative<tess::bool_val>(val))
+	if (!std::holds_alternative<bool>(val))
 		return std::nullopt;
-	return std::get<tess::bool_val>(val).value();
+	return std::get<bool>(val);
 }
 
 /*----------------------------------------------------------------------*/
@@ -42,7 +54,7 @@ tess::number_expr::number_expr(int v) : val_(v)
 }
 
 tess::expr_value tess::number_expr::eval(const tess::execution_ctxt&) const {
-	return tess::expr_value{ number_val(val_) };
+	return tess::expr_value{ tess::number(val_) };
 }
 
 /*----------------------------------------------------------------------*/
@@ -50,18 +62,6 @@ tess::expr_value tess::number_expr::eval(const tess::execution_ctxt&) const {
 tess::object_ref_expr::object_ref_expr(const std::vector<object_ref_item>& parts) : parts_(parts)
 {
 
-}
-
-std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
-{
-	auto index_val = expr->eval(ctxt);
-	if (!std::holds_alternative<tess::number_val>(index_val))
-		return std::nullopt;
-	return static_cast<int>(
-		se::eval_double(
-			std::get<tess::number_val>(index_val).value()
-		)
-	);
 }
 
 struct object_ref_item_visitor {
@@ -158,7 +158,7 @@ tess::addition_expr::addition_expr(const expression_params& terms) {
 
 tess::expr_value tess::addition_expr::eval(const tess::execution_ctxt& ctxt) const {
 
-	se::Expression sum(0);
+	tess::number sum(0);
 
 	for (auto [sign, term_expr] : terms_) {
 		auto term = eval_number_expr(term_expr, ctxt);
@@ -166,7 +166,7 @@ tess::expr_value tess::addition_expr::eval(const tess::execution_ctxt& ctxt) con
 			return tess::expr_value{ tess::error("non-number in numeric expression (+)") };
 		sum += (sign) ? term.value() : -term.value();
 	}
-	return tess::expr_value{ tess::number_val(sum) };
+	return tess::expr_value{ sum };
 }
 
 /*----------------------------------------------------------------------*/
@@ -179,7 +179,7 @@ tess::multiplication_expr::multiplication_expr(const expression_params& terms) {
 
 tess::expr_value tess::multiplication_expr::eval(const tess::execution_ctxt& ctxt) const {
 
-	se::Expression product(1);
+	tess::number product(1);
 
 	for (auto [op, factor_expr] : factors_) {
 		auto factor = eval_number_expr(factor_expr, ctxt);
@@ -187,7 +187,7 @@ tess::expr_value tess::multiplication_expr::eval(const tess::execution_ctxt& ctx
 			return tess::expr_value{ tess::error("non-number in numeric expression (*)") };
 		product *= (op) ? factor.value() : se::Expression(1) / factor.value();
 	}
-	return tess::expr_value{ tess::number_val(product) };
+	return tess::expr_value{ product };
 }
 
 /*----------------------------------------------------------------------*/
@@ -201,12 +201,11 @@ tess::exponent_expr::exponent_expr(const expression_params& params)
 
 tess::expr_value tess::exponent_expr::eval(const tess::execution_ctxt& ctxt) const
 {
-    
     auto base_val = eval_number_expr(base_, ctxt);
 	if (!base_val.has_value())
 		return tess::expr_value{ tess::error("non-number in numeric expression (^)") };
 	if (exponents_.empty())
-		return tess::expr_value{ tess::number_val( base_val.value() ) };
+		return tess::expr_value{ base_val.value() };
 
 	auto power = base_val.value();
 	for (const auto& exponent_expr : exponents_) {
@@ -215,7 +214,7 @@ tess::expr_value tess::exponent_expr::eval(const tess::execution_ctxt& ctxt) con
 			return tess::expr_value{ tess::error("non-number in numeric expression (^)") };
 		power = se::pow(power, exp.value() );
 	}
-    return tess::expr_value{ tess::number_val(power) };
+    return tess::expr_value{ power };
 
 }
 
@@ -237,11 +236,11 @@ tess::expr_value tess::special_number_expr::eval(const tess::execution_ctxt& ctx
 {
 	switch (num_) {
 		case special_num::pi:
-			return tess::expr_value{ tess::number_val(se::Expression(se::pi)) };
+			return tess::expr_value{ tess::number(se::pi) };
 		case special_num::phi:
-			return tess::expr_value{ tess::number_val(se::Expression("(1 + sqrt(5)) / 2")) };
+			return tess::expr_value{ tess::number("(1 + sqrt(5)) / 2") };
 		case special_num::root_2:
-			return tess::expr_value{ tess::number_val(se::Expression("sqrt(2)")) };
+			return tess::expr_value{ tess::number("sqrt(2)") };
 	}
 	return tess::expr_value{ tess::error("Unknown special number.") };
 }
@@ -276,7 +275,7 @@ tess::expr_value tess::special_function_expr::eval(const tess::execution_ctxt& c
 		return tess::expr_value{ tess::error("non-number in special function") };
 
 	auto arg = possible_arg.value();
-	se::Expression e;
+	tess::number e;
 	switch (func_)
 	{
 		case special_func::arccos:
@@ -303,7 +302,7 @@ tess::expr_value tess::special_function_expr::eval(const tess::execution_ctxt& c
 		default:
 			return tess::expr_value{ tess::error("Unknown special function") };
 	}
-	return tess::expr_value{ tess::number_val(e) };
+	return tess::expr_value{ e };
 }
 
 /*----------------------------------------------------------------------*/
@@ -320,9 +319,9 @@ tess::expr_value tess::and_expr::eval(const tess::execution_ctxt& ctx) const
 		if (! val.has_value())
 			return tess::expr_value{ tess::error("non-boolean typed expression in logical-and expression") };
 		if (!val.value())
-			return tess::expr_value{ tess::bool_val(false) };
+			return tess::expr_value{ false };
 	}
-	return tess::expr_value{ tess::bool_val(true) };
+	return tess::expr_value{ true };
 }
 
 /*----------------------------------------------------------------------*/
@@ -345,9 +344,9 @@ tess::expr_value tess::equality_expr::eval(const tess::execution_ctxt& ctx) cons
 	auto first = expressions.front();
 	for (int i = 1; i < expressions.size(); ++i)
 		if (! eval_bool( se::Eq(first, expressions[i])) )
-			return tess::expr_value{ tess::bool_val(false) };
+			return tess::expr_value{ false };
 
-	return tess::expr_value{ tess::bool_val(true) };
+	return tess::expr_value{ true };
 }
 
 /*----------------------------------------------------------------------*/
@@ -364,9 +363,9 @@ tess::expr_value tess::or_expr::eval(const tess::execution_ctxt& ctx) const
 		if (!val.has_value())
 			return tess::expr_value{ tess::error("non-boolean typed expression in logical-or expression") };
 		if (val.value())
-			return tess::expr_value{ tess::bool_val(true) };
+			return tess::expr_value{ true };
 	}
-	return tess::expr_value{ tess::bool_val(false) };
+	return tess::expr_value{ false };
 }
 
 /*----------------------------------------------------------------------*/
@@ -420,7 +419,7 @@ tess::expr_value tess::relation_expr::eval(const tess::execution_ctxt& ctx) cons
 			result = eval_bool(se::Ne(lhs, rhs));
 			break;
 	}
-	return tess::expr_value{ tess::bool_val(result) };
+	return tess::expr_value{ result };
 }
 
 tess::nil_expr::nil_expr()

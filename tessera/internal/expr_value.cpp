@@ -4,31 +4,6 @@ tess::nil_val::nil_val()
 {
 }
 
-tess::bool_val::bool_val(bool v) :
-    val_(v)
-{
-}
-
-bool tess::bool_val::value() const
-{
-    return val_;
-}
-
-tess::number_val::number_val(int num) :
-	val_(num)
-{
-}
-
-tess::number_val::number_val(const SymEngine::Expression& expr)
-{
-	val_ = expr;
-}
-
-SymEngine::Expression tess::number_val::value() const
-{
-	return val_;
-}
-
 bool tess::expr_value::is_object() const
 {
 	return std::holds_alternative<tile_val>(*this) ||
