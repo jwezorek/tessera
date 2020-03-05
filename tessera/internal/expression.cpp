@@ -1,3 +1,4 @@
+#include "math_util.h"
 #include "expression.h"
 #include "expr_value.h"
 #include "parser/keywords.h"
@@ -7,12 +8,6 @@
 #include <cmath>
 
 namespace se = SymEngine;
-
-template<typename T>
-bool eval_bool(T a) {
-	const auto& bool_exp = *a;
-	return se::eval_double(bool_exp) == 1.0;
-}
 
 std::optional<se::Expression> eval_number_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
 {
@@ -34,7 +29,7 @@ std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, const tess::exe
 	);
 }
 
-std::optional<bool> eval_bool(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
+std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
 {
 	auto val = expr->eval(ctxt);
 	if (!std::holds_alternative<bool>(val))
@@ -315,7 +310,7 @@ tess::and_expr::and_expr(const std::vector<expr_ptr> conjuncts) :
 tess::expr_value tess::and_expr::eval(const tess::execution_ctxt& ctx) const
 {
 	for (const auto& conjunct : conjuncts_) {
-		auto val = eval_bool(conjunct, ctx);
+		auto val = eval_bool_expr(conjunct, ctx);
 		if (! val.has_value())
 			return tess::expr_value{ tess::error("non-boolean typed expression in logical-and expression") };
 		if (!val.value())
@@ -359,7 +354,7 @@ tess::or_expr::or_expr(const std::vector<expr_ptr> disjuncts) :
 tess::expr_value tess::or_expr::eval(const tess::execution_ctxt& ctx) const
 {
 	for (const auto& disjunct : disjuncts_) {
-		auto val = eval_bool(disjunct, ctx);
+		auto val = eval_bool_expr(disjunct, ctx);
 		if (!val.has_value())
 			return tess::expr_value{ tess::error("non-boolean typed expression in logical-or expression") };
 		if (val.value())
@@ -419,7 +414,7 @@ tess::expr_value tess::relation_expr::eval(const tess::execution_ctxt& ctx) cons
 			result = eval_bool(se::Ne(lhs, rhs));
 			break;
 	}
-	return tess::expr_value{ result };
+	return tess::expr_value{result };
 }
 
 tess::nil_expr::nil_expr()

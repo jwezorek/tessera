@@ -156,8 +156,8 @@ namespace tess {
         );
 
         std::variant<tile_verts_and_edges, exception> unpack(const ve_definitions& defs) {
-            using v_map = std::unordered_map<std::string, vertex_fields>;
-            using e_map = std::unordered_map<std::string, tess::edge_fields>;
+            using v_map = std::unordered_map<std::string, vertex>;
+            using e_map = std::unordered_map<std::string, tess::edge>;
             v_map v;
             e_map e;
 

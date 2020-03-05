@@ -7,6 +7,8 @@ tess::error::error(const std::string& msg, int line) :
 
 tess::error::error(const std::string& msg)
 {
+	line_ = 0;
+	msg_ = msg;
 }
 
 const std::string& tess::error::msg() const
