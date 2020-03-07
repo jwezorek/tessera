@@ -1,3 +1,5 @@
+#pragma once
+
 #include "tessera/tesserascript.h"
 #include "tessera/error.h"
 #include "../text_range.h"
