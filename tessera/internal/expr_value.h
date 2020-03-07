@@ -1,5 +1,6 @@
 #pragma once
-
+#include "../include/tessera/tile.h"
+#include "../include/tessera/tile_patch.h"
 #include "../include/tessera/error.h"
 #include <variant>
 #include <symengine/expression.h>
@@ -8,28 +9,12 @@ namespace tess {
 
     using number = SymEngine::Expression;
 
-    class tile_val {
-
-    };
-
-    class patch_val {
-
-    };
-
-    class edge_val {
-
-    };
-
-    class vertex_val {
-
-    };
-
     class nil_val {
     public:
         nil_val();
     };
 
-	using expr_val_var = std::variant< tile_val, patch_val, number, bool, edge_val, vertex_val, nil_val, error>;
+	using expr_val_var = std::variant< tile, tile_patch, number, bool, edge, vertex, nil_val, error>;
 	class expr_value : public expr_val_var
 	{
 	public:
