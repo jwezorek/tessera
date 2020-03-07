@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../expression.h"
+#include "../statement.h"
 #include "../text_range.h"
 #include <boost/spirit/home/x3.hpp>
 #include <tuple>
@@ -9,25 +9,24 @@
 namespace x3 = boost::spirit::x3;
 
 namespace tess {
-    namespace parser {
+	namespace parser {
+		
 
-        struct basic_expr_ : x3::parser<basic_expr_> {
+		struct lay_stmt_ : x3::parser<lay_stmt_> {
 			private:
-				static std::tuple<tess::expr_ptr, std::string::const_iterator> parse_basic_expr(const text_range& input);
+				static std::tuple<tess::stmt_ptr, std::string::const_iterator> parse_lay_stmt(const text_range& input);
 			public:
-				using attribute_type = tess::expr_ptr;
+				using attribute_type = tess::stmt_ptr;
 
 				template<typename Iterator, typename Context, typename RContext, typename Attribute>
 				bool parse(Iterator& first, Iterator const& last, Context const& context,
 					RContext const& rcontext, Attribute& attr) const
 				{
-					auto [output, iter] = parse_basic_expr(text_range(first, last));
+					auto [output, iter] = parse_lay_stmt(text_range(first, last));
 					first = iter;
 					attr = output;
-
 					return (output != nullptr);
 				};
 		};
-
-    }
+	}
 }

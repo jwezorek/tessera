@@ -23,7 +23,7 @@ namespace tess {
 			[&](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
 
 		x3::rule<class if_stmt_aux_, if_params> const if_stmt_aux = "if_stmt_aux";
-		x3::rule<class if_stmt_, stmt_ptr> const if_stmt = "if_stmt";
+		x3::rule<class if_statement_, stmt_ptr> const if_stmt = "if_stmt";
 
 		auto const stmt = statement_();
 		auto const cond_expr = cond_expr_();

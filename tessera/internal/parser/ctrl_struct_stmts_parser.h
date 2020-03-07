@@ -14,7 +14,7 @@ namespace tess {
 
 		struct if_stmt_ : x3::parser<if_stmt_> {
 
-			using attribute_type = tess::expr_ptr;
+			using attribute_type = tess::stmt_ptr;
 
 			template<typename Iterator, typename Context, typename RContext, typename Attribute>
 			bool parse(Iterator& first, Iterator const& last, Context const& context,

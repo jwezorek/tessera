@@ -24,6 +24,7 @@
     <ClCompile Include="internal\expr_value.cpp" />
     <ClCompile Include="internal\math_util.cpp" />
     <ClCompile Include="internal\parser\basic_expr_parser.cpp" />
+    <ClCompile Include="internal\parser\basic_stmt_parser.cpp" />
     <ClCompile Include="internal\parser\cond_expr_parser.cpp" />
     <ClCompile Include="internal\parser\ctrl_struct_stmts_parser.cpp" />
     <ClCompile Include="internal\parser\exception.cpp" />
@@ -57,6 +58,7 @@
     <ClInclude Include="internal\expr_value.h" />
     <ClInclude Include="internal\math_util.h" />
     <ClInclude Include="internal\parser\basic_expr_parser.h" />
+    <ClInclude Include="internal\parser\basic_stmt_parser.h" />
     <ClInclude Include="internal\parser\cond_expr_parser.h" />
     <ClInclude Include="internal\parser\ctrl_struct_stmts_parser.h" />
     <ClInclude Include="internal\parser\exception.h" />
