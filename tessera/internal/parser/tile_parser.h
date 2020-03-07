@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../tile.h"
+#include "../tile_def.h"
 #include "../text_range.h"
 #include "exception.h"
 #include <unordered_map>
@@ -10,7 +10,7 @@
 namespace tess {
     namespace parser {
 
-        using tile_verts_and_edges = std::tuple< std::unordered_map<std::string, vertex>, std::unordered_map<std::string, edge> >;
+        using tile_verts_and_edges = std::tuple< std::unordered_map<std::string, vertex_def>, std::unordered_map<std::string, edge_def> >;
         std::variant<tile_verts_and_edges, exception> parse_tile(const text_range& input);
 
     }

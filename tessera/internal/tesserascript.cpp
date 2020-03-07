@@ -1,9 +1,9 @@
 #include "tessera/tesserascript.h"
 #include "./parser/util.h"
 #include "./parser/keywords.h"
-#include "tile.h"
-#include "patch.h"
-#include "tableau.h"
+#include "tile_def.h"
+#include "tile_patch_def.h"
+#include "tableau_def.h"
 #include <iostream>
 #include <unordered_map>
 
@@ -11,9 +11,9 @@ namespace tess {
 
     class tessera_script::script_impl_ {
         public:
-            std::vector<tile> tiles_;
-            std::vector<tile_patch> tile_patches_;
-            tableau tableau_;
+            std::vector<tile_def> tiles_;
+            std::vector<tile_patch_def> tile_patches_;
+            tableau_def tableau_;
     };
 
 }
@@ -37,6 +37,6 @@ tess::tessera_script::tessera_script(std::vector<script_component_specifier> sec
             
     }
     auto [begin, end] = std::get<1>(ts);
-    impl_->tableau_ = tableau(text_range( begin, end));
+    impl_->tableau_ = tableau_def(text_range( begin, end));
 }
 

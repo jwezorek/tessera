@@ -5,11 +5,11 @@
 
 namespace tess {
 
-    class tableau
+    class tableau_def
     {
     private:
         text_range code_;
     public:
-        tableau( const text_range& code = {} );
+        tableau_def( const text_range& code = {} );
     };
 }

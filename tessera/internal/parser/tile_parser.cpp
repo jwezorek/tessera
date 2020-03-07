@@ -2,7 +2,7 @@
 #include "expr_parser.h"
 #include "keywords.h"
 #include "util.h"
-#include "../tile.h"
+#include "../tile_def.h"
 #include <tuple>
 #include <unordered_map>
 #include <boost/config/warning_disable.hpp>
@@ -156,8 +156,8 @@ namespace tess {
         );
 
         std::variant<tile_verts_and_edges, exception> unpack(const ve_definitions& defs) {
-            using v_map = std::unordered_map<std::string, vertex>;
-            using e_map = std::unordered_map<std::string, tess::edge>;
+            using v_map = std::unordered_map<std::string, vertex_def>;
+            using e_map = std::unordered_map<std::string, tess::edge_def>;
             v_map v;
             e_map e;
 

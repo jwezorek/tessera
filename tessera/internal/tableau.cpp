@@ -1,8 +1,6 @@
-#include "tableau.h"
+#include "..\include\tessera\tableau.h"
 
-tess::tableau::tableau(const text_range& code) :
-    code_(code)
+std::string tess::tableau::name() const
 {
+	return std::string();
 }
-
-
