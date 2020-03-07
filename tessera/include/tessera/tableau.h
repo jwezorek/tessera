@@ -1,6 +1,8 @@
 #pragma once
 
+#include "tile_patch.h"
 #include <string>
+#include <vector>
 #include <memory>
 
 namespace tess {
@@ -12,6 +14,7 @@ namespace tess {
 		std::shared_ptr<tableau_impl> impl_;
 	public:
 		std::string name() const;
+		const std::vector<tile_patch>& patches() const;
 	};
 
 }

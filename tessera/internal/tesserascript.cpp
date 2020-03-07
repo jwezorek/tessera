@@ -40,3 +40,13 @@ tess::tessera_script::tessera_script(std::vector<script_component_specifier> sec
     impl_->tableau_ = tableau_def(text_range( begin, end));
 }
 
+std::vector<std::string> tess::tessera_script::parameters() const
+{
+	return std::vector<std::string>();
+}
+
+tess::tableau tess::tessera_script::execute(const arguments& args) const
+{
+	return tableau();
+}
+
