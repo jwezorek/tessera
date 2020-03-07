@@ -2,6 +2,8 @@
 #include "../tile_def.h"
 #include "../tableau_def.h"
 #include "../tile_patch_def.h"
+#include "../statement.h"
+#include "basic_stmt_parser.h"
 #include "parser.h"
 #include "exception.h"
 #include "util.h"
@@ -10,6 +12,7 @@
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <optional>
 #include <variant>
+
 namespace x3 = boost::spirit::x3;
 
 namespace tess {
@@ -24,30 +27,38 @@ namespace tess {
         auto const code_block_def = x3::raw[x3::lexeme[basic_code_block | x3::char_('{') >> *(*non_brace >> code_block) >> *non_brace >> x3::char_('}')]][make_text_range];
 
         auto make_script = [](auto& ctx) {
-            std::vector<std::variant<script_component_specifier, tab_spec>> sections = x3::_attr(ctx);
+            std::vector<std::variant<script_component_specifier, tab_spec, stmt_ptr>> sections = x3::_attr(ctx);
             std::optional<tab_spec> tab;
             std::vector<script_component_specifier> tiles_and_patches;
-            for (const auto& section : sections) {
-                if (std::holds_alternative<tab_spec>(section)) {
+			std::vector<std::tuple<std::string, expr_ptr>> globals_;
+
+            for (const auto& section_or_assignment : sections) {
+                if (std::holds_alternative<tab_spec>(section_or_assignment)) {
                     if (tab.has_value())
                         throw parser::exception("script", "multiple tableau sections");
-                    tab = std::get<tab_spec>(section);
-                } else {
-                    tiles_and_patches.emplace_back(std::get<script_component_specifier>(section));
-                }
+                    tab = std::get<tab_spec>(section_or_assignment);
+                } else if (std::holds_alternative< script_component_specifier>(section_or_assignment)){
+                    tiles_and_patches.emplace_back(std::get<script_component_specifier>(section_or_assignment));
+				} else if (std::holds_alternative<stmt_ptr>(section_or_assignment)) {
+					auto asgn = std::static_pointer_cast<let_statement> (
+						std::get<stmt_ptr>(section_or_assignment)
+					);
+					globals_.push_back({ asgn->lhs(), asgn->rhs() });
+				}
             }
 
             if (! tab.has_value())
                 throw parser::exception("script", "no tableau section");
 
-            x3::_val(ctx) = tessera_script( tiles_and_patches, tab.value());
+            x3::_val(ctx) = tessera_script( tiles_and_patches, tab.value(), globals_);
         };
 
         auto const indentifier_str = indentifier_str_();
+		auto const global_var = let_stmt_();
         auto const parameters = as<std::vector<std::string>>[-(x3::lit('(') >> (indentifier_str % x3::lit(',')) >> x3::lit(')'))];
         auto const toplevel_script_entity = as<tess::script_component_specifier>[(kw_<kw::tile>() | kw_<kw::patch>()) > indentifier_str >> parameters > code_block];
         auto const tableau_entity = as<tab_spec>[kw_<kw::tableau>() >> code_block];
-        auto const script_sections = as<std::vector<std::variant<script_component_specifier, tab_spec>>>[*(toplevel_script_entity | tableau_entity)];
+        auto const script_sections = as<std::vector<std::variant<script_component_specifier, tab_spec, stmt_ptr>>>[*(toplevel_script_entity | tableau_entity | global_var)];
 
         x3::rule<class tessera_script_parser_, tessera_script> const tessera_script_parser = "tessera_script_parser";
         auto const tessera_script_parser_def = script_sections[make_script];

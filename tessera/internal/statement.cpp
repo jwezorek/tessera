@@ -37,3 +37,24 @@ tess::expr_value tess::if_statement::execute(tess::execution_ctxt& ctxt) const
     else
         return else_clause_->execute(ctxt);
 }
+
+tess::let_statement::let_statement(const std::tuple<std::string, expr_ptr> params) :
+	lhs_( std::get<0>(params) ),
+	rhs_( std::get<1>(params) )
+{
+}
+
+tess::expr_value tess::let_statement::execute(execution_ctxt&) const
+{
+	return tess::expr_value{ nil_val() };
+}
+
+std::string tess::let_statement::lhs() const
+{
+	return lhs_;
+}
+
+tess::expr_ptr tess::let_statement::rhs() const
+{
+	return rhs_;
+}

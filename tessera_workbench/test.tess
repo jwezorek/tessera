@@ -1,3 +1,5 @@
+let foo = 5;
+
 tile triangle {
 	vertex a{angle : pi/3}, b{angle : pi/3}, c{angle : pi/3};
 	edge left{ c -> a }, right{ b -> c }, bottom{ a -> b };

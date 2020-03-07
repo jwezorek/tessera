@@ -19,6 +19,7 @@ namespace tess {
             if_,
             else_,
             lay,
+			let,
             tile,
             vertex,
             edge,

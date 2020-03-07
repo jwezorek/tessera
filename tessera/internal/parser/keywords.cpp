@@ -40,7 +40,8 @@ const std::string& tess::parser::keyword(tess::parser::kw tok)
 			{kw::and_,		"and"},
 			{kw::or_,		"or"},
 			{kw::not_,		"not"},
-            {kw::nil,       "nil"}
+            {kw::nil,       "nil"},
+			{kw::let,       "let"}
     };
 
     assertm( (keyword_tbl.size() == static_cast<int>(kw::none) - static_cast<int>(kw::if_)), "keyword table is messed up!");

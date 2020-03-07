@@ -14,6 +14,7 @@ namespace tess {
             std::vector<tile_def> tiles_;
             std::vector<tile_patch_def> tile_patches_;
             tableau_def tableau_;
+			global_vars globals_;
     };
 
 }
@@ -22,7 +23,7 @@ tess::tessera_script::tessera_script()
 {
 }
 
-tess::tessera_script::tessera_script(std::vector<script_component_specifier> sections, tab_spec ts)
+tess::tessera_script::tessera_script(std::vector<script_component_specifier> sections, tab_spec ts, global_vars globals)
 {
     impl_ = std::make_shared<script_impl_>();
     for (const auto& section : sections) {
@@ -38,6 +39,7 @@ tess::tessera_script::tessera_script(std::vector<script_component_specifier> sec
     }
     auto [begin, end] = std::get<1>(ts);
     impl_->tableau_ = tableau_def(text_range( begin, end));
+	impl_->globals_ = std::move(globals);
 }
 
 std::vector<std::string> tess::tessera_script::parameters() const
