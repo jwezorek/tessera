@@ -1,4 +1,4 @@
-#include "tessera/tesserascript.h"
+#include "tessera/tessera_script.h"
 #include "../tile_def.h"
 #include "../tableau_def.h"
 #include "../tile_patch_def.h"

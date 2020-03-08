@@ -17,9 +17,12 @@ namespace tess
 
     class tessera_script
     {
+		friend class execution_ctxt;
+
     private:
-        class script_impl_;
-        std::shared_ptr<script_impl_> impl_;
+        class script_impl;
+        std::shared_ptr<script_impl> impl_;
+
     public:
         tessera_script();
         tessera_script(std::vector<script_component_specifier> sections, tab_spec tab, global_vars globals);

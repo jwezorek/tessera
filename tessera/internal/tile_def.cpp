@@ -8,9 +8,9 @@ namespace se = SymEngine;
 
 namespace {
 
-    tess::SymPoint walk_edge(const tess::edge_def* e, const se::Expression& theta) {
+    tess::SymPoint walk_edge(const tess::execution_ctxt& ctxt, const tess::edge_def* e, const se::Expression& theta) {
         auto pt = e->prev->pos.value();
-        auto len = std::get<tess::number>(e->length->eval({}));
+        auto len = std::get<tess::number>(e->length->eval(ctxt));
         return  tess::SymPoint{ pt.x + len * se::cos(theta), pt.y + len * se::sin(theta) };
     }
 
@@ -57,7 +57,7 @@ std::optional<tess::parser::exception> tess::tile_def::link_vertices()
     return std::nullopt;
 }
 
-std::optional<tess::parser::exception> tess::tile_def::build()
+std::optional<tess::parser::exception> tess::tile_def::build(const execution_ctxt& ctxt)
 {
     if (auto error_during_linking = link_vertices(); error_during_linking.has_value())
         return error_during_linking;
@@ -68,14 +68,14 @@ std::optional<tess::parser::exception> tess::tile_def::build()
     auto theta = se::Expression(0);
     while (!e->next->pos.has_value()) {
 
-        auto maybe_length = e->length->eval({});
+        auto maybe_length = e->length->eval(ctxt);
         if (!std::holds_alternative<tess::number>(maybe_length))
             return std::nullopt;
 
-        e->next->pos = walk_edge(e, theta);
+        e->next->pos = walk_edge(ctxt, e, theta);
         e = e->next->next;
 
-        auto maybe_angle_at_v = e->next->angle->eval({});
+        auto maybe_angle_at_v = e->next->angle->eval(ctxt);
         if (!std::holds_alternative<tess::number>(maybe_angle_at_v))
             return std::nullopt;
 
@@ -84,7 +84,7 @@ std::optional<tess::parser::exception> tess::tile_def::build()
     } 
 
     // check that the point after walking the edges is the start point;
-    if (!equals(walk_edge(e, theta), first_vertex().pos.value()))
+    if (!equals(walk_edge(ctxt, e, theta), first_vertex().pos.value()))
         return get_exception("inconsistent tile geometry ");
 
     return std::nullopt;
@@ -117,10 +117,6 @@ tess::tile_def::tile_def(const std::string& name, std::vector<std::string> param
         throw get_exception("too few edges");
     if (edges_.size() > vertices_.size())
         throw get_exception("too many edges");
-
-    auto result = build();
-    if (result.has_value())
-        throw result.value();
 }
 
 tess::vertex_def& tess::tile_def::first_vertex()
@@ -133,3 +129,17 @@ tess::edge_def& tess::tile_def::first_edge()
     return *first_vertex().next;
 }
 
+std::string tess::tile_def::name() const
+{
+	return name_;
+}
+
+std::vector<std::string> tess::tile_def::params() const
+{
+	return params_;
+}
+
+tess::expr_value tess::tile_def::eval(const execution_ctxt&) const
+{
+	return expr_value();
+}

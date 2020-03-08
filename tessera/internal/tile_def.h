@@ -44,12 +44,15 @@ namespace tess {
         std::string first_vert_label;
 
         std::optional<tess::parser::exception> link_vertices();
-        std::optional<tess::parser::exception> build();
         tess::parser::exception get_exception(const std::string& msg);
 
     public:
         tile_def(const std::string& name , std::vector<std::string> params, const text_range& source_code);
+		std::optional<tess::parser::exception> build(const execution_ctxt& ctxt);
         vertex_def& first_vertex();
         edge_def& first_edge();
+		std::string name() const;
+		std::vector<std::string> params() const;
+		expr_value eval(const execution_ctxt&) const;
     };
 }

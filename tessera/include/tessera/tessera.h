@@ -2,7 +2,7 @@
 
 #include <variant>
 #include <string>
-#include "tesserascript.h"
+#include "tessera_script.h"
 #include "error.h"
 
 namespace tess {

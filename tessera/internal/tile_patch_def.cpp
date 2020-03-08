@@ -15,6 +15,19 @@ tess::tile_patch_def::tile_patch_def(const std::string& name, std::vector<std::s
             e.set_where(source_code.end());
         throw e;
     }
+}
 
+std::string tess::tile_patch_def::name() const
+{
+	return name_;
+}
 
+std::vector<std::string> tess::tile_patch_def::params() const
+{
+	return params_;
+}
+
+tess::expr_value tess::tile_patch_def::eval(const execution_ctxt&) const
+{
+	return expr_value();
 }

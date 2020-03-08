@@ -15,6 +15,9 @@ namespace tess {
         stmts statements_;
     public:
         tile_patch_def(const std::string& name, std::vector<std::string> params, const text_range& source_code);
+		std::string name() const;
+		std::vector<std::string> params() const;
+		expr_value eval(const execution_ctxt&) const;
     };
 
 }

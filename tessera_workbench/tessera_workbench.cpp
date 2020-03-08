@@ -1,5 +1,5 @@
 #include "tessera/tessera.h"
-#include "tessera/tesserascript.h"
+#include "tessera/tessera_script.h"
 #include "tessera/error.h"
 #include <iostream>
 #include <string>
