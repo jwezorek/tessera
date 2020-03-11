@@ -14,7 +14,7 @@ namespace tess {
         nil_val();
     };
 
-	using expr_val_var = std::variant< tile, tile_patch, number, bool, edge, vertex, nil_val, error>;
+	using expr_val_var = std::variant< nil_val, tile, tile_patch, number, bool, edge, vertex, error>;
 	class expr_value : public expr_val_var
 	{
 	public:

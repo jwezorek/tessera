@@ -29,5 +29,5 @@ std::vector<std::string> tess::tile_patch_def::params() const
 
 tess::expr_value tess::tile_patch_def::eval(const execution_ctxt&) const
 {
-	return expr_value();
+    return expr_value{ nil_val() };
 }
