@@ -15,6 +15,9 @@ int main()
     auto results = tess::parse(script);
 
 	if (std::holds_alternative<tess::tessera_script>(results)) {
+		const auto& tessera = std::get<tess::tessera_script>(results);
+
+		auto output = tessera.execute();
 		std::cout << "success" << "\n";
 	} else {
 		auto err = std::get<tess::error>(results);

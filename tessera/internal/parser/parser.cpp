@@ -57,7 +57,7 @@ namespace tess {
 		auto const global_var = let_stmt_();
         auto const parameters = as<std::vector<std::string>>[-(x3::lit('(') >> (indentifier_str % x3::lit(',')) >> x3::lit(')'))];
         auto const toplevel_script_entity = as<tess::script_component_specifier>[(kw_<kw::tile>() | kw_<kw::patch>()) > indentifier_str >> parameters > code_block];
-        auto const tableau_entity = as<tab_spec>[kw_<kw::tableau>() >> code_block];
+        auto const tableau_entity = as<tab_spec>[kw_<kw::tableau>() >> parameters >> code_block];
         auto const script_sections = as<std::vector<std::variant<script_component_specifier, tab_spec, stmt_ptr>>>[*(toplevel_script_entity | tableau_entity | global_var)];
 
         x3::rule<class tessera_script_parser_, tessera_script> const tessera_script_parser = "tessera_script_parser";

@@ -26,8 +26,9 @@ tess::tessera_script::tessera_script(std::vector<script_component_specifier> sec
             impl_->insert_patch_def( name, params, implementation );
     }
 
-    auto [begin, end] = std::get<1>(ts);
-    impl_->insert_tableau_def( text_range( begin, end) );
+    auto tableau_params = std::get<1>(ts);
+    auto [begin, end] = std::get<2>(ts);
+    impl_->insert_tableau_def(tableau_params, text_range( begin, end) );
 
 	auto ctxt = execution_ctxt(*this);
 	impl_->insert_globals(ctxt, globals);
@@ -40,8 +41,15 @@ std::vector<std::string> tess::tessera_script::parameters() const
 	return std::vector<std::string>();
 }
 
-tess::tableau tess::tessera_script::execute(const arguments& args) const
+std::vector<tess::tile> tess::tessera_script::execute(const arguments& args) const
 {
-	return tableau();
+    execution_ctxt ctxt(*this);
+    return {};
+}
+
+std::vector<tess::tile> tess::tessera_script::execute() const
+{
+    arguments no_args;
+    return execute(no_args);
 }
 

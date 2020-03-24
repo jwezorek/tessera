@@ -19,7 +19,7 @@ namespace tess {
 	public:
 		void insert_tile_def(const std::string& name, std::vector<std::string> params, const text_range& source_code);
 		void insert_patch_def(const std::string& name, std::vector<std::string> params, const text_range& source_code);
-		void insert_tableau_def(const text_range& source_code);
+		void insert_tableau_def(std::vector<std::string> params, const text_range& source_code);
 		void insert_globals(execution_ctxt& ctxt, global_vars global_defs);
 		void build_tiles(execution_ctxt& ctxt);
 		std::optional<expr_value> get_global(const std::string& var) const;

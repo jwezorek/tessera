@@ -18,9 +18,9 @@ void tess::tessera_script::script_impl::insert_patch_def(const std::string& name
 	);
 }
 
-void tess::tessera_script::script_impl::insert_tableau_def(const text_range& source_code)
+void tess::tessera_script::script_impl::insert_tableau_def(std::vector<std::string> params, const text_range& source_code)
 {
-	tableau_ = tableau_def(source_code);
+	tableau_ = tableau_def(params, source_code);
 }
 
 void tess::tessera_script::script_impl::insert_globals(execution_ctxt& ctxt, global_vars global_defs)
