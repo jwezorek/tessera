@@ -38,9 +38,9 @@ void tess::tessera_script::script_impl::insert_globals(execution_ctxt& ctxt, glo
 void tess::tessera_script::script_impl::build_tiles(execution_ctxt& ctxt)
 {
 	for (auto& [dummy, tile] : tiles_) {
-		auto err_result = tile.build(ctxt);
-		if (err_result.has_value())
-			throw err_result.value();
+		auto maybe_tile = tile.eval(ctxt);
+		if (std::holds_alternative<tess::tile>(maybe_tile))
+			tile.setValue(std::get<tess::tile>(maybe_tile));
 	}
 }
 

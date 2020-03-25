@@ -5,7 +5,7 @@
 #include <symengine/logic.h>
 
 namespace se = SymEngine;
-
+/*
 namespace {
 
     tess::SymPoint walk_edge(const tess::execution_ctxt& ctxt, const tess::edge_def* e, const se::Expression& theta) {
@@ -89,10 +89,16 @@ std::optional<tess::parser::exception> tess::tile_def::build(const execution_ctx
 
     return std::nullopt;
 }
+*/
 
 tess::parser::exception tess::tile_def::get_exception(const std::string& msg)
 {
     return tess::parser::exception("tile " + name_, msg);
+}
+
+void tess::tile_def::setValue(const tess::tile& prototype)
+{
+    prototype_ = prototype;
 }
 
 tess::tile_def::tile_def(const std::string& name, std::vector<std::string> params, const text_range& source_code) :
@@ -118,7 +124,7 @@ tess::tile_def::tile_def(const std::string& name, std::vector<std::string> param
     if (edges_.size() > vertices_.size())
         throw get_exception("too many edges");
 }
-
+/*
 tess::vertex_def& tess::tile_def::first_vertex()
 {
     return vertices_.begin()->second;
@@ -128,7 +134,7 @@ tess::edge_def& tess::tile_def::first_edge()
 {
     return *first_vertex().next;
 }
-
+*/
 std::string tess::tile_def::name() const
 {
 	return name_;
@@ -139,7 +145,11 @@ std::vector<std::string> tess::tile_def::params() const
 	return params_;
 }
 
-tess::expr_value tess::tile_def::eval(const execution_ctxt&) const
+tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 {
-    return expr_value{ nil_val() };
+    if (prototype_.has_value())
+        return { prototype_.value() };
+
+    // TODO
+    return { nil_val() };
 }
