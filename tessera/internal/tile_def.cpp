@@ -101,38 +101,53 @@ void tess::tile_def::set_value(const tess::tile& prototype)
     prototype_ = prototype;
 }
 
+void tess::tile_def::set_indices()
+{
+    std::unordered_map<std::string, std::string> edge_from_tbl;
+    std::transform(name_to_edge_.begin(), name_to_edge_.end(), std::inserter(edge_from_tbl, edge_from_tbl.end()),
+        [](const auto& pair) {
+            const auto& [name, val] = pair;
+            return std::pair<std::string, std::string>(val.u, name);
+        }
+    );
+    std::string edge_lbl = name_to_edge_.begin()->second.name;
+    auto start = name_to_edge_[edge_lbl].u;
+    int e_index = 0;
+    int v_index = 0;
+    do {
+        if (name_to_edge_.find(edge_lbl) == name_to_edge_.end())
+            throw tess::parser::exception("tile " + name_, "unknown edge: " + edge_lbl);
+
+        auto& edge = name_to_edge_[edge_lbl];
+        if (name_to_vertex_.find(edge.u) == name_to_vertex_.end())
+            throw tess::parser::exception("tile " + name_, "unknown vertex: " + edge.v);
+        if (name_to_vertex_.find(edge.v) == name_to_vertex_.end())
+            throw tess::parser::exception("tile " + name_, "unknown vertex: " + edge.v);
+
+        edge.index = e_index++;
+        auto& u = name_to_vertex_[edge.u];
+        auto& v = name_to_vertex_[edge.v];
+        if (u.index < 0)
+            u.index = v_index++;
+        if (v.index < 0)
+            v.index = v_index++;
+        edge_lbl = edge_from_tbl[edge.v];
+    } while (name_to_edge_[edge_lbl].u != start);
+}
+
 std::optional<tess::parser::exception> tess::tile_def::initialize()
 {
     try {
-        std::unordered_map<std::string, std::string> edge_from_tbl;
-        std::transform(edges_.begin(), edges_.end(), std::inserter(edge_from_tbl, edge_from_tbl.end()),
-            [](const auto& pair) {
-                const auto& [name, val] = pair;
-                return std::pair<std::string, std::string>(val.u, name);
-            }
-        );
-        std::string edge_lbl = edges_.begin()->second.name;
-        auto start = edges_[edge_lbl].u;
-        int e_index = 0;
-        int v_index = 0;
-        do {
-            if (edges_.find(edge_lbl) == edges_.end())
-                throw tess::parser::exception("tile "+name_, "unknown edge: " + edge_lbl);
+        set_indices();
 
-            auto& edge = edges_[edge_lbl];
-            if (vertices_.find(edge.u) == vertices_.end())
-                throw tess::parser::exception("tile " + name_, "unknown vertex: " + edge.v);
-            if (vertices_.find(edge.v) == vertices_.end())
-                throw tess::parser::exception("tile " + name_, "unknown vertex: " + edge.v);
+        vertices_.resize(name_to_vertex_.size());
+        for (auto& [dummy, vert] : name_to_vertex_) 
+            vertices_[vert.index] = &(vert);
 
-            edge.index = e_index++;
-            auto& u = vertices_[edge.u];
-            auto& v = vertices_[edge.v];
-            if (u.index < 0)
-                u.index = v_index++;
-            v.index = v_index++;
-            edge_lbl = edge_from_tbl[edge.v];
-        } while (edges_[edge_lbl].u != start);
+        edges_.resize(name_to_edge_.size());
+        for (auto& [dummy, edge] : name_to_edge_)
+            edges_[edge.index] = &(edge);
+
     } catch (tess::parser::exception e) {
         return e;
     }
@@ -148,8 +163,8 @@ tess::tile_def::tile_def(const std::string& name, std::vector<std::string> param
     auto results = tess::parser::parse_tile(source_code);
     if (std::holds_alternative<tess::parser::tile_verts_and_edges>(results)) {
         auto& verts_and_edges = std::get<tess::parser::tile_verts_and_edges>(results);
-        vertices_ = std::move(std::get<0>(verts_and_edges));
-        edges_ = std::move(std::get<1>(verts_and_edges));
+        name_to_vertex_ = std::move(std::get<0>(verts_and_edges));
+        name_to_edge_ = std::move(std::get<1>(verts_and_edges));
     } else {
         auto e = std::get<tess::parser::exception>(results);
         e.push_stack_item("tile " + name);
@@ -158,11 +173,11 @@ tess::tile_def::tile_def(const std::string& name, std::vector<std::string> param
         throw e;
     }
 
-    if (vertices_.size() < 3)
+    if (name_to_vertex_.size() < 3)
         throw get_exception("too few vertices");
-    if (edges_.size() < vertices_.size())
+    if (name_to_edge_.size() < name_to_vertex_.size())
         throw get_exception("too few edges");
-    if (edges_.size() > vertices_.size())
+    if (name_to_edge_.size() > name_to_vertex_.size())
         throw get_exception("too many edges");
 
     auto maybe_err = initialize();
@@ -201,10 +216,10 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 
 const tess::vertex_def& tess::tile_def::vertex(const std::string& v) const
 {
-    return vertices_.at(v);
+    return name_to_vertex_.at(v);
 }
 
 const tess::edge_def& tess::tile_def::edge(const std::string& e) const
 {
-    return edges_.at(e);
+    return name_to_edge_.at(e);
 }

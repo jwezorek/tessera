@@ -39,12 +39,15 @@ namespace tess {
     private: 
         std::string name_;
         std::vector<std::string> params_;
-        std::unordered_map<std::string, edge_def> edges_;
-        std::unordered_map<std::string, vertex_def> vertices_;
+        std::unordered_map<std::string, edge_def> name_to_edge_;
+        std::unordered_map<std::string, vertex_def> name_to_vertex_;
+        std::vector<edge_def*> edges_;
+        std::vector<vertex_def*> vertices_;
         std::optional<tile> prototype_;
         tess::parser::exception get_exception(const std::string& msg);
 
         void set_value(const tile& prototype);
+        void set_indices();
         std::optional<parser::exception> initialize();
 
     public:
