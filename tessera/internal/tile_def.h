@@ -3,6 +3,7 @@
 #include "math_util.h"
 #include "text_range.h"
 #include "expression.h"
+#include "tessera/error.h"
 #include "parser/exception.h"
 #include <symengine/expression.h>
 #include <string>
@@ -40,12 +41,11 @@ namespace tess {
         std::vector<std::string> params_;
         std::unordered_map<std::string, edge_def> edges_;
         std::unordered_map<std::string, vertex_def> vertices_;
-        std::string first_vert_label_;
         std::optional<tile> prototype_;
         tess::parser::exception get_exception(const std::string& msg);
 
         void set_value(const tile& prototype);
-        void initialize();
+        std::optional<parser::exception> initialize();
 
     public:
         tile_def(const std::string& name , std::vector<std::string> params, const text_range& source_code);

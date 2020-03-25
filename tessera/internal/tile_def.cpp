@@ -101,9 +101,45 @@ void tess::tile_def::set_value(const tess::tile& prototype)
     prototype_ = prototype;
 }
 
-void tess::tile_def::initialize()
+std::optional<tess::parser::exception> tess::tile_def::initialize()
 {
-    //TODO: set first vertex. set edge and vertex indices.
+    try {
+        std::unordered_map<std::string, std::string> edge_from_tbl;
+        std::transform(edges_.begin(), edges_.end(), std::inserter(edge_from_tbl, edge_from_tbl.end()),
+            [](const auto& pair) {
+                const auto& [name, val] = pair;
+                return std::pair<std::string, std::string>(val.u, name);
+            }
+        );
+        std::string edge_lbl = edges_.begin()->second.name;
+        auto start = edges_[edge_lbl].u;
+        int e_index = 0;
+        int v_index = 0;
+        do {
+            if (edges_.find(edge_lbl) == edges_.end())
+                throw tess::parser::exception("tile "+name_, "unknown edge: " + edge_lbl);
+
+            auto& edge = edges_[edge_lbl];
+            if (vertices_.find(edge.u) == vertices_.end())
+                throw tess::parser::exception("tile " + name_, "unknown vertex: " + edge.v);
+            if (vertices_.find(edge.v) == vertices_.end())
+                throw tess::parser::exception("tile " + name_, "unknown vertex: " + edge.v);
+
+            edge.index = e_index++;
+            auto& u = vertices_[edge.u];
+            auto& v = vertices_[edge.v];
+            if (u.index < 0)
+                u.index = v_index++;
+            v.index = v_index++;
+            edge_lbl = edge_from_tbl[edge.v];
+        } while (edges_[edge_lbl].u != start);
+    } catch (tess::parser::exception e) {
+        return e;
+    }
+    catch (...) {
+        return tess::parser::exception("tile " + name_, "error resolving edges and vertices");
+    }
+    return std::nullopt;
 }
 
 tess::tile_def::tile_def(const std::string& name, std::vector<std::string> params, const text_range& source_code) :
@@ -129,7 +165,9 @@ tess::tile_def::tile_def(const std::string& name, std::vector<std::string> param
     if (edges_.size() > vertices_.size())
         throw get_exception("too many edges");
 
-    initialize();
+    auto maybe_err = initialize();
+    if (maybe_err.has_value())
+        throw maybe_err.value();
 }
 /*
 tess::vertex_def& tess::tile_def::first_vertex()
