@@ -40,7 +40,7 @@ void tess::tessera_script::script_impl::build_tiles(execution_ctxt& ctxt)
 	for (auto& [dummy, tile] : tiles_) {
 		auto maybe_tile = tile.eval(ctxt);
 		if (std::holds_alternative<tess::tile>(maybe_tile))
-			tile.setValue(std::get<tess::tile>(maybe_tile));
+			tile.set_value(std::get<tess::tile>(maybe_tile));
 	}
 }
 

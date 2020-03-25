@@ -96,9 +96,14 @@ tess::parser::exception tess::tile_def::get_exception(const std::string& msg)
     return tess::parser::exception("tile " + name_, msg);
 }
 
-void tess::tile_def::setValue(const tess::tile& prototype)
+void tess::tile_def::set_value(const tess::tile& prototype)
 {
     prototype_ = prototype;
+}
+
+void tess::tile_def::initialize()
+{
+    //TODO: set first vertex. set edge and vertex indices.
 }
 
 tess::tile_def::tile_def(const std::string& name, std::vector<std::string> params, const text_range& source_code) :
@@ -123,6 +128,8 @@ tess::tile_def::tile_def(const std::string& name, std::vector<std::string> param
         throw get_exception("too few edges");
     if (edges_.size() > vertices_.size())
         throw get_exception("too many edges");
+
+    initialize();
 }
 /*
 tess::vertex_def& tess::tile_def::first_vertex()
@@ -152,4 +159,14 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 
     // TODO
     return { nil_val() };
+}
+
+const tess::vertex_def& tess::tile_def::vertex(const std::string& v) const
+{
+    return vertices_.at(v);
+}
+
+const tess::edge_def& tess::tile_def::edge(const std::string& e) const
+{
+    return edges_.at(e);
 }

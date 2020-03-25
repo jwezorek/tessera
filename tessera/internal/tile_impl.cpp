@@ -3,53 +3,58 @@
 
 namespace se = SymEngine;
 
-const std::vector<tess::vertex>& tess::tile::tile_impl::vertices()
+const tess::vertex& tess::tile::tile_impl::vertex(const std::string& v) const
+{
+    return vertices_[def_->vertex(v).index];
+}
+
+const std::vector<tess::vertex>& tess::tile::tile_impl::vertices() const
 {
     return vertices_;
 }
 
-const std::vector<tess::edge>& tess::tile::tile_impl::edges()
+const std::vector<tess::edge>& tess::tile::tile_impl::edges() const
 {
     return edges_;
 }
 
 std::string tess::tile::tile_impl::name() const
 {
-    return name_;
+    return def_->name();
 }
 
 /*--------------------------------------------------------------------------------*/
 
 std::string tess::edge::edge_impl::name() const
 {
-    return name_;
+    return def_->name;
 }
 
 std::string tess::edge::edge_impl::edge_class() const
 {
-    return edge_class_;
+    return def_->class_;
 }
 
 tess::vertex tess::edge::edge_impl::u() const
 {
-    return u_;
+    return parent_->vertex(def_->u);
 }
 
 tess::vertex tess::edge::edge_impl::v() const
 {
-    return v_;
+    return parent_->vertex(def_->v);
 }
 
 /*--------------------------------------------------------------------------------*/
 
 std::string tess::vertex::vertex_impl::name() const
 {
-    return name_;
+    return def_->name;
 }
 
 std::string tess::vertex::vertex_impl::vertex_class() const
 {
-    return vertex_class_;
+    return def_->class_;
 }
 
 std::tuple<double, double> tess::vertex::vertex_impl::to_floats() const

@@ -34,7 +34,8 @@ namespace tess {
 	class tile
 	{
 		friend class tile_def;
-
+		friend class edge;
+		friend class vertex;
 	private:
 		class tile_impl;
 		std::shared_ptr<tile_impl> impl_;
