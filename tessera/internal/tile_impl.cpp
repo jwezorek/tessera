@@ -3,6 +3,11 @@
 
 namespace se = SymEngine;
 
+tess::tile::tile_impl::tile_impl(const std::shared_ptr<tile_def>& def) : 
+    def_(def)
+{
+}
+
 const tess::vertex& tess::tile::tile_impl::vertex(const std::string& v) const
 {
     return vertices_[def_->vertex(v).index];

@@ -6,6 +6,7 @@
 #include "tableau_def.h"
 #include <optional>
 #include <unordered_map>
+#include <memory>
 
 
 namespace tess {
@@ -13,6 +14,7 @@ namespace tess {
 	class tessera_script::script_impl {
 	private:
 		std::unordered_map<std::string, tile_def> tiles_;
+		std::unordered_map<std::string, std::shared_ptr<tile_def>> tiles_prototypes_;
 		std::unordered_map<std::string, tile_patch_def> patches_;
 		std::unordered_map<std::string, expr_value> globals_;
 		tableau_def tableau_;

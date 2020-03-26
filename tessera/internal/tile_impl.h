@@ -40,9 +40,12 @@ namespace tess {
             std::vector<tess::vertex> vertices_;
             std::shared_ptr<tile_def> def_;
         public:
+            tile_impl(const std::shared_ptr<tile_def>& def);
+
             const tess::vertex& vertex(const std::string& v) const;
             const std::vector<tess::vertex>& vertices() const;
             const std::vector<tess::edge>& edges() const;
             std::string name() const;
+            void set(std::vector<tess::edge>&& edges, std::vector<tess::vertex>&& vertices);
     };
 }
