@@ -1,5 +1,8 @@
 #include "tile_def.h"
 #include "math_util.h"
+#include "tessera/tile.h"
+#include "tile_impl.h"
+#include "script_impl.h"
 #include "parser/tile_parser.h"
 #include <symengine/expression.h>
 #include <symengine/logic.h>
@@ -142,11 +145,11 @@ std::optional<tess::parser::exception> tess::tile_def::initialize()
 
         vertices_.resize(name_to_vertex_.size());
         for (auto& [dummy, vert] : name_to_vertex_) 
-            vertices_[vert.index] = &(vert);
+            vertices_[vert.index] = std::make_shared<const vertex_def>(vert);
 
         edges_.resize(name_to_edge_.size());
         for (auto& [dummy, edge] : name_to_edge_)
-            edges_[edge.index] = &(edge);
+            edges_[edge.index] = std::make_shared<const edge_def>(edge);
 
     } catch (tess::parser::exception e) {
         return e;
@@ -155,6 +158,13 @@ std::optional<tess::parser::exception> tess::tile_def::initialize()
         return tess::parser::exception("tile " + name_, "error resolving edges and vertices");
     }
     return std::nullopt;
+}
+
+std::vector<std::tuple<tess::number, tess::number>> tess::tile_def::evaluate_vertices(execution_ctxt& ctxt) const
+{
+    //TODO
+    std::vector<std::tuple<number, number>> locs(vertices_.size());
+    return locs;
 }
 
 tess::tile_def::tile_def(const std::string& name, std::vector<std::string> params, const text_range& source_code) :
@@ -210,7 +220,29 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
     if (prototype_.has_value())
         return { prototype_.value() };
 
-    // TODO
+    const auto& script = ctxt.script();
+    auto new_tile = tile( 
+        std::make_shared<tile::tile_impl>(
+            script.get_tile_prototype(name_)
+        ) 
+    );
+
+    auto vert_locations = evaluate_vertices(ctxt);
+    
+    std::vector<tess::vertex> verts(vertices_.size());
+    std::transform(vertices_.cbegin(), vertices_.cend(), verts.begin(),
+        [&](auto v) {
+
+            const tile::tile_impl* parent = &(*new_tile.impl_);
+            std::shared_ptr<const vertex_def> prototype = v;
+            std::tuple<number, number> loc = vert_locations[v->index];
+
+            return tess::vertex(
+                std::make_shared<vertex::vertex_impl>(parent, prototype, loc)
+            );
+        }
+    );
+    
     return { nil_val() };
 }
 

@@ -2,11 +2,14 @@
 
 void tess::tessera_script::script_impl::insert_tile_def(const std::string& name, std::vector<std::string> params, const text_range& source_code)
 {
+	/*
 	tiles_.emplace(
 		std::piecewise_construct,
 		std::make_tuple(name),
 		std::make_tuple(name, params, source_code)
 	);
+	*/
+	tiles_[name] = std::make_shared<tile_def>(name, params, source_code);
 }
 
 void tess::tessera_script::script_impl::insert_patch_def(const std::string& name, std::vector<std::string> params, const text_range& source_code)
@@ -38,9 +41,9 @@ void tess::tessera_script::script_impl::insert_globals(execution_ctxt& ctxt, glo
 void tess::tessera_script::script_impl::build_tiles(execution_ctxt& ctxt)
 {
 	for (auto& [dummy, tile] : tiles_) {
-		auto maybe_tile = tile.eval(ctxt);
+		auto maybe_tile = tile->eval(ctxt);
 		if (std::holds_alternative<tess::tile>(maybe_tile))
-			tile.set_value(std::get<tess::tile>(maybe_tile));
+			tile->set_value(std::get<tess::tile>(maybe_tile));
 	}
 }
 
@@ -48,13 +51,18 @@ std::optional<std::variant<tess::tile_def, tess::tile_patch_def>> tess::tessera_
 {
 	auto tile = tiles_.find(func);
 	if (tile != tiles_.end())
-		return tile->second;
+		return *(tile->second);
 
 	auto patch = patches_.find(func);
 	if (patch != patches_.end())
 		return patch->second;
 
 	return std::nullopt;
+}
+
+std::shared_ptr<const tess::tile_def> tess::tessera_script::script_impl::get_tile_prototype(const std::string& name) const
+{
+	return tiles_.at(name);
 }
 
 std::optional<tess::expr_value> tess::tessera_script::script_impl::get_global(const std::string& var) const

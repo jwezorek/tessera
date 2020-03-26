@@ -2,6 +2,11 @@
 #include "tile_impl.h"
 
 /*--------------------------------------------------------------------------------*/
+
+tess::tile::tile( std::shared_ptr<tile_impl> impl) : impl_(impl)
+{
+}
+
 std::string tess::tile::name() const
 {
 	return impl_->name();
@@ -18,6 +23,16 @@ const std::vector<tess::edge>& tess::tile::edges() const
 }
 
 /*--------------------------------------------------------------------------------*/
+
+tess::vertex::vertex() :
+	impl_(nullptr)
+{
+}
+
+tess::vertex::vertex(const std::shared_ptr<vertex_impl>& impl) :
+	impl_(impl)
+{
+}
 
 std::string tess::vertex::name() const
 {

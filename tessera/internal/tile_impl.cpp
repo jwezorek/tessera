@@ -3,7 +3,7 @@
 
 namespace se = SymEngine;
 
-tess::tile::tile_impl::tile_impl(const std::shared_ptr<tile_def>& def) : 
+tess::tile::tile_impl::tile_impl( std::shared_ptr<const tile_def> def) : 
     def_(def)
 {
 }
@@ -26,6 +26,12 @@ const std::vector<tess::edge>& tess::tile::tile_impl::edges() const
 std::string tess::tile::tile_impl::name() const
 {
     return def_->name();
+}
+
+void tess::tile::tile_impl::set(std::vector<tess::edge>&& edges, std::vector<tess::vertex>&& vertices)
+{
+    edges_ = std::move(edges);
+    vertices_ = std::move(vertices);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -51,6 +57,11 @@ tess::vertex tess::edge::edge_impl::v() const
 }
 
 /*--------------------------------------------------------------------------------*/
+
+tess::vertex::vertex_impl::vertex_impl(const tile::tile_impl* parent, std::shared_ptr<const vertex_def> prototype, std::tuple<number, number> loc) :
+    parent_(parent), def_(prototype), x_(std::get<0>(loc)), y_(std::get<1>(loc))
+{
+}
 
 std::string tess::vertex::vertex_impl::name() const
 {

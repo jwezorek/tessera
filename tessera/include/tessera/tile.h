@@ -8,6 +8,8 @@
 namespace tess {
 
 	class vertex {
+		friend class tile_def;
+		friend class tile;
 	private:
 		class vertex_impl;
 		std::shared_ptr<vertex_impl> impl_;
@@ -15,6 +17,7 @@ namespace tess {
 		vertex(const std::shared_ptr<vertex_impl>& impl);
 
 	public:
+		vertex(); //TODO: get rid of the need for this
 		std::string name() const;
 		std::string vertex_class() const;
 		std::tuple<double, double> pos() const;
@@ -40,7 +43,7 @@ namespace tess {
 		class tile_impl;
 		std::shared_ptr<tile_impl> impl_;
 
-		tile(const tile_impl& impl);
+		tile(std::shared_ptr<tile_impl> impl);
 
 	public:
 		std::string name() const;

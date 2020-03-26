@@ -68,6 +68,11 @@ tess::execution_ctxt tess::execution_ctxt::get_global_scope() const
 	return execution_ctxt(script_);
 }
 
+const tess::tessera_script::script_impl& tess::execution_ctxt::script() const
+{
+	return *(script_.impl_);
+}
+
 tess::lexical_scope::lexical_scope(const std::vector<std::string>& param, const std::vector<expr_value>& args)
 {
 	for (int i = 0; i < param.size(); ++i)

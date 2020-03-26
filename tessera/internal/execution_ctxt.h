@@ -33,6 +33,7 @@ namespace tess {
 			void push_scope(lexical_scope&& scope);
 			void pop_scope();
 			execution_ctxt get_global_scope() const;
+			const tessera_script::script_impl& script() const;
     };
 
 }

@@ -13,10 +13,11 @@ namespace tess {
     class vertex::vertex_impl {
     private:
         const tile::tile_impl* parent_;
-        std::shared_ptr<vertex_def> def_;
+        std::shared_ptr<const vertex_def> def_;
         number x_;
         number y_;
     public:
+        vertex_impl(const tile::tile_impl* parent, std::shared_ptr<const vertex_def> prototype, std::tuple<number, number> loc);
         std::string name() const;
         std::string vertex_class() const;
         std::tuple<double, double> to_floats() const;
@@ -26,7 +27,7 @@ namespace tess {
     class edge::edge_impl {
         private:
             const tile::tile_impl* parent_;
-            std::shared_ptr<edge_def> def_;
+            std::shared_ptr<const edge_def> def_;
         public:
             std::string name() const;
             std::string edge_class() const;
@@ -38,9 +39,9 @@ namespace tess {
         private:
             std::vector<tess::edge> edges_;
             std::vector<tess::vertex> vertices_;
-            std::shared_ptr<tile_def> def_;
+            std::shared_ptr<const tile_def> def_;
         public:
-            tile_impl(const std::shared_ptr<tile_def>& def);
+            tile_impl(std::shared_ptr<const tile_def> def);
 
             const tess::vertex& vertex(const std::string& v) const;
             const std::vector<tess::vertex>& vertices() const;

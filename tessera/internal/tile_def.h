@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <memory>
 #include <unordered_map>
 
 namespace tess {
@@ -41,14 +42,16 @@ namespace tess {
         std::vector<std::string> params_;
         std::unordered_map<std::string, edge_def> name_to_edge_;
         std::unordered_map<std::string, vertex_def> name_to_vertex_;
-        std::vector<edge_def*> edges_;
-        std::vector<vertex_def*> vertices_;
+        std::vector<std::shared_ptr<const edge_def>> edges_;
+        std::vector<std::shared_ptr<const vertex_def>> vertices_;
         std::optional<tile> prototype_;
         tess::parser::exception get_exception(const std::string& msg);
 
         void set_value(const tile& prototype);
         void set_indices();
         std::optional<parser::exception> initialize();
+
+        std::vector<std::tuple<number, number>> evaluate_vertices(execution_ctxt&) const;
 
     public:
         tile_def(const std::string& name , std::vector<std::string> params, const text_range& source_code);
