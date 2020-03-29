@@ -24,11 +24,6 @@ const std::vector<tess::edge>& tess::tile::edges() const
 
 /*--------------------------------------------------------------------------------*/
 
-tess::vertex::vertex() :
-	impl_(nullptr)
-{
-}
-
 tess::vertex::vertex(const std::shared_ptr<vertex_impl>& impl) :
 	impl_(impl)
 {
@@ -50,6 +45,10 @@ std::tuple<double, double> tess::vertex::pos() const
 }
 
 /*--------------------------------------------------------------------------------*/
+
+tess::edge::edge(const std::shared_ptr<edge_impl>& impl) :
+	impl_(impl)
+{}
 
 std::string tess::edge::name() const
 {

@@ -227,7 +227,7 @@ void test_sym_engine()
 
 std::variant<tess::tessera_script, tess::error> tess::parse(const std::string& script)
 {
-    test_sym_engine();
+    //test_sym_engine();
 
 	text_range source_code{ script };
     auto result = tess::parser::parse(source_code);

@@ -18,6 +18,13 @@ int main()
 		const auto& tessera = std::get<tess::tessera_script>(results);
 
 		auto output = tessera.execute();
+
+		const auto& tri = output[0];
+		for (const auto& v : tri.vertices()) {
+			auto [x, y] = v.pos();
+			std::cout << "( " << x << " , " << y << " )\n";
+		}
+
 		std::cout << "success" << "\n";
 	} else {
 		auto err = std::get<tess::error>(results);

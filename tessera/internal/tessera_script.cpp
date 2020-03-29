@@ -32,7 +32,7 @@ tess::tessera_script::tessera_script(std::vector<script_component_specifier> sec
 
 	auto ctxt = execution_ctxt(*this);
 	impl_->insert_globals(ctxt, globals);
-	impl_->build_tiles(ctxt);
+//	impl_->build_tiles(ctxt);
 }
 
 std::vector<std::string> tess::tessera_script::parameters() const
@@ -44,7 +44,9 @@ std::vector<std::string> tess::tessera_script::parameters() const
 std::vector<tess::tile> tess::tessera_script::execute(const arguments& args) const
 {
     execution_ctxt ctxt(*this);
-    return {};
+
+
+	return impl_->execute(ctxt);
 }
 
 std::vector<tess::tile> tess::tessera_script::execute() const

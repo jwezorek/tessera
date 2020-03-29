@@ -3,77 +3,82 @@
 
 namespace se = SymEngine;
 
-tess::tile::tile_impl::tile_impl( std::shared_ptr<const tile_def> def) : 
+tess::tile_impl::tile_impl( std::shared_ptr<const tile_def> def) : 
     def_(def)
 {
 }
 
-const tess::vertex& tess::tile::tile_impl::vertex(const std::string& v) const
+const tess::vertex& tess::tile_impl::vertex(const std::string& v) const
 {
     return vertices_[def_->vertex(v).index];
 }
 
-const std::vector<tess::vertex>& tess::tile::tile_impl::vertices() const
+const std::vector<tess::vertex>& tess::tile_impl::vertices() const
 {
     return vertices_;
 }
 
-const std::vector<tess::edge>& tess::tile::tile_impl::edges() const
+const std::vector<tess::edge>& tess::tile_impl::edges() const
 {
     return edges_;
 }
 
-std::string tess::tile::tile_impl::name() const
+std::string tess::tile_impl::name() const
 {
     return def_->name();
 }
 
-void tess::tile::tile_impl::set(std::vector<tess::edge>&& edges, std::vector<tess::vertex>&& vertices)
+void tess::tile_impl::set( std::vector<tess::vertex>&& vertices, std::vector<tess::edge>&& edges )
 {
+	vertices_ = std::move(vertices);
     edges_ = std::move(edges);
-    vertices_ = std::move(vertices);
 }
 
 /*--------------------------------------------------------------------------------*/
 
-std::string tess::edge::edge_impl::name() const
+tess::edge_impl::edge_impl(const tile_impl* parent, std::shared_ptr<const edge_def> prototype) :
+	parent_(parent),
+	def_(prototype)
+{}
+
+std::string tess::edge_impl::name() const
 {
     return def_->name;
 }
 
-std::string tess::edge::edge_impl::edge_class() const
+std::string tess::edge_impl::edge_class() const
 {
     return def_->class_;
 }
 
-tess::vertex tess::edge::edge_impl::u() const
+const tess::vertex& tess::edge_impl::u() const
 {
     return parent_->vertex(def_->u);
 }
 
-tess::vertex tess::edge::edge_impl::v() const
+const tess::vertex& tess::edge_impl::v() const
 {
     return parent_->vertex(def_->v);
 }
 
 /*--------------------------------------------------------------------------------*/
 
-tess::vertex::vertex_impl::vertex_impl(const tile::tile_impl* parent, std::shared_ptr<const vertex_def> prototype, std::tuple<number, number> loc) :
+tess::vertex_impl::vertex_impl(const tile_impl* parent, std::shared_ptr<const vertex_def> prototype, std::tuple<number, number> loc) :
     parent_(parent), def_(prototype), x_(std::get<0>(loc)), y_(std::get<1>(loc))
 {
 }
 
-std::string tess::vertex::vertex_impl::name() const
+std::string tess::vertex_impl::name() const
 {
     return def_->name;
 }
 
-std::string tess::vertex::vertex_impl::vertex_class() const
+std::string tess::vertex_impl::vertex_class() const
 {
     return def_->class_;
 }
 
-std::tuple<double, double> tess::vertex::vertex_impl::to_floats() const
+std::tuple<double, double> tess::vertex_impl::to_floats() const
 {
     return {
         se::eval_double(x_),
@@ -81,7 +86,7 @@ std::tuple<double, double> tess::vertex::vertex_impl::to_floats() const
     };
 }
 
-std::tuple<tess::number, tess::number> tess::vertex::vertex_impl::pos() const
+std::tuple<tess::number, tess::number> tess::vertex_impl::pos() const
 {
     return {
         x_,

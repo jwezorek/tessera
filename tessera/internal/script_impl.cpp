@@ -38,6 +38,7 @@ void tess::tessera_script::script_impl::insert_globals(execution_ctxt& ctxt, glo
 	}
 }
 
+/*
 void tess::tessera_script::script_impl::build_tiles(execution_ctxt& ctxt)
 {
 	for (auto& [dummy, tile] : tiles_) {
@@ -46,6 +47,7 @@ void tess::tessera_script::script_impl::build_tiles(execution_ctxt& ctxt)
 			tile->set_value(std::get<tess::tile>(maybe_tile));
 	}
 }
+*/
 
 std::optional<std::variant<tess::tile_def, tess::tile_patch_def>> tess::tessera_script::script_impl::get_functional(const std::string& func) const
 {
@@ -63,6 +65,13 @@ std::optional<std::variant<tess::tile_def, tess::tile_patch_def>> tess::tessera_
 std::shared_ptr<const tess::tile_def> tess::tessera_script::script_impl::get_tile_prototype(const std::string& name) const
 {
 	return tiles_.at(name);
+}
+
+std::vector<tess::tile> tess::tessera_script::script_impl::execute(execution_ctxt& ctxt) const
+{
+	auto tile_def = tiles_.at("triangle");
+	auto val = tile_def->eval(ctxt);
+	return std::vector<tess::tile>{ std::get<tile>(val) };
 }
 
 std::optional<tess::expr_value> tess::tessera_script::script_impl::get_global(const std::string& var) const

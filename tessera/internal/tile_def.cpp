@@ -98,12 +98,12 @@ tess::parser::exception tess::tile_def::get_exception(const std::string& msg)
 {
     return tess::parser::exception("tile " + name_, msg);
 }
-
+/*
 void tess::tile_def::set_value(const tess::tile& prototype)
 {
     prototype_ = prototype;
 }
-
+*/
 void tess::tile_def::set_indices()
 {
     std::unordered_map<std::string, std::string> edge_from_tbl;
@@ -148,8 +148,11 @@ std::optional<tess::parser::exception> tess::tile_def::initialize()
             vertices_[vert.index] = std::make_shared<const vertex_def>(vert);
 
         edges_.resize(name_to_edge_.size());
-        for (auto& [dummy, edge] : name_to_edge_)
-            edges_[edge.index] = std::make_shared<const edge_def>(edge);
+		for (auto& [dummy, edge] : name_to_edge_) {
+			if (edge.length == nullptr)
+				edge.length = std::make_shared<number_expr>(1);
+			edges_[edge.index] = std::make_shared<const edge_def>(edge);
+		}
 
     } catch (tess::parser::exception e) {
         return e;
@@ -162,8 +165,22 @@ std::optional<tess::parser::exception> tess::tile_def::initialize()
 
 std::vector<std::tuple<tess::number, tess::number>> tess::tile_def::evaluate_vertices(execution_ctxt& ctxt) const
 {
-    //TODO
+	auto n = num_vertices();
+	tess::number x = 0.0;
+	tess::number y = 0.0;
+	tess::number theta = 0.0;
+
     std::vector<std::tuple<number, number>> locs(vertices_.size());
+
+	for (int i = 0; i < n; ++i) {
+		locs[i] = { x,y };
+		auto length = std::get<tess::number>(edges_[i]->length->eval(ctxt));
+		x = x + length * se::cos(theta);
+		y = y + length * se::sin(theta);
+		auto delta_theta = se::Expression(se::pi) - std::get<tess::number>(vertices_[(i + 1) % n]->angle->eval(ctxt));
+		theta = theta + delta_theta;
+	}
+
     return locs;
 }
 
@@ -217,33 +234,49 @@ std::vector<std::string> tess::tile_def::params() const
 
 tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 {
-    if (prototype_.has_value())
-        return { prototype_.value() };
+	auto n = num_vertices();
+    //if (prototype_.has_value())
+    //    return { prototype_.value() };
 
     const auto& script = ctxt.script();
     auto new_tile = tile( 
-        std::make_shared<tile::tile_impl>(
+        std::make_shared<tile_impl>(
             script.get_tile_prototype(name_)
         ) 
     );
 
     auto vert_locations = evaluate_vertices(ctxt);
     
-    std::vector<tess::vertex> verts(vertices_.size());
+    std::vector<tess::vertex> verts(n);
     std::transform(vertices_.cbegin(), vertices_.cend(), verts.begin(),
         [&](auto v) {
 
-            const tile::tile_impl* parent = &(*new_tile.impl_);
+            const tile_impl* parent = &(*new_tile.impl_);
             std::shared_ptr<const vertex_def> prototype = v;
             std::tuple<number, number> loc = vert_locations[v->index];
 
             return tess::vertex(
-                std::make_shared<vertex::vertex_impl>(parent, prototype, loc)
+                std::make_shared<vertex_impl>(parent, prototype, loc)
             );
         }
     );
-    
-    return { nil_val() };
+
+	std::vector<tess::edge> edges(n);
+	std::transform(edges_.cbegin(), edges_.cend(), edges.begin(),
+		[&](auto e) {
+			const tile_impl* parent = &(*new_tile.impl_);
+			std::shared_ptr<const edge_def> prototype = e;
+			return tess::edge(
+				std::make_shared<edge_impl>(parent, prototype)
+			);
+		}
+	);
+   
+	new_tile.impl_->set( std::move(verts), std::move(edges));
+
+    return { 
+		new_tile
+	};
 }
 
 const tess::vertex_def& tess::tile_def::vertex(const std::string& v) const
@@ -254,4 +287,9 @@ const tess::vertex_def& tess::tile_def::vertex(const std::string& v) const
 const tess::edge_def& tess::tile_def::edge(const std::string& e) const
 {
     return name_to_edge_.at(e);
+}
+
+int tess::tile_def::num_vertices() const
+{
+	return static_cast<int>(vertices_.size());
 }

@@ -44,10 +44,10 @@ namespace tess {
         std::unordered_map<std::string, vertex_def> name_to_vertex_;
         std::vector<std::shared_ptr<const edge_def>> edges_;
         std::vector<std::shared_ptr<const vertex_def>> vertices_;
-        std::optional<tile> prototype_;
+        //std::optional<tile> prototype_;
         tess::parser::exception get_exception(const std::string& msg);
 
-        void set_value(const tile& prototype);
+        //void set_value(const tile& prototype);
         void set_indices();
         std::optional<parser::exception> initialize();
 
@@ -60,5 +60,6 @@ namespace tess {
 		expr_value eval( execution_ctxt& ) const;
         const vertex_def& vertex(const std::string& v) const;
         const edge_def& edge(const std::string& e) const;
+		int num_vertices() const;
     };
 }
