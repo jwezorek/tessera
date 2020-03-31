@@ -186,5 +186,8 @@
     <ClInclude Include="internal\tile_impl.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
+    <ClInclude Include="internal\tessera_impl.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

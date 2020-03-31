@@ -17,9 +17,13 @@ int main()
 	if (std::holds_alternative<tess::tessera_script>(results)) {
 		const auto& tessera = std::get<tess::tessera_script>(results);
 
-		auto output = tessera.execute();
+		auto output = tessera.execute({ "5" } );
+		if (std::holds_alternative<tess::error>(output)) {
+			std::cout << std::get<tess::error>(output) << "\n";
+			return -1;
+		}
 
-		const auto& tri = output[0];
+		const auto& tri = std::get<std::vector<tess::tile>>(output).at(0);
 		for (const auto& v : tri.vertices()) {
 			auto [x, y] = v.pos();
 			std::cout << "( " << x << " , " << y << " )\n";

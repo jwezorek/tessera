@@ -72,6 +72,7 @@
     <ClInclude Include="internal\parser\tile_parser.h" />
     <ClInclude Include="internal\parser\util.h" />
     <ClInclude Include="internal\script_impl.h" />
+    <ClInclude Include="internal\tessera_impl.h" />
     <ClInclude Include="internal\tile_impl.h" />
     <ClInclude Include="internal\tile_patch_def.h" />
     <ClInclude Include="internal\statement.h" />

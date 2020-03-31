@@ -67,6 +67,11 @@ std::shared_ptr<const tess::tile_def> tess::script_impl::get_tile_prototype(cons
 	return tiles_.at(name);
 }
 
+const tess::tableau_def& tess::script_impl::tableau() const
+{
+	return tableau_;
+}
+
 std::vector<tess::tile> tess::script_impl::execute(execution_ctxt& ctxt) const
 {
 	auto tile_def = tiles_.at("triangle");

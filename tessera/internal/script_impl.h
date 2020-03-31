@@ -2,6 +2,7 @@
 
 #include "tile_def.h"
 #include "tile_patch_def.h"
+#include "tessera_impl.h"
 #include "expr_value.h"
 #include "tableau_def.h"
 #include "execution_ctxt.h"
@@ -12,7 +13,7 @@
 
 namespace tess {
 
-	class script_impl {
+	class script_impl : public tessera_impl  {
 	private:
 		std::unordered_map<std::string, std::shared_ptr<const tile_def>> tiles_;
 		std::unordered_map<std::string, tile_patch_def> patches_;
@@ -27,14 +28,7 @@ namespace tess {
 		std::optional<expr_value> get_global(const std::string& var) const;
 		std::optional<std::variant<tile_def, tile_patch_def>> get_functional(const std::string& var) const;
 		std::shared_ptr<const tile_def> get_tile_prototype(const std::string& name) const;
-
-		template<typename T, typename I>
-		T make_user_object(const std::shared_ptr<I>& impl) const {
-			T obj;
-			obj.impl_ = impl;
-			return obj;
-		}
-
+		const tableau_def& tableau() const;
 		std::vector<tess::tile> execute(execution_ctxt& ctxt) const;
 	};
 

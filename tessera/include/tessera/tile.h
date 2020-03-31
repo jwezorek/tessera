@@ -11,7 +11,7 @@ namespace tess {
 	class tile_impl;
 
 	class vertex {
-		friend class script_impl;
+		friend class tessera_impl;
 	private:
 		std::shared_ptr<vertex_impl> impl_;
 		
@@ -22,7 +22,7 @@ namespace tess {
 	};
 
 	class edge {
-		friend class script_impl;
+		friend class tessera_impl;
 	private:
 		std::shared_ptr<edge_impl> impl_;
 
@@ -35,7 +35,7 @@ namespace tess {
 
 	class tile
 	{
-		friend class script_impl;
+		friend class tessera_impl;
 
 	private:
 		std::shared_ptr<tile_impl> impl_;

@@ -11,6 +11,8 @@ namespace x3 = boost::spirit::x3;
 namespace tess {
     namespace parser {
 
+		tess::expr_ptr parse_expression(const std::string& str);
+
         struct expression_ : x3::parser<expression_> {
 			private:
 				static std::tuple<tess::expr_ptr, std::string::const_iterator> parse_expression(const text_range& input);

@@ -3,6 +3,7 @@
 #include "math_util.h"
 #include "text_range.h"
 #include "expression.h"
+#include "tessera_impl.h"
 #include "tessera/error.h"
 #include "parser/exception.h"
 #include <symengine/expression.h>
@@ -33,7 +34,7 @@ namespace tess {
         vertex_def() : index(-1) {}
     };
 
-    class tile_def
+    class tile_def : public tessera_impl
     {
         friend tessera_script;
 

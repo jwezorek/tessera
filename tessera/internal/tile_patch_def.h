@@ -4,10 +4,11 @@
 #include <vector>
 #include "text_range.h"
 #include "statement.h"
+#include "tessera_impl.h"
 
 namespace tess {
 
-    class tile_patch_def
+    class tile_patch_def : public tessera_impl
     {
     private:
         std::string name_;

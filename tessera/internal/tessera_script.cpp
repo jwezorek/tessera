@@ -2,6 +2,7 @@
 #include "tessera/tessera_script.h"
 #include "./parser/util.h"
 #include "./parser/keywords.h"
+#include "./parser/expr_parser.h"
 #include "tile_def.h"
 #include "tile_patch_def.h"
 #include "tableau_def.h"
@@ -35,23 +36,48 @@ tess::tessera_script::tessera_script(std::vector<script_component_specifier> sec
 //	impl_->build_tiles(ctxt);
 }
 
-std::vector<std::string> tess::tessera_script::parameters() const
+const std::vector<std::string>& tess::tessera_script::parameters() const
 {
-	// TODO: parametrized tableau definitions
-	return std::vector<std::string>();
+    return impl_->tableau().params();
 }
 
-std::vector<tess::tile> tess::tessera_script::execute(const arguments& args) const
+tess::result tess::tessera_script::execute(const std::vector<std::string>& argument_strings) const
 {
+    if (argument_strings.size() != parameters().size()) {
+        return  { error("too few/many arguments") };
+    }
+
     execution_ctxt ctxt(*this);
+    
+    std::vector<expr_value> args(argument_strings.size());
+    std::transform( argument_strings.begin(), argument_strings.end(), args.begin(),
+        [&ctxt](const std::string& str)->expr_value {
+            expr_ptr expr = tess::parser::parse_expression(str);
+            if (!expr)
+                return { error("error parsing argument: " + str) };
+            return expr->eval(ctxt);
+        }
+    );
 
+    if (auto err_iter = std::find_if(args.begin(), args.end(), 
+            [](const auto& v) {return std::holds_alternative<error>(v); }); err_iter != args.end()) {
+        return std::get<error>(*err_iter);
+    }
+        
+    ctxt.push_scope(
+        tess::lexical_scope(
+            parameters(),
+            args
+        )
+    );
 
-	return impl_->execute(ctxt);
+    auto result = impl_->execute(ctxt);
+    ctxt.pop_scope();
+    return result;
 }
 
-std::vector<tess::tile> tess::tessera_script::execute() const
+tess::result tess::tessera_script::execute() const
 {
-    arguments no_args;
-    return execute(no_args);
+    return execute( {} );
 }
 

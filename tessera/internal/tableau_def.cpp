@@ -19,6 +19,11 @@ tess::tableau_def::tableau_def(const std::vector<std::string>& params, const tex
     }
 }
 
+const std::vector<std::string>& tess::tableau_def::params() const
+{
+    return params_;
+}
+
 tess::expr_value tess::tableau_def::eval(const tess::execution_ctxt& ctxt) const
 {
     return expr_value();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tessera/tile.h"
+#include "tessera_impl.h"
 #include "tile_def.h"
 #include "expr_value.h"
 #include <string>
@@ -10,7 +11,7 @@
 
 namespace tess {
 
-    class vertex_impl {
+    class vertex_impl : public tessera_impl {
     private:
         const tile_impl* parent_;
         std::shared_ptr<const vertex_def> def_;
@@ -24,7 +25,7 @@ namespace tess {
         std::tuple<number, number> pos() const;
     };
 
-    class edge_impl {
+    class edge_impl : public tessera_impl {
         private:
             const tile_impl* parent_;
             std::shared_ptr<const edge_def> def_;
@@ -36,7 +37,7 @@ namespace tess {
 			const tess::vertex& v() const;
     };
 
-    class tile_impl {
+    class tile_impl : public tessera_impl {
         private:
             std::vector<tess::edge> edges_;
             std::vector<tess::vertex> vertices_;

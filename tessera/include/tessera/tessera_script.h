@@ -1,21 +1,25 @@
 #pragma once
 
+#include "./tessera/error.h"
 #include "tableau.h"
 #include "tile.h"
 #include <string>
 #include <vector>
+#include <variant>
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 namespace tess
 {
 	class expression;
     class script_impl;
+
     using inp_range = std::tuple<std::string::const_iterator, std::string::const_iterator>;
     using script_component_specifier = std::tuple<std::string, std::string, std::vector<std::string>, inp_range>;
     using tab_spec = std::tuple<std::string, std::vector<std::string>, tess::inp_range>;
-	using arguments = std::unordered_map<std::string, std::string>;
 	using global_vars = std::vector<std::tuple<std::string, std::shared_ptr<expression>>>;
+    using result = std::variant<std::vector<tile>, error>;
 
     class tessera_script
     {
@@ -27,8 +31,8 @@ namespace tess
     public:
         tessera_script();
         tessera_script(std::vector<script_component_specifier> sections, tab_spec tab, global_vars globals);
-		std::vector<std::string> parameters() const;
-		std::vector<tile> execute(const arguments& args) const;
-        std::vector<tile> execute() const;
+		const std::vector<std::string>& parameters() const;
+        result execute(const std::vector<std::string>& args) const;
+        result execute() const;
     };
 }

@@ -15,6 +15,7 @@ namespace tess {
     public:
         tableau_def() {}
         tableau_def(const std::vector<std::string>& params, const text_range& code);
+        const std::vector<std::string>& params() const;
         expr_value eval(const execution_ctxt&) const;
     };
 }

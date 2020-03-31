@@ -38,6 +38,23 @@ namespace tess {
     }
 }
 
+tess::expr_ptr tess::parser::parse_expression(const std::string& expr_str)
+{
+    auto input = tess::text_range(expr_str);
+    tess::expr_ptr value;
+    bool success = false;
+
+    try {
+        success = x3::phrase_parse(input.begin(), input.end(), tess::parser::expr, x3::space, value);
+    } catch (...) {
+    }
+
+    if (success)
+        return value;
+    else
+        return nullptr;
+}
+
 std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::expression_::parse_expression(const tess::text_range& input)
 {
     tess::expr_ptr output;

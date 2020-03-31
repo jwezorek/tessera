@@ -8,102 +8,12 @@
 #include <symengine/logic.h>
 
 namespace se = SymEngine;
-/*
-namespace {
-
-    tess::SymPoint walk_edge(const tess::execution_ctxt& ctxt, const tess::edge_def* e, const se::Expression& theta) {
-        auto pt = e->prev->pos.value();
-        auto len = std::get<tess::number>(e->length->eval(ctxt));
-        return  tess::SymPoint{ pt.x + len * se::cos(theta), pt.y + len * se::sin(theta) };
-    }
-
-}
-
-std::optional<tess::parser::exception> tess::tile_def::link_vertices()
-{
-    for (auto& [name, e] : edges_) {
-        if (vertices_.find(e.u) == vertices_.end())
-            return get_exception("Unknown vertex: " + e.u);
-        if (vertices_.find(e.v) == vertices_.end())
-            return get_exception("Unknown vertex: " + e.v);
-        auto& vert1 = vertices_[e.u];
-        auto& vert2 = vertices_[e.v];
-        vert1.next = &e;
-        e.next = &vert2;
-
-        e.prev = &vert1;
-        vert2.prev = &e;
-    }
-    int count = 1;
-    const auto* start = &first_vertex();
-    edge_def* e = start->next;
-    while (e != nullptr && e->next != start) {
-        if (e->length == nullptr)
-            e->length = std::make_shared<number_expr>(1);
-        if (vertices_[e->u].angle == nullptr)
-            return get_exception("insufficiently specified, vertex " + e->u);
-        if (vertices_[e->v].angle == nullptr)
-            return get_exception("insufficiently specified, vertex " + e->v);
-
-        if (e->next == nullptr)
-            return get_exception("edge " + e->name + " has no successor");
-        ++count;
-        e = e->next->next;
-    }
-
-    if (e == nullptr || count != edges_.size())
-        return get_exception("insufficiently specified");
-    
-    if (e->length == nullptr)
-        e->length = std::make_shared<number_expr>(1);
-
-    return std::nullopt;
-}
-
-std::optional<tess::parser::exception> tess::tile_def::build(const execution_ctxt& ctxt)
-{
-    if (auto error_during_linking = link_vertices(); error_during_linking.has_value())
-        return error_during_linking;
-
-    auto start = &first_edge();
-    start->prev->pos = { se::Expression(0), se::Expression(0) };
-    edge_def* e = start;
-    auto theta = se::Expression(0);
-    while (!e->next->pos.has_value()) {
-
-        auto maybe_length = e->length->eval(ctxt);
-        if (!std::holds_alternative<tess::number>(maybe_length))
-            return std::nullopt;
-
-        e->next->pos = walk_edge(ctxt, e, theta);
-        e = e->next->next;
-
-        auto maybe_angle_at_v = e->next->angle->eval(ctxt);
-        if (!std::holds_alternative<tess::number>(maybe_angle_at_v))
-            return std::nullopt;
-
-        auto delta_theta = se::Expression(se::pi) - std::get<tess::number>(maybe_angle_at_v);
-        theta = theta + delta_theta;
-    } 
-
-    // check that the point after walking the edges is the start point;
-    if (!equals(walk_edge(ctxt, e, theta), first_vertex().pos.value()))
-        return get_exception("inconsistent tile geometry ");
-
-    return std::nullopt;
-}
-*/
 
 tess::parser::exception tess::tile_def::get_exception(const std::string& msg)
 {
     return tess::parser::exception("tile " + name_, msg);
 }
-/*
-void tess::tile_def::set_value(const tess::tile& prototype)
-{
-    prototype_ = prototype;
-}
-*/
+
 void tess::tile_def::set_indices()
 {
     std::unordered_map<std::string, std::string> edge_from_tbl;
@@ -211,17 +121,7 @@ tess::tile_def::tile_def(const std::string& name, std::vector<std::string> param
     if (maybe_err.has_value())
         throw maybe_err.value();
 }
-/*
-tess::vertex_def& tess::tile_def::first_vertex()
-{
-    return vertices_.begin()->second;
-}
 
-tess::edge_def& tess::tile_def::first_edge()
-{
-    return *first_vertex().next;
-}
-*/
 std::string tess::tile_def::name() const
 {
 	return name_;
@@ -248,7 +148,7 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
     std::transform(vertices_.cbegin(), vertices_.cend(), verts.begin(),
         [&](auto v) {
             std::shared_ptr<const vertex_def> definition = v;
-            return  script.make_user_object<tess::vertex>(
+            return  make_tess_obj<tess::vertex>(
                 std::make_shared<vertex_impl>(new_tile_impl.get(), definition, vert_locations[v->index])
             );
         }
@@ -258,7 +158,7 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 	std::transform(edges_.cbegin(), edges_.cend(), edges.begin(),
 		[&](auto e) {
 			std::shared_ptr<const edge_def> definition = e;
-			return script.make_user_object<tess::edge>(
+			return make_tess_obj<tess::edge>(
 				std::make_shared<edge_impl>(new_tile_impl.get(), definition)
 			);
 		}
@@ -266,7 +166,7 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
    
     new_tile_impl->set( std::move(verts), std::move(edges) );
     return { 
-        script.make_user_object<tess::tile>(
+        make_tess_obj<tess::tile>(
             new_tile_impl
         )
 	};

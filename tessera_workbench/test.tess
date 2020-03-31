@@ -19,6 +19,6 @@ patch tri_grid(e, n) {
 		lay tri_strip(e, n) -> tri_grid( $1[1].left, n-1);
 }
 
-tableau {
-	lay tri_grid(nil, 5);
+tableau( num ) {
+	lay tri_grid(nil, num);
 }
