@@ -36,7 +36,7 @@ namespace tess {
 	class tile
 	{
 		friend class script_impl;
-		friend class tile_def;
+
 	private:
 		std::shared_ptr<tile_impl> impl_;
 

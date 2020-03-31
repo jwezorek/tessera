@@ -234,15 +234,12 @@ std::vector<std::string> tess::tile_def::params() const
 
 tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 {
-	auto n = num_vertices();
-    //if (prototype_.has_value())
-    //    return { prototype_.value() };
+    // TODO: use a cache of unparametrized tiles.
 
+	auto n = num_vertices();
     const auto& script = ctxt.script();
-    auto new_tile = script.make_user_object<tile>(
-        std::make_shared<tile_impl>(
-            script.get_tile_prototype(name_)
-        ) 
+    auto new_tile_impl = std::make_shared<tile_impl>(
+        script.get_tile_prototype(name_)
     );
 
     auto vert_locations = evaluate_vertices(ctxt);
@@ -250,13 +247,9 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
     std::vector<tess::vertex> verts(n);
     std::transform(vertices_.cbegin(), vertices_.cend(), verts.begin(),
         [&](auto v) {
-
-            const tile_impl* parent = &(*new_tile.impl_);
-            std::shared_ptr<const vertex_def> prototype = v;
-            std::tuple<number, number> loc = vert_locations[v->index];
-
+            std::shared_ptr<const vertex_def> definition = v;
             return  script.make_user_object<tess::vertex>(
-                std::make_shared<vertex_impl>(parent, prototype, loc)
+                std::make_shared<vertex_impl>(new_tile_impl.get(), definition, vert_locations[v->index])
             );
         }
     );
@@ -264,18 +257,18 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 	std::vector<tess::edge> edges(n);
 	std::transform(edges_.cbegin(), edges_.cend(), edges.begin(),
 		[&](auto e) {
-			const tile_impl* parent = &(*new_tile.impl_);
-			std::shared_ptr<const edge_def> prototype = e;
+			std::shared_ptr<const edge_def> definition = e;
 			return script.make_user_object<tess::edge>(
-				std::make_shared<edge_impl>(parent, prototype)
+				std::make_shared<edge_impl>(new_tile_impl.get(), definition)
 			);
 		}
 	);
    
-	new_tile.impl_->set( std::move(verts), std::move(edges));
-
+    new_tile_impl->set( std::move(verts), std::move(edges) );
     return { 
-		new_tile
+        script.make_user_object<tess::tile>(
+            new_tile_impl
+        )
 	};
 }
 
