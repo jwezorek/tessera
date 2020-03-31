@@ -1,14 +1,8 @@
 #include "script_impl.h"
+#include "./parser/keywords.h"
 
 void tess::script_impl::insert_tile_def(const std::string& name, std::vector<std::string> params, const text_range& source_code)
 {
-	/*
-	tiles_.emplace(
-		std::piecewise_construct,
-		std::make_tuple(name),
-		std::make_tuple(name, params, source_code)
-	);
-	*/
 	tiles_[name] = std::make_shared<tile_def>(name, params, source_code);
 }
 
@@ -23,7 +17,11 @@ void tess::script_impl::insert_patch_def(const std::string& name, std::vector<st
 
 void tess::script_impl::insert_tableau_def(std::vector<std::string> params, const text_range& source_code)
 {
-	tableau_ = tableau_def(params, source_code);
+	tableau_ = tile_patch_def( 
+		parser::keyword( parser::kw::tableau), 
+		params, 
+		source_code 
+	);
 }
 
 void tess::script_impl::insert_globals(execution_ctxt& ctxt, global_vars global_defs)
@@ -67,7 +65,7 @@ std::shared_ptr<const tess::tile_def> tess::script_impl::get_tile_prototype(cons
 	return tiles_.at(name);
 }
 
-const tess::tableau_def& tess::script_impl::tableau() const
+const tess::tile_patch_def& tess::script_impl::tableau() const
 {
 	return tableau_;
 }

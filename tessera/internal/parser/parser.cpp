@@ -1,6 +1,5 @@
 #include "tessera/tessera_script.h"
 #include "../tile_def.h"
-#include "../tableau_def.h"
 #include "../tile_patch_def.h"
 #include "../statement.h"
 #include "basic_stmt_parser.h"

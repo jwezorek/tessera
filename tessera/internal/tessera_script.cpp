@@ -4,8 +4,6 @@
 #include "./parser/keywords.h"
 #include "./parser/expr_parser.h"
 #include "tile_def.h"
-#include "tile_patch_def.h"
-#include "tableau_def.h"
 #include <iostream>
 #include <unordered_map>
 

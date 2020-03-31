@@ -1,7 +1,6 @@
 #pragma once
 
 #include "./tessera/error.h"
-#include "tableau.h"
 #include "tile.h"
 #include <string>
 #include <vector>

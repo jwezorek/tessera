@@ -22,7 +22,7 @@ std::string tess::tile_patch_def::name() const
 	return name_;
 }
 
-std::vector<std::string> tess::tile_patch_def::params() const
+const std::vector<std::string>& tess::tile_patch_def::params() const
 {
 	return params_;
 }

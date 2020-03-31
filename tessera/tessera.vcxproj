@@ -34,13 +34,11 @@
     <ClCompile Include="internal\parser\statement_parser.cpp" />
     <ClCompile Include="internal\parser\tile_parser.cpp" />
     <ClCompile Include="internal\script_impl.cpp" />
-    <ClCompile Include="internal\tableau.cpp" />
     <ClCompile Include="internal\tile.cpp" />
     <ClCompile Include="internal\tile_impl.cpp" />
     <ClCompile Include="internal\tile_patch.cpp" />
     <ClCompile Include="internal\tile_patch_def.cpp" />
     <ClCompile Include="internal\statement.cpp" />
-    <ClCompile Include="internal\tableau_def.cpp" />
     <ClCompile Include="internal\tessera_script.cpp" />
     <ClCompile Include="internal\tessera.cpp" />
     <ClCompile Include="internal\parser\parser.cpp" />
@@ -50,7 +48,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tessera\error.h" />
-    <ClInclude Include="include\tessera\tableau.h" />
     <ClInclude Include="include\tessera\tessera.h" />
     <ClInclude Include="include\tessera\tessera_script.h" />
     <ClInclude Include="include\tessera\tile.h" />
@@ -76,7 +73,6 @@
     <ClInclude Include="internal\tile_impl.h" />
     <ClInclude Include="internal\tile_patch_def.h" />
     <ClInclude Include="internal\statement.h" />
-    <ClInclude Include="internal\tableau_def.h" />
     <ClInclude Include="internal\text_range.h" />
     <ClInclude Include="internal\tile_def.h" />
   </ItemGroup>
