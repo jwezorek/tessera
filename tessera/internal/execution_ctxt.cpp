@@ -68,7 +68,7 @@ tess::execution_ctxt tess::execution_ctxt::get_global_scope() const
 	return execution_ctxt(script_);
 }
 
-const tess::tessera_script::script_impl& tess::execution_ctxt::script() const
+const tess::script_impl& tess::execution_ctxt::script() const
 {
 	return *(script_.impl_);
 }

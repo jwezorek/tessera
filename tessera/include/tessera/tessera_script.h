@@ -10,6 +10,7 @@
 namespace tess
 {
 	class expression;
+    class script_impl;
     using inp_range = std::tuple<std::string::const_iterator, std::string::const_iterator>;
     using script_component_specifier = std::tuple<std::string, std::string, std::vector<std::string>, inp_range>;
     using tab_spec = std::tuple<std::string, std::vector<std::string>, tess::inp_range>;
@@ -21,7 +22,6 @@ namespace tess
 		friend class execution_ctxt;
 
     private:
-        class script_impl;
         std::shared_ptr<script_impl> impl_;
 
     public:

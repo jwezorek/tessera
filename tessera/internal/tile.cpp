@@ -3,10 +3,6 @@
 
 /*--------------------------------------------------------------------------------*/
 
-tess::tile::tile( std::shared_ptr<tile_impl> impl) : impl_(impl)
-{
-}
-
 std::string tess::tile::name() const
 {
 	return impl_->name();
@@ -24,11 +20,6 @@ const std::vector<tess::edge>& tess::tile::edges() const
 
 /*--------------------------------------------------------------------------------*/
 
-tess::vertex::vertex(const std::shared_ptr<vertex_impl>& impl) :
-	impl_(impl)
-{
-}
-
 std::string tess::vertex::name() const
 {
 	return impl_->name();
@@ -45,10 +36,6 @@ std::tuple<double, double> tess::vertex::pos() const
 }
 
 /*--------------------------------------------------------------------------------*/
-
-tess::edge::edge(const std::shared_ptr<edge_impl>& impl) :
-	impl_(impl)
-{}
 
 std::string tess::edge::name() const
 {

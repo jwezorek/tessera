@@ -12,7 +12,7 @@
 
 namespace tess {
 
-	class tessera_script::script_impl {
+	class script_impl {
 	private:
 		std::unordered_map<std::string, std::shared_ptr<const tile_def>> tiles_;
 		std::unordered_map<std::string, tile_patch_def> patches_;
@@ -27,6 +27,13 @@ namespace tess {
 		std::optional<expr_value> get_global(const std::string& var) const;
 		std::optional<std::variant<tile_def, tile_patch_def>> get_functional(const std::string& var) const;
 		std::shared_ptr<const tile_def> get_tile_prototype(const std::string& name) const;
+
+		template<typename T, typename I>
+		T make_user_object(const std::shared_ptr<I>& impl) const {
+			T obj;
+			obj.impl_ = impl;
+			return obj;
+		}
 
 		std::vector<tess::tile> execute(execution_ctxt& ctxt) const;
 	};

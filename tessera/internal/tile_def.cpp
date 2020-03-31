@@ -239,7 +239,7 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
     //    return { prototype_.value() };
 
     const auto& script = ctxt.script();
-    auto new_tile = tile( 
+    auto new_tile = script.make_user_object<tile>(
         std::make_shared<tile_impl>(
             script.get_tile_prototype(name_)
         ) 
@@ -255,7 +255,7 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
             std::shared_ptr<const vertex_def> prototype = v;
             std::tuple<number, number> loc = vert_locations[v->index];
 
-            return tess::vertex(
+            return  script.make_user_object<tess::vertex>(
                 std::make_shared<vertex_impl>(parent, prototype, loc)
             );
         }
@@ -266,7 +266,7 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 		[&](auto e) {
 			const tile_impl* parent = &(*new_tile.impl_);
 			std::shared_ptr<const edge_def> prototype = e;
-			return tess::edge(
+			return script.make_user_object<tess::edge>(
 				std::make_shared<edge_impl>(parent, prototype)
 			);
 		}
