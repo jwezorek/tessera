@@ -17,7 +17,7 @@ int main()
 	if (std::holds_alternative<tess::tessera_script>(results)) {
 		const auto& tessera = std::get<tess::tessera_script>(results);
 
-		auto output = tessera.execute({ "5" } );
+		auto output = tessera.execute( "5" );
 		if (std::holds_alternative<tess::error>(output)) {
 			std::cout << std::get<tess::error>(output) << "\n";
 			return -1;
