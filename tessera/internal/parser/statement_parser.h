@@ -13,6 +13,7 @@ namespace x3 = boost::spirit::x3;
 namespace tess {
     namespace parser {
         std::variant<stmts, exception> parse_statements(const text_range& input);
+		std::variant<stmt_ptr, exception> parse_single_statement_block(const text_range& input);
         
         struct statement_ : x3::parser<statement_> {
 			private:

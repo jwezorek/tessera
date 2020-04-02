@@ -17,11 +17,7 @@ void tess::script_impl::insert_patch_def(const std::string& name, std::vector<st
 
 void tess::script_impl::insert_tableau_def(std::vector<std::string> params, const text_range& source_code)
 {
-	tableau_ = tile_patch_def( 
-		parser::keyword( parser::kw::tableau), 
-		params, 
-		source_code 
-	);
+	insert_patch_def(parser::keyword(parser::kw::tableau), params, source_code);
 }
 
 void tess::script_impl::insert_globals(execution_ctxt& ctxt, global_vars global_defs)
@@ -35,17 +31,6 @@ void tess::script_impl::insert_globals(execution_ctxt& ctxt, global_vars global_
 		globals_[var] = value;
 	}
 }
-
-/*
-void tess::tessera_script::script_impl::build_tiles(execution_ctxt& ctxt)
-{
-	for (auto& [dummy, tile] : tiles_) {
-		auto maybe_tile = tile->eval(ctxt);
-		if (std::holds_alternative<tess::tile>(maybe_tile))
-			tile->set_value(std::get<tess::tile>(maybe_tile));
-	}
-}
-*/
 
 std::optional<std::variant<tess::tile_def, tess::tile_patch_def>> tess::script_impl::get_functional(const std::string& func) const
 {
@@ -67,7 +52,7 @@ std::shared_ptr<const tess::tile_def> tess::script_impl::get_tile_prototype(cons
 
 const tess::tile_patch_def& tess::script_impl::tableau() const
 {
-	return tableau_;
+	return patches_.at(parser::keyword(parser::kw::tableau));
 }
 
 std::vector<tess::tile> tess::script_impl::execute(execution_ctxt& ctxt) const

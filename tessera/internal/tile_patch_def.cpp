@@ -4,11 +4,10 @@
 tess::tile_patch_def::tile_patch_def(const std::string& name, std::vector<std::string> params, const text_range& source_code) :
     name_(name), params_(params)
 {
-    auto results = tess::parser::parse_statements(source_code);
-    if (std::holds_alternative<tess::stmts>(results)) {
-        statements_= std::get<tess::stmts>(results);
-    }
-    else {
+    auto results = tess::parser::parse_single_statement_block(source_code);
+    if (std::holds_alternative<tess::stmt_ptr>(results)) {
+        statement_= std::get<tess::stmt_ptr>(results);
+    } else {
         auto e = std::get<tess::parser::exception>(results);
         e.push_stack_item("patch " + name);
         if (!e.has_where())
@@ -27,7 +26,7 @@ const std::vector<std::string>& tess::tile_patch_def::params() const
 	return params_;
 }
 
-tess::expr_value tess::tile_patch_def::eval( execution_ctxt& ) const
+tess::expr_value tess::tile_patch_def::eval( execution_ctxt& ctxt ) const
 {
-    return expr_value{ nil_val() };
+    return statement_->execute(ctxt);
 }

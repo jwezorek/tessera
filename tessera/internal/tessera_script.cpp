@@ -62,20 +62,13 @@ tess::result tess::tessera_script::execute(const std::initializer_list<std::stri
         return std::get<error>(*err_iter);
     }
         
-    ctxt.push_scope(
-        tess::lexical_scope(
-            parameters(),
-            args
-        )
-    );
+    auto output = ctxt.call(parser::keyword(parser::kw::tableau), args);
+    if (std::holds_alternative<error>(output))
+        return { std::get<error>(output) };
+    if (!std::holds_alternative<tile_patch>(output))
+        return { error("tableau does not evaulate to a tile patch.") };
 
-    auto result = impl_->execute(ctxt);
-    ctxt.pop_scope();
-    return result;
+    const auto& tiles = std::get<tile_patch>(output).tiles();
+    return { tiles };
 }
-/*
-tess::result tess::tessera_script::execute() const
-{
-    return execute( {} );
-}
-*/
+

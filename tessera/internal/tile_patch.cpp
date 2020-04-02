@@ -1,4 +1,5 @@
 #include "..\include\tessera\tile_patch.h"
+#include "tile_patch_impl.h"
 
 std::string tess::tile_patch::name() const
 {
@@ -7,5 +8,5 @@ std::string tess::tile_patch::name() const
 
 const std::vector<tess::tile>& tess::tile_patch::tiles() const
 {
-	return {};
+	return impl_->tiles();
 }

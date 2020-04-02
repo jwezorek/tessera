@@ -69,3 +69,21 @@ std::variant<tess::stmts, tess::parser::exception> tess::parser::parse_statement
 
     return output;
 }
+
+std::variant<tess::stmt_ptr, tess::parser::exception> tess::parser::parse_single_statement_block(const text_range& input)
+{
+    tess::stmt_ptr output;
+    bool success = false;
+    auto iter = input.begin();
+
+    try {
+        success = x3::phrase_parse(iter, input.end(), x3::lit('{') >> tess::parser::stmt >> x3::lit('}'), x3::space, output);
+    } catch (x3::expectation_failure<std::string::const_iterator> ex_fail) {
+        return exception("", ex_fail);
+    }
+
+    if (!success || iter != input.end())
+        return exception("", "syntax error", iter);
+
+    return output;
+}

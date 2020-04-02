@@ -1,5 +1,6 @@
 #pragma once
 
+#include "tessera_impl.h"
 #include "expression.h"
 #include "execution_ctxt.h"
 #include "expr_value.h"
@@ -17,7 +18,7 @@ namespace tess {
 	using stmt_ptr = std::shared_ptr<statement>;
 	using stmts = std::vector<std::shared_ptr<statement>>;
 
-	class statement
+	class statement : public tessera_impl
 	{
 	public:
 		virtual expr_value execute(execution_ctxt&) const = 0;

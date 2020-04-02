@@ -1,4 +1,6 @@
 #include "statement.h"
+#include "script_impl.h"
+#include "tile_patch_impl.h"
 
 tess::lay_statement::lay_statement(const lay_params& params) :
     tiles_(params.tiles),
@@ -11,9 +13,17 @@ tess::lay_statement::lay_statement(const std::vector<obj_ref_ptr>& tiles) :
 {
 }
 
-tess::expr_value tess::lay_statement::execute(tess::execution_ctxt&) const
+tess::expr_value tess::lay_statement::execute( tess::execution_ctxt& ctxt ) const
 {
-	return tess::expr_value{ nil_val() };
+    const auto& script = ctxt.script();
+    auto tile_def = script.get_tile_prototype("triangle");
+    auto val = tile_def->eval(ctxt);
+    auto patch = make_tess_obj<tess::tile_patch> (
+        std::make_shared<tess::tile_patch_impl>(
+            std::vector<tess::tile>{ std::get<tess::tile>(val) }
+        )
+    );
+    return { patch };
 }
 
 tess::if_statement::if_statement(const if_params& params) :

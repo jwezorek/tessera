@@ -13,7 +13,7 @@ namespace tess {
     private:
         std::string name_;
         std::vector<std::string> params_;
-        stmts statements_;
+        stmt_ptr statement_;
     public:
         tile_patch_def() {}
         tile_patch_def(const std::string& name, std::vector<std::string> params, const text_range& source_code);
