@@ -17,6 +17,7 @@ namespace tess {
 	public:
 		std::string name() const;
 		const std::vector<tile>& tiles() const;
+		int count() const;
 	};
 
 }

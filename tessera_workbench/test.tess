@@ -19,6 +19,10 @@ patch tri_grid(e, n) {
 		lay tri_strip(e, n) -> tri_grid( $1[1].left, n-1);
 }
 
+patch test {
+	lay triangle -> triangle such_that $1.bottom <-> $2.bottom;
+}
+
 tableau( num ) {
-	lay tri_grid(nil, num);
+	lay test;
 }

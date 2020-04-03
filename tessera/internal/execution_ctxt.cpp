@@ -6,6 +6,12 @@ tess::execution_ctxt::execution_ctxt(const tessera_script& script) :
 {
 }
 
+bool tess::execution_ctxt::is_functional(const std::string& func) const
+{
+	auto maybe_functional = script_.impl_->get_functional(func);
+	return maybe_functional.has_value();
+}
+
 tess::expr_value tess::execution_ctxt::call(const std::string& func, const std::vector<tess::expr_value>& args) const
 {
 	auto maybe_functional = script_.impl_->get_functional(func);
@@ -25,8 +31,7 @@ tess::expr_value tess::execution_ctxt::call(const std::string& func, const std::
 		return output;
 	};
 
-	auto functional = maybe_functional.value();
-	return std::visit(visitor, functional);
+	return std::visit(visitor, maybe_functional.value());
 }
 
 tess::expr_value tess::execution_ctxt::eval(const std::string& var) const
@@ -40,7 +45,11 @@ tess::expr_value tess::execution_ctxt::eval(const std::string& var) const
 	if (maybe_global.has_value())
 		return maybe_global.value();
 
-	return tess::expr_value{ error("Unknown variable: " + var) };
+	// it might be a tile or patch called with an empty argument list.
+	if (is_functional(var))
+		return call(var, {});
+	else
+		return tess::expr_value{ error("Unknown variable: " + var) };
 }
 
 tess::expr_value tess::execution_ctxt::get_placeholder(int ph) const

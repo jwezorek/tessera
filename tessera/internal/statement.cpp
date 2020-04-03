@@ -1,6 +1,46 @@
 #include "statement.h"
 #include "script_impl.h"
 #include "tile_patch_impl.h"
+#include "tessera/error.h"
+
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; }; 
+template<class... Ts> overloaded(Ts...)->overloaded<Ts...>; 
+
+namespace {
+
+    int countTiles(const std::vector<tess::expr_value>& tiles_and_patches) {
+        int count = 0;
+        for (const auto& tile_or_patch : tiles_and_patches)
+            std::visit(
+                overloaded{
+                    [&count](const tess::tile& ) { ++count; },
+                    [&count](const tess::tile_patch& patch) { count += patch.count(); },
+                    [](auto) { throw tess::error("unknown error"); }
+                }, 
+                tile_or_patch
+            );
+        return count;
+    }
+
+    std::vector<tess::tile> flatten(const std::vector<tess::expr_value>& tiles_and_patches) {
+        int n = countTiles(tiles_and_patches);
+        std::vector<tess::tile> tiles;
+        tiles.reserve(n);
+        for (const auto& tile_or_patch : tiles_and_patches)
+            std::visit(
+                overloaded{
+                    [&tiles](const tess::tile& t) { tiles.push_back(t); },
+                    [&tiles](const tess::tile_patch& patch) {
+                        std::copy(patch.tiles().begin(), patch.tiles().end(), std::back_inserter(tiles));
+                    },
+                    [](auto) { throw tess::error("unknown error"); }
+                },
+                tile_or_patch
+            );
+        return tiles;
+    }
+
+}
 
 tess::lay_statement::lay_statement(const lay_params& params) :
     tiles_(params.tiles),
@@ -13,6 +53,7 @@ tess::lay_statement::lay_statement(const std::vector<obj_ref_ptr>& tiles) :
 {
 }
 
+/*
 tess::expr_value tess::lay_statement::execute( tess::execution_ctxt& ctxt ) const
 {
     const auto& script = ctxt.script();
@@ -24,6 +65,36 @@ tess::expr_value tess::lay_statement::execute( tess::execution_ctxt& ctxt ) cons
         )
     );
     return { patch };
+}
+*/
+
+tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
+{
+    std::vector<expr_value> pieces(tiles_.size());
+    std::transform(tiles_.begin(), tiles_.end(), pieces.begin(),
+        [&ctxt](const auto& piece) {
+            return piece->eval(ctxt);
+        }
+    );
+
+    for (const auto& val : pieces) {
+        if (std::holds_alternative<error>(val))
+            return val;
+        if (!std::holds_alternative<tile>(val) && !std::holds_alternative<tile_patch>(val))
+            return { error("Can only lay tiles or patches.") };
+    }
+
+    if (such_that_clauses_.empty()) {
+        return tess::expr_value{ 
+            make_tess_obj<tile_patch>(
+                std::make_shared<tile_patch_impl>(
+                    flatten(pieces)
+                )
+            )
+        };
+    }
+
+    return { nil_val() };
 }
 
 tess::if_statement::if_statement(const if_params& params) :
