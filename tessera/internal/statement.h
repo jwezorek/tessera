@@ -20,6 +20,8 @@ namespace tess {
 
 	class statement : public tessera_impl
 	{
+	protected:
+		tile_patch flatten(const std::vector<expr_value>& tiles_n_patches) const;
 	public:
 		virtual expr_value execute(execution_ctxt&) const = 0;
 	};

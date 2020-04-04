@@ -6,6 +6,16 @@
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; }; 
 template<class... Ts> overloaded(Ts...)->overloaded<Ts...>; 
 
+template<typename T, typename... Ts, typename... Vs>
+bool is_one_of(const std::variant<Vs...>& v) {
+	if (std::holds_alternative<T>(v))
+		return true;
+	if constexpr (sizeof...(Ts) != 0)
+		return is_one_of<Ts...>(v);
+	else
+		return false;
+}
+
 namespace {
 
     int countTiles(const std::vector<tess::expr_value>& tiles_and_patches) {
@@ -22,7 +32,7 @@ namespace {
         return count;
     }
 
-    std::vector<tess::tile> flatten(const std::vector<tess::expr_value>& tiles_and_patches) {
+    std::vector<tess::tile> flatten_tiles_and_patches(const std::vector<tess::expr_value>& tiles_and_patches) {
         int n = countTiles(tiles_and_patches);
         std::vector<tess::tile> tiles;
         tiles.reserve(n);
@@ -77,22 +87,18 @@ tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
         }
     );
 
-    for (const auto& val : pieces) {
-        if (std::holds_alternative<error>(val))
-            return val;
-        if (!std::holds_alternative<tile>(val) && !std::holds_alternative<tile_patch>(val))
-            return { error("Can only lay tiles or patches.") };
-    }
+	for (const auto& val : pieces)
+		if (!is_one_of<tile, tile_patch>(val))
+			return std::holds_alternative<error>(val) ? 
+				val : expr_value{ error("Can only lay tiles or patches.") };
 
     if (such_that_clauses_.empty()) {
-        return tess::expr_value{ 
-            make_tess_obj<tile_patch>(
-                std::make_shared<tile_patch_impl>(
-                    flatten(pieces)
-                )
-            )
+		return tess::expr_value{
+			flatten(pieces)
         };
     }
+
+
 
     return { nil_val() };
 }
@@ -138,4 +144,13 @@ std::string tess::let_statement::lhs() const
 tess::expr_ptr tess::let_statement::rhs() const
 {
 	return rhs_;
+}
+
+tess::tile_patch tess::statement::flatten(const std::vector<expr_value>& tiles_n_patches) const
+{
+	return make_tess_obj<tile_patch>(
+		std::make_shared<tile_patch_impl>(
+			flatten_tiles_and_patches(tiles_n_patches)
+		)
+	);
 }
