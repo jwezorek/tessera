@@ -1,20 +1,8 @@
+#include "util.h"
 #include "statement.h"
 #include "script_impl.h"
 #include "tile_patch_impl.h"
 #include "tessera/error.h"
-
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; }; 
-template<class... Ts> overloaded(Ts...)->overloaded<Ts...>; 
-
-template<typename T, typename... Ts, typename... Vs>
-bool is_one_of(const std::variant<Vs...>& v) {
-	if (std::holds_alternative<T>(v))
-		return true;
-	if constexpr (sizeof...(Ts) != 0)
-		return is_one_of<Ts...>(v);
-	else
-		return false;
-}
 
 namespace {
 

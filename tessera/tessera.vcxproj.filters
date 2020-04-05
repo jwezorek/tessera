@@ -183,5 +183,8 @@
     <ClInclude Include="internal\tile_patch_impl.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
+    <ClInclude Include="internal\util.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

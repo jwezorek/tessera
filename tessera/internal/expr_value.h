@@ -4,6 +4,7 @@
 #include "../include/tessera/error.h"
 #include <variant>
 #include <symengine/expression.h>
+#include "tessera_impl.h"
 
 namespace tess {
 
@@ -15,7 +16,8 @@ namespace tess {
     };
 
 	using expr_val_var = std::variant< nil_val, tile, tile_patch, number, bool, edge, vertex, error>;
-	class expr_value : public expr_val_var
+
+	class expr_value : public expr_val_var, public tessera_impl
 	{
 	public:
 		bool is_object() const;

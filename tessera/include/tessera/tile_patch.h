@@ -11,7 +11,7 @@ namespace tess {
 
 	class tile_patch
 	{
-		friend tessera_impl;
+		friend class tessera_impl;
 	private:
 		std::shared_ptr<tile_patch_impl> impl_;
 	public:
