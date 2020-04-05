@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <variant>
 #include <tuple>
 #include <unordered_map>
 #include <string>
@@ -34,8 +35,18 @@ namespace tess {
 	class lay_statement : public statement
 	{
 	private:
+		using expr_vals = std::vector< expr_value>;
+		using expr_val_pair = std::tuple<expr_value, expr_value>;
+		using expr_val_pairs = std::vector<expr_val_pair>;
+		using piece_result = std::variant<expr_vals, error>;
+		using clause_result = std::variant<expr_val_pairs, error>;
+
 		std::vector<obj_ref_ptr> tiles_;
 		std::vector<std::tuple<obj_ref_ptr, obj_ref_ptr>> such_that_clauses_;
+
+		piece_result eval_pieces(execution_ctxt&) const;
+		clause_result eval_such_that_clauses(execution_ctxt&) const;
+
 	public:
 		lay_statement(const lay_params& params);
 		lay_statement(const std::vector<obj_ref_ptr>& tiles);

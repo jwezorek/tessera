@@ -52,6 +52,48 @@ namespace {
 
 }
 
+tess::lay_statement::piece_result tess::lay_statement::eval_pieces(execution_ctxt& ctxt) const
+{
+	std::vector<expr_value> pieces(tiles_.size());
+	std::transform(tiles_.begin(), tiles_.end(), pieces.begin(),
+		[&ctxt](const auto& piece) {
+			return piece->eval(ctxt);
+		}
+	);
+
+	for (const auto& val : pieces) {
+		if (!is_one_of<tile, tile_patch>(val)) {
+			return std::holds_alternative<error>(val) ?
+				std::get<error>(val) : error("Can only lay tiles or patches.");
+		}
+	}
+
+	return pieces;
+}
+
+tess::lay_statement::clause_result tess::lay_statement::eval_such_that_clauses(execution_ctxt& ctxt) const
+{
+	expr_val_pairs clause_vals(such_that_clauses_.size());
+	std::transform(such_that_clauses_.begin(), such_that_clauses_.end(), clause_vals.begin(),
+		[&ctxt](const auto& exprs)->expr_val_pair {
+			auto [e1, e2] = exprs;
+			return {
+				e1->eval(ctxt),
+				e2->eval(ctxt)
+			};
+		}
+	);
+	for (const auto& [val1, val2] : clause_vals) {
+		if (! is_one_of<edge, nil_val>(val1))
+			return std::holds_alternative<error>(val1) ?
+				std::get<error>(val1) : error("Can only lay tiles or patches.");
+		if (!is_one_of<edge, nil_val>(val2))
+			return std::holds_alternative<error>(val2) ?
+				std::get<error>(val2) : error("Can only lay tiles or patches.");
+	}
+	return clause_vals;
+}
+
 tess::lay_statement::lay_statement(const lay_params& params) :
     tiles_(params.tiles),
     such_that_clauses_( params.such_that_clauses )
@@ -80,17 +122,10 @@ tess::expr_value tess::lay_statement::execute( tess::execution_ctxt& ctxt ) cons
 
 tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
 {
-    std::vector<expr_value> pieces(tiles_.size());
-    std::transform(tiles_.begin(), tiles_.end(), pieces.begin(),
-        [&ctxt](const auto& piece) {
-            return piece->eval(ctxt);
-        }
-    );
-
-	for (const auto& val : pieces)
-		if (!is_one_of<tile, tile_patch>(val))
-			return std::holds_alternative<error>(val) ? 
-				val : expr_value{ error("Can only lay tiles or patches.") };
+	piece_result maybe_pieces;
+	if ( maybe_pieces = eval_pieces(ctxt); std::holds_alternative<error>(maybe_pieces)) 
+		return { std::get<error>(maybe_pieces) };
+	auto pieces = std::move(std::get<expr_vals>(maybe_pieces));
 
     if (such_that_clauses_.empty()) {
 		return tess::expr_value{
@@ -98,7 +133,16 @@ tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
         };
     }
 
+	// push "placeholders' to the pieces on the stack
+	ctxt.push_scope(lexical_scope(pieces));
 
+	clause_result maybe_clauses;
+	if (maybe_clauses = eval_such_that_clauses(ctxt); std::holds_alternative<error>(maybe_clauses))
+		return { std::get<error>(maybe_clauses) };
+	auto clauses = std::move(std::get<expr_val_pairs>(maybe_clauses));
+
+	ctxt.pop_scope();
+	
 
     return { nil_val() };
 }
