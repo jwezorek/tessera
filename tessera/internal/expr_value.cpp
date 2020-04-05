@@ -1,5 +1,7 @@
 #include "util.h"
 #include "expr_value.h"
+#include "tile_impl.h"
+#include "tile_patch_impl.h"
 
 tess::nil_val::nil_val()
 {
@@ -24,16 +26,12 @@ tess::expr_value tess::expr_value::get_field(const std::string& field) const
 		return { error("attempted reference to field of a non-object.") };
 	}
 	auto value = static_cast<expr_val_var>(*this);
-	std::variant<tile, tile_patch, vertex, edge> v = variant_cast(value);
-	/*
-	auto test = std::visit(
-		[&](auto&& obj)->expr_value {
-			return obj.get_field(field);
-		},
-		v
+	std::variant<tile, tile_patch, vertex, edge> obj_variant = variant_cast(value);
+	
+	return std::visit(
+		[&](auto&& obj)->expr_value { return get_impl(obj)->get_field(field); },
+		obj_variant
 	);
-	*/
-	return {};
 }
 
 tess::expr_value tess::expr_value::get_field(const std::string& field, int ary_item_index) const

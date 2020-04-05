@@ -93,7 +93,7 @@ tess::lay_statement::lay_statement(const std::vector<obj_ref_ptr>& tiles) :
 {
 }
 
-
+/*
 tess::expr_value tess::lay_statement::execute( tess::execution_ctxt& ctxt ) const
 {
     const auto& script = ctxt.script();
@@ -104,8 +104,8 @@ tess::expr_value tess::lay_statement::execute( tess::execution_ctxt& ctxt ) cons
     );
     return { patch };
 }
+*/
 
-/*
 tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
 {
 	piece_result maybe_pieces;
@@ -132,7 +132,7 @@ tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
 
     return { nil_val() };
 }
-*/
+
 tess::if_statement::if_statement(const if_params& params) :
     condition_(params.condition),
     then_clause_(params.then_clause),

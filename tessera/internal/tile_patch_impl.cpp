@@ -9,3 +9,8 @@ const std::vector<tess::tile>& tess::tile_patch::impl_type::tiles() const
 {
     return tiles_;
 }
+
+tess::expr_value tess::tile_patch::impl_type::get_field(const std::string& field) const
+{
+	return expr_value();
+}

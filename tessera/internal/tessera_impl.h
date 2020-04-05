@@ -20,8 +20,8 @@ namespace tess {
 				return obj;
 			}
 
-			template<typename T, typename I>
-			std::shared_ptr<I> get_impl(T& tess_obj) {
+			template<typename T>
+			std::shared_ptr<typename T::impl_type> get_impl(T& tess_obj) const {
 				return tess_obj.impl_;
 			}
 

@@ -62,5 +62,7 @@ namespace tess {
         const vertex_def& vertex(const std::string& v) const;
         const edge_def& edge(const std::string& e) const;
 		int num_vertices() const;
+		int get_edge_index(const std::string& e) const;
+		int get_vertex_index(const std::string& v) const;
     };
 }

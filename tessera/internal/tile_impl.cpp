@@ -34,6 +34,19 @@ void tess::tile::impl_type::set( std::vector<tess::vertex>&& vertices, std::vect
     edges_ = std::move(edges);
 }
 
+tess::expr_value tess::tile::impl_type::get_field(const std::string& field) const
+{
+	int index = def_->get_edge_index(field);
+	if (index > 0) {
+		return { edges_.at(index) };
+	}
+	index = def_->get_vertex_index(field);
+	if (index > 0) {
+		return { vertices_.at(index) };
+	}
+	return { error(std::string("refrenced undefined tile edge or vertex: ") + field ) };
+}
+
 /*--------------------------------------------------------------------------------*/
 
 tess::edge::impl_type::impl_type(const tile::impl_type* parent, std::shared_ptr<const edge_def> prototype) :
@@ -59,6 +72,11 @@ const tess::vertex& tess::edge::impl_type::u() const
 const tess::vertex& tess::edge::impl_type::v() const
 {
     return parent_->vertex(def_->v);
+}
+
+tess::expr_value tess::edge::impl_type::get_field(const std::string& field) const
+{
+	return {};
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -92,4 +110,9 @@ std::tuple<tess::number, tess::number> tess::vertex::impl_type::pos() const
         x_,
         y_
     };
+}
+
+tess::expr_value tess::vertex::impl_type::get_field(const std::string& field) const
+{
+	return {};
 }

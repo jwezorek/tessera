@@ -184,3 +184,20 @@ int tess::tile_def::num_vertices() const
 {
 	return static_cast<int>(vertices_.size());
 }
+
+
+int tess::tile_def::get_edge_index(const std::string& e) const
+{
+	auto i = name_to_edge_.find(e);
+	if (i == name_to_edge_.end())
+		return -1;
+	return i->second.index;
+}
+
+int tess::tile_def::get_vertex_index(const std::string& v) const
+{
+	auto i = name_to_vertex_.find(v);
+	if (i == name_to_vertex_.end())
+		return -1;
+	return i->second.index;
+}
