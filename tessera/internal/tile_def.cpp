@@ -138,7 +138,7 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 
 	auto n = num_vertices();
     const auto& script = ctxt.script();
-    auto new_tile_impl = std::make_shared<tile_impl>(
+    auto new_tile_impl = std::make_shared<tile::impl_type>(
         script.get_tile_prototype(name_)
     );
 
@@ -148,9 +148,9 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
     std::transform(vertices_.cbegin(), vertices_.cend(), verts.begin(),
         [&](auto v) {
             std::shared_ptr<const vertex_def> definition = v;
-            return  make_tess_obj<tess::vertex>(
-                std::make_shared<vertex_impl>(new_tile_impl.get(), definition, vert_locations[v->index])
-            );
+			return make_tess_obj<tess::vertex>(
+				new_tile_impl.get(), definition, vert_locations[v->index]
+			);
         }
     );
 
@@ -158,15 +158,13 @@ tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 	std::transform(edges_.cbegin(), edges_.cend(), edges.begin(),
 		[&](auto e) {
 			std::shared_ptr<const edge_def> definition = e;
-			return make_tess_obj<tess::edge>(
-				std::make_shared<edge_impl>(new_tile_impl.get(), definition)
-			);
+			return make_tess_obj<tess::edge>(new_tile_impl.get(), definition);
 		}
 	);
    
     new_tile_impl->set( std::move(verts), std::move(edges) );
     return { 
-        make_tess_obj<tess::tile>(
+        make_tess_obj_from_impl<tess::tile>(
             new_tile_impl
         )
 	};

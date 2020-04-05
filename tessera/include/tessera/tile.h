@@ -6,44 +6,41 @@
 #include <tuple>
 
 namespace tess {
-	class edge_impl;
-	class vertex_impl;
 	class tile_impl;
 
 	class vertex {
 		friend class tessera_impl;
-	private:
-		std::shared_ptr<vertex_impl> impl_;
-		
 	public:
 		std::string name() const;
 		std::string vertex_class() const;
 		std::tuple<double, double> pos() const;
+		class impl_type;
+	private:
+		std::shared_ptr<impl_type> impl_;
 	};
 
 	class edge {
 		friend class tessera_impl;
-	private:
-		std::shared_ptr<edge_impl> impl_;
-
 	public:
 		std::string name() const;
 		std::string edge_class() const;
 		const vertex& u() const;
 		const vertex& v() const;
+		class impl_type;
+	private:
+		std::shared_ptr<impl_type> impl_;
 	};
 
 	class tile
 	{
 		friend class tessera_impl;
-
-	private:
-		std::shared_ptr<tile_impl> impl_;
-
 	public:
 		std::string name() const;
 		const std::vector<vertex>& vertices() const;
 		const std::vector<edge>& edges() const;
+		class impl_type;
+	private:
+		std::shared_ptr<impl_type> impl_;
 	};
 
 }

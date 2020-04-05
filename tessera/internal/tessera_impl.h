@@ -6,8 +6,15 @@ namespace tess {
 
     class tessera_impl {
         public:
+			template<typename T, typename... Args>
+			T make_tess_obj(Args... args) const {
+				T obj;
+				obj.impl_ = std::make_shared<typename T::impl_type>(std::forward<Args>(args)...);
+				return obj;
+			}
+
 			template<typename T, typename I>
-			T make_tess_obj(const std::shared_ptr<I>& impl) const {
+			T make_tess_obj_from_impl(const std::shared_ptr<I>& impl) const {
 				T obj;
 				obj.impl_ = impl;
 				return obj;

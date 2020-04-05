@@ -93,21 +93,19 @@ tess::lay_statement::lay_statement(const std::vector<obj_ref_ptr>& tiles) :
 {
 }
 
-/*
+
 tess::expr_value tess::lay_statement::execute( tess::execution_ctxt& ctxt ) const
 {
     const auto& script = ctxt.script();
     auto tile_def = script.get_tile_prototype("triangle");
     auto val = tile_def->eval(ctxt);
     auto patch = make_tess_obj<tess::tile_patch> (
-        std::make_shared<tess::tile_patch_impl>(
             std::vector<tess::tile>{ std::get<tess::tile>(val) }
-        )
     );
     return { patch };
 }
-*/
 
+/*
 tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
 {
 	piece_result maybe_pieces;
@@ -134,7 +132,7 @@ tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
 
     return { nil_val() };
 }
-
+*/
 tess::if_statement::if_statement(const if_params& params) :
     condition_(params.condition),
     then_clause_(params.then_clause),
@@ -181,8 +179,6 @@ tess::expr_ptr tess::let_statement::rhs() const
 tess::tile_patch tess::statement::flatten(const std::vector<expr_value>& tiles_n_patches) const
 {
 	return make_tess_obj<tile_patch>(
-		std::make_shared<tile_patch_impl>(
-			flatten_tiles_and_patches(tiles_n_patches)
-		)
+		flatten_tiles_and_patches(tiles_n_patches)
 	);
 }

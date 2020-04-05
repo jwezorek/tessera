@@ -7,13 +7,13 @@
 
 namespace tess {
 
-	class tile_patch_impl;
-
 	class tile_patch
 	{
 		friend class tessera_impl;
+	public:
+		class impl_type;
 	private:
-		std::shared_ptr<tile_patch_impl> impl_;
+		std::shared_ptr<impl_type> impl_;
 	public:
 		std::string name() const;
 		const std::vector<tile>& tiles() const;
