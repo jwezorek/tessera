@@ -14,7 +14,7 @@
 namespace x3 = boost::spirit::x3;
 
 BOOST_FUSION_ADAPT_STRUCT(tess::lay_params,
-	tiles, such_that_clauses
+	tiles, edge_mappings
 )
 
 namespace tess {

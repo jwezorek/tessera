@@ -9,13 +9,13 @@
 
 namespace tess {
 
-	class lexical_scope {
+	class scope_frame {
 		private:
 			std::unordered_map<int, expr_value> placeholders_;
 			std::unordered_map<std::string, expr_value> variables_;
 		public:
-			lexical_scope(const std::vector<std::string>& param, const std::vector<expr_value>& arg);
-			lexical_scope(const std::vector<expr_value>& arg);
+			scope_frame(const std::vector<std::string>& param, const std::vector<expr_value>& arg);
+			scope_frame(const std::vector<expr_value>& arg);
 			std::optional<expr_value> get(int ph) const;
 			std::optional<expr_value> get(std::string str) const;
 	};
@@ -23,7 +23,7 @@ namespace tess {
     class execution_ctxt {
 		private:
 			const tessera_script& script_;
-			std::vector<lexical_scope> scope_stack_;
+			std::vector<scope_frame> scope_stack_;
 
 		public:
 			execution_ctxt(const tessera_script& script);
@@ -31,10 +31,18 @@ namespace tess {
 			expr_value call(const std::string& func, const std::vector<expr_value>& args) const;
 			expr_value eval(const std::string& var) const;
 			expr_value get_placeholder(int i) const;
-			void push_scope(lexical_scope&& scope);
+			void push_scope(scope_frame&& scope);
 			void pop_scope();
 			execution_ctxt get_global_scope() const;
 			const script_impl& script() const;
     };
+
+	class scope {
+	private:
+		execution_ctxt& ctxt_;
+	public:
+		scope(execution_ctxt& ctxt, scope_frame&& ls);
+		~scope();
+	};
 
 }

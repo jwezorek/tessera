@@ -59,11 +59,11 @@ tess::lay_statement::piece_result tess::lay_statement::eval_pieces(execution_ctx
 	return pieces;
 }
 
-tess::lay_statement::clause_result tess::lay_statement::eval_such_that_clauses(execution_ctxt& ctxt) const
+tess::lay_statement::edge_mapping_result tess::lay_statement::eval_edge_mappings(execution_ctxt& ctxt) const
 {
-	expr_val_pairs clause_vals(such_that_clauses_.size());
-	std::transform(such_that_clauses_.begin(), such_that_clauses_.end(), clause_vals.begin(),
-		[&ctxt](const auto& exprs)->expr_val_pair {
+	std::vector< std::tuple<expr_value, expr_value>> edge_mapping_val_exprs( edge_mappings_.size() );
+	std::transform(edge_mappings_.begin(), edge_mappings_.end(), edge_mapping_val_exprs.begin(),
+		[&ctxt](const auto& exprs)->std::tuple<expr_value, expr_value> {
 			auto [e1, e2] = exprs;
 			return {
 				e1->eval(ctxt),
@@ -71,20 +71,41 @@ tess::lay_statement::clause_result tess::lay_statement::eval_such_that_clauses(e
 			};
 		}
 	);
-	for (const auto& [val1, val2] : clause_vals) {
+
+	edge_mapping_values mappings;
+	mappings.reserve( edge_mappings_.size() );
+
+	for (const auto& [val1, val2] : edge_mapping_val_exprs) {
 		if (! is_one_of<edge, nil_val>(val1))
 			return std::holds_alternative<error>(val1) ?
 				std::get<error>(val1) : error("Can only lay tiles or patches.");
 		if (!is_one_of<edge, nil_val>(val2))
 			return std::holds_alternative<error>(val2) ?
 				std::get<error>(val2) : error("Can only lay tiles or patches.");
+
+		auto e1 = std::holds_alternative<edge>(val1) ? 
+			opt_edge{std::get<edge>(val1)} :
+			std::nullopt;
+		auto e2 = std::holds_alternative<edge>(val2) ?
+			opt_edge{ std::get<edge>(val2) } :
+			std::nullopt;
+
+		mappings.emplace_back(e1, e2);
 	}
-	return clause_vals;
+
+	
+	return mappings;
+}
+
+std::optional<tess::error> tess::lay_statement::apply_mapping(const edge_mapping_value& mapping, execution_ctxt& ctxt) const
+{
+	auto [e1, e2] = mapping;
+	return {};
 }
 
 tess::lay_statement::lay_statement(const lay_params& params) :
     tiles_(params.tiles),
-    such_that_clauses_( params.such_that_clauses )
+    edge_mappings_( params.edge_mappings )
 {
 }
 
@@ -92,7 +113,7 @@ tess::lay_statement::lay_statement(const std::vector<obj_ref_ptr>& tiles) :
     tiles_(tiles)
 {
 }
-/*
+
 tess::expr_value tess::lay_statement::execute( tess::execution_ctxt& ctxt ) const
 {
     const auto& script = ctxt.script();
@@ -103,8 +124,8 @@ tess::expr_value tess::lay_statement::execute( tess::execution_ctxt& ctxt ) cons
     );
     return { patch };
 }
-*/
 
+/*
 tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
 {
 	piece_result maybe_pieces;
@@ -112,32 +133,26 @@ tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
 		return { std::get<error>(maybe_pieces) };
 	auto pieces = std::move(std::get<expr_vals>(maybe_pieces));
 
-    if (such_that_clauses_.empty()) {
+    if (edge_mappings_.empty()) {
 		return tess::expr_value{
 			flatten(pieces)
         };
     }
 
 	// push "placeholders' to the pieces on the stack
-	ctxt.push_scope(lexical_scope(pieces));
-
-	auto expr = std::make_shared<object_ref_expr>(
-		std::vector<object_ref_item>{ object_ref_item{ 1 } }
-	);
-
-
+	scope scope(ctxt, scope_frame(pieces));
 	
-//	clause_result maybe_clauses;
-//	if (maybe_clauses = eval_such_that_clauses(ctxt); std::holds_alternative<error>(maybe_clauses))
-//		return { std::get<error>(maybe_clauses) };
-//	auto clauses = std::move(std::get<expr_val_pairs>(maybe_clauses));
-
-//	ctxt.pop_scope();
-//	
+	edge_mapping_result maybe_mappings;
+	if (maybe_mappings = eval_edge_mappings(ctxt); std::holds_alternative<error>(maybe_mappings))
+		return { std::get<error>(maybe_mappings) };
+	auto mappings = std::move(std::get<edge_mapping_values>(maybe_mappings));
+	for (const auto& mapping : mappings) {
+		auto result = apply_mapping(mapping, ctxt);
+	}
 
     return { nil_val() };
 }
-
+*/
 
 tess::if_statement::if_statement(const if_params& params) :
     condition_(params.condition),

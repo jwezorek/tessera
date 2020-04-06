@@ -23,10 +23,9 @@ tess::expr_value tess::execution_ctxt::call(const std::string& func, const std::
 		if (params.size() != args.size())
 			return expr_value{ "invalid tile/patch call" };
 
-		auto scope = get_global_scope();
-		scope.push_scope( lexical_scope(params, args) );
-		auto output = func.eval(scope);
-		scope.pop_scope();
+		auto ctxt = get_global_scope();
+		tess::scope scope(ctxt, scope_frame(params, args) );
+		auto output = func.eval(ctxt);
 
 		return output;
 	};
@@ -62,7 +61,7 @@ tess::expr_value tess::execution_ctxt::get_placeholder(int ph) const
 	return tess::expr_value{ error("Unknown placeholder: $" + ph) };
 }
 
-void tess::execution_ctxt::push_scope(lexical_scope&& scope)
+void tess::execution_ctxt::push_scope(scope_frame&& scope)
 {
 	scope_stack_.push_back(std::move(scope));
 }
@@ -82,19 +81,19 @@ const tess::script_impl& tess::execution_ctxt::script() const
 	return *(script_.impl_);
 }
 
-tess::lexical_scope::lexical_scope(const std::vector<std::string>& param, const std::vector<expr_value>& args)
+tess::scope_frame::scope_frame(const std::vector<std::string>& param, const std::vector<expr_value>& args)
 {
 	for (int i = 0; i < param.size(); ++i)
 		variables_[param[i]] = args[i];
 }
 
-tess::lexical_scope::lexical_scope(const std::vector<expr_value>& args)
+tess::scope_frame::scope_frame(const std::vector<expr_value>& args)
 {
 	for (int i = 0; i < args.size(); ++i)
 		placeholders_[i+1] = args[i];
 }
 
-std::optional<tess::expr_value> tess::lexical_scope::get(int ph) const
+std::optional<tess::expr_value> tess::scope_frame::get(int ph) const
 {
 	auto i = placeholders_.find(ph);
 	if (i != placeholders_.end())
@@ -103,7 +102,7 @@ std::optional<tess::expr_value> tess::lexical_scope::get(int ph) const
 		return std::nullopt;
 }
 
-std::optional<tess::expr_value> tess::lexical_scope::get(std::string str) const
+std::optional<tess::expr_value> tess::scope_frame::get(std::string str) const
 {
 	auto i = variables_.find(str);
 	if (i != variables_.end())
@@ -112,3 +111,13 @@ std::optional<tess::expr_value> tess::lexical_scope::get(std::string str) const
 		return std::nullopt;
 }
 
+tess::scope::scope(execution_ctxt& ctxt, scope_frame&& ls) :
+	ctxt_(ctxt)
+{
+	ctxt_.push_scope(std::move(ls));
+}
+
+tess::scope::~scope()
+{
+	ctxt_.pop_scope();
+}

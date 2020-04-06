@@ -29,23 +29,25 @@ namespace tess {
 
 	struct lay_params {
 		std::vector<obj_ref_ptr> tiles;
-		std::vector<std::tuple<obj_ref_ptr, obj_ref_ptr>> such_that_clauses;
+		std::vector<std::tuple<obj_ref_ptr, obj_ref_ptr>> edge_mappings;
 	};
 
 	class lay_statement : public statement
 	{
 	private:
 		using expr_vals = std::vector< expr_value>;
-		using expr_val_pair = std::tuple<expr_value, expr_value>;
-		using expr_val_pairs = std::vector<expr_val_pair>;
 		using piece_result = std::variant<expr_vals, error>;
-		using clause_result = std::variant<expr_val_pairs, error>;
+		using opt_edge = std::optional<edge>;
+		using edge_mapping_value = std::tuple<opt_edge, opt_edge>;
+		using edge_mapping_values = std::vector< edge_mapping_value>;
+		using edge_mapping_result = std::variant<edge_mapping_values, error>;
 
 		std::vector<obj_ref_ptr> tiles_;
-		std::vector<std::tuple<obj_ref_ptr, obj_ref_ptr>> such_that_clauses_;
+		std::vector<std::tuple<obj_ref_ptr, obj_ref_ptr>> edge_mappings_;
 
 		piece_result eval_pieces(execution_ctxt&) const;
-		clause_result eval_such_that_clauses(execution_ctxt&) const;
+		edge_mapping_result eval_edge_mappings(execution_ctxt&) const;
+		std::optional<error> apply_mapping(const edge_mapping_value& mappings, execution_ctxt& ctxt) const;
 
 	public:
 		lay_statement(const lay_params& params);
