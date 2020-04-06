@@ -92,7 +92,6 @@ tess::lay_statement::lay_statement(const std::vector<obj_ref_ptr>& tiles) :
     tiles_(tiles)
 {
 }
-
 /*
 tess::expr_value tess::lay_statement::execute( tess::execution_ctxt& ctxt ) const
 {
@@ -122,16 +121,23 @@ tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
 	// push "placeholders' to the pieces on the stack
 	ctxt.push_scope(lexical_scope(pieces));
 
-	clause_result maybe_clauses;
-	if (maybe_clauses = eval_such_that_clauses(ctxt); std::holds_alternative<error>(maybe_clauses))
-		return { std::get<error>(maybe_clauses) };
-	auto clauses = std::move(std::get<expr_val_pairs>(maybe_clauses));
+	auto expr = std::make_shared<object_ref_expr>(
+		std::vector<object_ref_item>{ object_ref_item{ 1 } }
+	);
 
-	ctxt.pop_scope();
+
 	
+//	clause_result maybe_clauses;
+//	if (maybe_clauses = eval_such_that_clauses(ctxt); std::holds_alternative<error>(maybe_clauses))
+//		return { std::get<error>(maybe_clauses) };
+//	auto clauses = std::move(std::get<expr_val_pairs>(maybe_clauses));
+
+//	ctxt.pop_scope();
+//	
 
     return { nil_val() };
 }
+
 
 tess::if_statement::if_statement(const if_params& params) :
     condition_(params.condition),

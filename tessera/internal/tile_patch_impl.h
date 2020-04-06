@@ -16,5 +16,6 @@ namespace tess {
 		impl_type(const std::vector<tess::tile>& tiles);
         const std::vector<tess::tile>& tiles() const;
 		expr_value get_field(const std::string& field) const;
+		void apply(const matrix& mat);
     };
 }

@@ -3,13 +3,8 @@
 #include "expr_value.h"
 #include "parser/keywords.h"
 #include "parser/exception.h"
-#include <symengine/expression.h>
-#include <symengine/logic.h>
-#include <cmath>
 
-namespace se = SymEngine;
-
-std::optional<se::Expression> eval_number_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
+std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
 {
 	auto val = expr->eval(ctxt);
 	if (!std::holds_alternative<tess::number>(val))
@@ -19,14 +14,10 @@ std::optional<se::Expression> eval_number_expr(const tess::expr_ptr& expr, const
 
 std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
 {
-	auto index_val = expr->eval(ctxt);
-	if (!std::holds_alternative<tess::number>(index_val))
+	auto int_val = expr->eval(ctxt);
+	if (!std::holds_alternative<tess::number>(int_val))
 		return std::nullopt;
-	return static_cast<int>(
-		se::eval_double(
-			std::get<tess::number>(index_val)
-		)
-	);
+	return tess::to_int( std::get<tess::number>(int_val) );
 }
 
 std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
@@ -180,7 +171,7 @@ tess::expr_value tess::multiplication_expr::eval(const tess::execution_ctxt& ctx
 		auto factor = eval_number_expr(factor_expr, ctxt);
 		if (!factor.has_value())
 			return tess::expr_value{ tess::error("non-number in numeric expression (*)") };
-		product *= (op) ? factor.value() : se::Expression(1) / factor.value();
+		product *= (op) ? factor.value() : number(1) / factor.value();
 	}
 	return tess::expr_value{ product };
 }
@@ -207,7 +198,7 @@ tess::expr_value tess::exponent_expr::eval(const tess::execution_ctxt& ctxt) con
 		auto exp = eval_number_expr(exponent_expr, ctxt);
 		if ( exp.has_value() )
 			return tess::expr_value{ tess::error("non-number in numeric expression (^)") };
-		power = se::pow(power, exp.value() );
+		power = tess::pow(power, exp.value() );
 	}
     return tess::expr_value{ power };
 
@@ -231,7 +222,7 @@ tess::expr_value tess::special_number_expr::eval(const tess::execution_ctxt& ctx
 {
 	switch (num_) {
 		case special_num::pi:
-			return tess::expr_value{ tess::number(se::pi) };
+			return tess::expr_value{ tess::pi() };
 		case special_num::phi:
 			return tess::expr_value{ tess::number("(1 + sqrt(5)) / 2") };
 		case special_num::root_2:
@@ -274,25 +265,25 @@ tess::expr_value tess::special_function_expr::eval(const tess::execution_ctxt& c
 	switch (func_)
 	{
 		case special_func::arccos:
-			e = se::acos(arg);
+			e = acos(arg);
 			break;
 		case special_func::arcsin:
-			e = se::asin(arg);
+			e = asin(arg);
 			break;
 		case special_func::arctan:
-			e = se::atan(arg);
+			e = atan(arg);
 			break;
 		case special_func::cos:
-			e = se::cos(arg);
+			e = cos(arg);
 			break;
 		case special_func::sin:
-			e = se::sin(arg);
+			e = sin(arg);
 			break;
 		case special_func::sqrt:
-			e = se::sqrt(arg);
+			e = sqrt(arg);
 			break;
 		case special_func::tan:
-			e = se::tan(arg);
+			e = tan(arg);
 			break;
 		default:
 			return tess::expr_value{ tess::error("Unknown special function") };
@@ -328,7 +319,7 @@ tess::equality_expr::equality_expr(const std::vector<expr_ptr> operands) :
 
 tess::expr_value tess::equality_expr::eval(const tess::execution_ctxt& ctx) const
 {
-	std::vector<se::Expression> expressions;
+	std::vector<number> expressions;
 	expressions.reserve(operands_.size());
 	for (const auto& op : operands_) {
 		auto val = eval_number_expr(op, ctx);
@@ -338,7 +329,7 @@ tess::expr_value tess::equality_expr::eval(const tess::execution_ctxt& ctx) cons
 	}
 	auto first = expressions.front();
 	for (int i = 1; i < expressions.size(); ++i)
-		if (! eval_bool( se::Eq(first, expressions[i])) )
+		if (! equals( first, expressions[i]) )
 			return tess::expr_value{ false };
 
 	return tess::expr_value{ true };
@@ -399,19 +390,19 @@ tess::expr_value tess::relation_expr::eval(const tess::execution_ctxt& ctx) cons
 	bool result;
 	switch (op_) {
 		case relation_op::ge:
-			result = eval_bool(se::Ge(lhs, rhs));
+			result = is_ge(lhs, rhs);
 			break;
 		case relation_op::gt:
-			result = eval_bool(se::Gt(lhs, rhs));
+			result = is_gt(lhs, rhs);
 			break;
 		case relation_op::le:
-			result = eval_bool(se::Le(lhs, rhs));
+			result = is_le(lhs, rhs);
 			break;
 		case relation_op::lt:
-			result = eval_bool(se::Lt(lhs, rhs));
+			result = is_lt(lhs, rhs);
 			break;
 		case relation_op::ne:
-			result = eval_bool(se::Ne(lhs, rhs));
+			result = is_ne(lhs, rhs);
 			break;
 	}
 	return tess::expr_value{result };

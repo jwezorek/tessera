@@ -22,8 +22,9 @@ namespace tess {
         std::string name() const;
         std::string vertex_class() const;
         std::tuple<double, double> to_floats() const;
-        std::tuple<number, number> pos() const;
+        point pos() const;
 		expr_value get_field(const std::string& field) const;
+		void apply(const matrix& mat);
     };
 
     class edge::impl_type : public tessera_impl {
@@ -44,6 +45,7 @@ namespace tess {
             std::vector<tess::edge> edges_;
             std::vector<tess::vertex> vertices_;
             std::shared_ptr<const tile_def> def_;
+			bool untouched_;
         public:
 			impl_type(std::shared_ptr<const tile_def> def);
 
@@ -53,5 +55,7 @@ namespace tess {
             std::string name() const;
             void set(std::vector<tess::vertex>&& vertices, std::vector<tess::edge>&& edges );
 			expr_value get_field(const std::string& field) const;
+			bool is_untouched() const;
+			void apply(const matrix& mat);
     };
 }

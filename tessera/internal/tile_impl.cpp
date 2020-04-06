@@ -4,7 +4,7 @@
 namespace se = SymEngine;
 
 tess::tile::impl_type::impl_type( std::shared_ptr<const tile_def> def) :
-    def_(def)
+    def_(def), untouched_(true)
 {
 }
 
@@ -46,6 +46,20 @@ tess::expr_value tess::tile::impl_type::get_field(const std::string& field) cons
 	}
 	return { error(std::string("refrenced undefined tile edge or vertex: ") + field ) };
 }
+
+bool tess::tile::impl_type::is_untouched() const
+{
+	return untouched_;
+}
+
+void tess::tile::impl_type::apply(const matrix& mat)
+{
+	for (auto& vertex : vertices_) {
+		get_impl(vertex)->apply(mat);
+	}
+	untouched_ = false;
+}
+
 
 /*--------------------------------------------------------------------------------*/
 
@@ -104,7 +118,7 @@ std::tuple<double, double> tess::vertex::impl_type::to_floats() const
     };
 }
 
-std::tuple<tess::number, tess::number> tess::vertex::impl_type::pos() const
+tess::point tess::vertex::impl_type::pos() const
 {
     return {
         x_,
@@ -115,4 +129,11 @@ std::tuple<tess::number, tess::number> tess::vertex::impl_type::pos() const
 tess::expr_value tess::vertex::impl_type::get_field(const std::string& field) const
 {
 	return {};
+}
+
+
+void tess::vertex::impl_type::apply(const tess::matrix& mat) {
+	auto [x,y] = apply_matrix( mat, pos() );
+	x_ = x;
+	y_ = y;
 }

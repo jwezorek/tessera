@@ -2,13 +2,11 @@
 #include "../include/tessera/tile.h"
 #include "../include/tessera/tile_patch.h"
 #include "../include/tessera/error.h"
-#include <variant>
-#include <symengine/expression.h>
 #include "tessera_impl.h"
+#include "math_util.h"
+#include <variant>
 
 namespace tess {
-
-    using number = SymEngine::Expression;
 
     class nil_val {
     public:
