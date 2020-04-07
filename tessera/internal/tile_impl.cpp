@@ -63,7 +63,7 @@ void tess::tile::impl_type::apply(const matrix& mat)
 
 /*--------------------------------------------------------------------------------*/
 
-tess::edge::impl_type::impl_type(const tile::impl_type* parent, std::shared_ptr<const edge_def> prototype) :
+tess::edge::impl_type::impl_type( tile::impl_type* parent, std::shared_ptr<const edge_def> prototype) :
 	parent_(parent),
 	def_(prototype)
 {}
@@ -93,9 +93,14 @@ tess::expr_value tess::edge::impl_type::get_field(const std::string& field) cons
 	return {};
 }
 
+tess::tile::impl_type& tess::edge::impl_type::parent() const
+{
+	return *parent_;
+}
+
 /*--------------------------------------------------------------------------------*/
 
-tess::vertex::impl_type::impl_type(const tile::impl_type* parent, std::shared_ptr<const vertex_def> prototype, std::tuple<number, number> loc) :
+tess::vertex::impl_type::impl_type( tile::impl_type* parent, std::shared_ptr<const vertex_def> prototype, std::tuple<number, number> loc) :
     parent_(parent), def_(prototype), x_(std::get<0>(loc)), y_(std::get<1>(loc))
 {
 }
@@ -133,7 +138,13 @@ tess::expr_value tess::vertex::impl_type::get_field(const std::string& field) co
 
 
 void tess::vertex::impl_type::apply(const tess::matrix& mat) {
+
 	auto [x,y] = apply_matrix( mat, pos() );
 	x_ = x;
 	y_ = y;
+}
+
+tess::tile::impl_type& tess::vertex::impl_type::parent() const
+{
+	return *parent_;
 }

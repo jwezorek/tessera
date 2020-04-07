@@ -1,6 +1,7 @@
 #include "util.h"
 #include "statement.h"
 #include "script_impl.h"
+#include "tile_impl.h"
 #include "tile_patch_impl.h"
 #include "tessera/error.h"
 
@@ -75,32 +76,62 @@ tess::lay_statement::edge_mapping_result tess::lay_statement::eval_edge_mappings
 	edge_mapping_values mappings;
 	mappings.reserve( edge_mappings_.size() );
 
-	for (const auto& [val1, val2] : edge_mapping_val_exprs) {
-		if (! is_one_of<edge, nil_val>(val1))
-			return std::holds_alternative<error>(val1) ?
-				std::get<error>(val1) : error("Can only lay tiles or patches.");
-		if (!is_one_of<edge, nil_val>(val2))
-			return std::holds_alternative<error>(val2) ?
-				std::get<error>(val2) : error("Can only lay tiles or patches.");
+	for (const auto& [e1, e2] : edge_mapping_val_exprs) {
+		if (! is_one_of<edge, nil_val>(e1))
+			return std::holds_alternative<error>(e1) ?
+				std::get<error>(e1) : error("Can only lay tiles or patches.");
+		if (!is_one_of<edge, nil_val>(e2))
+			return std::holds_alternative<error>(e2) ?
+				std::get<error>(e2) : error("Can only lay tiles or patches.");
 
-		auto e1 = std::holds_alternative<edge>(val1) ? 
-			opt_edge{std::get<edge>(val1)} :
-			std::nullopt;
-		auto e2 = std::holds_alternative<edge>(val2) ?
-			opt_edge{ std::get<edge>(val2) } :
-			std::nullopt;
+		if (!std::holds_alternative<edge>(e1))
+			continue;
+		if (!std::holds_alternative<edge>(e2))
+			continue;
 
-		mappings.emplace_back(e1, e2);
+		mappings.emplace_back( std::get<edge>(e1), std::get<edge>(e2) );
 	}
-
 	
 	return mappings;
+}
+
+tess::matrix tess::lay_statement::edge_to_edge_matrix(const edge::impl_type& e1, const edge::impl_type& e2) const
+{
+	auto u1 = get_impl( e1.u() );
+	auto v1 = get_impl( e1.v() );
+	auto u2 = get_impl( e2.u() );
+	auto v2 = get_impl( e2.v() );
+
+	return line_seg_to_line_seg({ u1->pos() , v1->pos() }, { v2->pos() , u2->pos() });
 }
 
 std::optional<tess::error> tess::lay_statement::apply_mapping(const edge_mapping_value& mapping, execution_ctxt& ctxt) const
 {
 	auto [e1, e2] = mapping;
-	return {};
+	auto& edge1 = *get_impl(e1);
+	auto& edge2 = *get_impl(e2);
+	auto& tile1 = edge1.parent();
+	auto& tile2 = edge2.parent();
+
+	if (&tile1 == &tile2)
+		return error("edge mapping internal to a single tile");
+
+	bool both_are_touched = !tile1.is_untouched() && !tile2.is_untouched();
+	bool both_are_untouched = tile1.is_untouched() && tile2.is_untouched();
+	bool just_tile2_is_untouched = !tile1.is_untouched() && tile2.is_untouched();
+
+	if (both_are_touched)
+		return error("TODO: tessera currently doesnt handle this kind of lay statement");
+
+	if (both_are_untouched || just_tile2_is_untouched) {
+		//move tile2
+		tile2.apply(edge_to_edge_matrix(edge2, edge1));
+	} else {
+		//move tile1
+		tile1.apply(edge_to_edge_matrix(edge1, edge2));
+	}
+
+	return std::nullopt;
 }
 
 tess::lay_statement::lay_statement(const lay_params& params) :
@@ -114,18 +145,6 @@ tess::lay_statement::lay_statement(const std::vector<obj_ref_ptr>& tiles) :
 {
 }
 
-tess::expr_value tess::lay_statement::execute( tess::execution_ctxt& ctxt ) const
-{
-    const auto& script = ctxt.script();
-    auto tile_def = script.get_tile_prototype("triangle");
-    auto val = tile_def->eval(ctxt);
-    auto patch = make_tess_obj<tess::tile_patch> (
-            std::vector<tess::tile>{ std::get<tess::tile>(val) }
-    );
-    return { patch };
-}
-
-/*
 tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
 {
 	piece_result maybe_pieces;
@@ -133,26 +152,27 @@ tess::expr_value tess::lay_statement::execute(tess::execution_ctxt& ctxt) const
 		return { std::get<error>(maybe_pieces) };
 	auto pieces = std::move(std::get<expr_vals>(maybe_pieces));
 
-    if (edge_mappings_.empty()) {
-		return tess::expr_value{
-			flatten(pieces)
-        };
-    }
+	if (!edge_mappings_.empty()) {
 
-	// push "placeholders' to the pieces on the stack
-	scope scope(ctxt, scope_frame(pieces));
-	
-	edge_mapping_result maybe_mappings;
-	if (maybe_mappings = eval_edge_mappings(ctxt); std::holds_alternative<error>(maybe_mappings))
-		return { std::get<error>(maybe_mappings) };
-	auto mappings = std::move(std::get<edge_mapping_values>(maybe_mappings));
-	for (const auto& mapping : mappings) {
-		auto result = apply_mapping(mapping, ctxt);
+		// push "placeholders' to the pieces on the stack
+		scope scope(ctxt, scope_frame(pieces));
+
+		edge_mapping_result maybe_mappings;
+		if (maybe_mappings = eval_edge_mappings(ctxt); std::holds_alternative<error>(maybe_mappings))
+			return { std::get<error>(maybe_mappings) };
+		auto mappings = std::move(std::get<edge_mapping_values>(maybe_mappings));
+		for (const auto& mapping : mappings) {
+			auto result = apply_mapping(mapping, ctxt);
+			if (result.has_value()) {
+				return { result.value() };
+			}
+		}
 	}
 
-    return { nil_val() };
+	return tess::expr_value{
+		flatten(pieces)
+	};
 }
-*/
 
 tess::if_statement::if_statement(const if_params& params) :
     condition_(params.condition),

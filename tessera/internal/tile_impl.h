@@ -13,31 +13,33 @@ namespace tess {
 
     class vertex::impl_type : public tessera_impl {
     private:
-        const tile::impl_type* parent_;
+        tile::impl_type* parent_;
         std::shared_ptr<const vertex_def> def_;
         number x_;
         number y_;
     public:
-		impl_type(const tile::impl_type* parent, std::shared_ptr<const vertex_def> prototype, std::tuple<number, number> loc);
+		impl_type(tile::impl_type* parent, std::shared_ptr<const vertex_def> prototype, std::tuple<number, number> loc);
         std::string name() const;
         std::string vertex_class() const;
         std::tuple<double, double> to_floats() const;
         point pos() const;
 		expr_value get_field(const std::string& field) const;
 		void apply(const matrix& mat);
+		tile::impl_type& parent() const;
     };
 
     class edge::impl_type : public tessera_impl {
         private:
-            const tile::impl_type* parent_;
+            tile::impl_type* parent_;
             std::shared_ptr<const edge_def> def_;
         public:
-			impl_type(const tile::impl_type* parent, std::shared_ptr<const edge_def> prototype);
+			impl_type(tile::impl_type* parent, std::shared_ptr<const edge_def> prototype);
             std::string name() const;
             std::string edge_class() const;
 			const tess::vertex& u() const;
 			const tess::vertex& v() const;
 			expr_value get_field(const std::string& field) const;
+			tile::impl_type& parent() const;
     };
 
     class tile::impl_type : public tessera_impl {

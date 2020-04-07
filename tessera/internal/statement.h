@@ -37,8 +37,7 @@ namespace tess {
 	private:
 		using expr_vals = std::vector< expr_value>;
 		using piece_result = std::variant<expr_vals, error>;
-		using opt_edge = std::optional<edge>;
-		using edge_mapping_value = std::tuple<opt_edge, opt_edge>;
+		using edge_mapping_value = std::tuple<edge, edge>;
 		using edge_mapping_values = std::vector< edge_mapping_value>;
 		using edge_mapping_result = std::variant<edge_mapping_values, error>;
 
@@ -48,6 +47,7 @@ namespace tess {
 		piece_result eval_pieces(execution_ctxt&) const;
 		edge_mapping_result eval_edge_mappings(execution_ctxt&) const;
 		std::optional<error> apply_mapping(const edge_mapping_value& mappings, execution_ctxt& ctxt) const;
+		matrix edge_to_edge_matrix(const edge::impl_type& e1, const edge::impl_type& e2) const;
 
 	public:
 		lay_statement(const lay_params& params);

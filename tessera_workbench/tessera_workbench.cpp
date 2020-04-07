@@ -23,10 +23,13 @@ int main()
 			return -1;
 		}
 
-		const auto& tri = std::get<std::vector<tess::tile>>(output).at(0);
-		for (const auto& v : tri.vertices()) {
-			auto [x, y] = v.pos();
-			std::cout << "( " << x << " , " << y << " )\n";
+		const auto& tiles = std::get<std::vector<tess::tile>>(output);
+		for (const auto& tri : tiles) {
+			for (const auto& v : tri.vertices()) {
+				auto [x, y] = v.pos();
+				std::cout << "( " << x << " , " << y << " ) ";
+			}
+			std::cout << "\n";
 		}
 
 		std::cout << "success" << "\n";
