@@ -27,12 +27,12 @@ namespace tess
     private:
         std::shared_ptr<script_impl> impl_;
 
-        result execute(const std::initializer_list<std::string>& args) const;
-
     public:
         tessera_script();
         tessera_script(std::vector<script_component_specifier> sections, tab_spec tab, global_vars globals);
 		const std::vector<std::string>& parameters() const;
+
+		result execute(const std::vector<std::string>& args) const;
 
         template <typename... T>
         result execute(T&&... a) const {

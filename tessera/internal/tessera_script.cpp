@@ -39,7 +39,7 @@ const std::vector<std::string>& tess::tessera_script::parameters() const
     return impl_->tableau().params();
 }
 
-tess::result tess::tessera_script::execute(const std::initializer_list<std::string>& argument_strings) const
+tess::result tess::tessera_script::execute(const std::vector<std::string>& argument_strings) const
 {
     if (argument_strings.size() != parameters().size()) {
         return  { error("too few/many arguments") };
