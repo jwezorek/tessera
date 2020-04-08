@@ -17,7 +17,11 @@ bool tess::expr_value::is_object() const
 
 tess::expr_value tess::expr_value::get_ary_item(int index) const
 {
-	return expr_value();
+	// currently only patches can be referenced like an array.
+	if (!std::holds_alternative<tile_patch>(*this))
+		return { error("attempted reference to a sub-tile of a value that is not a tile patch.") };
+	auto patch = get_impl(std::get<tile_patch>(*this));
+	return { patch->tiles()[index] };
 }
 
 tess::expr_value tess::expr_value::get_field(const std::string& field) const
@@ -36,8 +40,6 @@ tess::expr_value tess::expr_value::get_field(const std::string& field) const
 
 tess::expr_value tess::expr_value::get_field(const std::string& field, int ary_item_index) const
 {
-	auto obj = get_ary_item(ary_item_index);
-	if (!obj.is_object())
-		return { error("attempted to reference a non-array like object like an array.") };
-	return obj.get_field(field);
+	auto main_obj = get_field(field);
+	return main_obj.get_ary_item(ary_item_index);
 }

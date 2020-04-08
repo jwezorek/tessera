@@ -37,11 +37,11 @@ void tess::tile::impl_type::set( std::vector<tess::vertex>&& vertices, std::vect
 tess::expr_value tess::tile::impl_type::get_field(const std::string& field) const
 {
 	int index = def_->get_edge_index(field);
-	if (index > 0) {
+	if (index >= 0) {
 		return { edges_.at(index) };
 	}
 	index = def_->get_vertex_index(field);
-	if (index > 0) {
+	if (index >= 0) {
 		return { vertices_.at(index) };
 	}
 	return { error(std::string("refrenced undefined tile edge or vertex: ") + field ) };
@@ -62,14 +62,15 @@ void tess::tile::impl_type::apply(const matrix& mat)
 
 void tess::tile::impl_type::set_parent(tess::tile_patch::impl_type* parent) {
 	parent_ = parent;
+	untouched_ = true;
 }
 
 bool tess::tile::impl_type::has_parent() const {
 	return parent_ != nullptr;
 }
 
-tess::tile_patch::impl_type& tess::tile::impl_type::parent() const {
-	return *parent_;
+tess::tile_patch::impl_type* tess::tile::impl_type::parent() const {
+	return parent_;
 }
 
 
@@ -105,9 +106,9 @@ tess::expr_value tess::edge::impl_type::get_field(const std::string& field) cons
 	return {};
 }
 
-tess::tile::impl_type& tess::edge::impl_type::parent() const
+tess::tile::impl_type* tess::edge::impl_type::parent() const
 {
-	return *parent_;
+	return parent_;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -156,7 +157,7 @@ void tess::vertex::impl_type::apply(const tess::matrix& mat) {
 	y_ = y;
 }
 
-tess::tile::impl_type& tess::vertex::impl_type::parent() const
+tess::tile::impl_type* tess::vertex::impl_type::parent() const
 {
-	return *parent_;
+	return parent_;
 }

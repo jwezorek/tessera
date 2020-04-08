@@ -6,6 +6,23 @@
 #include "tessera/error.h"
 
 namespace {
+	using edge_parent_type = std::variant<tess::tile::impl_type*, tess::tile_patch::impl_type*>;
+
+	edge_parent_type parent_of_edge(const tess::edge::impl_type& e) {
+		auto tile = e.parent();
+		if (!tile->has_parent())
+			return tile;
+		else
+			return tile->parent();
+	}
+
+	bool is_untouched(const edge_parent_type& ep) {
+		return std::visit([](auto ptr) {return ptr->is_untouched(); }, ep);
+	}
+
+	void apply_edge_matrix(const edge_parent_type& ep, const tess::matrix& mat) {
+		return std::visit([&mat](auto ptr) { ptr->apply(mat); }, ep);
+	}
 
     int countTiles(const std::vector<tess::expr_value>& tiles_and_patches) {
         int count = 0;
@@ -110,25 +127,25 @@ std::optional<tess::error> tess::lay_statement::apply_mapping(const edge_mapping
 	auto [e1, e2] = mapping;
 	auto& edge1 = *get_impl(e1);
 	auto& edge2 = *get_impl(e2);
-	auto& tile1 = edge1.parent();
-	auto& tile2 = edge2.parent();
+	auto parent_1 = parent_of_edge(edge1);
+	auto parent_2 = parent_of_edge(edge2);
 
-	if (&tile1 == &tile2)
+	if (parent_1 == parent_2)
 		return error("edge mapping internal to a single tile");
 
-	bool both_are_touched = !tile1.is_untouched() && !tile2.is_untouched();
-	bool both_are_untouched = tile1.is_untouched() && tile2.is_untouched();
-	bool just_tile2_is_untouched = !tile1.is_untouched() && tile2.is_untouched();
+	bool both_are_touched = !is_untouched(parent_1) && !is_untouched(parent_2);
+	bool both_are_untouched = is_untouched(parent_1) && is_untouched(parent_2);
+	bool just_parent2_is_untouched = !is_untouched(parent_1) && is_untouched(parent_2);
 
 	if (both_are_touched)
 		return error("TODO: tessera currently doesnt handle this kind of lay statement");
 
-	if (both_are_untouched || just_tile2_is_untouched) {
+	if (both_are_untouched || just_parent2_is_untouched) {
 		//move tile2
-		tile2.apply(edge_to_edge_matrix(edge2, edge1));
+		apply_edge_matrix(parent_2, edge_to_edge_matrix(edge2, edge1));
 	} else {
 		//move tile1
-		tile1.apply(edge_to_edge_matrix(edge1, edge2));
+		apply_edge_matrix(parent_1, edge_to_edge_matrix(edge1, edge2));
 	}
 
 	return std::nullopt;

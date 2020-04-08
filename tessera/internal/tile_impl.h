@@ -26,7 +26,7 @@ namespace tess {
         point pos() const;
 		expr_value get_field(const std::string& field) const;
 		void apply(const matrix& mat);
-		tile::impl_type& parent() const;
+		tile::impl_type* parent() const;
     };
 
     class edge::impl_type : public tessera_impl {
@@ -40,7 +40,7 @@ namespace tess {
 			const tess::vertex& u() const;
 			const tess::vertex& v() const;
 			expr_value get_field(const std::string& field) const;
-			tile::impl_type& parent() const;
+			tile::impl_type* parent() const;
     };
 
     class tile::impl_type : public tessera_impl {
@@ -62,7 +62,7 @@ namespace tess {
 			bool is_untouched() const;
 			void apply(const matrix& mat);
             bool has_parent() const;
-            tile_patch::impl_type& parent() const;
+            tile_patch::impl_type* parent() const;
             void  set_parent(tile_patch::impl_type* parent);
     };
 }

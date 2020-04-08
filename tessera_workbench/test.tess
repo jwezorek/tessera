@@ -1,28 +1,28 @@
-let foo = 5;
+let theta =  pi/3;
 
 tile triangle {
-	vertex a{angle : pi/3}, b{angle : pi/3}, c{angle : pi/3};
+	vertex a{angle : theta}, b{angle : theta}, c{angle : theta};
 	edge left{ c -> a }, right{ b -> c }, bottom{ a -> b };
 }
 
-patch tri_strip(e, n) {
+patch tri_pair {
+	lay triangle -> triangle such_that $1.right <-> $2.right;
+}
+
+patch tri_strip(n) {
+	if (n == 1)
+	    lay triangle;
+	else
+	    lay tri_pair -> tri_strip(n-1) such_that $1[1].left <-> $2[0].left;
+}
+
+patch tri_grid(n) {
 	if (n == 1)
 		lay triangle;
 	else
-		lay triangle -> triangle -> tri_strip(nil, n-2) such_that e <-> $1.left, $2.right<-> $1.right, $3[0].bottom <-> $2.bottom;
-}
-
-patch tri_grid(e, n) {
-	if (n == 1)
-		lay tri_strip(nil, 1);
-	else
-		lay tri_strip(e, n) -> tri_grid( $1[1].left, n-1);
-}
-
-patch test {
-	lay triangle -> triangle such_that $1.bottom <-> $2.bottom;
+		lay tri_strip(n) -> tri_grid(n-1) such_that $1[1].bottom <-> $2[0].bottom;
 }
 
 tableau( num ) {
-	lay test;
+	lay tri_grid( num );
 }
