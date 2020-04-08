@@ -4,7 +4,7 @@
 namespace se = SymEngine;
 
 tess::tile::impl_type::impl_type( std::shared_ptr<const tile_def> def) :
-    def_(def), untouched_(true)
+    def_(def), untouched_(true), parent_(nullptr)
 {
 }
 
@@ -58,6 +58,18 @@ void tess::tile::impl_type::apply(const matrix& mat)
 		get_impl(vertex)->apply(mat);
 	}
 	untouched_ = false;
+}
+
+void tess::tile::impl_type::set_parent(tess::tile_patch::impl_type* parent) {
+	parent_ = parent;
+}
+
+bool tess::tile::impl_type::has_parent() const {
+	return parent_ != nullptr;
+}
+
+tess::tile_patch::impl_type& tess::tile::impl_type::parent() const {
+	return *parent_;
 }
 
 

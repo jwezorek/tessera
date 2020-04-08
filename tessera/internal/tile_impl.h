@@ -2,6 +2,7 @@
 
 #include "tessera/tile.h"
 #include "tessera_impl.h"
+#include "tile_patch_impl.h"
 #include "tile_def.h"
 #include "expr_value.h"
 #include <string>
@@ -47,6 +48,7 @@ namespace tess {
             std::vector<tess::edge> edges_;
             std::vector<tess::vertex> vertices_;
             std::shared_ptr<const tile_def> def_;
+            tile_patch::impl_type* parent_;
 			bool untouched_;
         public:
 			impl_type(std::shared_ptr<const tile_def> def);
@@ -59,5 +61,8 @@ namespace tess {
 			expr_value get_field(const std::string& field) const;
 			bool is_untouched() const;
 			void apply(const matrix& mat);
+            bool has_parent() const;
+            tile_patch::impl_type& parent() const;
+            void  set_parent(tile_patch::impl_type* parent);
     };
 }
