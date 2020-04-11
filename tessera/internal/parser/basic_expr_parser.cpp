@@ -1,6 +1,7 @@
 #include "basic_expr_parser.h"
 #include "../expression.h"
 #include "object_ref_expr_parser.h"
+#include "special_parser.h"
 #include "expr_parser.h"
 #include "keywords.h"
 #include "util.h"
@@ -16,34 +17,19 @@ namespace tess {
 
         x3::rule<class basic_expr_tag, expr_ptr> const basic_expr = "basic_expr";
         x3::rule<class number_, expr_ptr> const number = "number"; 
-        x3::rule<class special_num_aux_, std::string> special_num_aux = "special_num_aux";
-        x3::rule<class special_num_, expr_ptr> const special_num;
-        x3::rule<class special_func_, std::string> const special_func = "special_func";
-        x3::rule<class special_func_expr_, expr_ptr> const special_func_expr = "special_func_expr";
-        x3::rule<class special_func_expr_aux_, std::tuple<std::string, expr_ptr>> const special_func_expr_aux = "special_func_expr_aux";\
 		x3::rule<class nil_, expr_ptr> const nil = "nil";
 
         auto const expr = expression_();
         auto const indentifier_str = indentifier_str_();
         auto const object_ref_expr = object_ref_expr_();
-        auto const special_num_aux_def = kw_<kw::pi>() | kw_<kw::phi>() | kw_<kw::root_2>();
-        auto const special_num_def = special_num_aux [make_<special_number_expr>];
-        auto const number_def = x3::int32[make_<number_expr>];
-        auto const special_func_def = kw_<kw::sqrt>() | kw_<kw::sin>() | kw_<kw::cos>() | kw_<kw::tan>() |
-                                      kw_<kw::arcsin>() | kw_<kw::arccos>() | kw_<kw::arctan>(); 
-        auto const special_func_expr_aux_def = special_func > '(' > expr > ')';
-        auto const special_func_expr_def = special_func_expr_aux[make_<special_function_expr>]; 
+		auto const special_expr = special_expr_();
+		auto const number_def = x3::int32[make_<number_expr>];
 		auto const nil_def = kw_lit<kw::nil>()[make_nil];
 
-		auto const basic_expr_def = nil | object_ref_expr | number | special_num | special_func_expr | ('(' >> expr >> ')');
+		auto const basic_expr_def = nil | object_ref_expr | special_expr | number | ('(' >> expr >> ')');
 
         BOOST_SPIRIT_DEFINE(
             number,
-            special_num,
-            special_num_aux,
-            special_func,
-            special_func_expr,
-            special_func_expr_aux,
 			nil,
             basic_expr
         )
