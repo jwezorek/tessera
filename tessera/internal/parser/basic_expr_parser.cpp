@@ -36,7 +36,7 @@ namespace tess {
     }
 }
 
-std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::basic_expr_::parse_basic_expr(const text_range& input)
+std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::basic_expr_::parse_aux(const text_range& input) const
 {
     tess::expr_ptr output;
     auto iter = input.begin();
