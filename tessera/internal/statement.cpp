@@ -1,6 +1,6 @@
 #include "util.h"
 #include "statement.h"
-#include "script_impl.h"
+#include "old_script_impl.h"
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
 #include "tessera/error.h"

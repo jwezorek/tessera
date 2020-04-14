@@ -1,4 +1,4 @@
-#include "script_impl.h"
+#include "old_script_impl.h"
 #include "./parser/keywords.h"
 
 void tess::script_impl::insert_tile_def(const std::string& name, std::vector<std::string> params, const text_range& source_code)

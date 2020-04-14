@@ -2,7 +2,7 @@
 #include "math_util.h"
 #include "tessera/tile.h"
 #include "tile_impl.h"
-#include "script_impl.h"
+#include "old_script_impl.h"
 #include "parser/tile_parser.h"
 #include <symengine/expression.h>
 #include <symengine/logic.h>

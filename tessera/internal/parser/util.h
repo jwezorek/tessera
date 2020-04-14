@@ -20,11 +20,11 @@ namespace tess {
         template <typename T>
         static inline as_type<T> as;
 
-		template<typename T>
-		struct tess_expr : x3::parser<T> {
+		template<typename T, typename A>
+		struct tess_parser : x3::parser<T> {
 		public:
 
-			using attribute_type = tess::expr_ptr;
+			using attribute_type = A;
 
 			template<typename Iterator, typename Context, typename RContext, typename Attribute>
 			bool parse(Iterator& first, Iterator const& last, Context const& context,
@@ -36,6 +36,9 @@ namespace tess {
 				return (output != nullptr);
 			};
 		};
+
+		template<typename T>
+		using tess_expr = tess_parser<T, tess::expr_ptr>;
 
     }
 }

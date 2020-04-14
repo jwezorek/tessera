@@ -34,7 +34,7 @@
     <ClCompile Include="internal\parser\special_parser.cpp" />
     <ClCompile Include="internal\parser\statement_parser.cpp" />
     <ClCompile Include="internal\parser\tile_parser.cpp" />
-    <ClCompile Include="internal\script_impl.cpp" />
+    <ClCompile Include="internal\old_script_impl.cpp" />
     <ClCompile Include="internal\tile.cpp" />
     <ClCompile Include="internal\tile_impl.cpp" />
     <ClCompile Include="internal\tile_patch.cpp" />
@@ -71,7 +71,7 @@
     <ClInclude Include="internal\parser\statement_parser.h" />
     <ClInclude Include="internal\parser\tile_parser.h" />
     <ClInclude Include="internal\parser\util.h" />
-    <ClInclude Include="internal\script_impl.h" />
+    <ClInclude Include="internal\old_script_impl.h" />
     <ClInclude Include="internal\tessera_impl.h" />
     <ClInclude Include="internal\tile_impl.h" />
     <ClInclude Include="internal\tile_patch_def.h" />

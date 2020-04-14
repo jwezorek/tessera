@@ -1,5 +1,5 @@
 #include "execution_ctxt.h"
-#include "script_impl.h"
+#include "old_script_impl.h"
 
 tess::execution_ctxt::execution_ctxt(const tessera_script& script) :
 	script_(script)
