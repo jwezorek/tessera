@@ -3,7 +3,7 @@
 #include "../tile_patch_def.h"
 #include "../statement.h"
 #include "basic_stmt_parser.h"
-#include "parser.h"
+#include "old_parser.h"
 #include "exception.h"
 #include "util.h"
 #include "keywords.h"

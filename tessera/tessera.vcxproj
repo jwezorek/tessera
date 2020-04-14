@@ -31,6 +31,7 @@
     <ClCompile Include="internal\parser\expr_parser.cpp" />
     <ClCompile Include="internal\parser\keywords.cpp" />
     <ClCompile Include="internal\parser\object_ref_expr_parser.cpp" />
+    <ClCompile Include="internal\parser\script_parser.cpp" />
     <ClCompile Include="internal\parser\special_parser.cpp" />
     <ClCompile Include="internal\parser\statement_parser.cpp" />
     <ClCompile Include="internal\parser\tile_parser.cpp" />
@@ -44,7 +45,7 @@
     <ClCompile Include="internal\statement.cpp" />
     <ClCompile Include="internal\old_tessera_script.cpp" />
     <ClCompile Include="internal\old_tessera.cpp" />
-    <ClCompile Include="internal\parser\parser.cpp" />
+    <ClCompile Include="internal\parser\old_parser.cpp" />
     <ClCompile Include="internal\expression.cpp" />
     <ClCompile Include="internal\text_range.cpp" />
     <ClCompile Include="internal\tile_def.cpp" />
@@ -69,7 +70,8 @@
     <ClInclude Include="internal\parser\expr_parser.h" />
     <ClInclude Include="internal\parser\keywords.h" />
     <ClInclude Include="internal\parser\object_ref_expr_parser.h" />
-    <ClInclude Include="internal\parser\parser.h" />
+    <ClInclude Include="internal\parser\old_parser.h" />
+    <ClInclude Include="internal\parser\script_parser.h" />
     <ClInclude Include="internal\parser\special_parser.h" />
     <ClInclude Include="internal\parser\statement_parser.h" />
     <ClInclude Include="internal\parser\tile_parser.h" />
