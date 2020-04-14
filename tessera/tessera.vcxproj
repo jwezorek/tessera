@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="internal\assignment_stmt.cpp" />
     <ClCompile Include="internal\error.cpp" />
     <ClCompile Include="internal\execution_ctxt.cpp" />
     <ClCompile Include="internal\expr_value.cpp" />
@@ -58,7 +57,6 @@
     <ClInclude Include="include\tessera\tessera_script.h" />
     <ClInclude Include="include\tessera\tile.h" />
     <ClInclude Include="include\tessera\tile_patch.h" />
-    <ClInclude Include="internal\assignment_stmt.h" />
     <ClInclude Include="internal\execution_ctxt.h" />
     <ClInclude Include="internal\expression.h" />
     <ClInclude Include="internal\expr_value.h" />
