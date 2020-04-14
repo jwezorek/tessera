@@ -1,5 +1,5 @@
 #include "old_script_impl.h"
-#include "tessera/tessera_script.h"
+#include "tessera/old_tessera_script.h"
 #include "./parser/util.h"
 #include "./parser/keywords.h"
 #include "./parser/expr_parser.h"

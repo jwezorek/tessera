@@ -42,8 +42,8 @@
     <ClCompile Include="internal\tile_patch.cpp" />
     <ClCompile Include="internal\tile_patch_def.cpp" />
     <ClCompile Include="internal\statement.cpp" />
-    <ClCompile Include="internal\tessera_script.cpp" />
-    <ClCompile Include="internal\tessera.cpp" />
+    <ClCompile Include="internal\old_tessera_script.cpp" />
+    <ClCompile Include="internal\old_tessera.cpp" />
     <ClCompile Include="internal\parser\parser.cpp" />
     <ClCompile Include="internal\expression.cpp" />
     <ClCompile Include="internal\text_range.cpp" />
@@ -53,8 +53,8 @@
   <ItemGroup>
     <ClInclude Include="include\tessera\error.h" />
     <ClInclude Include="include\tessera\script.h" />
-    <ClInclude Include="include\tessera\tessera.h" />
-    <ClInclude Include="include\tessera\tessera_script.h" />
+    <ClInclude Include="include\tessera\old_tessera.h" />
+    <ClInclude Include="include\tessera\old_tessera_script.h" />
     <ClInclude Include="include\tessera\tile.h" />
     <ClInclude Include="include\tessera\tile_patch.h" />
     <ClInclude Include="internal\execution_ctxt.h" />

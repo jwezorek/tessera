@@ -1,7 +1,7 @@
 #pragma once
 
 #include "expr_value.h"
-#include "tessera/tessera_script.h"
+#include "tessera/old_tessera_script.h"
 #include <string>
 #include <unordered_map>
 #include <optional>

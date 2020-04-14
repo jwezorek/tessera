@@ -2,7 +2,7 @@
 
 #include <variant>
 #include <string>
-#include "tessera_script.h"
+#include "old_tessera_script.h"
 #include "script.h"
 #include "error.h"
 

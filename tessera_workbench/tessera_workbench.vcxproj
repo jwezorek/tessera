@@ -164,6 +164,7 @@
     <ClCompile Include="tessera_workbench.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="example.tess" />
     <None Include="test.tess" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
