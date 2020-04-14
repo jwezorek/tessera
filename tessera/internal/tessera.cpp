@@ -19,12 +19,17 @@ namespace {
 	}
 }
 
-std::variant<tess::tessera_script, tess::error> tess::parse(const std::string& script)
+std::variant<tess::tessera_script, tess::error> tess::parse_old(const std::string& script)
 {
 	text_range source_code{ script };
-    auto result = tess::parser::parse(source_code);
+    auto result = tess::parser::parse_old(source_code);
 	if (std::holds_alternative<tess::tessera_script>(result))
 		return std::get<tess::tessera_script>(result);
 	else
 		return make_error(source_code, std::get<tess::parser::exception>(result));
+}
+
+std::variant<tess::script, tess::error> tess::parse(const std::string& script)
+{
+    return std::variant<tess::script, tess::error>();
 }

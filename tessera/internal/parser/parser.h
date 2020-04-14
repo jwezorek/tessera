@@ -9,6 +9,6 @@
 
 namespace tess {
     namespace parser {
-        std::variant<tess::tessera_script, tess::parser::exception> parse(const text_range& input);
+        std::variant<tess::tessera_script, tess::parser::exception> parse_old(const text_range& input);
     }
 }

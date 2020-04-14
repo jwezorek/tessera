@@ -69,7 +69,7 @@ namespace tess {
     }
 }
 
-std::variant<tess::tessera_script, tess::parser::exception> tess::parser::parse(const tess::text_range& input)
+std::variant<tess::tessera_script, tess::parser::exception> tess::parser::parse_old(const tess::text_range& input)
 {
 	auto whole_script = tess::text_range(input);
     tessera_script output;

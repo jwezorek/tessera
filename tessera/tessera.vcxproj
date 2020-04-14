@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="internal\assignment_stmt.cpp" />
     <ClCompile Include="internal\error.cpp" />
     <ClCompile Include="internal\execution_ctxt.cpp" />
     <ClCompile Include="internal\expr_value.cpp" />
@@ -35,6 +36,8 @@
     <ClCompile Include="internal\parser\statement_parser.cpp" />
     <ClCompile Include="internal\parser\tile_parser.cpp" />
     <ClCompile Include="internal\old_script_impl.cpp" />
+    <ClCompile Include="internal\script.cpp" />
+    <ClCompile Include="internal\script_impl.cpp" />
     <ClCompile Include="internal\tile.cpp" />
     <ClCompile Include="internal\tile_impl.cpp" />
     <ClCompile Include="internal\tile_patch.cpp" />
@@ -50,10 +53,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tessera\error.h" />
+    <ClInclude Include="include\tessera\script.h" />
     <ClInclude Include="include\tessera\tessera.h" />
     <ClInclude Include="include\tessera\tessera_script.h" />
     <ClInclude Include="include\tessera\tile.h" />
     <ClInclude Include="include\tessera\tile_patch.h" />
+    <ClInclude Include="internal\assignment_stmt.h" />
     <ClInclude Include="internal\execution_ctxt.h" />
     <ClInclude Include="internal\expression.h" />
     <ClInclude Include="internal\expr_value.h" />
@@ -72,6 +77,7 @@
     <ClInclude Include="internal\parser\tile_parser.h" />
     <ClInclude Include="internal\parser\util.h" />
     <ClInclude Include="internal\old_script_impl.h" />
+    <ClInclude Include="internal\script_impl.h" />
     <ClInclude Include="internal\tessera_impl.h" />
     <ClInclude Include="internal\tile_impl.h" />
     <ClInclude Include="internal\tile_patch_def.h" />

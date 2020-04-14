@@ -16,7 +16,7 @@ void generate_svg(const std::string& filename, const std::vector<tess::tile>& ti
 int main(int argc, char** argv)
 {
 	std::string script = read_file("test.tess");
-    auto results = tess::parse(script);
+    auto results = tess::parse_old(script);
 
 	if (std::holds_alternative<tess::tessera_script>(results)) {
 		const auto& tessera = std::get<tess::tessera_script>(results);
