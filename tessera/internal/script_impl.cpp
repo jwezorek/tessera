@@ -8,7 +8,7 @@ tess::script::impl_type::impl_type(const std::vector<std::tuple<std::string, exp
     std::transform(globals.begin(), globals.end(), std::inserter(globals_, globals_.end()),
         [](const auto& var_val)->value_pair {
             const auto& [var, val] = var_val;
-            return { var, val };
+            return { var, expr_value() }; // TODO
         }
     );
 }

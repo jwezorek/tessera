@@ -5,6 +5,7 @@
 #include "tessera_impl.h"
 #include "math_util.h"
 #include <variant>
+#include <memory>
 
 namespace tess {
 
@@ -13,7 +14,10 @@ namespace tess {
         nil_val();
     };
 
-	using expr_val_var = std::variant< nil_val, tile, tile_patch, number, bool, edge, vertex, error>;
+	class function;
+
+	using func_ptr = std::shared_ptr<const tess::function>;
+	using expr_val_var = std::variant< nil_val, tile, tile_patch, number, bool, edge, vertex, func_ptr, error>;
 
 	class expr_value : public expr_val_var, public tessera_impl
 	{
@@ -23,7 +27,5 @@ namespace tess {
 		expr_value get_field(const std::string& field) const;
 		expr_value get_field(const std::string& field, int ary_item_index) const;
 	};
-
-
 	
 }

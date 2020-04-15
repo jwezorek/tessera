@@ -109,6 +109,9 @@
     <ClCompile Include="internal\parser\assignment_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="internal\function.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="internal\expression.h">
@@ -149,9 +152,6 @@
     </ClInclude>
     <ClInclude Include="internal\parser\statement_parser.h">
       <Filter>Source Files\parser</Filter>
-    </ClInclude>
-    <ClInclude Include="internal\execution_ctxt.h">
-      <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="internal\expr_value.h">
       <Filter>Source Files\impl</Filter>
@@ -215,6 +215,12 @@
     </ClInclude>
     <ClInclude Include="internal\parser\assignment_parser.h">
       <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\function.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\execution_ctxt.h">
+      <Filter>Source Files\impl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
