@@ -416,3 +416,25 @@ tess::expr_value tess::nil_expr::eval( tess::execution_ctxt& ctx) const
 {
     return tess::expr_value{ nil_val() };
 }
+
+tess::if_expr::if_expr(std::tuple<expr_ptr, expr_ptr, expr_ptr> exprs) :
+	condition_(std::get<0>(exprs)),
+	then_clause_(std::get<1>(exprs)),
+	else_clause_(std::get<2>(exprs))
+{
+}
+
+tess::expr_value tess::if_expr::eval(execution_ctxt& ctxt) const
+{
+	auto condition_val = condition_->eval(ctxt);
+	if (std::holds_alternative<error>(condition_val))
+		return condition_val;
+
+	if (!std::holds_alternative<bool>(condition_val))
+		return tess::expr_value{ error("if condition must evaluate to a boolean") };
+
+	if (std::get<bool>(condition_val))
+		return then_clause_->eval(ctxt);
+	else
+		return else_clause_->eval(ctxt);
+}

@@ -17,6 +17,7 @@ namespace tess {
 
         enum class kw {
             if_,
+            then,
             else_,
             lay,
 			let,

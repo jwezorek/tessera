@@ -15,6 +15,7 @@ const std::string& tess::parser::keyword(tess::parser::kw tok)
     using namespace tess::parser;
     static std::unordered_map<kw, std::string> keyword_tbl = {
             {kw::if_,       "if"},
+            {kw::then,      "then"},
             {kw::else_,     "else"},
             {kw::lay,       "lay"},
             {kw::tile,      "tile"},

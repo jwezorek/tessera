@@ -178,4 +178,15 @@ namespace tess {
 		nil_expr();
         expr_value eval( execution_ctxt& ctx ) const override;
 	};
+
+    class if_expr : public expression
+    {
+    private:
+        expr_ptr condition_;
+        expr_ptr then_clause_;
+        expr_ptr else_clause_;
+    public:
+        if_expr(std::tuple< expr_ptr, expr_ptr, expr_ptr> exprs);
+        expr_value eval(execution_ctxt& ctx) const override;
+    };
 }

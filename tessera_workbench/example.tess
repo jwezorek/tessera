@@ -1,11 +1,14 @@
 let foo = patch(n) {
-    n+5
+	if (n == 1) 
+		triangle 
+	else 
+		5
 };
 
 let triangle = tile {
 	vertex a{angle : theta}, b{angle : theta}, c{angle : theta};
 	edge left{ c -> a }, right{ b -> c }, bottom{ a -> b };
-}
+};
 
 tableau(n) {
    1+2+3+n
