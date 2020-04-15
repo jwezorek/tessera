@@ -2,6 +2,7 @@
 #include "../expression.h"
 #include "object_ref_expr_parser.h"
 #include "special_parser.h"
+#include "function_parser.h"
 #include "expr_parser.h"
 #include "keywords.h"
 #include "util.h"
@@ -23,10 +24,11 @@ namespace tess {
         auto const indentifier_str = indentifier_str_();
         auto const object_ref_expr = object_ref_expr_();
 		auto const special_expr = special_expr_();
+        auto const function = function_def_();
 		auto const number_def = x3::int32[make_<number_expr>];
 		auto const nil_def = kw_lit<kw::nil>()[make_nil];
 
-		auto const basic_expr_def = nil | object_ref_expr | special_expr | number | ('(' >> expr >> ')');
+		auto const basic_expr_def = nil | object_ref_expr | special_expr | number | function | ('(' >> expr >> ')');
 
         BOOST_SPIRIT_DEFINE(
             number,

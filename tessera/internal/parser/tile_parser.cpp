@@ -77,6 +77,7 @@ namespace tess {
         };
 
         using boost::fusion::operator<<;
+        
     }
 }
 
@@ -122,6 +123,7 @@ namespace tess {
         x3::rule<class basic_vert_def_, vert_definition> basic_vert_def = "basic_vert_def";
         x3::rule<class vert_definition__, vert_definition> vert_definition_ = "vert_definition_";
         x3::rule<class verts_definition__, verts_definition>  verts_definition_ = "verts_definition_";
+        x3::rule<class tile_definition__, std::tuple<std::vector<std::string>, ve_definitions>>  tile_definition = "tile_definition";
 
         const auto expr = expression_();
         const auto identifier_str = indentifier_str_();
@@ -142,6 +144,9 @@ namespace tess {
         auto const ve_defs_var_ = verts_definition_ | edges_definition_ ;
         auto const ve_definitions_ = *(ve_defs_var_);
 
+        auto const parameters = -(x3::lit('(') >> (identifier_str % x3::lit(',')) >> x3::lit(')'));
+        auto const tile_definition_def = kw_lit<kw::tile>() >> parameters >> x3::lit('{') > ve_definitions_ > x3::lit('}');
+
         BOOST_SPIRIT_DEFINE(
             class_field_,
             edge_field_,
@@ -152,7 +157,8 @@ namespace tess {
             edges_definition_,
             basic_vert_def,
             vert_definition_,
-            verts_definition_
+            verts_definition_,
+            tile_definition
         );
 
         std::variant<tile_verts_and_edges, exception> unpack(const ve_definitions& defs) {
@@ -225,13 +231,13 @@ namespace tess {
             for (const auto& def : defs) 
                 std::visit(visit_def(v,e), def);
             
-            return tile_verts_and_edges(v, e);
+            return tess::tile_verts_and_edges(v, e);
         }
     }
 }
 
 
-std::variant<tess::parser::tile_verts_and_edges, tess::parser::exception> tess::parser::parse_tile(const tess::text_range& input)
+std::variant<tess::tile_verts_and_edges, tess::parser::exception> tess::parser::parse_tile(const tess::text_range& input)
 {
     tess::parser::ve_definitions output;
     bool success = false;
@@ -247,4 +253,32 @@ std::variant<tess::parser::tile_verts_and_edges, tess::parser::exception> tess::
         return exception("", "syntax error", iter);
 
     return tess::parser::unpack(output);
+}
+
+
+std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_::parse_aux(const text_range& input) const
+{
+    std::tuple<std::vector<std::string>, tess::parser::ve_definitions> output;
+    bool success = false;
+    auto iter = input.begin();
+
+    try {
+        success = x3::phrase_parse(iter, input.end(), tess::parser::tile_definition, x3::space, output);
+    }
+    catch (...)
+    {
+    }
+
+    if (success) {
+        auto [params, v_e] = output;
+        auto maybe_ve = tess::parser::unpack(v_e);
+
+        if (! std::holds_alternative<tile_verts_and_edges>(maybe_ve))
+            return { tess::expr_ptr(), iter };
+
+        tile_def tile(params, std::get<tile_verts_and_edges>(maybe_ve) );
+
+        return { std::make_shared<function>(params, tile), iter};
+    }
+    return { tess::expr_ptr(), iter };
 }

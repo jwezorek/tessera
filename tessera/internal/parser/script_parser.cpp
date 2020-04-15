@@ -15,7 +15,7 @@ namespace tess {
         const auto identifier = indentifier_str_();
 
         using tableau_specifier = std::tuple<std::vector<std::string>, expr_ptr>;
-        using script_spec= std::tuple<std::vector<var_assignment>, tableau_specifier>;
+        using script_spec = std::tuple<std::vector<var_assignment>, tableau_specifier>;
 
         x3::rule<class tableau_, tableau_specifier> const tableau = "tableau";
         x3::rule<class script_, script_spec> const script = "script";

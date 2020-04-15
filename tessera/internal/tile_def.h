@@ -14,7 +14,7 @@
 #include <unordered_map>
 
 namespace tess {
-    struct vertex_def;
+    
 
     struct edge_def {
         std::string name;
@@ -33,6 +33,8 @@ namespace tess {
         int index;
         vertex_def() : index(-1) {}
     };
+
+    using tile_verts_and_edges = std::tuple< std::unordered_map<std::string, vertex_def>, std::unordered_map<std::string, edge_def> >;
 
     class tile_def : public tessera_impl
     {
@@ -55,7 +57,8 @@ namespace tess {
         std::vector<std::tuple<number, number>> evaluate_vertices(execution_ctxt&) const;
 
     public:
-        tile_def(const std::string& name , std::vector<std::string> params, const text_range& source_code);
+        tile_def(const std::vector<std::string>& params, const tile_verts_and_edges& v_e);
+        tile_def(const std::string& name , std::vector<std::string> params, const text_range& source_code); //deprecated...
 		std::string name() const;
 		std::vector<std::string> params() const;
 		expr_value eval( execution_ctxt& ) const;

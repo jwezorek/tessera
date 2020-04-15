@@ -94,12 +94,29 @@ std::vector<std::tuple<tess::number, tess::number>> tess::tile_def::evaluate_ver
     return locs;
 }
 
+tess::tile_def::tile_def(const std::vector<std::string>& params, const tile_verts_and_edges& v_e) :
+    params_(std::move(params)),
+    name_to_vertex_(std::move(std::get<0>(v_e))),
+    name_to_edge_(std::move(std::get<1>(v_e)))
+{
+    if (name_to_vertex_.size() < 3)
+        throw get_exception("too few vertices");
+    if (name_to_edge_.size() < name_to_vertex_.size())
+        throw get_exception("too few edges");
+    if (name_to_edge_.size() > name_to_vertex_.size())
+        throw get_exception("too many edges");
+
+    auto maybe_err = initialize();
+    if (maybe_err.has_value())
+        throw maybe_err.value();
+}
+
 tess::tile_def::tile_def(const std::string& name, std::vector<std::string> params, const text_range& source_code) :
     name_(name), params_(std::move(params))
 {
     auto results = tess::parser::parse_tile(source_code);
-    if (std::holds_alternative<tess::parser::tile_verts_and_edges>(results)) {
-        auto& verts_and_edges = std::get<tess::parser::tile_verts_and_edges>(results);
+    if (std::holds_alternative<tess::tile_verts_and_edges>(results)) {
+        auto& verts_and_edges = std::get<tess::tile_verts_and_edges>(results);
         name_to_vertex_ = std::move(std::get<0>(verts_and_edges));
         name_to_edge_ = std::move(std::get<1>(verts_and_edges));
     } else {

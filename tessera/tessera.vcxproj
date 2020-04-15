@@ -31,6 +31,7 @@
     <ClCompile Include="internal\parser\ctrl_struct_stmts_parser.cpp" />
     <ClCompile Include="internal\parser\exception.cpp" />
     <ClCompile Include="internal\parser\expr_parser.cpp" />
+    <ClCompile Include="internal\parser\function_parser.cpp" />
     <ClCompile Include="internal\parser\keywords.cpp" />
     <ClCompile Include="internal\parser\object_ref_expr_parser.cpp" />
     <ClCompile Include="internal\parser\script_parser.cpp" />
@@ -72,6 +73,7 @@
     <ClInclude Include="internal\parser\ctrl_struct_stmts_parser.h" />
     <ClInclude Include="internal\parser\exception.h" />
     <ClInclude Include="internal\parser\expr_parser.h" />
+    <ClInclude Include="internal\parser\function_parser.h" />
     <ClInclude Include="internal\parser\keywords.h" />
     <ClInclude Include="internal\parser\object_ref_expr_parser.h" />
     <ClInclude Include="internal\parser\old_parser.h" />
