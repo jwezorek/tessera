@@ -8,5 +8,4 @@
 
 namespace tess {
     std::variant<tess::tessera_script, tess::error> parse_old(const std::string& script);
-    std::variant<tess::script, tess::error> parse(const std::string& script);
 };

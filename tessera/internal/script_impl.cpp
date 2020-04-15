@@ -1,7 +1,7 @@
 #include "script_impl.h"
 #include <algorithm>
 
-tess::script_impl::script_impl(const std::vector<std::tuple<std::string, expr_ptr>>& globals, std::vector<std::string>& params, expr_ptr tableau) :
+tess::script::impl_type::impl_type(const std::vector<std::tuple<std::string, expr_ptr>>& globals, std::vector<std::string>& params, expr_ptr tableau) :
     parameters_(params), tableau_(tableau)
 {
     using value_pair = decltype(globals_)::value_type;

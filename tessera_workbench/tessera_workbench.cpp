@@ -12,7 +12,7 @@
 std::string read_file(const std::string& file_path); 
 std::vector<std::string> get_arguments(int argc, char** argv);
 void generate_svg(const std::string& filename, const std::vector<tess::tile>& tiles, double scale);
-
+/*
 int main(int argc, char** argv)
 {
 	std::string script = read_file("test.tess");
@@ -36,14 +36,15 @@ int main(int argc, char** argv)
 		std::cout << err << "\n";
 	}
 }
-/*
+*/
+
 int main(int argc, char** argv)
 {
-	std::string script = read_file("test.tess");
-	auto results = tess::parse_old(script);
+	std::string source_code = read_file("example.tess");
+	auto results = tess::script::interpret( source_code );
 
-	if (std::holds_alternative<tess::tessera_script>(results)) {
-		const auto& tessera = std::get<tess::tessera_script>(results);
+	if (std::holds_alternative<tess::script>(results)) {
+		const auto& tessera = std::get<tess::script>(results);
 
 		auto output = tessera.execute(get_arguments(argc, argv));
 		if (std::holds_alternative<tess::error>(output)) {
@@ -61,7 +62,7 @@ int main(int argc, char** argv)
 		std::cout << err << "\n";
 	}
 }
-*/
+
 std::string read_file(const std::string& file_path) {
 	std::ifstream file(file_path);
 	return std::string(
