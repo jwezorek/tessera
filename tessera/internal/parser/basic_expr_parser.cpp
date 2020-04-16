@@ -1,7 +1,7 @@
 #include "basic_expr_parser.h"
 #include "cond_expr_parser.h"
 #include "../expression.h"
-#include "object_ref_expr_parser.h"
+#include "old_object_ref_expr_parser.h"
 #include "special_parser.h"
 #include "function_parser.h"
 #include "expr_parser.h"

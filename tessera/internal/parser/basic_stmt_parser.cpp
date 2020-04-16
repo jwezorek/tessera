@@ -1,5 +1,5 @@
 #include "statement_parser.h"
-#include "object_ref_expr_parser.h"
+#include "old_object_ref_expr_parser.h"
 #include "expr_parser.h"
 #include "cond_expr_parser.h"
 #include "util.h"

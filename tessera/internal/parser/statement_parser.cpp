@@ -1,6 +1,6 @@
 #include "statement_parser.h"
-#include "ctrl_struct_stmts_parser.h"
-#include "object_ref_expr_parser.h"
+#include "old_ctrl_struct_stmts_parser.h"
+#include "old_object_ref_expr_parser.h"
 #include "basic_stmt_parser.h"
 #include "../expression.h"
 #include "../statement.h"

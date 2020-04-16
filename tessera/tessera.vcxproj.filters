@@ -34,9 +34,6 @@
     <ClCompile Include="internal\parser\expr_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
-    <ClCompile Include="internal\parser\object_ref_expr_parser.cpp">
-      <Filter>Source Files\parser</Filter>
-    </ClCompile>
     <ClCompile Include="internal\parser\cond_expr_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
@@ -69,9 +66,6 @@
     </ClCompile>
     <ClCompile Include="internal\tile_patch.cpp">
       <Filter>Source Files\impl</Filter>
-    </ClCompile>
-    <ClCompile Include="internal\parser\ctrl_struct_stmts_parser.cpp">
-      <Filter>Source Files\parser</Filter>
     </ClCompile>
     <ClCompile Include="internal\parser\basic_stmt_parser.cpp">
       <Filter>Source Files\parser</Filter>
@@ -121,6 +115,18 @@
     <ClCompile Include="internal\parser\object_expr_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="internal\lay_expr.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\parser\lay_expr_parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\parser\old_ctrl_struct_stmts_parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\parser\old_object_ref_expr_parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="internal\expression.h">
@@ -145,9 +151,6 @@
       <Filter>Source Files\parser</Filter>
     </ClInclude>
     <ClInclude Include="internal\parser\expr_parser.h">
-      <Filter>Source Files\parser</Filter>
-    </ClInclude>
-    <ClInclude Include="internal\parser\object_ref_expr_parser.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
     <ClInclude Include="internal\parser\cond_expr_parser.h">
@@ -179,9 +182,6 @@
     </ClInclude>
     <ClInclude Include="include\tessera\tile_patch.h">
       <Filter>Source Files\impl</Filter>
-    </ClInclude>
-    <ClInclude Include="internal\parser\ctrl_struct_stmts_parser.h">
-      <Filter>Source Files\parser</Filter>
     </ClInclude>
     <ClInclude Include="internal\parser\basic_stmt_parser.h">
       <Filter>Source Files\parser</Filter>
@@ -238,6 +238,18 @@
       <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="internal\parser\object_expr_parser.h">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\lay_expr.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\lay_expr_parser.h">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\old_ctrl_struct_stmts_parser.h">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\old_object_ref_expr_parser.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
   </ItemGroup>
