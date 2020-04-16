@@ -24,6 +24,7 @@
     <ClCompile Include="internal\expr_value.cpp" />
     <ClCompile Include="internal\function.cpp" />
     <ClCompile Include="internal\math_util.cpp" />
+    <ClCompile Include="internal\object_expr.cpp" />
     <ClCompile Include="internal\parser\assignment_parser.cpp" />
     <ClCompile Include="internal\parser\basic_expr_parser.cpp" />
     <ClCompile Include="internal\parser\basic_stmt_parser.cpp" />
@@ -33,6 +34,7 @@
     <ClCompile Include="internal\parser\expr_parser.cpp" />
     <ClCompile Include="internal\parser\function_parser.cpp" />
     <ClCompile Include="internal\parser\keywords.cpp" />
+    <ClCompile Include="internal\parser\object_expr_parser.cpp" />
     <ClCompile Include="internal\parser\object_ref_expr_parser.cpp" />
     <ClCompile Include="internal\parser\script_parser.cpp" />
     <ClCompile Include="internal\parser\special_parser.cpp" />
@@ -66,6 +68,7 @@
     <ClInclude Include="internal\expr_value.h" />
     <ClInclude Include="internal\function.h" />
     <ClInclude Include="internal\math_util.h" />
+    <ClInclude Include="internal\object_expr.h" />
     <ClInclude Include="internal\parser\assignment_parser.h" />
     <ClInclude Include="internal\parser\basic_expr_parser.h" />
     <ClInclude Include="internal\parser\basic_stmt_parser.h" />
@@ -75,6 +78,7 @@
     <ClInclude Include="internal\parser\expr_parser.h" />
     <ClInclude Include="internal\parser\function_parser.h" />
     <ClInclude Include="internal\parser\keywords.h" />
+    <ClInclude Include="internal\parser\object_expr_parser.h" />
     <ClInclude Include="internal\parser\object_ref_expr_parser.h" />
     <ClInclude Include="internal\parser\old_parser.h" />
     <ClInclude Include="internal\parser\script_parser.h" />
