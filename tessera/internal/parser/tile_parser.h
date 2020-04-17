@@ -3,7 +3,7 @@
 #include "../tile_def.h"
 #include "../text_range.h"
 #include "exception.h"
-#include "../function.h"
+#include "../function_def.h"
 #include <unordered_map>
 #include <tuple>
 #include <variant>

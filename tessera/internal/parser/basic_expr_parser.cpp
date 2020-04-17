@@ -1,10 +1,11 @@
 #include "basic_expr_parser.h"
 #include "cond_expr_parser.h"
 #include "../expression.h"
-#include "old_object_ref_expr_parser.h"
 #include "special_parser.h"
 #include "function_parser.h"
 #include "expr_parser.h"
+#include "object_expr_parser.h"
+#include "lay_expr_parser.h"
 #include "keywords.h"
 #include "util.h"
 #include <boost/fusion/adapted/std_tuple.hpp>
@@ -23,14 +24,15 @@ namespace tess {
 
         auto const expr = expression_();
         auto const if_expr = if_expr_();
+        auto const lay_expr = lay_expr_();
+        auto const object_expr = object_expr_();
         auto const indentifier_str = indentifier_str_();
-        auto const object_ref_expr = object_ref_expr_();
 		auto const special_expr = special_expr_();
         auto const function = function_def_();
 		auto const number_def = x3::int32[make_<number_expr>];
 		auto const nil_def = kw_lit<kw::nil>()[make_nil];
 
-		auto const basic_expr_def =  nil | object_ref_expr | special_expr | number | function | if_expr | ('(' >> expr >> ')') ;
+		auto const basic_expr_def =  nil | lay_expr | object_expr | special_expr | number | function | if_expr | ('(' >> expr >> ')') ;
 
         BOOST_SPIRIT_DEFINE(
             number,

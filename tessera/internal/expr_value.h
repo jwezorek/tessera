@@ -14,9 +14,9 @@ namespace tess {
         nil_val();
     };
 
-	class function;
+	class function_def;
 
-	using func_ptr = std::shared_ptr<const tess::function>;
+	using func_ptr = std::shared_ptr<const tess::function_def>;
 	using expr_val_var = std::variant< nil_val, tile, tile_patch, number, bool, edge, vertex, func_ptr, error>;
 
 	class expr_value : public expr_val_var, public tessera_impl

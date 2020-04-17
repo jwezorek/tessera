@@ -11,14 +11,14 @@
 
 namespace tess {
 
-    class function : public expression, public std::enable_shared_from_this<function> {
+    class function_def : public expression, public std::enable_shared_from_this<function_def> {
         public:
             expr_value eval(execution_ctxt&) const override;
             const std::vector<std::string>& parameters() const;
-            expr_value call(std::vector<expr_value> args, execution_ctxt& ctxt) const;
 
-            function(const  std::vector<std::string>& params, const tile_def& tile_definition);
-            function(const  std::vector<std::string>& params, const expr_ptr& body);
+            function_def(const  std::vector<std::string>& params, const tile_def& tile_definition);
+            function_def(const  std::vector<std::string>& params, const expr_ptr& body);
+            friend class lambda;
 
         private:
             std::vector<std::string> parameters_;

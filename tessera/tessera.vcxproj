@@ -22,7 +22,8 @@
     <ClCompile Include="internal\error.cpp" />
     <ClCompile Include="internal\execution_ctxt.cpp" />
     <ClCompile Include="internal\expr_value.cpp" />
-    <ClCompile Include="internal\function.cpp" />
+    <ClCompile Include="internal\function_def.cpp" />
+    <ClCompile Include="internal\lambda.cpp" />
     <ClCompile Include="internal\lay_expr.cpp" />
     <ClCompile Include="internal\math_util.cpp" />
     <ClCompile Include="internal\object_expr.cpp" />
@@ -68,7 +69,8 @@
     <ClInclude Include="internal\execution_ctxt.h" />
     <ClInclude Include="internal\expression.h" />
     <ClInclude Include="internal\expr_value.h" />
-    <ClInclude Include="internal\function.h" />
+    <ClInclude Include="internal\function_def.h" />
+    <ClInclude Include="internal\lambda.h" />
     <ClInclude Include="internal\lay_expr.h" />
     <ClInclude Include="internal\math_util.h" />
     <ClInclude Include="internal\object_expr.h" />

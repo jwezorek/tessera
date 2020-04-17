@@ -278,7 +278,7 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_:
 
         tile_def tile(params, std::get<tile_verts_and_edges>(maybe_ve) );
 
-        return { std::make_shared<function>(params, tile), iter};
+        return { std::make_shared<function_def>(params, tile), iter};
     }
     return { tess::expr_ptr(), iter };
 }

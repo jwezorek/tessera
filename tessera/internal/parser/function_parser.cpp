@@ -1,5 +1,5 @@
 #include "function_parser.h"
-#include "../function.h"
+#include "../function_def.h"
 #include "expr_parser.h"
 #include "tile_parser.h"
 #include "util.h"
@@ -14,7 +14,7 @@ namespace tess {
 
 		auto make_patch = [&](auto& ctx) { 
 			auto [params, body] = _attr(ctx);
-			_val(ctx) = std::make_shared<tess::function>(params, body); 
+			_val(ctx) = std::make_shared<tess::function_def>(params, body); 
 		};
 
 		x3::rule<class patch_, std::tuple<std::vector<std::string>, expr_ptr>> const patch_aux = "patch_aux";

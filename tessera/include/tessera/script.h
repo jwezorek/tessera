@@ -14,6 +14,7 @@ namespace tess {
     class script
     {
         friend class tessera_impl;
+
     public:
         static std::variant<tess::script, tess::error> interpret(const std::string& script);
         const std::vector<std::string>& parameters() const;

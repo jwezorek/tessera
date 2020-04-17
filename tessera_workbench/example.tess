@@ -1,15 +1,28 @@
-let foo = patch(n) {
-	if (n == 1) 
-		triangle 
-	else 
-		5
-};
+let theta =  pi/3;
 
 let triangle = tile {
 	vertex a{angle : theta}, b{angle : theta}, c{angle : theta};
 	edge left{ c -> a }, right{ b -> c }, bottom{ a -> b };
 };
 
-tableau(n) {
-   1+2+3+n
+let tri_pair = patch {
+    lay triangle , triangle such_that $1.right <-> $2.right
+};
+
+let tri_strip = patch( n ) {
+    if (n==1)
+       lay triangle
+    else
+       lay tri_pair , tri_strip(n-1) such_that $1[1].left <-> $2[0].left
+};
+
+let tri_grid = patch( n ) {
+	if (n == 1)
+		lay triangle
+	else
+		lay tri_strip(n) , tri_grid(n-1) such_that $1[1].bottom <-> $2[0].bottom
+};
+
+tableau( num ) {
+   lay tri_grid( num )
 }

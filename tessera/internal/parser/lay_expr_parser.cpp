@@ -25,9 +25,9 @@ namespace tess {
 
         auto const expr = expression_();
         auto const obj_ref_pair_def = expr >> "<->" >> expr;
-        auto const full_lay_expr_aux_def = kw_lit<kw::lay>() >> (expr % x3::lit(",")) >> kw_lit<kw::such_that>() >> (obj_ref_pair % x3::lit(',')) > x3::lit(';');
+        auto const full_lay_expr_aux_def = kw_lit<kw::lay>() >> (expr % x3::lit(",")) >> kw_lit<kw::such_that>() >> (obj_ref_pair % x3::lit(','));
         auto const full_lay_expr_def = full_lay_expr_aux[make_<tess::lay_expr>];
-        auto const partial_lay_expr_aux_def = kw_lit<kw::lay>() >> (expr % x3::lit(",")) > x3::lit(';');
+        auto const partial_lay_expr_aux_def = kw_lit<kw::lay>() >> (expr % x3::lit(","));
         auto const partial_lay_expr_def = partial_lay_expr_aux[make_<tess::lay_expr>];
         auto const lay_expr_def = full_lay_expr | partial_lay_expr;
 
