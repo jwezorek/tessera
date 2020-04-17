@@ -2,7 +2,6 @@
 #include "math_util.h"
 #include "tessera/tile.h"
 #include "tile_impl.h"
-#include "old_script_impl.h"
 #include "parser/tile_parser.h"
 #include <symengine/expression.h>
 #include <symengine/logic.h>
@@ -151,14 +150,14 @@ std::vector<std::string> tess::tile_def::params() const
 
 tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 {
-    // TODO: use a cache of unparametrized tiles.
-
 	auto n = num_vertices();
+    /*
     const auto& script = ctxt.script();
     auto new_tile_impl = std::make_shared<tile::impl_type>(
         script.get_tile_prototype(name_)
     );
-
+    */
+    auto new_tile_impl = std::make_shared<tile::impl_type>(nullptr); //TODO
     auto vert_locations = evaluate_vertices(ctxt);
     
     std::vector<tess::vertex> verts(n);

@@ -65,36 +65,6 @@ namespace tess {
         expr_value eval( execution_ctxt& ctxt ) const override;
     };
 
-    struct func_call_item
-    {
-        std::string name;
-        std::vector<expr_ptr> args;
-    };
-
-    struct ary_item {
-        std::string name;
-        expr_ptr index;
-    };
-
-    struct place_holder_ary_item {
-        int place_holder;
-        expr_ptr index;
-    };
-
-	using object_ref_item = std::variant<func_call_item, ary_item, place_holder_ary_item, std::string, int>;
-
-    class object_ref_expr;
-    using obj_ref_ptr = std::shared_ptr<object_ref_expr>;
-
-    class object_ref_expr : public expression
-    {
-    private:
-        std::vector<object_ref_item> parts_;
-    public:
-        object_ref_expr(const std::vector<object_ref_item>& parts);
-        expr_value eval( execution_ctxt& ctxt ) const override;
-    };
-
     using expression_params = std::tuple<std::shared_ptr<tess::expression>, std::vector<std::tuple<char, std::shared_ptr<tess::expression>>>>;
 
     class exponent_expr : public expression

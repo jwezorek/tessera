@@ -14,7 +14,6 @@
 #include <unordered_map>
 
 namespace tess {
-    
 
     struct edge_def {
         std::string name;
@@ -38,8 +37,6 @@ namespace tess {
 
     class tile_def : public tessera_impl
     {
-        friend tessera_script;
-
     private: 
         std::string name_;
         std::vector<std::string> params_;

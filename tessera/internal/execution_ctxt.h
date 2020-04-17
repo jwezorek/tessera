@@ -1,7 +1,6 @@
 #pragma once
 
 #include "expr_value.h"
-#include "tessera/old_tessera_script.h"
 #include <string>
 #include <unordered_map>
 #include <optional>
@@ -22,27 +21,22 @@ namespace tess {
 
     class execution_ctxt {
 		private:
-			const tessera_script& script_;
 			std::vector<scope_frame> scope_stack_;
 
 		public:
-			execution_ctxt(const tessera_script& script);
-			bool is_functional(const std::string& func) const;
-			expr_value call(const std::string& func, const std::vector<expr_value>& args) const;
-			expr_value eval(const std::string& var) const;
-			expr_value get_placeholder(int i) const;
+			execution_ctxt();
+			expr_value get(const std::string& var) const;
+			expr_value get(int i) const;
 			void push_scope(scope_frame&& scope);
 			void pop_scope();
-			execution_ctxt get_global_scope() const;
-			const script_impl& script() const;
     };
 
 	class scope {
-	private:
-		execution_ctxt& ctxt_;
-	public:
-		scope(execution_ctxt& ctxt, scope_frame&& ls);
-		~scope();
+		private:
+			execution_ctxt& ctxt_;
+		public:
+			scope(execution_ctxt& ctxt, scope_frame&& ls);
+			~scope();
 	};
 
 }

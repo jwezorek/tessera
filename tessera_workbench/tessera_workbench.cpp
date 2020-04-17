@@ -1,5 +1,4 @@
-#include "tessera/old_tessera.h"
-#include "tessera/old_tessera_script.h"
+#include "tessera/script.h"
 #include "tessera/error.h"
 #include <iostream>
 #include <string>
@@ -12,31 +11,6 @@
 std::string read_file(const std::string& file_path); 
 std::vector<std::string> get_arguments(int argc, char** argv);
 void generate_svg(const std::string& filename, const std::vector<tess::tile>& tiles, double scale);
-/*
-int main(int argc, char** argv)
-{
-	std::string script = read_file("test.tess");
-    auto results = tess::parse_old(script);
-
-	if (std::holds_alternative<tess::tessera_script>(results)) {
-		const auto& tessera = std::get<tess::tessera_script>(results);
-
-		auto output = tessera.execute( get_arguments(argc, argv) );
-		if (std::holds_alternative<tess::error>(output)) {
-			std::cout << std::get<tess::error>(output) << "\n";
-			return -1;
-		}
-
-		const auto& tiles = std::get<std::vector<tess::tile>>(output);
-		generate_svg("C:\\test\\tiles.svg", tiles, 50.0 );
-
-		std::cout << "success" << "\n";
-	} else {
-		auto err = std::get<tess::error>(results);
-		std::cout << err << "\n";
-	}
-}
-*/
 
 int main(int argc, char** argv)
 {
