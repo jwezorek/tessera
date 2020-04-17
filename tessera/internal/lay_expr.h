@@ -1,5 +1,6 @@
 #pragma once
 
+#include "tessera_impl.h"
 #include "expression.h"
 #include "execution_ctxt.h"
 
@@ -10,7 +11,7 @@ namespace tess {
 		std::vector<std::tuple<expr_ptr, expr_ptr>> edge_mappings;
 	};
 
-    class lay_expr : public expression {
+    class lay_expr : public expression, public tessera_impl {
 		private:
 			using expr_vals = std::vector<expr_value>;
 			using piece_result = std::variant<expr_vals, error>;
@@ -28,7 +29,7 @@ namespace tess {
 
 		public:
 			lay_expr(const lay_params& params);
-			lay_expr(const std::vector<obj_ref_ptr>& tiles);
+			lay_expr(const std::vector<expr_ptr>& tiles);
 			expr_value eval(execution_ctxt&) const override;
     };
 
