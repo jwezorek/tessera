@@ -6,13 +6,14 @@
 #include <unordered_map>
 #include <string>
 #include <variant>
-#include "execution_ctxt.h"
-#include "expr_value.h"
 
 namespace tess {
 
     class expression;
     using expr_ptr = std::shared_ptr<expression>;
+
+    class execution_ctxt;
+    class expr_value;
 
     class expression
     {

@@ -35,7 +35,7 @@ namespace tess {
 
     using tile_verts_and_edges = std::tuple< std::unordered_map<std::string, vertex_def>, std::unordered_map<std::string, edge_def> >;
 
-    class tile_def : public tessera_impl
+    class tile_def : public tessera_impl, std::enable_shared_from_this<tile_def>
     {
     private: 
         std::string name_;
@@ -44,10 +44,7 @@ namespace tess {
         std::unordered_map<std::string, vertex_def> name_to_vertex_;
         std::vector<std::shared_ptr<const edge_def>> edges_;
         std::vector<std::shared_ptr<const vertex_def>> vertices_;
-        //std::optional<tile> prototype_;
         tess::parser::exception get_exception(const std::string& msg);
-
-        //void set_value(const tile& prototype);
         void set_indices();
         std::optional<parser::exception> initialize();
 
@@ -55,7 +52,6 @@ namespace tess {
 
     public:
         tile_def(const std::vector<std::string>& params, const tile_verts_and_edges& v_e);
-        tile_def(const std::string& name , std::vector<std::string> params, const text_range& source_code); //deprecated...
 		std::string name() const;
 		std::vector<std::string> params() const;
 		expr_value eval( execution_ctxt& ) const;

@@ -110,34 +110,6 @@ tess::tile_def::tile_def(const std::vector<std::string>& params, const tile_vert
         throw maybe_err.value();
 }
 
-tess::tile_def::tile_def(const std::string& name, std::vector<std::string> params, const text_range& source_code) :
-    name_(name), params_(std::move(params))
-{
-    auto results = tess::parser::parse_tile(source_code);
-    if (std::holds_alternative<tess::tile_verts_and_edges>(results)) {
-        auto& verts_and_edges = std::get<tess::tile_verts_and_edges>(results);
-        name_to_vertex_ = std::move(std::get<0>(verts_and_edges));
-        name_to_edge_ = std::move(std::get<1>(verts_and_edges));
-    } else {
-        auto e = std::get<tess::parser::exception>(results);
-        e.push_stack_item("tile " + name);
-        if (!e.has_where())
-            e.set_where(source_code.end());
-        throw e;
-    }
-
-    if (name_to_vertex_.size() < 3)
-        throw get_exception("too few vertices");
-    if (name_to_edge_.size() < name_to_vertex_.size())
-        throw get_exception("too few edges");
-    if (name_to_edge_.size() > name_to_vertex_.size())
-        throw get_exception("too many edges");
-
-    auto maybe_err = initialize();
-    if (maybe_err.has_value())
-        throw maybe_err.value();
-}
-
 std::string tess::tile_def::name() const
 {
 	return name_;
@@ -151,13 +123,9 @@ std::vector<std::string> tess::tile_def::params() const
 tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
 {
 	auto n = num_vertices();
-    /*
-    const auto& script = ctxt.script();
     auto new_tile_impl = std::make_shared<tile::impl_type>(
-        script.get_tile_prototype(name_)
-    );
-    */
-    auto new_tile_impl = std::make_shared<tile::impl_type>(nullptr); //TODO
+        shared_from_this()
+    ); 
     auto vert_locations = evaluate_vertices(ctxt);
     
     std::vector<tess::vertex> verts(n);
@@ -200,7 +168,6 @@ int tess::tile_def::num_vertices() const
 {
 	return static_cast<int>(vertices_.size());
 }
-
 
 int tess::tile_def::get_edge_index(const std::string& e) const
 {

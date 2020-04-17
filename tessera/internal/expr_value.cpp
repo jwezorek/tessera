@@ -38,8 +38,11 @@ tess::expr_value tess::expr_value::get_field(const std::string& field) const
 	);
 }
 
-tess::expr_value tess::expr_value::get_field(const std::string& field, int ary_item_index) const
+tess::expr_value tess::expr_value::call(const std::vector<expr_value>& args) const
 {
-	auto main_obj = get_field(field);
-	return main_obj.get_ary_item(ary_item_index);
+	if (!std::holds_alternative<lambda>(*this))
+		return { error("attempted to call a value that is not functionlike") };
+	const auto& lambda = std::get<tess::lambda>(*this);
+	return lambda.call(args);
 }
+

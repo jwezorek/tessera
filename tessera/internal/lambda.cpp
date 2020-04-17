@@ -1,7 +1,20 @@
 #include "lambda.h"
+#include "function_def.h"
+#include "expr_value.h"
+#include "execution_ctxt.h"
 
-tess::lambda::lambda(std::shared_ptr<function_def> func, const scope_frame& closure)
+class tess::lambda::impl_type  {
+    function_def func;
+    scope_frame closure;
+};
+
+tess::lambda::lambda(const function_def& func, const scope_frame& closure)
 {
+}
+
+tess::lambda::lambda(const lambda* ref)
+{
+
 }
 
 tess::expr_value tess::lambda::call(const std::vector<expr_value>& expr_value) const

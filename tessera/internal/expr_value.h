@@ -3,6 +3,7 @@
 #include "../include/tessera/tile_patch.h"
 #include "../include/tessera/error.h"
 #include "tessera_impl.h"
+#include "lambda.h"
 #include "math_util.h"
 #include <variant>
 #include <memory>
@@ -14,10 +15,7 @@ namespace tess {
         nil_val();
     };
 
-	class function_def;
-
-	using func_ptr = std::shared_ptr<const tess::function_def>;
-	using expr_val_var = std::variant< nil_val, tile, tile_patch, number, bool, edge, vertex, func_ptr, error>;
+	using expr_val_var = std::variant<nil_val, tile, tile_patch, number, bool, edge, vertex, lambda, error>;
 
 	class expr_value : public expr_val_var, public tessera_impl
 	{
@@ -25,7 +23,7 @@ namespace tess {
 		bool is_object() const;
 		expr_value get_ary_item(int index) const;
 		expr_value get_field(const std::string& field) const;
-		expr_value get_field(const std::string& field, int ary_item_index) const;
+		expr_value call(const std::vector<expr_value>& args) const;
 	};
 	
 }

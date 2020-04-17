@@ -1,4 +1,5 @@
 #include "function_def.h"
+#include "expr_value.h"
 #include <sstream>
 /*
 #include <boost/uuid/uuid.hpp>            // uuid class
@@ -28,7 +29,7 @@ const std::vector<std::string>& tess::function_def::parameters() const
 
 tess::function_def::function_def(const std::vector<std::string>& params, const tile_def& tile_definition) :
     parameters_(params),
-    body_(tile_definition)
+    body_(std::make_shared<tile_def>(tile_definition))
 {
 }
 
