@@ -48,13 +48,13 @@ namespace tess {
         void set_indices();
         std::optional<parser::exception> initialize();
 
-        std::vector<std::tuple<number, number>> evaluate_vertices(execution_ctxt&) const;
+        std::vector<std::tuple<number, number>> evaluate_vertices(eval_context&) const;
 
     public:
         tile_def(const std::vector<std::string>& params, const tile_verts_and_edges& v_e);
 		std::string name() const;
 		std::vector<std::string> params() const;
-		expr_value eval( execution_ctxt& ) const;
+		expr_value eval( eval_context& ) const;
         const vertex_def& vertex(const std::string& v) const;
         const edge_def& edge(const std::string& e) const;
 		int num_vertices() const;

@@ -19,12 +19,12 @@ namespace tess {
 			std::optional<expr_value> get(std::string str) const;
 	};
 
-    class execution_ctxt {
+    class eval_context {
 		private:
 			std::vector<scope_frame> scope_stack_;
 
 		public:
-			execution_ctxt();
+			eval_context();
 			expr_value get(const std::string& var) const;
 			expr_value get(int i) const;
 			void push_scope(scope_frame&& scope);
@@ -33,10 +33,11 @@ namespace tess {
 
 	class scope {
 		private:
-			execution_ctxt& ctxt_;
+			eval_context& ctxt_;
 		public:
-			scope(execution_ctxt& ctxt, scope_frame&& ls);
+			scope(eval_context& ctxt, scope_frame&& ls);
 			~scope();
 	};
 
 }
+

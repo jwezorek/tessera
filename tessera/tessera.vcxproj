@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="internal\error.cpp" />
-    <ClCompile Include="internal\execution_ctxt.cpp" />
+    <ClCompile Include="internal\eval_context.cpp" />
     <ClCompile Include="internal\expr_value.cpp" />
     <ClCompile Include="internal\function_def.cpp" />
     <ClCompile Include="internal\lambda.cpp" />
@@ -54,7 +54,7 @@
     <ClInclude Include="include\tessera\script.h" />
     <ClInclude Include="include\tessera\tile.h" />
     <ClInclude Include="include\tessera\tile_patch.h" />
-    <ClInclude Include="internal\execution_ctxt.h" />
+    <ClInclude Include="internal\eval_context.h" />
     <ClInclude Include="internal\expression.h" />
     <ClInclude Include="internal\expr_value.h" />
     <ClInclude Include="internal\function_def.h" />

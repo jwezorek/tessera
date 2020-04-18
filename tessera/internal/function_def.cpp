@@ -17,7 +17,7 @@ namespace {
     */
 }
 
-tess::expr_value tess::function_def::eval(execution_ctxt&) const
+tess::expr_value tess::function_def::eval(eval_context&) const
 {
     return {};
 }

@@ -40,9 +40,6 @@
     <ClCompile Include="internal\parser\basic_expr_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
-    <ClCompile Include="internal\execution_ctxt.cpp">
-      <Filter>Source Files\impl</Filter>
-    </ClCompile>
     <ClCompile Include="internal\expr_value.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
@@ -98,6 +95,9 @@
       <Filter>Source Files\impl</Filter>
     </ClCompile>
     <ClCompile Include="internal\function_def.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\eval_context.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
   </ItemGroup>
@@ -174,9 +174,6 @@
     <ClInclude Include="internal\parser\assignment_parser.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
-    <ClInclude Include="internal\execution_ctxt.h">
-      <Filter>Source Files\impl</Filter>
-    </ClInclude>
     <ClInclude Include="internal\parser\function_parser.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
@@ -196,6 +193,9 @@
       <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="internal\function_def.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\eval_context.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
   </ItemGroup>

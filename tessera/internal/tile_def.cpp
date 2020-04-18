@@ -72,7 +72,7 @@ std::optional<tess::parser::exception> tess::tile_def::initialize()
     return std::nullopt;
 }
 
-std::vector<std::tuple<tess::number, tess::number>> tess::tile_def::evaluate_vertices(execution_ctxt& ctxt) const
+std::vector<std::tuple<tess::number, tess::number>> tess::tile_def::evaluate_vertices(eval_context& ctxt) const
 {
 	auto n = num_vertices();
 	tess::number x = 0.0;
@@ -120,7 +120,7 @@ std::vector<std::string> tess::tile_def::params() const
 	return params_;
 }
 
-tess::expr_value tess::tile_def::eval( execution_ctxt& ctxt) const
+tess::expr_value tess::tile_def::eval( eval_context& ctxt) const
 {
 	auto n = num_vertices();
     auto new_tile_impl = std::make_shared<tile::impl_type>(

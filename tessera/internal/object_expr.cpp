@@ -5,7 +5,7 @@ tess::var_expr::var_expr(const std::string& var) :
 {
 }
 
-tess::expr_value tess::var_expr::eval(execution_ctxt& ctx) const
+tess::expr_value tess::var_expr::eval(eval_context& ctx) const
 {
     return expr_value();
 }
@@ -17,7 +17,7 @@ tess::placeholder_expr::placeholder_expr(int placeholder) :
 {
 }
 
-tess::expr_value tess::placeholder_expr::eval(execution_ctxt& ctx) const
+tess::expr_value tess::placeholder_expr::eval(eval_context& ctx) const
 {
     return expr_value();
 }
@@ -30,7 +30,7 @@ tess::array_item_expr::array_item_expr(expr_ptr ary, expr_ptr index) :
 {
 }
 
-tess::expr_value tess::array_item_expr::eval(execution_ctxt& ctx) const
+tess::expr_value tess::array_item_expr::eval(eval_context& ctx) const
 {
     return expr_value();
 }
@@ -43,7 +43,7 @@ tess::func_call_expr::func_call_expr(expr_ptr func, const std::vector<expr_ptr>&
 {
 }
 
-tess::expr_value tess::func_call_expr::eval(execution_ctxt& ctx) const
+tess::expr_value tess::func_call_expr::eval(eval_context& ctx) const
 {
     return expr_value();
 }
@@ -56,7 +56,7 @@ tess::obj_field_expr::obj_field_expr(expr_ptr obj, std::string field) :
 {
 }
 
-tess::expr_value tess::obj_field_expr::eval(execution_ctxt& ctx) const
+tess::expr_value tess::obj_field_expr::eval(eval_context& ctx) const
 {
     return expr_value();
 }

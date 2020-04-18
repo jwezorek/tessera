@@ -10,11 +10,11 @@
 namespace tess {
 
     class expr_value;
-    class execution_ctxt;
+    class eval_context;
 
     class function_def : public expression {
         public:
-            expr_value eval(execution_ctxt&) const override;
+            expr_value eval(eval_context&) const override;
             const std::vector<std::string>& parameters() const;
 
             function_def(const std::vector<std::string>& params, const tile_def& tile_definition);

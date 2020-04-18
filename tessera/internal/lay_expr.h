@@ -2,7 +2,7 @@
 
 #include "tessera_impl.h"
 #include "expression.h"
-#include "execution_ctxt.h"
+#include "eval_context.h"
 
 namespace tess {
 
@@ -22,15 +22,15 @@ namespace tess {
 			std::vector<expr_ptr> tiles_;
 			std::vector<std::tuple<expr_ptr, expr_ptr>> edge_mappings_;
 
-			piece_result eval_pieces(execution_ctxt&) const;
-			edge_mapping_result eval_edge_mappings(execution_ctxt&) const;
-			std::optional<error> apply_mapping(const edge_mapping_value& mappings, execution_ctxt& ctxt) const;
+			piece_result eval_pieces(eval_context&) const;
+			edge_mapping_result eval_edge_mappings(eval_context&) const;
+			std::optional<error> apply_mapping(const edge_mapping_value& mappings, eval_context& ctxt) const;
 			matrix edge_to_edge_matrix(const edge::impl_type& e1, const edge::impl_type& e2) const;
 
 		public:
 			lay_expr(const lay_params& params);
 			lay_expr(const std::vector<expr_ptr>& tiles);
-			expr_value eval(execution_ctxt&) const override;
+			expr_value eval(eval_context&) const override;
     };
 
 }

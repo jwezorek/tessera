@@ -1,10 +1,10 @@
-#include "execution_ctxt.h"
+#include "eval_context.h"
 
-tess::execution_ctxt::execution_ctxt()
+tess::eval_context::eval_context()
 {
 }
 
-tess::expr_value tess::execution_ctxt::get(const std::string& var) const
+tess::expr_value tess::eval_context::get(const std::string& var) const
 {
 	for (auto i = scope_stack_.rbegin(); i != scope_stack_.rend(); ++i) {
 		auto maybe_value = i->get(var);
@@ -14,7 +14,7 @@ tess::expr_value tess::execution_ctxt::get(const std::string& var) const
 	return tess::expr_value{ error("Unknown variable: " + var) };
 }
 
-tess::expr_value tess::execution_ctxt::get(int ph) const
+tess::expr_value tess::eval_context::get(int ph) const
 {
 	for (auto i = scope_stack_.rbegin(); i != scope_stack_.rend(); ++i) {
 		auto maybe_value = i->get(ph);
@@ -24,12 +24,12 @@ tess::expr_value tess::execution_ctxt::get(int ph) const
 	return tess::expr_value{ error("Unknown placeholder: $" + ph) };
 }
 
-void tess::execution_ctxt::push_scope(scope_frame&& scope)
+void tess::eval_context::push_scope(scope_frame&& scope)
 {
 	scope_stack_.push_back(std::move(scope));
 }
 
-void tess::execution_ctxt::pop_scope()
+void tess::eval_context::pop_scope()
 {
 	scope_stack_.pop_back();
 }
@@ -64,7 +64,7 @@ std::optional<tess::expr_value> tess::scope_frame::get(std::string str) const
 		return std::nullopt;
 }
 
-tess::scope::scope(execution_ctxt& ctxt, scope_frame&& ls) :
+tess::scope::scope(eval_context& ctxt, scope_frame&& ls) :
 	ctxt_(ctxt)
 {
 	ctxt_.push_scope(std::move(ls));

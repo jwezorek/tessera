@@ -1,7 +1,7 @@
 #include "lambda.h"
 #include "function_def.h"
 #include "expr_value.h"
-#include "execution_ctxt.h"
+#include "eval_context.h"
 
 class tess::lambda::impl_type  {
     function_def func;

@@ -4,7 +4,7 @@
 #include "parser/keywords.h"
 #include "parser/exception.h"
 
-std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::execution_ctxt& ctxt)
+std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
 {
 	auto val = expr->eval(ctxt);
 	if (!std::holds_alternative<tess::number>(val))
@@ -12,7 +12,7 @@ std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::e
 	return std::get<tess::number>(val);
 }
 
-std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, tess::execution_ctxt& ctxt)
+std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
 {
 	auto int_val = expr->eval(ctxt);
 	if (!std::holds_alternative<tess::number>(int_val))
@@ -20,7 +20,7 @@ std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, tess::execution
 	return tess::to_int( std::get<tess::number>(int_val) );
 }
 
-std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, tess::execution_ctxt& ctxt)
+std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
 {
 	auto val = expr->eval(ctxt);
 	if (!std::holds_alternative<bool>(val))
@@ -39,7 +39,7 @@ tess::number_expr::number_expr(int v) : val_(v)
 {
 }
 
-tess::expr_value tess::number_expr::eval( tess::execution_ctxt&) const {
+tess::expr_value tess::number_expr::eval( tess::eval_context&) const {
 	return tess::expr_value{ tess::number(val_) };
 }
 
@@ -51,7 +51,7 @@ tess::addition_expr::addition_expr(const expression_params& terms) {
         terms_.emplace_back(std::make_tuple(op == '+', expr));
 }
 
-tess::expr_value tess::addition_expr::eval( tess::execution_ctxt& ctxt) const {
+tess::expr_value tess::addition_expr::eval( tess::eval_context& ctxt) const {
 
 	tess::number sum(0);
 
@@ -72,7 +72,7 @@ tess::multiplication_expr::multiplication_expr(const expression_params& terms) {
         factors_.emplace_back(std::make_tuple(op == '*', expr));
 }
 
-tess::expr_value tess::multiplication_expr::eval( tess::execution_ctxt& ctxt) const {
+tess::expr_value tess::multiplication_expr::eval( tess::eval_context& ctxt) const {
 
 	tess::number product(1);
 
@@ -94,7 +94,7 @@ tess::exponent_expr::exponent_expr(const expression_params& params)
         exponents_.emplace_back(expr);
 }
 
-tess::expr_value tess::exponent_expr::eval( tess::execution_ctxt& ctxt) const
+tess::expr_value tess::exponent_expr::eval( tess::eval_context& ctxt) const
 {
     auto base_val = eval_number_expr(base_, ctxt);
 	if (!base_val.has_value())
@@ -127,7 +127,7 @@ tess::special_number_expr::special_number_expr(const std::string& v)
         throw parser::exception("expr", "attempted to parse invalid special number");
 }
 
-tess::expr_value tess::special_number_expr::eval( tess::execution_ctxt& ctxt) const
+tess::expr_value tess::special_number_expr::eval( tess::eval_context& ctxt) const
 {
 	switch (num_) {
 		case special_num::pi:
@@ -163,7 +163,7 @@ tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_
     arg_ = arg;
 }
 
-tess::expr_value tess::special_function_expr::eval( tess::execution_ctxt& ctxt) const
+tess::expr_value tess::special_function_expr::eval( tess::eval_context& ctxt) const
 {
 	auto possible_arg = eval_number_expr(arg_, ctxt);
 	if (possible_arg.has_value())
@@ -207,7 +207,7 @@ tess::and_expr::and_expr(const std::vector<expr_ptr> conjuncts) :
 {
 }
 
-tess::expr_value tess::and_expr::eval( tess::execution_ctxt& ctx) const
+tess::expr_value tess::and_expr::eval( tess::eval_context& ctx) const
 {
 	for (const auto& conjunct : conjuncts_) {
 		auto val = eval_bool_expr(conjunct, ctx);
@@ -226,7 +226,7 @@ tess::equality_expr::equality_expr(const std::vector<expr_ptr> operands) :
 {
 }
 
-tess::expr_value tess::equality_expr::eval( tess::execution_ctxt& ctx) const
+tess::expr_value tess::equality_expr::eval( tess::eval_context& ctx) const
 {
 	std::vector<number> expressions;
 	expressions.reserve(operands_.size());
@@ -251,7 +251,7 @@ tess::or_expr::or_expr(const std::vector<expr_ptr> disjuncts) :
 {
 }
 
-tess::expr_value tess::or_expr::eval( tess::execution_ctxt& ctx) const
+tess::expr_value tess::or_expr::eval( tess::eval_context& ctx) const
 {
 	for (const auto& disjunct : disjuncts_) {
 		auto val = eval_bool_expr(disjunct, ctx);
@@ -285,7 +285,7 @@ tess::relation_expr::relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> p
         throw parser::exception("expr", "attempted to parse invalid relation_expr");
 }
 
-tess::expr_value tess::relation_expr::eval( tess::execution_ctxt& ctx) const
+tess::expr_value tess::relation_expr::eval( tess::eval_context& ctx) const
 {
 	auto maybe_lhs = eval_number_expr(lhs_, ctx);
 	if (! maybe_lhs.has_value())
@@ -321,7 +321,7 @@ tess::nil_expr::nil_expr()
 {
 }
 
-tess::expr_value tess::nil_expr::eval( tess::execution_ctxt& ctx) const
+tess::expr_value tess::nil_expr::eval( tess::eval_context& ctx) const
 {
     return tess::expr_value{ nil_val() };
 }
@@ -333,7 +333,7 @@ tess::if_expr::if_expr(std::tuple<expr_ptr, expr_ptr, expr_ptr> exprs) :
 {
 }
 
-tess::expr_value tess::if_expr::eval(execution_ctxt& ctxt) const
+tess::expr_value tess::if_expr::eval(eval_context& ctxt) const
 {
 	auto condition_val = condition_->eval(ctxt);
 	if (std::holds_alternative<error>(condition_val))
