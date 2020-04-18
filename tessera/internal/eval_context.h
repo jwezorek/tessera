@@ -17,6 +17,9 @@ namespace tess {
 			scope_frame(const std::vector<expr_value>& arg);
 			std::optional<expr_value> get(int ph) const;
 			std::optional<expr_value> get(std::string str) const;
+			void set(const std::string& var, expr_value val);
+			void set(int i, expr_value val);
+			void set(const::std::vector<std::string>& vars, const::std::vector<expr_value>& vals);
 	};
 
     class eval_context {
@@ -25,10 +28,13 @@ namespace tess {
 
 		public:
 			eval_context();
+			eval_context(const scope_frame& frame);
 			expr_value get(const std::string& var) const;
 			expr_value get(int i) const;
+			scope_frame& peek();
+			void push_scope();
 			void push_scope(scope_frame&& scope);
-			void pop_scope();
+			scope_frame pop_scope();
     };
 
 	class scope {

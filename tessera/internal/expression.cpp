@@ -12,14 +12,6 @@ std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::e
 	return std::get<tess::number>(val);
 }
 
-std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
-{
-	auto int_val = expr->eval(ctxt);
-	if (!std::holds_alternative<tess::number>(int_val))
-		return std::nullopt;
-	return tess::to_int( std::get<tess::number>(int_val) );
-}
-
 std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
 {
 	auto val = expr->eval(ctxt);

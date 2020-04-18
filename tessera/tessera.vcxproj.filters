@@ -100,6 +100,9 @@
     <ClCompile Include="internal\eval_context.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
+    <ClCompile Include="internal\assignment_block.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="internal\expression.h">
@@ -196,6 +199,9 @@
       <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="internal\eval_context.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\assignment_block.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
   </ItemGroup>

@@ -4,6 +4,11 @@ tess::eval_context::eval_context()
 {
 }
 
+tess::eval_context::eval_context(const scope_frame& frame)
+{
+	scope_stack_.push_back(frame);
+}
+
 tess::expr_value tess::eval_context::get(const std::string& var) const
 {
 	for (auto i = scope_stack_.rbegin(); i != scope_stack_.rend(); ++i) {
@@ -24,15 +29,29 @@ tess::expr_value tess::eval_context::get(int ph) const
 	return tess::expr_value{ error("Unknown placeholder: $" + ph) };
 }
 
+tess::scope_frame& tess::eval_context::peek()
+{
+	return scope_stack_.back();
+}
+
+void tess::eval_context::push_scope()
+{
+	push_scope(scope_frame({}, {}));
+}
+
 void tess::eval_context::push_scope(scope_frame&& scope)
 {
 	scope_stack_.push_back(std::move(scope));
 }
 
-void tess::eval_context::pop_scope()
+tess::scope_frame tess::eval_context::pop_scope()
 {
+	auto frame = scope_stack_.back();
 	scope_stack_.pop_back();
+	return frame;
 }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
 
 tess::scope_frame::scope_frame(const std::vector<std::string>& param, const std::vector<expr_value>& args)
 {
@@ -63,6 +82,26 @@ std::optional<tess::expr_value> tess::scope_frame::get(std::string str) const
 	else
 		return std::nullopt;
 }
+
+void tess::scope_frame::set(const std::string& var, expr_value val) {
+	variables_[var] = val;
+}
+
+void tess::scope_frame::set(int i, expr_value val) {
+	placeholders_[i] = val;
+}
+
+void tess::scope_frame::set(const::std::vector<std::string>& vars, const::std::vector<expr_value>& vals) {
+
+	if (vars.size() != vals.size())
+		throw tess::error("argument/parameter mismatch");
+	int i = 0;
+	for (const auto& var : vars)
+		set(var, vals[i++]);
+}
+
+
+/*----------------------------------------------------------------------------------------------------------------------*/
 
 tess::scope::scope(eval_context& ctxt, scope_frame&& ls) :
 	ctxt_(ctxt)

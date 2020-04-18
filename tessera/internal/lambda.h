@@ -12,19 +12,21 @@ namespace tess{
     class function_def;
 
     class lambda {
+        private:
+            class impl_type;
+            using lambda_impl_ptr = std::shared_ptr<impl_type>;
+            std::variant<lambda_impl_ptr, const lambda*> impl_;
+
+            lambda(const lambda* ref);
+            impl_type* get_impl() const;
 
         public:
             lambda(const function_def& func, const scope_frame& closure);
             expr_value call(const std::vector<expr_value>& expr_value) const;
             lambda get_ref() const;
+            void add_to_closure(const std::string& var, const expr_value& val);
 
-        private:
-            lambda(const lambda* ref);
-
-            class impl_type;
-            using lambda_impl_ptr = std::shared_ptr<impl_type>;
-
-            std::variant<lambda_impl_ptr, const lambda*> impl_;
+        
             
     };
 

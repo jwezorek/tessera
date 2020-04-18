@@ -1,6 +1,8 @@
 #include "function_def.h"
 #include "expr_value.h"
 #include <sstream>
+#include <variant>
+
 /*
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // generators
@@ -25,6 +27,11 @@ tess::expr_value tess::function_def::eval(eval_context&) const
 const std::vector<std::string>& tess::function_def::parameters() const
 {
     return parameters_;
+}
+
+const std::variant<std::shared_ptr<tess::tile_def>, tess::expr_ptr>& tess::function_def::body() const
+{
+    return body_;
 }
 
 tess::function_def::function_def(const std::vector<std::string>& params, const tile_def& tile_definition) :

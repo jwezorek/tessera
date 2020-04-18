@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="internal\assignment_block.cpp" />
     <ClCompile Include="internal\error.cpp" />
     <ClCompile Include="internal\eval_context.cpp" />
     <ClCompile Include="internal\expr_value.cpp" />
@@ -54,6 +55,7 @@
     <ClInclude Include="include\tessera\script.h" />
     <ClInclude Include="include\tessera\tile.h" />
     <ClInclude Include="include\tessera\tile_patch.h" />
+    <ClInclude Include="internal\assignment_block.h" />
     <ClInclude Include="internal\eval_context.h" />
     <ClInclude Include="internal\expression.h" />
     <ClInclude Include="internal\expr_value.h" />
