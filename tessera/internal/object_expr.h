@@ -13,6 +13,7 @@ namespace tess {
     public:
         var_expr(const std::string& var);
         expr_value eval(eval_context& ctx) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
     };
 
     class placeholder_expr : public expression
@@ -32,6 +33,7 @@ namespace tess {
     public:
         array_item_expr(expr_ptr ary, expr_ptr index);
         expr_value eval(eval_context& ctx) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
     };
 
     class func_call_expr : public expression
@@ -42,6 +44,7 @@ namespace tess {
     public:
         func_call_expr(expr_ptr func_, const std::vector<expr_ptr>& args);
         expr_value eval(eval_context& ctx) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
     };
 
     class obj_field_expr : public expression
@@ -52,6 +55,7 @@ namespace tess {
     public:
         obj_field_expr(expr_ptr obj, std::string field);
         expr_value eval(eval_context& ctx) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
     };
 
 }

@@ -31,6 +31,7 @@ namespace tess {
 			lay_expr(const lay_params& params);
 			lay_expr(const std::vector<expr_ptr>& tiles);
 			expr_value eval(eval_context&) const override;
+			void get_dependencies(std::vector<std::string>& dependencies) const override;
     };
 
 }

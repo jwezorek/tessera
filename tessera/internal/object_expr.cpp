@@ -18,6 +18,11 @@ tess::expr_value tess::var_expr::eval(eval_context& ctx) const
     return ctx.get(var_);
 }
 
+void tess::var_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+    dependencies.push_back(var_);
+}
+
 /*--------------------------------------------------------------------------------*/
 
 tess::placeholder_expr::placeholder_expr(int placeholder) :
@@ -47,6 +52,12 @@ tess::expr_value tess::array_item_expr::eval(eval_context& ctx) const
     return ary_->eval(ctx).get_ary_item(maybe_index.value());
 }
 
+void tess::array_item_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+    ary_->get_dependencies(dependencies);
+    index_->get_dependencies(dependencies);
+}
+
 /*--------------------------------------------------------------------------------*/
 
 tess::func_call_expr::func_call_expr(expr_ptr func, const std::vector<expr_ptr>& args) :
@@ -63,6 +74,13 @@ tess::expr_value tess::func_call_expr::eval(eval_context& ctx) const
     return func_->eval(ctx).call(args);
 }
 
+void tess::func_call_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+    func_->get_dependencies(dependencies);
+    for (const auto& arg : args_)
+        arg->get_dependencies(dependencies);
+}
+
 /*--------------------------------------------------------------------------------*/
 
 tess::obj_field_expr::obj_field_expr(expr_ptr obj, std::string field) :
@@ -74,4 +92,9 @@ tess::obj_field_expr::obj_field_expr(expr_ptr obj, std::string field) :
 tess::expr_value tess::obj_field_expr::eval(eval_context& ctx) const
 {
     return obj_->eval(ctx).get_field(field_);
+}
+
+void tess::obj_field_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+    obj_->get_dependencies(dependencies);
 }

@@ -193,3 +193,13 @@ tess::expr_value tess::lay_expr::eval(eval_context& ctxt) const
         )
     };
 }
+
+void tess::lay_expr::get_dependencies( std::vector<std::string>& dependencies ) const
+{
+    for (auto tile : tiles_)
+        tile->get_dependencies(dependencies);
+    for (auto [e1, e2] : edge_mappings_){
+        e1->get_dependencies(dependencies);
+        e2->get_dependencies(dependencies);
+    }
+}

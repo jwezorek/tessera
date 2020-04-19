@@ -34,6 +34,11 @@ const std::variant<std::shared_ptr<tess::tile_def>, tess::expr_ptr>& tess::funct
     return body_;
 }
 
+void tess::function_def::get_dependencies(std::vector<std::string>& dependencies) const
+{
+    throw std::runtime_error("TODO");
+}
+
 tess::function_def::function_def(const std::vector<std::string>& params, const tile_def& tile_definition) :
     parameters_(params),
     body_(std::make_shared<tile_def>(tile_definition))

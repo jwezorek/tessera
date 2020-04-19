@@ -56,6 +56,11 @@ tess::expr_value tess::addition_expr::eval( tess::eval_context& ctxt) const {
 	return tess::expr_value{ sum };
 }
 
+void tess::addition_expr::get_dependencies(std::vector<std::string>& dependencies) const {
+	for (auto [dummy, term_expr] : terms_)
+		term_expr->get_dependencies(dependencies);
+}
+
 /*----------------------------------------------------------------------*/
 
 tess::multiplication_expr::multiplication_expr(const expression_params& terms) {
@@ -75,6 +80,12 @@ tess::expr_value tess::multiplication_expr::eval( tess::eval_context& ctxt) cons
 		product *= (op) ? factor.value() : number(1) / factor.value();
 	}
 	return tess::expr_value{ product };
+}
+
+void tess::multiplication_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	for (auto [op, factor_expr] : factors_)
+		factor_expr->get_dependencies(dependencies);
 }
 
 /*----------------------------------------------------------------------*/
@@ -105,6 +116,13 @@ tess::expr_value tess::exponent_expr::eval( tess::eval_context& ctxt) const
 
 }
 
+
+void  tess::exponent_expr::get_dependencies(std::vector<std::string>& dependencies) const {
+
+	base_->get_dependencies(dependencies);
+	for (const auto& exponent_expr : exponents_)
+		exponent_expr->get_dependencies(dependencies);
+}
 /*----------------------------------------------------------------------*/
 
 tess::special_number_expr::special_number_expr(const std::string& v) 
@@ -192,6 +210,11 @@ tess::expr_value tess::special_function_expr::eval( tess::eval_context& ctxt) co
 	return tess::expr_value{ e };
 }
 
+void tess::special_function_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	arg_->get_dependencies(dependencies);
+}
+
 /*----------------------------------------------------------------------*/
 
 tess::and_expr::and_expr(const std::vector<expr_ptr> conjuncts) :
@@ -209,6 +232,12 @@ tess::expr_value tess::and_expr::eval( tess::eval_context& ctx) const
 			return tess::expr_value{ false };
 	}
 	return tess::expr_value{ true };
+}
+
+void tess::and_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	for (const auto& conjunct : conjuncts_)
+		conjunct->get_dependencies(dependencies);
 }
 
 /*----------------------------------------------------------------------*/
@@ -236,6 +265,12 @@ tess::expr_value tess::equality_expr::eval( tess::eval_context& ctx) const
 	return tess::expr_value{ true };
 }
 
+void tess::equality_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	for (const auto& op : operands_)
+		op->get_dependencies(dependencies);
+}
+
 /*----------------------------------------------------------------------*/
 
 tess::or_expr::or_expr(const std::vector<expr_ptr> disjuncts) :
@@ -253,6 +288,12 @@ tess::expr_value tess::or_expr::eval( tess::eval_context& ctx) const
 			return tess::expr_value{ true };
 	}
 	return tess::expr_value{ false };
+}
+
+void tess::or_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	for (const auto& disjunct : disjuncts_)
+		disjunct->get_dependencies(dependencies);
 }
 
 /*----------------------------------------------------------------------*/
@@ -309,6 +350,12 @@ tess::expr_value tess::relation_expr::eval( tess::eval_context& ctx) const
 	return tess::expr_value{result };
 }
 
+void tess::relation_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	lhs_->get_dependencies(dependencies);
+	rhs_->get_dependencies(dependencies);
+}
+
 tess::nil_expr::nil_expr()
 {
 }
@@ -338,4 +385,11 @@ tess::expr_value tess::if_expr::eval(eval_context& ctxt) const
 		return then_clause_->eval(ctxt);
 	else
 		return else_clause_->eval(ctxt);
+}
+
+void tess::if_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	condition_->get_dependencies(dependencies);
+	then_clause_->get_dependencies(dependencies);
+	else_clause_->get_dependencies(dependencies);
 }

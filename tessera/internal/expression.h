@@ -6,19 +6,25 @@
 #include <unordered_map>
 #include <string>
 #include <variant>
+#include <functional>
 
 namespace tess {
 
     class expression;
     using expr_ptr = std::shared_ptr<expression>;
+    using const_expr_ptr = std::shared_ptr<const expression>;
 
     class eval_context;
     class expr_value;
 
-    class expression
+    using expr_visit_func = std::function<void(const_expr_ptr)>;
+
+    class expression : public std::enable_shared_from_this<expression>
     {
     public:
         virtual expr_value eval( eval_context& ) const = 0;
+        virtual void get_dependencies(std::vector<std::string>& dependencies) const {
+        }
     };
 
     class number_expr : public expression
@@ -64,6 +70,7 @@ namespace tess {
     public:
         special_function_expr(std::tuple<std::string, expr_ptr> param);
         expr_value eval( eval_context& ctxt ) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
     };
 
     using expression_params = std::tuple<std::shared_ptr<tess::expression>, std::vector<std::tuple<char, std::shared_ptr<tess::expression>>>>;
@@ -76,6 +83,7 @@ namespace tess {
     public:
         exponent_expr(const expression_params& params);
         expr_value eval( eval_context& ctxt ) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
     };
 
     class addition_expr : public expression
@@ -85,6 +93,7 @@ namespace tess {
     public:
         addition_expr(const expression_params& terms);
         expr_value eval( eval_context& ctx ) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
     };
 
     class multiplication_expr : public expression
@@ -94,6 +103,7 @@ namespace tess {
     public:
         multiplication_expr(const expression_params& terms);
         expr_value eval( eval_context& ctx ) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
     };
 
 	class and_expr : public expression
@@ -103,6 +113,7 @@ namespace tess {
 	public:
 		and_expr(const std::vector<expr_ptr> conjuncts);
         expr_value eval( eval_context& ctx ) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
 	};
 
 	class or_expr : public expression
@@ -112,6 +123,7 @@ namespace tess {
 	public:
 		or_expr(const std::vector<expr_ptr> disjuncts);
         expr_value eval( eval_context& ctx ) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
 	};
 
 	class equality_expr : public expression
@@ -121,6 +133,7 @@ namespace tess {
 	public:
 		equality_expr(const std::vector<expr_ptr> operands);
         expr_value eval( eval_context& ctx ) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
 	};
 
 	enum class relation_op
@@ -141,6 +154,7 @@ namespace tess {
 	public:
 		relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> param);
         expr_value eval( eval_context& ctx ) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
 	};
 
 	class nil_expr : public expression
@@ -159,5 +173,6 @@ namespace tess {
     public:
         if_expr(std::tuple< expr_ptr, expr_ptr, expr_ptr> exprs);
         expr_value eval(eval_context& ctx) const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
     };
 }
