@@ -115,7 +115,7 @@ std::string tess::tile_def::name() const
 	return name_;
 }
 
-std::vector<std::string> tess::tile_def::params() const
+const std::vector<std::string>& tess::tile_def::parameters() const
 {
 	return params_;
 }
@@ -183,4 +183,27 @@ int tess::tile_def::get_vertex_index(const std::string& v) const
 	if (i == name_to_vertex_.end())
 		return -1;
 	return i->second.index;
+}
+
+/*---------------------------------------------------------------------------------------------------*/
+
+tess::patch_def::patch_def(const std::vector<std::string>& params, expr_ptr body):
+    params_(params),
+    body_(body)
+{
+}
+
+tess::expr_value tess::patch_def::eval(eval_context& ctxt) const
+{
+    return body_->eval(ctxt);
+}
+
+const std::vector<std::string>& tess::patch_def::parameters() const
+{
+    return params_;
+}
+
+tess::expr_ptr tess::patch_def::body() const
+{
+    return body_;
 }

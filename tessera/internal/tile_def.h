@@ -53,12 +53,24 @@ namespace tess {
     public:
         tile_def(const std::vector<std::string>& params, const tile_verts_and_edges& v_e);
 		std::string name() const;
-		std::vector<std::string> params() const;
+        const std::vector<std::string>& parameters() const;
 		expr_value eval( eval_context& ) const;
         const vertex_def& vertex(const std::string& v) const;
         const edge_def& edge(const std::string& e) const;
 		int num_vertices() const;
 		int get_edge_index(const std::string& e) const;
 		int get_vertex_index(const std::string& v) const;
+    };
+
+    class patch_def : public tessera_impl
+    {
+    private:
+        std::vector<std::string> params_;
+        expr_ptr body_;
+    public:
+        patch_def(const std::vector<std::string>& params, expr_ptr body);
+        expr_value eval(eval_context&) const;
+        const std::vector<std::string>& parameters() const;
+        expr_ptr body() const;
     };
 }

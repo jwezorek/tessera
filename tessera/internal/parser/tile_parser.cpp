@@ -236,7 +236,6 @@ namespace tess {
     }
 }
 
-
 std::variant<tess::tile_verts_and_edges, tess::parser::exception> tess::parser::parse_tile(const tess::text_range& input)
 {
     tess::parser::ve_definitions output;
@@ -278,7 +277,7 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_:
 
         tile_def tile(params, std::get<tile_verts_and_edges>(maybe_ve) );
 
-        return { std::make_shared<function_def>(params, tile), iter};
+        return { std::make_shared<function_def>(tile), iter};
     }
     return { tess::expr_ptr(), iter };
 }

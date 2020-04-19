@@ -14,11 +14,12 @@ namespace tess {
 
 		auto make_patch = [&](auto& ctx) { 
 			auto [params, body] = _attr(ctx);
-			_val(ctx) = std::make_shared<tess::function_def>(params, body); 
+			auto patch_definition = tess::patch_def(params, body);
+			_val(ctx) = std::make_shared<function_def>(patch_definition);
 		};
 
 		x3::rule<class patch_, std::tuple<std::vector<std::string>, expr_ptr>> const patch_aux = "patch_aux";
-		x3::rule<class patch_, expr_ptr> const patch = "patch";
+		x3::rule<class patch_, tess::expr_ptr> const patch = "patch";
 
 		const auto expr = expression_();
 		const auto identifier = indentifier_str_();

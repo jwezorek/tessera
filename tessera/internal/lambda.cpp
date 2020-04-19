@@ -39,7 +39,7 @@ tess::expr_value tess::lambda::call(const std::vector<expr_value>& args) const
 
     scope_frame frame = impl.closure;
     const auto& parameters = impl.func.parameters();
-    const auto& body = impl.func.body();
+    const auto& func = impl.func.impl();
 
     frame.set(parameters, args);
     eval_context ctxt(frame);
@@ -48,7 +48,7 @@ tess::expr_value tess::lambda::call(const std::vector<expr_value>& args) const
         [&ctxt](const auto& fn) {
             return fn->eval(ctxt);
         },
-        body
+        func
     );
 }
 
