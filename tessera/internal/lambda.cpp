@@ -20,26 +20,26 @@ tess::lambda::lambda(const function_def& func, const scope_frame& closure) :
 {
 }
 
-tess::lambda::lambda(const lambda* ref) :
-    impl_(ref)
+tess::lambda::lambda(impl_type& ref) :
+    impl_(&ref)
 {
 }
 
-tess::lambda::impl_type* tess::lambda::get_impl() const
+tess::lambda::impl_type& tess::lambda::get_impl() const
 {
-    if (std::holds_alternative<tess::lambda::lambda_impl_ptr>(impl_))
-        return std::get< tess::lambda::lambda_impl_ptr>(impl_).get();
-    else
-        return std::get<const lambda*>(impl_)->get_impl();
+    return std::visit(
+        [](auto ptr)->impl_type& { return *ptr; },
+        impl_
+    );
 }
 
 tess::expr_value tess::lambda::call(const std::vector<expr_value>& args) const
 {
-    auto* impl = get_impl();
+    auto& impl = get_impl();
 
-    scope_frame frame = impl->closure;
-    const auto& parameters = impl->func.parameters();
-    const auto& body = impl->func.body();
+    scope_frame frame = impl.closure;
+    const auto& parameters = impl.func.parameters();
+    const auto& body = impl.func.body();
 
     frame.set(parameters, args);
     eval_context ctxt(frame);
@@ -54,11 +54,11 @@ tess::expr_value tess::lambda::call(const std::vector<expr_value>& args) const
 
 tess::lambda tess::lambda::get_ref() const
 {
-    return lambda(this);
+    return lambda( get_impl() );
 }
 
 void tess::lambda::add_to_closure(const std::string& var, const expr_value& val)
 {
-    auto* impl = get_impl();
-    impl->closure.set(var, val);
+    auto& impl = get_impl();
+    impl.closure.set(var, val);
 }

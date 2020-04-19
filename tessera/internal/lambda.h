@@ -15,10 +15,10 @@ namespace tess{
         private:
             class impl_type;
             using lambda_impl_ptr = std::shared_ptr<impl_type>;
-            std::variant<lambda_impl_ptr, const lambda*> impl_;
+            std::variant<lambda_impl_ptr, impl_type*> impl_;
 
-            lambda(const lambda* ref);
-            impl_type* get_impl() const;
+            lambda(impl_type& ref);
+            impl_type& get_impl() const;
 
         public:
             lambda(const function_def& func, const scope_frame& closure);
