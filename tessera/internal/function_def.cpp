@@ -1,27 +1,25 @@
 #include "function_def.h"
 #include "expr_value.h"
+#include "eval_context.h"
 #include <sstream>
 #include <variant>
+#include <unordered_set>
 
-/*
-#include <boost/uuid/uuid.hpp>            // uuid class
-#include <boost/uuid/uuid_generators.hpp> // generators
-#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
-*/
-namespace {
-    /*
-    std::string generate_id() {
-        boost::uuids::uuid uuid = boost::uuids::random_generator()();
-        std::stringstream ss;
-        ss << uuid;
-        return ss.str();
-    }
-    */
-}
-
-tess::expr_value tess::function_def::eval(eval_context&) const
+tess::expr_value tess::function_def::eval(eval_context& ctxt) const
 {
-    return {};
+    std::vector<std::string> dependent_vars;
+    get_dependencies(dependent_vars);
+
+    std::vector<std::tuple<std::string, expr_value>> closure;
+    for (const auto& var : dependent_vars) {
+        if (ctxt.contains(var)) {
+            closure.push_back({ var, ctxt.get(var) });
+        }
+    }
+
+    return {
+        lambda(*this, scope_frame(closure))
+    };
 }
 
 const std::vector<std::string>& tess::function_def::parameters() const
@@ -41,7 +39,14 @@ const std::variant<std::shared_ptr<tess::tile_def>, std::shared_ptr<tess::patch_
 
 void tess::function_def::get_dependencies(std::vector<std::string>& dependencies) const
 {
-    throw std::runtime_error("TODO");
+    const auto& params = parameters();
+    std::unordered_set<std::string> param_set(params.begin(), params.end());
+
+    auto all_vars = get_variables();
+    for (const auto& var : all_vars) {
+        if (param_set.find(var) == param_set.end())
+            dependencies.push_back(var);
+    }
 }
 
 tess::function_def::function_def(const tile_def& tile_definition) :
@@ -52,6 +57,16 @@ tess::function_def::function_def(const tile_def& tile_definition) :
 tess::function_def::function_def(const patch_def& patch_definition) :
     impl_(std::make_shared<patch_def>(patch_definition))
 {
+}
+
+std::vector<std::string> tess::function_def::get_variables() const
+{
+    return std::visit(
+        [](const auto& impl)->std::vector<std::string> {
+            return impl->get_variables();
+        },
+        impl_
+    );
 }
 
 

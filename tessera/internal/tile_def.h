@@ -54,7 +54,8 @@ namespace tess {
         tile_def(const std::vector<std::string>& params, const tile_verts_and_edges& v_e);
 		std::string name() const;
         const std::vector<std::string>& parameters() const;
-		expr_value eval( eval_context& ) const;
+        std::vector<std::string> get_variables() const;
+		expr_value call( eval_context& ) const;
         const vertex_def& vertex(const std::string& v) const;
         const edge_def& edge(const std::string& e) const;
 		int num_vertices() const;
@@ -69,7 +70,8 @@ namespace tess {
         expr_ptr body_;
     public:
         patch_def(const std::vector<std::string>& params, expr_ptr body);
-        expr_value eval(eval_context&) const;
+        std::vector<std::string> get_variables() const;
+        expr_value call(eval_context&) const;
         const std::vector<std::string>& parameters() const;
         expr_ptr body() const;
     };

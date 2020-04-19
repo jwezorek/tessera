@@ -10,7 +10,7 @@ class tess::lambda::impl_type  {
         function_def func;
         scope_frame closure;
 
-        impl_type(const function_def f, const scope_frame& c) :
+        impl_type(const function_def& f, const scope_frame& c) :
             func(f), closure(c)
         {}
 };
@@ -45,8 +45,8 @@ tess::expr_value tess::lambda::call(const std::vector<expr_value>& args) const
     eval_context ctxt(frame);
 
     return std::visit(
-        [&ctxt](const auto& fn) {
-            return fn->eval(ctxt);
+        [&ctxt](const auto& fn)->expr_value {
+            return fn->call(ctxt);
         },
         func
     );

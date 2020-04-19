@@ -2,6 +2,7 @@
 
 #include "expr_value.h"
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <optional>
 #include <vector>
@@ -14,6 +15,7 @@ namespace tess {
 			std::unordered_map<std::string, expr_value> variables_;
 		public:
 			scope_frame(const std::vector<std::string>& param, const std::vector<expr_value>& arg);
+			scope_frame(const std::vector<std::tuple<std::string , expr_value>>& assignments);
 			scope_frame(const std::vector<expr_value>& arg);
 			std::optional<expr_value> get(int ph) const;
 			std::optional<expr_value> get(std::string str) const;
@@ -29,6 +31,8 @@ namespace tess {
 		public:
 			eval_context();
 			eval_context(const scope_frame& frame);
+			bool contains(const std::string& var) const;
+			bool contains(int i) const;
 			expr_value get(const std::string& var) const;
 			expr_value get(int i) const;
 			scope_frame& peek();

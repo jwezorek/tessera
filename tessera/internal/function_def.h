@@ -24,6 +24,8 @@ namespace tess {
             friend class lambda;
 
         private:
+            std::vector<std::string> get_variables() const;
+
             std::variant<std::shared_ptr<tile_def>, std::shared_ptr<patch_def>> impl_;
     };
 

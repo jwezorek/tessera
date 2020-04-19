@@ -120,7 +120,17 @@ const std::vector<std::string>& tess::tile_def::parameters() const
 	return params_;
 }
 
-tess::expr_value tess::tile_def::eval( eval_context& ctxt) const
+std::vector<std::string> tess::tile_def::get_variables() const
+{
+    std::vector<std::string> vars;
+    for (const auto& edge : edges_)
+        edge->length->get_dependencies(vars);
+    for (const auto& vertex : vertices_)
+        vertex->angle->get_dependencies(vars);
+    return vars;
+}
+
+tess::expr_value tess::tile_def::call( eval_context& ctxt) const
 {
 	auto n = num_vertices();
     auto new_tile_impl = std::make_shared<tile::impl_type>(
@@ -193,7 +203,14 @@ tess::patch_def::patch_def(const std::vector<std::string>& params, expr_ptr body
 {
 }
 
-tess::expr_value tess::patch_def::eval(eval_context& ctxt) const
+std::vector<std::string> tess::patch_def::get_variables() const
+{
+    std::vector<std::string> vars;
+    body_->get_dependencies(vars);
+    return vars;
+}
+
+tess::expr_value tess::patch_def::call(eval_context& ctxt) const
 {
     return body_->eval(ctxt);
 }

@@ -9,6 +9,25 @@ tess::eval_context::eval_context(const scope_frame& frame)
 	scope_stack_.push_back(frame);
 }
 
+//TODO : get rid of code duplication here.
+bool tess::eval_context::contains(const std::string& var) const {
+	for (auto i = scope_stack_.rbegin(); i != scope_stack_.rend(); ++i) {
+		auto maybe_value = i->get(var);
+		if (maybe_value.has_value())
+			return true;
+	}
+	return false;
+}
+
+bool tess::eval_context::contains(int ph) const {
+	for (auto i = scope_stack_.rbegin(); i != scope_stack_.rend(); ++i) {
+		auto maybe_value = i->get(ph);
+		if (maybe_value.has_value())
+			return true;
+	}
+	return false;
+}
+
 tess::expr_value tess::eval_context::get(const std::string& var) const
 {
 	for (auto i = scope_stack_.rbegin(); i != scope_stack_.rend(); ++i) {
@@ -57,6 +76,11 @@ tess::scope_frame::scope_frame(const std::vector<std::string>& param, const std:
 {
 	for (int i = 0; i < param.size(); ++i)
 		variables_[param[i]] = args[i];
+}
+
+tess::scope_frame::scope_frame(const std::vector<std::tuple<std::string, expr_value>>& assignments) {
+	for(const auto& [var,val] : assignments) 
+		variables_[var] = val;
 }
 
 tess::scope_frame::scope_frame(const std::vector<expr_value>& args)
