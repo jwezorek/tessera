@@ -94,9 +94,9 @@ std::vector<std::tuple<tess::number, tess::number>> tess::tile_def::evaluate_ver
 }
 
 tess::tile_def::tile_def(const std::vector<std::string>& params, const tile_verts_and_edges& v_e) :
-    params_(std::move(params)),
-    name_to_vertex_(std::move(std::get<0>(v_e))),
-    name_to_edge_(std::move(std::get<1>(v_e)))
+    params_(params),
+    name_to_vertex_(std::get<0>(v_e)),
+    name_to_edge_(std::get<1>(v_e))
 {
     if (name_to_vertex_.size() < 3)
         throw get_exception("too few vertices");
@@ -128,6 +128,11 @@ std::vector<std::string> tess::tile_def::get_variables() const
     for (const auto& vertex : vertices_)
         vertex->angle->get_dependencies(vars);
     return vars;
+}
+
+tess::tile_def tess::tile_def::simplify() const
+{
+    throw std::runtime_error("TODO");
 }
 
 tess::expr_value tess::tile_def::call( eval_context& ctxt) const
@@ -208,6 +213,11 @@ std::vector<std::string> tess::patch_def::get_variables() const
     std::vector<std::string> vars;
     body_->get_dependencies(vars);
     return vars;
+}
+
+tess::patch_def tess::patch_def::simplify() const
+{
+    throw std::runtime_error("TODO");
 }
 
 tess::expr_value tess::patch_def::call(eval_context& ctxt) const

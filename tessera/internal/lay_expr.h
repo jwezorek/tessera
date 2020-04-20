@@ -30,8 +30,10 @@ namespace tess {
 		public:
 			lay_expr(const lay_params& params);
 			lay_expr(const std::vector<expr_ptr>& tiles);
+			lay_expr(const std::vector<expr_ptr>& tiles, const std::vector<std::tuple<expr_ptr, expr_ptr>>& edge_mappings);
 			expr_value eval(eval_context&) const override;
 			void get_dependencies(std::vector<std::string>& dependencies) const override;
+			expr_ptr simplify() const override;
     };
 
 }

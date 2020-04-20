@@ -23,6 +23,11 @@ void tess::var_expr::get_dependencies(std::vector<std::string>& dependencies) co
     dependencies.push_back(var_);
 }
 
+tess::expr_ptr tess::var_expr::simplify() const
+{
+    return std::make_shared<var_expr>(var_);
+}
+
 /*--------------------------------------------------------------------------------*/
 
 tess::placeholder_expr::placeholder_expr(int placeholder) :
@@ -33,6 +38,15 @@ tess::placeholder_expr::placeholder_expr(int placeholder) :
 tess::expr_value tess::placeholder_expr::eval(eval_context& ctx) const
 {
     return ctx.get(placeholder_);
+}
+
+void tess::placeholder_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+}
+
+tess::expr_ptr tess::placeholder_expr::simplify() const
+{
+    return std::make_shared<placeholder_expr>(placeholder_);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -58,6 +72,14 @@ void tess::array_item_expr::get_dependencies(std::vector<std::string>& dependenc
     index_->get_dependencies(dependencies);
 }
 
+tess::expr_ptr tess::array_item_expr::simplify() const
+{
+    return std::make_shared< array_item_expr>(
+        ary_->simplify(),
+        index_->simplify()
+    );
+}
+
 /*--------------------------------------------------------------------------------*/
 
 tess::func_call_expr::func_call_expr(expr_ptr func, const std::vector<expr_ptr>& args) :
@@ -81,6 +103,18 @@ void tess::func_call_expr::get_dependencies(std::vector<std::string>& dependenci
         arg->get_dependencies(dependencies);
 }
 
+tess::expr_ptr tess::func_call_expr::simplify() const
+{
+    std::vector<expr_ptr> simplified(args_.size());
+    std::transform(args_.begin(), args_.end(), simplified.begin(),
+        [](const auto& e) {return e->simplify(); }
+    );
+    return std::make_shared<func_call_expr>(
+        func_->simplify(),
+        simplified
+    );
+}
+
 /*--------------------------------------------------------------------------------*/
 
 tess::obj_field_expr::obj_field_expr(expr_ptr obj, std::string field) :
@@ -97,4 +131,12 @@ tess::expr_value tess::obj_field_expr::eval(eval_context& ctx) const
 void tess::obj_field_expr::get_dependencies(std::vector<std::string>& dependencies) const
 {
     obj_->get_dependencies(dependencies);
+}
+
+tess::expr_ptr tess::obj_field_expr::simplify() const
+{
+    return std::make_shared< obj_field_expr>(
+        obj_->simplify(),
+        field_
+    );
 }

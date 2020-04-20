@@ -163,6 +163,12 @@ tess::lay_expr::lay_expr(const std::vector<expr_ptr>& tiles) :
 {
 }
 
+tess::lay_expr::lay_expr(const std::vector<expr_ptr>& tiles, const std::vector<std::tuple<expr_ptr, expr_ptr>>& edge_mappings) :
+    tiles_(tiles),
+    edge_mappings_(edge_mappings)
+{
+}
+
 tess::expr_value tess::lay_expr::eval(eval_context& ctxt) const
 {
     piece_result maybe_pieces;
@@ -202,4 +208,22 @@ void tess::lay_expr::get_dependencies( std::vector<std::string>& dependencies ) 
         e1->get_dependencies(dependencies);
         e2->get_dependencies(dependencies);
     }
+}
+
+tess::expr_ptr tess::lay_expr::simplify() const
+{
+    std::vector<expr_ptr> tiles_simplified( tiles_.size() );
+    std::transform(tiles_.begin(), tiles_.end(), tiles_simplified.begin(),
+        [](const auto& e) {return e->simplify(); }
+    );
+
+    std::vector<std::tuple<expr_ptr, expr_ptr>> mappings_simplified(edge_mappings_.size());
+    std::transform(edge_mappings_.begin(), edge_mappings_.end(), mappings_simplified.begin(),
+        [](const auto& e_e)->std::tuple<expr_ptr, expr_ptr> {
+            const auto& [e1, e2] = e_e;
+            return { e1->simplify(), e2->simplify() };
+        }
+    );
+
+    return std::make_shared<lay_expr>(tiles_simplified, mappings_simplified);
 }
