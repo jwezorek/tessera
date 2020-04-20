@@ -39,7 +39,14 @@ const std::variant<std::shared_ptr<tess::tile_def>, std::shared_ptr<tess::patch_
 
 tess::expr_ptr tess::function_def::simplify() const
 {
-    return expr_ptr();
+    return std::visit(
+        [](const auto& def)->std::shared_ptr<function_def> {
+            return std::make_shared<function_def>(
+                def->simplify()
+            );
+        },
+        impl_
+    );
 }
 
 void tess::function_def::get_dependencies(std::vector<std::string>& dependencies) const

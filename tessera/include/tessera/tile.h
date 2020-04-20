@@ -35,7 +35,6 @@ namespace tess {
 	{
 		friend class tessera_impl;
 	public:
-		std::string name() const;
 		const std::vector<vertex>& vertices() const;
 		const std::vector<edge>& edges() const;
 		class impl_type;

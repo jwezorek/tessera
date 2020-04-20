@@ -22,7 +22,23 @@ namespace tess {
         std::string class_;
         expr_ptr length;
         int index;
+
         edge_def() : index(-1) {}
+
+        edge_def( std::string n, std::string uu, std::string vv, std::string c, expr_ptr l, int i) :
+            name(n), u(uu), v(vv), class_(c), length(l), index(i)
+        {}
+
+        edge_def simplify() {
+            return edge_def(
+                name,
+                u,
+                v,
+                class_,
+                length->simplify(),
+                index
+            );
+        }
     };
 
     struct vertex_def {
@@ -31,6 +47,19 @@ namespace tess {
         std::string class_;
         int index;
         vertex_def() : index(-1) {}
+
+        vertex_def(std::string n, expr_ptr ang, std::string c, int i) :
+            name(n), angle(ang), class_(c), index(i)
+        { }
+
+        vertex_def simplify() {
+            return vertex_def(
+                name,
+                angle->simplify(),
+                class_,
+                index
+            );
+        }
     };
 
     using tile_verts_and_edges = std::tuple< std::unordered_map<std::string, vertex_def>, std::unordered_map<std::string, edge_def> >;
@@ -38,21 +67,19 @@ namespace tess {
     class tile_def : public tessera_impl, std::enable_shared_from_this<tile_def>
     {
     private: 
-        std::string name_;
         std::vector<std::string> params_;
         std::unordered_map<std::string, edge_def> name_to_edge_;
         std::unordered_map<std::string, vertex_def> name_to_vertex_;
-        std::vector<std::shared_ptr<const edge_def>> edges_;
-        std::vector<std::shared_ptr<const vertex_def>> vertices_;
+        std::vector<std::shared_ptr<edge_def>> edges_;
+        std::vector<std::shared_ptr<vertex_def>> vertices_;
         tess::parser::exception get_exception(const std::string& msg);
         void set_indices();
         std::optional<parser::exception> initialize();
-
         std::vector<std::tuple<number, number>> evaluate_vertices(eval_context&) const;
 
     public:
         tile_def(const std::vector<std::string>& params, const tile_verts_and_edges& v_e);
-		std::string name() const;
+        tile_def(const std::vector<std::string>& params, const std::vector<std::shared_ptr<vertex_def>>& vertices, const std::vector<std::shared_ptr<edge_def>>& edges);
         const std::vector<std::string>& parameters() const;
         std::vector<std::string> get_variables() const;
         tile_def simplify() const;

@@ -23,11 +23,6 @@ const std::vector<tess::edge>& tess::tile::impl_type::edges() const
     return edges_;
 }
 
-std::string tess::tile::impl_type::name() const
-{
-    return def_->name();
-}
-
 void tess::tile::impl_type::set( std::vector<tess::vertex>&& vertices, std::vector<tess::edge>&& edges )
 {
 	vertices_ = std::move(vertices);

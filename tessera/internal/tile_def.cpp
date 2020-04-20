@@ -10,7 +10,7 @@ namespace se = SymEngine;
 
 tess::parser::exception tess::tile_def::get_exception(const std::string& msg)
 {
-    return tess::parser::exception("tile " + name_, msg);
+    return tess::parser::exception("tile ", msg);
 }
 
 void tess::tile_def::set_indices()
@@ -28,13 +28,13 @@ void tess::tile_def::set_indices()
     int v_index = 0;
     do {
         if (name_to_edge_.find(edge_lbl) == name_to_edge_.end())
-            throw tess::parser::exception("tile " + name_, "unknown edge: " + edge_lbl);
+            throw tess::parser::exception("tile", "unknown edge: " + edge_lbl);
 
         auto& edge = name_to_edge_[edge_lbl];
         if (name_to_vertex_.find(edge.u) == name_to_vertex_.end())
-            throw tess::parser::exception("tile " + name_, "unknown vertex: " + edge.v);
+            throw tess::parser::exception("tile", "unknown vertex: " + edge.v);
         if (name_to_vertex_.find(edge.v) == name_to_vertex_.end())
-            throw tess::parser::exception("tile " + name_, "unknown vertex: " + edge.v);
+            throw tess::parser::exception("tile", "unknown vertex: " + edge.v);
 
         edge.index = e_index++;
         auto& u = name_to_vertex_[edge.u];
@@ -54,20 +54,20 @@ std::optional<tess::parser::exception> tess::tile_def::initialize()
 
         vertices_.resize(name_to_vertex_.size());
         for (auto& [dummy, vert] : name_to_vertex_) 
-            vertices_[vert.index] = std::make_shared<const vertex_def>(vert);
+            vertices_[vert.index] = std::make_shared<vertex_def>(vert);
 
         edges_.resize(name_to_edge_.size());
 		for (auto& [dummy, edge] : name_to_edge_) {
 			if (edge.length == nullptr)
 				edge.length = std::make_shared<number_expr>(1);
-			edges_[edge.index] = std::make_shared<const edge_def>(edge);
+			edges_[edge.index] = std::make_shared<edge_def>(edge);
 		}
 
     } catch (tess::parser::exception e) {
         return e;
     }
     catch (...) {
-        return tess::parser::exception("tile " + name_, "error resolving edges and vertices");
+        return tess::parser::exception("tile", "error resolving edges and vertices");
     }
     return std::nullopt;
 }
@@ -110,9 +110,24 @@ tess::tile_def::tile_def(const std::vector<std::string>& params, const tile_vert
         throw maybe_err.value();
 }
 
-std::string tess::tile_def::name() const
+tess::tile_def::tile_def(const std::vector<std::string>& params, 
+            const std::vector<std::shared_ptr<vertex_def>>& vertices, 
+            const std::vector<std::shared_ptr<edge_def>>& edges) :
+    params_(params),
+    vertices_(vertices),
+    edges_(edges)
 {
-	return name_;
+    std::transform(vertices_.begin(), vertices_.end(), std::inserter(name_to_vertex_, name_to_vertex_.end()),
+        [](const std::shared_ptr<vertex_def>& vert)->std::pair<std::string, vertex_def> {
+            return { vert->name, *vert };
+        }
+    );
+
+    std::transform(edges_.begin(), edges_.end(), std::inserter(name_to_edge_, name_to_edge_.end()),
+        [](const std::shared_ptr<edge_def>& edge)->std::pair<std::string, edge_def> {
+            return { edge->name, *edge };
+        }
+    );
 }
 
 const std::vector<std::string>& tess::tile_def::parameters() const
@@ -132,7 +147,19 @@ std::vector<std::string> tess::tile_def::get_variables() const
 
 tess::tile_def tess::tile_def::simplify() const
 {
-    throw std::runtime_error("TODO");
+    std::vector<std::shared_ptr<vertex_def>>  simplified_verts(vertices_.size());
+    std::transform(vertices_.begin(), vertices_.end(), simplified_verts.begin(),
+        [](const auto& v) {
+            return std::make_shared<vertex_def>(v->simplify());
+        }
+    );
+    std::vector<std::shared_ptr<edge_def>>  simplified_edges(edges_.size());
+    std::transform(edges_.begin(), edges_.end(), simplified_edges.begin(),
+        [](const auto& e) {
+            return std::make_shared<edge_def>(e->simplify());
+        }
+    );
+    return tile_def(parameters(), simplified_verts, simplified_edges);
 }
 
 tess::expr_value tess::tile_def::call( eval_context& ctxt) const
@@ -217,7 +244,10 @@ std::vector<std::string> tess::patch_def::get_variables() const
 
 tess::patch_def tess::patch_def::simplify() const
 {
-    throw std::runtime_error("TODO");
+    return tess::patch_def(
+        params_,
+        body_->simplify()
+    );
 }
 
 tess::expr_value tess::patch_def::call(eval_context& ctxt) const
