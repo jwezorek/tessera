@@ -18,7 +18,7 @@ tess::assignment_block::assignment_block(const std::vector<var_assignment>& assi
 {
 }
 
-tess::scope_frame tess::assignment_block::eval(eval_context& original_ctxt)
+tess::scope_frame tess::assignment_block::eval(eval_context& original_ctxt) const
 {
 	eval_context ctxt = original_ctxt;
 	ctxt.push_scope();

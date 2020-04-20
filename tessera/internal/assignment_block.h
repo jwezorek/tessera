@@ -16,7 +16,7 @@ namespace tess {
 		public:
 			assignment_block() {}
 			assignment_block(const std::vector<var_assignment>& assignments);
-			scope_frame eval(eval_context& ctxt);
+			scope_frame eval(eval_context& ctxt) const;
 			bool operator!=(const assignment_block& block) { return impl_.get() != block.impl_.get(); }
 		private:
 			std::shared_ptr<std::vector<var_assignment>> impl_;
