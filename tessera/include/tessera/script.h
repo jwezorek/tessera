@@ -25,11 +25,12 @@ namespace tess {
             return execute({ std::forward<T>(a)... });
         }
 
-        class impl_type;
+        bool operator!=(const script& scr) { return impl_ != scr.impl_;  }
 
+        class impl_type;
     private:
         std::shared_ptr<impl_type> impl_;
-        script(std::shared_ptr<impl_type> impl);
     };
+
 
 }

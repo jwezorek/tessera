@@ -12,23 +12,24 @@ namespace tess {
 		const auto identifier = indentifier_str_();
 
         auto const assignment_stmt = kw_lit<kw::let>() > identifier > x3::lit('=') > expr > x3::lit(';');
+		auto const assignments = *assignment_stmt;
     }
 }
 
-std::tuple<tess::var_assignment, std::string::const_iterator> tess::parser::assigment_stmt_::parse_aux(const text_range& input) const
+std::tuple<tess::assignment_block, std::string::const_iterator> tess::parser::assignment_block_::parse_aux(const text_range& input) const
 {
-	var_assignment output;
+	std::vector<var_assignment> output;
 	auto iter = input.begin();
 	bool success = false;
 
 	try {
-		success = x3::phrase_parse(iter, input.end(), tess::parser::assignment_stmt, x3::space, output);
+		success = x3::phrase_parse(iter, input.end(), tess::parser::assignments, x3::space, output);
 	}
 	catch (...) {
 	}
 
 	if (success)
-		return { output, iter };
+		return { assignment_block(output), iter };
 	else
-		return { tess::var_assignment(), iter };
+		return { assignment_block(), iter };
 }

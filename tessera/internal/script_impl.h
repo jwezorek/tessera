@@ -1,5 +1,7 @@
 #include "tessera/script.h"
 #include "tessera_impl.h"
+#include "assignment_block.h"
+#include "tile_def.h"
 #include "expression.h"
 #include "expr_value.h"
 #include <vector>
@@ -9,11 +11,11 @@ namespace tess {
 
     class script::impl_type : public tessera_impl {
         private:
-            std::unordered_map<std::string, expr_value> globals_;
-            std::vector<std::string> parameters_;
-            expr_ptr tableau_;
+            assignment_block globals_;
+            patch_def tableau_;
         public:
-            impl_type(const std::vector<std::tuple<std::string, expr_ptr>>& globals, std::vector<std::string>& params, expr_ptr tableau);
+            impl_type(const assignment_block& globals, const patch_def& tableau);
+            const std::vector<std::string>& parameters() const;
     };
 
 }

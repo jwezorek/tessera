@@ -19,23 +19,17 @@ std::variant<tess::script, tess::error> tess::script::interpret(const std::strin
 {
     text_range source_code{ script };
     auto result = tess::parser::parse(source_code);
-	if (std::holds_alternative<tess::script_specifier>(result)) {
-		return tess::script(
-			std::make_shared<impl_type>(
-				std::make_from_tuple<impl_type>(std::get<tess::script_specifier>(result))
-			)
-		);
+	
+	if (std::holds_alternative<tess::script>(result)) {
+		return std::get<tess::script>(result);
 	} else {
 		return make_error(source_code, std::get<tess::parser::exception>(result));
 	}
 }
 
-tess::script::script(std::shared_ptr<impl_type> impl) : impl_(impl)
-{}
-
 const std::vector<std::string>& tess::script::parameters() const
 {
-    return {};
+	return impl_->parameters();
 }
 
 tess::result tess::script::execute(const std::vector<std::string>& args) const
