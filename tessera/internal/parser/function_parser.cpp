@@ -1,5 +1,6 @@
 #include "function_parser.h"
 #include "../function_def.h"
+#include "../tile_def.h"
 #include "expr_parser.h"
 #include "tile_parser.h"
 #include "util.h"

@@ -1,4 +1,5 @@
 #include "function_def.h"
+#include "tile_def.h"
 #include "expr_value.h"
 #include "eval_context.h"
 #include <sstream>

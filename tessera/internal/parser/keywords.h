@@ -45,6 +45,7 @@ namespace tess {
 			and_,
 			or_,
 			not_,
+            regular_polygon,
             none
         };
 

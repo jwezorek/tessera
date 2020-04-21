@@ -163,7 +163,7 @@ namespace tess {
 
         std::variant<tile_verts_and_edges, exception> unpack(const ve_definitions& defs) {
             using v_map = std::unordered_map<std::string, vertex_def>;
-            using e_map = std::unordered_map<std::string, tess::edge_def>;
+            using e_map = std::unordered_map<std::string, edge_def_helper>;
             v_map v;
             e_map e;
 
@@ -235,25 +235,6 @@ namespace tess {
         }
     }
 }
-
-std::variant<tess::tile_verts_and_edges, tess::parser::exception> tess::parser::parse_tile(const tess::text_range& input)
-{
-    tess::parser::ve_definitions output;
-    bool success = false;
-    auto iter = input.begin();
-
-    try {
-        success = x3::phrase_parse(iter, input.end(), x3::lit('{') >> tess::parser::ve_definitions_ >> x3::lit('}'), x3::space, output);
-    } catch (x3::expectation_failure<std::string::const_iterator> ex_fail) {
-        return exception("", ex_fail);
-    }
-
-    if (!success || iter != input.end())
-        return exception("", "syntax error", iter);
-
-    return tess::parser::unpack(output);
-}
-
 
 std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_::parse_aux(const text_range& input) const
 {

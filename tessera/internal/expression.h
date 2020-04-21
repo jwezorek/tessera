@@ -64,7 +64,8 @@ namespace tess {
         tan,
         arcsin,
         arccos,
-        arctan
+        arctan,
+        regular_polygon
     };
 
     class special_function_expr : public expression

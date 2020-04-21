@@ -1,7 +1,6 @@
 #pragma once
 
 #include "expression.h"
-#include "tile_def.h"
 #include <string>
 #include <vector>
 #include <variant>
@@ -11,6 +10,8 @@ namespace tess {
 
     class expr_value;
     class eval_context;
+    class tile_def;
+    class patch_def;
 
     class function_def : public expression {
         public:

@@ -23,7 +23,7 @@ namespace tess {
 		auto const special_num_aux_def = kw_<kw::pi>() | kw_<kw::phi>() | kw_<kw::root_2>();
 		auto const special_num_def = special_num_aux[make_<special_number_expr>];
 		auto const special_func_def = kw_<kw::sqrt>() | kw_<kw::sin>() | kw_<kw::cos>() | kw_<kw::tan>() |
-			kw_<kw::arcsin>() | kw_<kw::arccos>() | kw_<kw::arctan>();
+			kw_<kw::arcsin>() | kw_<kw::arccos>() | kw_<kw::arctan>() | kw_<kw::regular_polygon>();
 		auto const special_func_expr_aux_def = special_func > '(' > expr > ')';
 		auto const special_func_expr_def = special_func_expr_aux[make_<special_function_expr>];
 		auto const special_expr_def = special_func_expr | special_num;

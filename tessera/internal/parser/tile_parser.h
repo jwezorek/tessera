@@ -12,8 +12,6 @@
 namespace tess {
     namespace parser {
 
-        std::variant<tile_verts_and_edges, exception> parse_tile(const text_range& input);
-
         struct tile_def_ : public tess_expr<tile_def_> {
             std::tuple<tess::expr_ptr, std::string::const_iterator> parse_aux(const text_range& input) const;
         };

@@ -88,12 +88,12 @@ std::string tess::edge::impl_type::edge_class() const
 
 const tess::vertex& tess::edge::impl_type::u() const
 {
-    return parent_->vertex(def_->u);
+    return parent_->vertices().at(def_->u);
 }
 
 const tess::vertex& tess::edge::impl_type::v() const
 {
-    return parent_->vertex(def_->v);
+    return parent_->vertices().at(def_->v);
 }
 
 tess::expr_value tess::edge::impl_type::get_field(const std::string& field) const

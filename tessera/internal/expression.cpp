@@ -4,6 +4,11 @@
 #include "parser/keywords.h"
 #include "parser/exception.h"
 
+tess::expr_value generate_regular_polygon_tile(tess::number num_sides) {
+	int n = tess::to_int(num_sides);
+	return { 5 };
+}
+
 std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
 {
 	auto val = expr->eval(ctxt);
@@ -235,20 +240,22 @@ void tess::special_number_expr::get_dependencies(std::vector<std::string>& depen
 tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_ptr> param)
 {
     auto [func_keyword, arg] = param;
-    if (func_keyword == parser::keyword(parser::kw::sqrt))
-        func_ = special_func::sqrt;
-    else if (func_keyword == parser::keyword(parser::kw::sin))
-        func_ = special_func::sin;
-    else if (func_keyword == parser::keyword(parser::kw::cos))
-        func_ = special_func::cos;
-    else if (func_keyword == parser::keyword(parser::kw::tan))
-        func_ = special_func::tan;
-    else if (func_keyword == parser::keyword(parser::kw::arcsin))
-        func_ = special_func::arcsin;
-    else if (func_keyword == parser::keyword(parser::kw::arccos))
-        func_ = special_func::arccos;
-    else if (func_keyword == parser::keyword(parser::kw::arctan))
-        func_ = special_func::arctan;
+	if (func_keyword == parser::keyword(parser::kw::sqrt))
+		func_ = special_func::sqrt;
+	else if (func_keyword == parser::keyword(parser::kw::sin))
+		func_ = special_func::sin;
+	else if (func_keyword == parser::keyword(parser::kw::cos))
+		func_ = special_func::cos;
+	else if (func_keyword == parser::keyword(parser::kw::tan))
+		func_ = special_func::tan;
+	else if (func_keyword == parser::keyword(parser::kw::arcsin))
+		func_ = special_func::arcsin;
+	else if (func_keyword == parser::keyword(parser::kw::arccos))
+		func_ = special_func::arccos;
+	else if (func_keyword == parser::keyword(parser::kw::arctan))
+		func_ = special_func::arctan;
+	else if (func_keyword == parser::keyword(parser::kw::regular_polygon))
+		func_ = special_func::regular_polygon;
     else
         throw parser::exception("expr", "attempted to parse invalid special function");
 
@@ -291,6 +298,8 @@ tess::expr_value tess::special_function_expr::eval( tess::eval_context& ctxt) co
 		case special_func::tan:
 			e = tan(arg);
 			break;
+		case special_func::regular_polygon:
+			return generate_regular_polygon_tile(arg);
 		default:
 			return tess::expr_value{ tess::error("Unknown special function") };
 	}

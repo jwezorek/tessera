@@ -15,17 +15,30 @@
 
 namespace tess {
 
-    struct edge_def {
+    struct edge_def_helper {
         std::string name;
         std::string u;
         std::string v;
         std::string class_;
         expr_ptr length;
         int index;
+    };
+
+    struct edge_def {
+        std::string name;
+        int u;
+        int v;
+        std::string class_;
+        expr_ptr length;
+        int index;
 
         edge_def() : index(-1) {}
 
-        edge_def( std::string n, std::string uu, std::string vv, std::string c, expr_ptr l, int i) :
+        edge_def(const edge_def_helper& helper, int u, int v) :
+            name(helper.name), u(u), v(v), class_(helper.class_), length(helper.length), index(helper.index)
+        {}
+
+        edge_def( std::string n, int uu, int vv, std::string c, expr_ptr l, int i) :
             name(n), u(uu), v(vv), class_(c), length(l), index(i)
         {}
 
@@ -62,19 +75,18 @@ namespace tess {
         }
     };
 
-    using tile_verts_and_edges = std::tuple< std::unordered_map<std::string, vertex_def>, std::unordered_map<std::string, edge_def> >;
+    using tile_verts_and_edges = std::tuple< std::unordered_map<std::string, vertex_def>, std::unordered_map<std::string, edge_def_helper>>;
 
     class tile_def : public tessera_impl, public std::enable_shared_from_this<tile_def>
     {
     private: 
         std::vector<std::string> params_;
-        std::unordered_map<std::string, edge_def> name_to_edge_;
-        std::unordered_map<std::string, vertex_def> name_to_vertex_;
+        std::unordered_map<std::string, edge_def&> name_to_edge_;
+        std::unordered_map<std::string, vertex_def&> name_to_vertex_;
         std::vector<std::shared_ptr<edge_def>> edges_;
         std::vector<std::shared_ptr<vertex_def>> vertices_;
         tess::parser::exception get_exception(const std::string& msg);
-        void set_indices();
-        std::optional<parser::exception> initialize();
+        std::optional<parser::exception> initialize( std::unordered_map<std::string, vertex_def>&, std::unordered_map<std::string, edge_def_helper>&);
         std::vector<std::tuple<number, number>> evaluate_vertices(eval_context&) const;
 
     public:

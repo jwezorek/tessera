@@ -8,67 +8,79 @@
 
 namespace se = SymEngine;
 
-tess::parser::exception tess::tile_def::get_exception(const std::string& msg)
-{
-    return tess::parser::exception("tile ", msg);
-}
-
-void tess::tile_def::set_indices()
+void set_indices(std::unordered_map<std::string, tess::vertex_def>& verts, std::unordered_map<std::string, tess::edge_def_helper>& edges)
 {
     std::unordered_map<std::string, std::string> edge_from_tbl;
-    std::transform(name_to_edge_.begin(), name_to_edge_.end(), std::inserter(edge_from_tbl, edge_from_tbl.end()),
+    std::transform(edges.begin(), edges.end(), std::inserter(edge_from_tbl, edge_from_tbl.end()),
         [](const auto& pair) {
             const auto& [name, val] = pair;
             return std::pair<std::string, std::string>(val.u, name);
         }
     );
-    std::string edge_lbl = name_to_edge_.begin()->second.name;
-    auto start = name_to_edge_[edge_lbl].u;
+    std::string edge_lbl = edges.begin()->second.name;
+    auto start = edges[edge_lbl].u;
     int e_index = 0;
     int v_index = 0;
     do {
-        if (name_to_edge_.find(edge_lbl) == name_to_edge_.end())
+        if (edges.find(edge_lbl) == edges.end())
             throw tess::parser::exception("tile", "unknown edge: " + edge_lbl);
 
-        auto& edge = name_to_edge_[edge_lbl];
-        if (name_to_vertex_.find(edge.u) == name_to_vertex_.end())
+        auto& edge = edges[edge_lbl];
+        if (verts.find(edge.u) == verts.end())
             throw tess::parser::exception("tile", "unknown vertex: " + edge.v);
-        if (name_to_vertex_.find(edge.v) == name_to_vertex_.end())
+        if (verts.find(edge.v) == verts.end())
             throw tess::parser::exception("tile", "unknown vertex: " + edge.v);
 
         edge.index = e_index++;
-        auto& u = name_to_vertex_[edge.u];
-        auto& v = name_to_vertex_[edge.v];
+        auto& u = verts[edge.u];
+        auto& v = verts[edge.v];
         if (u.index < 0)
             u.index = v_index++;
         if (v.index < 0)
             v.index = v_index++;
         edge_lbl = edge_from_tbl[edge.v];
-    } while (name_to_edge_[edge_lbl].u != start);
+    } while (edges[edge_lbl].u != start);
 }
 
-std::optional<tess::parser::exception> tess::tile_def::initialize()
+tess::parser::exception tess::tile_def::get_exception(const std::string& msg)
+{
+    return tess::parser::exception("tile ", msg);
+}
+
+std::optional<tess::parser::exception> tess::tile_def::initialize(std::unordered_map<std::string, vertex_def>& verts, std::unordered_map<std::string, edge_def_helper>& edges)
 {
     try {
-        set_indices();
-
-        vertices_.resize(name_to_vertex_.size());
-        for (auto& [dummy, vert] : name_to_vertex_) 
+        vertices_.resize(verts.size());
+        for (auto& [dummy, vert] : verts)
             vertices_[vert.index] = std::make_shared<vertex_def>(vert);
 
-        edges_.resize(name_to_edge_.size());
-		for (auto& [dummy, edge] : name_to_edge_) {
-			if (edge.length == nullptr)
-				edge.length = std::make_shared<number_expr>(1);
-			edges_[edge.index] = std::make_shared<edge_def>(edge);
+        edges_.resize(edges.size());
+		for (auto& [dummy, edge_helper] : edges) {
+			if (edge_helper.length == nullptr)
+                edge_helper.length = std::make_shared<number_expr>(1);
+            int u = verts[edge_helper.u].index;
+            int v = verts[edge_helper.v].index;
+			edges_[edge_helper.index] = std::make_shared<edge_def>(edge_helper, u, v);
 		}
 
     } catch (tess::parser::exception e) {
         return e;
-    }
-    catch (...) {
+    } catch (...) {
         return tess::parser::exception("tile", "error resolving edges and vertices");
     }
+
+    std::transform(vertices_.begin(), vertices_.end(), std::inserter(name_to_vertex_, name_to_vertex_.end()),
+        [](std::shared_ptr<vertex_def> v)->std::pair<std::string,vertex_def&> {
+            return { v->name, *v };
+        }
+    );
+
+    std::transform(edges_.begin(), edges_.end(), std::inserter(name_to_edge_, name_to_edge_.end()),
+        [](std::shared_ptr<edge_def> e)->std::pair<std::string, edge_def&> {
+            return { e->name, *e };
+        }
+    );
+
     return std::nullopt;
 }
 
@@ -94,18 +106,19 @@ std::vector<std::tuple<tess::number, tess::number>> tess::tile_def::evaluate_ver
 }
 
 tess::tile_def::tile_def(const std::vector<std::string>& params, const tile_verts_and_edges& v_e) :
-    params_(params),
-    name_to_vertex_(std::get<0>(v_e)),
-    name_to_edge_(std::get<1>(v_e))
+    params_(params)
 {
-    if (name_to_vertex_.size() < 3)
+    auto name_to_vertex = std::get<0>(v_e);
+    auto name_to_edge = std::get<1>(v_e);
+    if (name_to_vertex.size() < 3)
         throw get_exception("too few vertices");
-    if (name_to_edge_.size() < name_to_vertex_.size())
+    if (name_to_edge.size() < name_to_vertex_.size())
         throw get_exception("too few edges");
-    if (name_to_edge_.size() > name_to_vertex_.size())
+    if (name_to_edge.size() > name_to_vertex.size())
         throw get_exception("too many edges");
 
-    auto maybe_err = initialize();
+    set_indices(name_to_vertex, name_to_edge);
+    auto maybe_err = initialize(name_to_vertex, name_to_edge);
     if (maybe_err.has_value())
         throw maybe_err.value();
 }
@@ -118,13 +131,13 @@ tess::tile_def::tile_def(const std::vector<std::string>& params,
     edges_(edges)
 {
     std::transform(vertices_.begin(), vertices_.end(), std::inserter(name_to_vertex_, name_to_vertex_.end()),
-        [](const std::shared_ptr<vertex_def>& vert)->std::pair<std::string, vertex_def> {
+        [](const std::shared_ptr<vertex_def>& vert)->std::pair<std::string, vertex_def&> {
             return { vert->name, *vert };
         }
     );
 
     std::transform(edges_.begin(), edges_.end(), std::inserter(name_to_edge_, name_to_edge_.end()),
-        [](const std::shared_ptr<edge_def>& edge)->std::pair<std::string, edge_def> {
+        [](const std::shared_ptr<edge_def>& edge)->std::pair<std::string, edge_def&> {
             return { edge->name, *edge };
         }
     );
@@ -264,3 +277,4 @@ tess::expr_ptr tess::patch_def::body() const
 {
     return body_;
 }
+
