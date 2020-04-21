@@ -18,7 +18,7 @@ tess::expr_value tess::function_def::eval(eval_context& ctxt) const
     }
 
     return {
-        lambda(this->simplify(), scope_frame(closure))
+        lambda(*this, scope_frame(closure))
     };
 }
 
