@@ -64,7 +64,7 @@ namespace tess {
 
     using tile_verts_and_edges = std::tuple< std::unordered_map<std::string, vertex_def>, std::unordered_map<std::string, edge_def> >;
 
-    class tile_def : public tessera_impl, std::enable_shared_from_this<tile_def>
+    class tile_def : public tessera_impl, public std::enable_shared_from_this<tile_def>
     {
     private: 
         std::vector<std::string> params_;

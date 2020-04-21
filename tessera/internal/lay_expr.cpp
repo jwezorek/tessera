@@ -8,6 +8,16 @@
 namespace {
     using edge_parent_type = std::variant<tess::tile::impl_type*, tess::tile_patch::impl_type*>;
 
+    tess::expr_value evaluate_piece(tess::expr_ptr piece, tess::eval_context& ctxt) {
+        auto value = piece->eval(ctxt);
+        if (std::holds_alternative<tess::lambda>(value)) {
+            auto lambda = std::get<tess::lambda>(value);
+            if (lambda.parameters().size() == 0)
+                return value.call({});
+        }
+        return value;
+    }
+
     edge_parent_type parent_of_edge(const tess::edge::impl_type& e) {
         auto tile = e.parent();
         if (!tile->has_parent())
@@ -63,7 +73,7 @@ tess::lay_expr::piece_result tess::lay_expr::eval_pieces(eval_context& ctxt) con
     std::vector<expr_value> pieces(tiles_.size());
     std::transform(tiles_.begin(), tiles_.end(), pieces.begin(),
         [&ctxt](const auto& piece) {
-            return piece->eval(ctxt);
+            return evaluate_piece(piece, ctxt);
         }
     );
 

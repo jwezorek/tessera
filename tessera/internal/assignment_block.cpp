@@ -31,3 +31,15 @@ tess::scope_frame tess::assignment_block::eval(eval_context& original_ctxt) cons
 
 	return ctxt.pop_scope();
 }
+
+tess::assignment_block tess::assignment_block::simplify() const
+{
+	std::vector<var_assignment> simplified(impl_->size());
+	std::transform(impl_->begin(), impl_->end(), simplified.begin(),
+		[](const auto& var_val)->var_assignment {
+			auto [var, val] = var_val;
+			return { var, val->simplify() };
+		}
+	);
+	return assignment_block(simplified);
+}

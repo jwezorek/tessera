@@ -2,7 +2,7 @@
 #include <algorithm>
 
 tess::script::impl_type::impl_type(const assignment_block& globals, const patch_def& tableau) :
-    globals_(globals), tableau_(tableau)
+    globals_(globals.simplify()), tableau_(tableau.simplify())
 {
 
 }
