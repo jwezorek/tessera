@@ -36,13 +36,16 @@ namespace tess {
 
 		const auto expr = expression_();
 		const auto identifier = indentifier_str_();
+		const auto field = as<std::string>[identifier | kw_<kw::edge>()];
 
 		const auto placeholder = x3::lit('$') > x3::int32;
 		const auto ary_item = x3::lit('[') >> expr >> x3::lit(']');
-		const auto field_item = x3::lit('.') > identifier;
+		const auto field_item = x3::lit('.') > field;
 
 		const auto head_def = identifier | placeholder;
-		const auto args_def = x3::lit('(') >> (expr% x3::lit(',')) >> x3::lit(')');
+		const auto empty_args_list = x3::lit('(') >> x3::lit(')');
+		const auto args_list = x3::lit('(') >> (expr% x3::lit(',')) >> x3::lit(')');
+		const auto args_def = args_list | empty_args_list;
 		const auto op_def = args | ary_item | field_item;
 		const auto obj_list_def = head >> *op;
 
