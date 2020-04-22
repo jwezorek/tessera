@@ -1,14 +1,62 @@
 #include "math_util.h"
 #include "expression.h"
 #include "expr_value.h"
+#include "tile_def.h"
+#include "tile_impl.h"
+#include "tessera_impl.h"
 #include "parser/keywords.h"
+#include "parser/expr_parser.h"
 #include "parser/exception.h"
+#include <sstream>
 
-tess::expr_value generate_regular_polygon_tile(tess::number num_sides) {
-	int n = tess::to_int(num_sides);
-	return { 5 };
+namespace {
+
+	struct tile_maker : public tess::tessera_impl {
+		tess::tile operator()(const std::vector<std::shared_ptr<tess::vertex_def>>& vertices, const std::vector<std::shared_ptr<tess::edge_def>>& edges) {
+			std::vector<std::string> empty_params;
+			return make_tess_obj<tess::tile>(
+				std::make_shared<tess::tile_def>(empty_params, vertices, edges)
+			);
+		}
+	};
+
+	tess::expr_ptr get_interior_angle_expr(int n) {
+		std::stringstream ss;
+		ss << "( pi / " << n << ") * " << n - 2;
+		return tess::parser::parse_expression(ss.str());
+	}
+
+	tess::expr_value generate_regular_polygon_tile(tess::number num_sides) {
+		int n = tess::to_int(num_sides);
+		std::vector<std::shared_ptr<tess::vertex_def>> vertices(n);
+		int i = 0;
+		tess::expr_ptr theta = get_interior_angle_expr(n);
+		std::generate(vertices.begin(), vertices.end(),
+			[&i, &theta]() {
+				return std::make_shared< tess::vertex_def>(
+					std::string(),
+					theta,
+					std::string(),
+					i++
+					);
+			}
+		);
+		std::vector<std::shared_ptr<tess::edge_def>> edges(n);
+		for (i = 0; i < n; i++) {
+			edges[i] = std::make_shared<tess::edge_def>(
+				"",
+				i, (i < n - 1) ? i + 1 : 0,
+				"",
+				std::make_shared<tess::number_expr>(1),
+				i
+				);
+		}
+		tile_maker factory;
+		return {
+			factory(vertices, edges)
+		};
+	}
 }
-
 std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
 {
 	auto val = expr->eval(ctxt);
@@ -270,7 +318,7 @@ tess::special_function_expr::special_function_expr(special_func func, expr_ptr a
 tess::expr_value tess::special_function_expr::eval( tess::eval_context& ctxt) const
 {
 	auto possible_arg = eval_number_expr(arg_, ctxt);
-	if (possible_arg.has_value())
+	if (!possible_arg.has_value())
 		return tess::expr_value{ tess::error("non-number in special function") };
 
 	auto arg = possible_arg.value();
