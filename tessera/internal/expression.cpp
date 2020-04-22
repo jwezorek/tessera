@@ -1,6 +1,7 @@
 #include "math_util.h"
 #include "expression.h"
 #include "expr_value.h"
+#include "eval_context.h"
 #include "tile_def.h"
 #include "tile_impl.h"
 #include "tessera_impl.h"
@@ -10,20 +11,10 @@
 #include <sstream>
 
 namespace {
-
-	struct tile_maker : public tess::tessera_impl {
-		tess::tile operator()(const std::vector<std::shared_ptr<tess::vertex_def>>& vertices, const std::vector<std::shared_ptr<tess::edge_def>>& edges) {
-			std::vector<std::string> empty_params;
-			return make_tess_obj<tess::tile>(
-				std::make_shared<tess::tile_def>(empty_params, vertices, edges)
-			);
-		}
-	};
-
 	tess::expr_ptr get_interior_angle_expr(int n) {
 		std::stringstream ss;
 		ss << "( pi / " << n << ") * " << n - 2;
-		return tess::parser::parse_expression(ss.str());
+		return tess::parser::parse_expression(ss.str())->simplify();
 	}
 
 	tess::expr_value generate_regular_polygon_tile(tess::number num_sides) {
@@ -51,10 +42,10 @@ namespace {
 				i
 				);
 		}
-		tile_maker factory;
-		return {
-			factory(vertices, edges)
-		};
+
+		auto tile_definition = std::make_shared<tess::tile_def>(std::vector<std::string>(), vertices, edges);
+		tess::eval_context ctxt;
+		return tile_definition->call(ctxt);
 	}
 }
 std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
