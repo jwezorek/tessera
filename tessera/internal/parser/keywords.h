@@ -17,6 +17,7 @@ namespace tess {
 
         enum class kw {
             if_,
+            then,
             else_,
             lay,
 			let,
@@ -44,6 +45,7 @@ namespace tess {
 			and_,
 			or_,
 			not_,
+            regular_polygon,
             none
         };
 
