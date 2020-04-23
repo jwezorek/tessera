@@ -32,6 +32,7 @@ namespace {
 				);
 			}
 		);
+
 		std::vector<tess::edge_def> edges(n);
 		for (i = 0; i < n; i++) {
 			edges[i] = tess::edge_def(
@@ -43,9 +44,9 @@ namespace {
 			);
 		}
 
-		auto tile_definition = std::make_shared<tess::tile_def>(std::vector<std::string>(), vertices, edges);
+		auto tile_def_expr = std::make_shared<tess::tile_def_expr>(vertices, edges);
 		tess::eval_context ctxt;
-		return tile_definition->call(ctxt);
+		return tile_def_expr->eval(ctxt);
 	}
 }
 std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)

@@ -42,99 +42,8 @@ void set_indices(std::unordered_map<std::string, tess::vertex_def>& verts, std::
     } while (edges[edge_lbl].u != start);
 }
 
-tess::parser::exception tess::tile_def::get_exception(const std::string& msg)
-{
-    return tess::parser::exception("tile ", msg);
-}
-
-std::optional<tess::parser::exception> tess::tile_def::initialize(std::unordered_map<std::string, vertex_def>& verts, std::unordered_map<std::string, edge_def_helper>& edges)
-{
-    try {
-        vertices_.resize(verts.size());
-        for (auto& [dummy, vert] : verts)
-            vertices_[vert.index] = vert;
-
-        edges_.resize(edges.size());
-		for (auto& [dummy, edge_helper] : edges) {
-			if (edge_helper.length == nullptr)
-                edge_helper.length = std::make_shared<number_expr>(1);
-            int u = verts[edge_helper.u].index;
-            int v = verts[edge_helper.v].index;
-			edges_[edge_helper.index] = edge_def(edge_helper, u, v);
-		}
-
-    } catch (tess::parser::exception e) {
-        return e;
-    } catch (...) {
-        return tess::parser::exception("tile", "error resolving edges and vertices");
-    }
-
-    return std::nullopt;
-}
-
-std::vector<std::tuple<tess::number, tess::number>> tess::tile_def::evaluate_vertices(eval_context& ctxt) const
-{
-    auto n = static_cast<int>(vertices_.size());
-	tess::number x = 0.0;
-	tess::number y = 0.0;
-	tess::number theta = 0.0;
-
-    std::vector<std::tuple<number, number>> locs(n);
-
-	for (int i = 0; i < n; ++i) {
-		locs[i] = { x,y };
-		auto length = std::get<tess::number>(edges_[i].length->eval(ctxt));
-		x = x + length * se::cos(theta);
-		y = y + length * se::sin(theta);
-		auto delta_theta = se::Expression(se::pi) - std::get<tess::number>(vertices_[(i + 1) % n].angle->eval(ctxt));
-		theta = theta + delta_theta;
-	}
-
-    return locs;
-}
-
-std::vector<tess::edge_fields> tess::tile_def::get_edge_fields() const
-{
-    std::vector<edge_fields> fields(edges_.size());
-    std::transform(edges_.begin(), edges_.end(), fields.begin(),
-        [](const auto& e) { return e.to_fields(); }
-    );
-    return fields;
-}
-
-std::vector<tess::vert_fields> tess::tile_def::get_vert_fields() const
-{
-    std::vector<vert_fields> fields(vertices_.size());
-    std::transform(vertices_.begin(), vertices_.end(), fields.begin(),
-        [](const auto& v) { return v.to_fields(); }
-    );
-    return fields;
-}
-
-tess::tile_def::tile_def(const std::vector<std::string>& params, const tile_verts_and_edges& v_e) :
-    params_(params)
-{
-    auto name_to_vertex = std::get<0>(v_e);
-    auto name_to_edge = std::get<1>(v_e);
-    if (name_to_vertex.size() < 3)
-        throw get_exception("too few vertices");
-    if (name_to_edge.size() < name_to_vertex.size())
-        throw get_exception("too few edges");
-    if (name_to_edge.size() > name_to_vertex.size())
-        throw get_exception("too many edges");
-
-    set_indices(name_to_vertex, name_to_edge);
-    auto maybe_err = initialize(name_to_vertex, name_to_edge);
-    if (maybe_err.has_value())
-        throw maybe_err.value();
-}
-
-tess::tile_def::tile_def(const std::vector<std::string>& params, 
-            const std::vector<vertex_def>& vertices, 
-            const std::vector<edge_def>& edges) :
-    params_(params),
-    vertices_(vertices),
-    edges_(edges)
+tess::tile_def::tile_def(const std::vector<std::string>& params, tess::expr_ptr e) :
+    params_(params), body_(e)
 {
 }
 
@@ -146,61 +55,21 @@ const std::vector<std::string>& tess::tile_def::parameters() const
 std::vector<std::string> tess::tile_def::get_variables() const
 {
     std::vector<std::string> vars;
-    for (const auto& edge : edges_)
-        edge.length->get_dependencies(vars);
-    for (const auto& vertex : vertices_)
-        vertex.angle->get_dependencies(vars);
+    body_->get_dependencies(vars);
     return vars;
 }
 
 tess::tile_def tess::tile_def::simplify() const
 {
-    std::vector<vertex_def>  simplified_verts(vertices_.size());
-    std::transform(vertices_.begin(), vertices_.end(), simplified_verts.begin(),
-        [](const auto& v) {
-            return v.simplify();
-        }
+    return tess::tile_def(
+        params_,
+        body_->simplify()
     );
-    std::vector<edge_def>  simplified_edges(edges_.size());
-    std::transform(edges_.begin(), edges_.end(), simplified_edges.begin(),
-        [](const auto& e) {
-            return e.simplify();
-        }
-    );
-    return tile_def(parameters(), simplified_verts, simplified_edges);
 }
 
 tess::expr_value tess::tile_def::call( eval_context& ctxt) const
 {
-    auto n = static_cast<int>(vertices_.size());
-    auto new_tile_impl = std::make_shared<tile::impl_type>(
-        get_vert_fields(),
-        get_edge_fields()
-    ); 
-    auto vert_locations = evaluate_vertices(ctxt);
-    
-    std::vector<tess::vertex> verts(n);
-    std::transform(vertices_.cbegin(), vertices_.cend(), verts.begin(),
-        [&](auto v) {
-			return make_tess_obj<tess::vertex>(
-				new_tile_impl.get(), v.index, vert_locations[v.index]
-			);
-        }
-    );
-
-	std::vector<tess::edge> edges(n);
-	std::transform(edges_.cbegin(), edges_.cend(), edges.begin(),
-		[&](auto e) {
-			return make_tess_obj<tess::edge>(new_tile_impl.get(), e.index);
-		}
-	);
-   
-    new_tile_impl->set( std::move(verts), std::move(edges) );
-    return { 
-        make_tess_obj_from_impl<tess::tile>(
-            new_tile_impl
-        )
-	};
+    return body_->eval(ctxt);
 }
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -241,3 +110,153 @@ tess::expr_ptr tess::patch_def::body() const
     return body_;
 }
 
+tess::parser::exception tess::tile_def_expr::get_exception(const std::string& msg)
+{
+    return tess::parser::exception("tile ", msg);
+}
+
+std::optional<tess::parser::exception> tess::tile_def_expr::initialize(std::unordered_map<std::string, vertex_def>& verts, std::unordered_map<std::string, edge_def_helper>& edges)
+{
+    try {
+        vertices_.resize(verts.size());
+        for (auto& [dummy, vert] : verts)
+            vertices_[vert.index] = vert;
+
+        edges_.resize(edges.size());
+        for (auto& [dummy, edge_helper] : edges) {
+            if (edge_helper.length == nullptr)
+                edge_helper.length = std::make_shared<number_expr>(1);
+            int u = verts[edge_helper.u].index;
+            int v = verts[edge_helper.v].index;
+            edges_[edge_helper.index] = edge_def(edge_helper, u, v);
+        }
+
+    }
+    catch (tess::parser::exception e) {
+        return e;
+    }
+    catch (...) {
+        return tess::parser::exception("tile", "error resolving edges and vertices");
+    }
+
+    return std::nullopt;
+}
+
+std::vector<std::tuple<tess::number, tess::number>> tess::tile_def_expr::evaluate_vertices(eval_context& ctxt) const
+{
+    auto n = static_cast<int>(vertices_.size());
+    tess::number x = 0.0;
+    tess::number y = 0.0;
+    tess::number theta = 0.0;
+
+    std::vector<std::tuple<number, number>> locs(n);
+
+    for (int i = 0; i < n; ++i) {
+        locs[i] = { x,y };
+        auto length = std::get<tess::number>(edges_[i].length->eval(ctxt));
+        x = x + length * se::cos(theta);
+        y = y + length * se::sin(theta);
+        auto delta_theta = se::Expression(se::pi) - std::get<tess::number>(vertices_[(i + 1) % n].angle->eval(ctxt));
+        theta = theta + delta_theta;
+    }
+
+    return locs;
+}
+
+std::vector<tess::edge_fields> tess::tile_def_expr::get_edge_fields() const
+{
+    std::vector<edge_fields> fields(edges_.size());
+    std::transform(edges_.begin(), edges_.end(), fields.begin(),
+        [](const auto& e) { return e.to_fields(); }
+    );
+    return fields;
+}
+
+std::vector<tess::vert_fields> tess::tile_def_expr::get_vert_fields() const
+{
+    std::vector<vert_fields> fields(vertices_.size());
+    std::transform(vertices_.begin(), vertices_.end(), fields.begin(),
+        [](const auto& v) { return v.to_fields(); }
+    );
+    return fields;
+}
+
+tess::tile_def_expr::tile_def_expr(const tile_verts_and_edges& v_e)
+{
+    auto name_to_vertex = std::get<0>(v_e);
+    auto name_to_edge = std::get<1>(v_e);
+    if (name_to_vertex.size() < 3)
+        throw get_exception("too few vertices");
+    if (name_to_edge.size() < name_to_vertex.size())
+        throw get_exception("too few edges");
+    if (name_to_edge.size() > name_to_vertex.size())
+        throw get_exception("too many edges");
+
+    set_indices(name_to_vertex, name_to_edge);
+    auto maybe_err = initialize(name_to_vertex, name_to_edge);
+    if (maybe_err.has_value())
+        throw maybe_err.value();
+}
+
+tess::tile_def_expr::tile_def_expr(const std::vector<vertex_def>& v, const std::vector<edge_def>& e) :
+    vertices_(v), edges_(e)
+{
+}
+
+tess::expr_value tess::tile_def_expr::eval(eval_context& ctxt) const
+{
+    auto n = static_cast<int>(vertices_.size());
+    auto new_tile_impl = std::make_shared<tile::impl_type>(
+        get_vert_fields(),
+        get_edge_fields()
+        );
+    auto vert_locations = evaluate_vertices(ctxt);
+
+    std::vector<tess::vertex> verts(n);
+    std::transform(vertices_.cbegin(), vertices_.cend(), verts.begin(),
+        [&](auto v) {
+            return make_tess_obj<tess::vertex>(
+                new_tile_impl.get(), v.index, vert_locations[v.index]
+                );
+        }
+    );
+
+    std::vector<tess::edge> edges(n);
+    std::transform(edges_.cbegin(), edges_.cend(), edges.begin(),
+        [&](auto e) {
+            return make_tess_obj<tess::edge>(new_tile_impl.get(), e.index);
+        }
+    );
+
+    new_tile_impl->set(std::move(verts), std::move(edges));
+    return {
+        make_tess_obj_from_impl<tess::tile>(
+            new_tile_impl
+        )
+    };
+}
+
+tess::expr_ptr tess::tile_def_expr::simplify() const
+{
+    std::vector<vertex_def>  simplified_verts(vertices_.size());
+    std::transform(vertices_.begin(), vertices_.end(), simplified_verts.begin(),
+        [](const auto& v) {
+            return v.simplify();
+        }
+    );
+    std::vector<edge_def>  simplified_edges(edges_.size());
+    std::transform(edges_.begin(), edges_.end(), simplified_edges.begin(),
+        [](const auto& e) {
+            return e.simplify();
+        }
+    );
+    return std::make_shared<tile_def_expr>(simplified_verts, simplified_edges);
+}
+
+void tess::tile_def_expr::get_dependencies(std::vector<std::string>& vars) const
+{
+    for (const auto& edge : edges_)
+        edge.length->get_dependencies(vars);
+    for (const auto& vertex : vertices_)
+        vertex.angle->get_dependencies(vars);
+}

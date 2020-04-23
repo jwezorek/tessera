@@ -108,22 +108,34 @@ namespace tess {
 
     using tile_verts_and_edges = std::tuple< std::unordered_map<std::string, vertex_def>, std::unordered_map<std::string, edge_def_helper>>;
 
-    class tile_def : public tessera_impl, public std::enable_shared_from_this<tile_def>
+    class tile_def_expr : public expression, public tessera_impl
     {
-    private: 
-        std::vector<std::string> params_;
-        std::vector<edge_def> edges_;
+    private:
         std::vector<vertex_def> vertices_;
+        std::vector<edge_def> edges_;
 
         tess::parser::exception get_exception(const std::string& msg);
-        std::optional<parser::exception> initialize( std::unordered_map<std::string, vertex_def>&, std::unordered_map<std::string, edge_def_helper>&);
+        std::optional<parser::exception> initialize(std::unordered_map<std::string, vertex_def>&, std::unordered_map<std::string, edge_def_helper>&);
         std::vector<std::tuple<number, number>> evaluate_vertices(eval_context&) const;
         std::vector<edge_fields> get_edge_fields() const;
         std::vector<vert_fields> get_vert_fields() const;
 
     public:
-        tile_def(const std::vector<std::string>& params, const tile_verts_and_edges& v_e);
-        tile_def(const std::vector<std::string>& params, const std::vector<vertex_def>& vertices, const std::vector<edge_def>& edges);
+        tile_def_expr(const tile_verts_and_edges& v_e);
+        tile_def_expr(const std::vector<vertex_def>& v, const std::vector<edge_def>& e);
+        expr_value eval(eval_context&) const override;
+        expr_ptr simplify() const override;
+        void get_dependencies(std::vector<std::string>& dependencies) const override;
+    };
+
+    class tile_def : public tessera_impl
+    {
+    private: 
+        std::vector<std::string> params_;
+        expr_ptr body_;
+
+    public:
+        tile_def(const std::vector<std::string>& params, expr_ptr body);
         const std::vector<std::string>& parameters() const;
         std::vector<std::string> get_variables() const;
         tile_def simplify() const;
