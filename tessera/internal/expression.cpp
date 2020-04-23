@@ -1,10 +1,54 @@
 #include "math_util.h"
 #include "expression.h"
 #include "expr_value.h"
+#include "eval_context.h"
+#include "tile_def.h"
+#include "tile_impl.h"
+#include "tessera_impl.h"
 #include "parser/keywords.h"
+#include "parser/expr_parser.h"
 #include "parser/exception.h"
+#include <sstream>
 
-std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
+namespace {
+	tess::expr_ptr get_interior_angle_expr(int n) {
+		std::stringstream ss;
+		ss << "( pi / " << n << ") * " << n - 2;
+		return tess::parser::parse_expression(ss.str())->simplify();
+	}
+
+	tess::expr_value generate_regular_polygon_tile(tess::number num_sides) {
+		int n = tess::to_int(num_sides);
+		std::vector<std::shared_ptr<tess::vertex_def>> vertices(n);
+		int i = 0;
+		tess::expr_ptr theta = get_interior_angle_expr(n);
+		std::generate(vertices.begin(), vertices.end(),
+			[&i, &theta]() {
+				return std::make_shared< tess::vertex_def>(
+					std::string(),
+					theta,
+					std::string(),
+					i++
+					);
+			}
+		);
+		std::vector<std::shared_ptr<tess::edge_def>> edges(n);
+		for (i = 0; i < n; i++) {
+			edges[i] = std::make_shared<tess::edge_def>(
+				"",
+				i, (i < n - 1) ? i + 1 : 0,
+				"",
+				std::make_shared<tess::number_expr>(1),
+				i
+				);
+		}
+
+		auto tile_definition = std::make_shared<tess::tile_def>(std::vector<std::string>(), vertices, edges);
+		tess::eval_context ctxt;
+		return tile_definition->call(ctxt);
+	}
+}
+std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
 {
 	auto val = expr->eval(ctxt);
 	if (!std::holds_alternative<tess::number>(val))
@@ -12,15 +56,7 @@ std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, const t
 	return std::get<tess::number>(val);
 }
 
-std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
-{
-	auto int_val = expr->eval(ctxt);
-	if (!std::holds_alternative<tess::number>(int_val))
-		return std::nullopt;
-	return tess::to_int( std::get<tess::number>(int_val) );
-}
-
-std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, const tess::execution_ctxt& ctxt)
+std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
 {
 	auto val = expr->eval(ctxt);
 	if (!std::holds_alternative<bool>(val))
@@ -39,101 +75,19 @@ tess::number_expr::number_expr(int v) : val_(v)
 {
 }
 
-tess::expr_value tess::number_expr::eval(const tess::execution_ctxt&) const {
+tess::expr_value tess::number_expr::eval( tess::eval_context&) const {
 	return tess::expr_value{ tess::number(val_) };
 }
 
-/*----------------------------------------------------------------------*/
-
-tess::object_ref_expr::object_ref_expr(const std::vector<object_ref_item>& parts) : parts_(parts)
+tess::expr_ptr tess::number_expr::simplify() const
 {
-
+	return std::make_shared<number_expr>(val_);
 }
 
-struct object_ref_item_visitor {
-private:
-	const tess::execution_ctxt& ctxt_;
-public:
-	object_ref_item_visitor(const tess::execution_ctxt& ctxt) : ctxt_(ctxt)
-	{}
-
-	tess::expr_value operator()(const tess::func_call_item& fi)
-	{
-		auto [func, arg_exprs] = fi;
-		std::vector<tess::expr_value> args(arg_exprs.size() );
-		std::transform(arg_exprs.begin(), arg_exprs.end(), args.begin(),
-			[&](const tess::expr_ptr& expr) {
-				return expr->eval(ctxt_);
-			}
-		);
-		return ctxt_.call(func, args);
-	}
-
-	tess::expr_value operator()(const tess::ary_item&  ai)
-	{
-		auto index = eval_integer_expr(ai.index, ctxt_);
-		if (!index.has_value())
-			return tess::expr_value{ tess::error("array index must be a number") };
-		auto obj = ctxt_.eval(ai.name);
-		if (!obj.is_object()) 
-			return tess::expr_value{ tess::error(ai.name + " is not array-like.") };
-		
-		return obj.get_ary_item(index.value());
-	}
-
-	tess::expr_value operator()(const tess::place_holder_ary_item& phai)
-	{
-		auto [place_holder, ary_index_expr] = phai;
-		auto index = eval_integer_expr(phai.index, ctxt_);
-		if (!index.has_value())
-			return tess::expr_value{ tess::error("array index must be a number") };
-		auto obj = ctxt_.get_placeholder(phai.place_holder);
-		if (!obj.is_object())
-			return tess::expr_value{ tess::error("$" + std::to_string(phai.place_holder) + " is not array-like.") };
-
-		return obj.get_ary_item(index.value());
-	}
-
-	tess::expr_value operator()(const std::string& var)
-	{
-		return ctxt_.eval(var);
-	}
-
-	tess::expr_value operator()(int placeholder)
-	{
-		return ctxt_.get_placeholder(placeholder);
-	}
-};
-
-tess::expr_value tess::object_ref_expr::eval(const tess::execution_ctxt& ctxt) const 
+void tess::number_expr::get_dependencies(std::vector<std::string>& dependencies) const
 {
-	auto main_obj_ref = parts_[0];
-	auto visitor = object_ref_item_visitor(ctxt);
-	auto main_obj = std::visit(visitor, main_obj_ref);
-	if (parts_.size() == 1)
-		return main_obj;
-
-	if (!main_obj.is_object())
-		return tess::expr_value{ tess::error( "not an object.") };
-
-	auto current_obj = main_obj;
-	for (auto i = 1; i < parts_.size(); ++i) {
-		const auto& part = parts_[i];
-		if (std::holds_alternative<std::string>(part)) {
-			current_obj = current_obj.get_field(std::get<std::string>(part));
-		} else if (std::holds_alternative<tess::ary_item>(part)) {
-			auto [field_name, index_expr] = std::get<tess::ary_item>(part);
-			auto index = eval_integer_expr(index_expr, ctxt);
-			if (!index.has_value())
-				return tess::expr_value{ tess::error("array index must be a number") };
-			current_obj = current_obj.get_field(field_name, index.value());
-		} else {
-			return tess::expr_value{ tess::error("invalid object reference expression") };
-		}
-	}
-
-	return current_obj;
 }
+
 /*----------------------------------------------------------------------*/
 
 tess::addition_expr::addition_expr(const expression_params& terms) {
@@ -142,7 +96,12 @@ tess::addition_expr::addition_expr(const expression_params& terms) {
         terms_.emplace_back(std::make_tuple(op == '+', expr));
 }
 
-tess::expr_value tess::addition_expr::eval(const tess::execution_ctxt& ctxt) const {
+tess::addition_expr::addition_expr(const std::vector<std::tuple<bool, expr_ptr>>& terms) :
+	terms_(terms)
+{
+}
+
+tess::expr_value tess::addition_expr::eval( tess::eval_context& ctxt) const {
 
 	tess::number sum(0);
 
@@ -155,6 +114,28 @@ tess::expr_value tess::addition_expr::eval(const tess::execution_ctxt& ctxt) con
 	return tess::expr_value{ sum };
 }
 
+void tess::addition_expr::get_dependencies(std::vector<std::string>& dependencies) const {
+	for (auto [dummy, term_expr] : terms_)
+		term_expr->get_dependencies(dependencies);
+}
+
+tess::expr_ptr tess::addition_expr::simplify() const
+{
+	// if there is only one term and it is positive we dont need
+	// addition node. 
+	if (terms_.size() == 1 && std::get<0>(terms_[0])) {
+		return std::get<1>(terms_[0])->simplify();
+	}
+	std::vector<std::tuple<bool, expr_ptr>> simplified(terms_.size());
+	std::transform(terms_.begin(), terms_.end(), simplified.begin(),
+		[](const auto& term)->std::tuple<bool, expr_ptr> {
+			const auto& [sgn, e] = term;
+			return { sgn, e->simplify() };
+		}
+	);
+	return std::make_shared<addition_expr>(simplified);
+}
+
 /*----------------------------------------------------------------------*/
 
 tess::multiplication_expr::multiplication_expr(const expression_params& terms) {
@@ -163,7 +144,12 @@ tess::multiplication_expr::multiplication_expr(const expression_params& terms) {
         factors_.emplace_back(std::make_tuple(op == '*', expr));
 }
 
-tess::expr_value tess::multiplication_expr::eval(const tess::execution_ctxt& ctxt) const {
+tess::multiplication_expr::multiplication_expr(const std::vector<std::tuple<bool, expr_ptr>>& factors) :
+	factors_(factors)
+{
+}
+
+tess::expr_value tess::multiplication_expr::eval( tess::eval_context& ctxt) const {
 
 	tess::number product(1);
 
@@ -176,6 +162,27 @@ tess::expr_value tess::multiplication_expr::eval(const tess::execution_ctxt& ctx
 	return tess::expr_value{ product };
 }
 
+void tess::multiplication_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	for (auto [op, factor_expr] : factors_)
+		factor_expr->get_dependencies(dependencies);
+}
+
+tess::expr_ptr tess::multiplication_expr::simplify() const
+{
+	if (factors_.size() == 1 && std::get<0>(factors_[0])) {
+		return  std::get<1>(factors_[0])->simplify();
+	}
+	std::vector<std::tuple<bool, expr_ptr>> simplified(factors_.size());
+	std::transform(factors_.begin(), factors_.end(), simplified.begin(),
+		[](const auto& term)->std::tuple<bool, expr_ptr> {
+			const auto& [op, e] = term;
+			return { op, e->simplify() };
+		}
+	);
+	return std::make_shared< multiplication_expr>(simplified);
+}
+
 /*----------------------------------------------------------------------*/
 
 tess::exponent_expr::exponent_expr(const expression_params& params) 
@@ -185,7 +192,12 @@ tess::exponent_expr::exponent_expr(const expression_params& params)
         exponents_.emplace_back(expr);
 }
 
-tess::expr_value tess::exponent_expr::eval(const tess::execution_ctxt& ctxt) const
+tess::exponent_expr::exponent_expr(expr_ptr base, const std::vector<expr_ptr>& exponents) :
+	base_(base), exponents_(exponents)
+{
+}
+
+tess::expr_value tess::exponent_expr::eval( tess::eval_context& ctxt) const
 {
     auto base_val = eval_number_expr(base_, ctxt);
 	if (!base_val.has_value())
@@ -204,6 +216,25 @@ tess::expr_value tess::exponent_expr::eval(const tess::execution_ctxt& ctxt) con
 
 }
 
+
+void  tess::exponent_expr::get_dependencies(std::vector<std::string>& dependencies) const {
+
+	base_->get_dependencies(dependencies);
+	for (const auto& exponent_expr : exponents_)
+		exponent_expr->get_dependencies(dependencies);
+}
+tess::expr_ptr tess::exponent_expr::simplify() const
+{
+	if (exponents_.empty())
+		return base_->simplify();
+	std::vector<expr_ptr> simplified(exponents_.size());
+	std::transform(exponents_.begin(), exponents_.end(), simplified.begin(),
+		[](const auto& e) {
+			return e->simplify();
+		}
+	);
+	return std::make_shared< exponent_expr>(base_->simplify(), simplified);
+}
 /*----------------------------------------------------------------------*/
 
 tess::special_number_expr::special_number_expr(const std::string& v) 
@@ -218,7 +249,12 @@ tess::special_number_expr::special_number_expr(const std::string& v)
         throw parser::exception("expr", "attempted to parse invalid special number");
 }
 
-tess::expr_value tess::special_number_expr::eval(const tess::execution_ctxt& ctxt) const
+tess::special_number_expr::special_number_expr(special_num which) :
+	num_(which)
+{
+}
+
+tess::expr_value tess::special_number_expr::eval( tess::eval_context& ctxt) const
 {
 	switch (num_) {
 		case special_num::pi:
@@ -231,33 +267,49 @@ tess::expr_value tess::special_number_expr::eval(const tess::execution_ctxt& ctx
 	return tess::expr_value{ tess::error("Unknown special number.") };
 }
 
+tess::expr_ptr tess::special_number_expr::simplify() const
+{
+	return std::make_shared<special_number_expr>(num_);
+}
+
+void tess::special_number_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+}
+
 tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_ptr> param)
 {
     auto [func_keyword, arg] = param;
-    if (func_keyword == parser::keyword(parser::kw::sqrt))
-        func_ = special_func::sqrt;
-    else if (func_keyword == parser::keyword(parser::kw::sin))
-        func_ = special_func::sin;
-    else if (func_keyword == parser::keyword(parser::kw::cos))
-        func_ = special_func::cos;
-    else if (func_keyword == parser::keyword(parser::kw::tan))
-        func_ = special_func::tan;
-    else if (func_keyword == parser::keyword(parser::kw::arcsin))
-        func_ = special_func::arcsin;
-    else if (func_keyword == parser::keyword(parser::kw::arccos))
-        func_ = special_func::arccos;
-    else if (func_keyword == parser::keyword(parser::kw::arctan))
-        func_ = special_func::arctan;
+	if (func_keyword == parser::keyword(parser::kw::sqrt))
+		func_ = special_func::sqrt;
+	else if (func_keyword == parser::keyword(parser::kw::sin))
+		func_ = special_func::sin;
+	else if (func_keyword == parser::keyword(parser::kw::cos))
+		func_ = special_func::cos;
+	else if (func_keyword == parser::keyword(parser::kw::tan))
+		func_ = special_func::tan;
+	else if (func_keyword == parser::keyword(parser::kw::arcsin))
+		func_ = special_func::arcsin;
+	else if (func_keyword == parser::keyword(parser::kw::arccos))
+		func_ = special_func::arccos;
+	else if (func_keyword == parser::keyword(parser::kw::arctan))
+		func_ = special_func::arctan;
+	else if (func_keyword == parser::keyword(parser::kw::regular_polygon))
+		func_ = special_func::regular_polygon;
     else
         throw parser::exception("expr", "attempted to parse invalid special function");
 
     arg_ = arg;
 }
 
-tess::expr_value tess::special_function_expr::eval(const tess::execution_ctxt& ctxt) const
+tess::special_function_expr::special_function_expr(special_func func, expr_ptr arg) :
+	func_(func), arg_(arg)
+{
+}
+
+tess::expr_value tess::special_function_expr::eval( tess::eval_context& ctxt) const
 {
 	auto possible_arg = eval_number_expr(arg_, ctxt);
-	if (possible_arg.has_value())
+	if (!possible_arg.has_value())
 		return tess::expr_value{ tess::error("non-number in special function") };
 
 	auto arg = possible_arg.value();
@@ -285,20 +337,32 @@ tess::expr_value tess::special_function_expr::eval(const tess::execution_ctxt& c
 		case special_func::tan:
 			e = tan(arg);
 			break;
+		case special_func::regular_polygon:
+			return generate_regular_polygon_tile(arg);
 		default:
 			return tess::expr_value{ tess::error("Unknown special function") };
 	}
 	return tess::expr_value{ e };
 }
 
+void tess::special_function_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	arg_->get_dependencies(dependencies);
+}
+
+tess::expr_ptr tess::special_function_expr::simplify() const
+{
+	return std::make_shared< special_function_expr>(func_, arg_->simplify());
+}
+
 /*----------------------------------------------------------------------*/
 
-tess::and_expr::and_expr(const std::vector<expr_ptr> conjuncts) :
+tess::and_expr::and_expr(const std::vector<expr_ptr>& conjuncts) :
 	conjuncts_(conjuncts)
 {
 }
 
-tess::expr_value tess::and_expr::eval(const tess::execution_ctxt& ctx) const
+tess::expr_value tess::and_expr::eval( tess::eval_context& ctx) const
 {
 	for (const auto& conjunct : conjuncts_) {
 		auto val = eval_bool_expr(conjunct, ctx);
@@ -310,6 +374,23 @@ tess::expr_value tess::and_expr::eval(const tess::execution_ctxt& ctx) const
 	return tess::expr_value{ true };
 }
 
+void tess::and_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	for (const auto& conjunct : conjuncts_)
+		conjunct->get_dependencies(dependencies);
+}
+
+tess::expr_ptr tess::and_expr::simplify() const
+{
+	if (conjuncts_.size() == 1)
+		return conjuncts_[0]->simplify();
+	std::vector<expr_ptr> simplified(conjuncts_.size());
+	std::transform(conjuncts_.begin(), conjuncts_.end(), simplified.begin(),
+		[](const auto& e) {return e->simplify(); }
+	);
+	return std::make_shared<and_expr>(simplified);
+}
+
 /*----------------------------------------------------------------------*/
 
 tess::equality_expr::equality_expr(const std::vector<expr_ptr> operands) :
@@ -317,7 +398,7 @@ tess::equality_expr::equality_expr(const std::vector<expr_ptr> operands) :
 {
 }
 
-tess::expr_value tess::equality_expr::eval(const tess::execution_ctxt& ctx) const
+tess::expr_value tess::equality_expr::eval( tess::eval_context& ctx) const
 {
 	std::vector<number> expressions;
 	expressions.reserve(operands_.size());
@@ -335,6 +416,23 @@ tess::expr_value tess::equality_expr::eval(const tess::execution_ctxt& ctx) cons
 	return tess::expr_value{ true };
 }
 
+void tess::equality_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	for (const auto& op : operands_)
+		op->get_dependencies(dependencies);
+}
+
+tess::expr_ptr tess::equality_expr::simplify() const
+{
+	if (operands_.size() == 1)
+		return operands_[0]->simplify();
+	std::vector<expr_ptr> simplified(operands_.size());
+	std::transform(operands_.begin(), operands_.end(), simplified.begin(),
+		[](const auto& e) {return e->simplify(); }
+	);
+	return std::make_shared<equality_expr>(simplified);
+}
+
 /*----------------------------------------------------------------------*/
 
 tess::or_expr::or_expr(const std::vector<expr_ptr> disjuncts) :
@@ -342,7 +440,7 @@ tess::or_expr::or_expr(const std::vector<expr_ptr> disjuncts) :
 {
 }
 
-tess::expr_value tess::or_expr::eval(const tess::execution_ctxt& ctx) const
+tess::expr_value tess::or_expr::eval( tess::eval_context& ctx) const
 {
 	for (const auto& disjunct : disjuncts_) {
 		auto val = eval_bool_expr(disjunct, ctx);
@@ -352,6 +450,23 @@ tess::expr_value tess::or_expr::eval(const tess::execution_ctxt& ctx) const
 			return tess::expr_value{ true };
 	}
 	return tess::expr_value{ false };
+}
+
+void tess::or_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	for (const auto& disjunct : disjuncts_)
+		disjunct->get_dependencies(dependencies);
+}
+
+tess::expr_ptr tess::or_expr::simplify() const
+{
+	if (disjuncts_.size() == 1)
+		return disjuncts_[0]->simplify();
+	std::vector<expr_ptr> simplified(disjuncts_.size());
+	std::transform(disjuncts_.begin(), disjuncts_.end(), simplified.begin(),
+		[](const auto& e) {return e->simplify(); }
+	);
+	return std::make_shared<or_expr>(simplified);
 }
 
 /*----------------------------------------------------------------------*/
@@ -376,7 +491,12 @@ tess::relation_expr::relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> p
         throw parser::exception("expr", "attempted to parse invalid relation_expr");
 }
 
-tess::expr_value tess::relation_expr::eval(const tess::execution_ctxt& ctx) const
+tess::relation_expr::relation_expr(expr_ptr lhs, relation_op op, expr_ptr rhs) :
+	lhs_(lhs), op_(op), rhs_(rhs)
+{
+}
+
+tess::expr_value tess::relation_expr::eval( tess::eval_context& ctx) const
 {
 	auto maybe_lhs = eval_number_expr(lhs_, ctx);
 	if (! maybe_lhs.has_value())
@@ -408,11 +528,80 @@ tess::expr_value tess::relation_expr::eval(const tess::execution_ctxt& ctx) cons
 	return tess::expr_value{result };
 }
 
+void tess::relation_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	lhs_->get_dependencies(dependencies);
+	rhs_->get_dependencies(dependencies);
+}
+
+tess::expr_ptr tess::relation_expr::simplify() const
+{
+	return std::make_shared<relation_expr>(
+		lhs_->simplify(),
+		op_,
+		rhs_->simplify()
+	);
+}
+
 tess::nil_expr::nil_expr()
 {
 }
 
-tess::expr_value tess::nil_expr::eval(const tess::execution_ctxt& ctx) const
+tess::expr_value tess::nil_expr::eval( tess::eval_context& ctx) const
 {
     return tess::expr_value{ nil_val() };
+}
+
+tess::expr_ptr tess::nil_expr::simplify() const
+{
+	return std::make_shared<nil_expr>();
+}
+
+void tess::nil_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+}
+
+tess::if_expr::if_expr(std::tuple<expr_ptr, expr_ptr, expr_ptr> exprs) :
+	condition_(std::get<0>(exprs)),
+	then_clause_(std::get<1>(exprs)),
+	else_clause_(std::get<2>(exprs))
+{
+}
+
+tess::if_expr::if_expr(expr_ptr condition, expr_ptr then_clause, expr_ptr else_clause) :
+	condition_(condition), 
+	then_clause_(then_clause), 
+	else_clause_(else_clause)
+{
+}
+
+tess::expr_value tess::if_expr::eval(eval_context& ctxt) const
+{
+	auto condition_val = condition_->eval(ctxt);
+	if (std::holds_alternative<error>(condition_val))
+		return condition_val;
+
+	if (!std::holds_alternative<bool>(condition_val))
+		return tess::expr_value{ error("if condition must evaluate to a boolean") };
+
+	if (std::get<bool>(condition_val))
+		return then_clause_->eval(ctxt);
+	else
+		return else_clause_->eval(ctxt);
+}
+
+void tess::if_expr::get_dependencies(std::vector<std::string>& dependencies) const
+{
+	condition_->get_dependencies(dependencies);
+	then_clause_->get_dependencies(dependencies);
+	else_clause_->get_dependencies(dependencies);
+}
+
+tess::expr_ptr tess::if_expr::simplify() const
+{
+	return std::make_shared< if_expr>(
+		condition_->simplify(),
+		then_clause_->simplify(),
+		else_clause_->simplify()
+	);
 }

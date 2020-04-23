@@ -21,5 +21,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="test.tess" />
+    <None Include="example.tess" />
   </ItemGroup>
 </Project>

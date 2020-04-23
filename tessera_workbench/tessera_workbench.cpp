@@ -1,5 +1,4 @@
-#include "tessera/tessera.h"
-#include "tessera/tessera_script.h"
+#include "tessera/script.h"
 #include "tessera/error.h"
 #include <iostream>
 #include <string>
@@ -15,23 +14,24 @@ void generate_svg(const std::string& filename, const std::vector<tess::tile>& ti
 
 int main(int argc, char** argv)
 {
-	std::string script = read_file("test.tess");
-    auto results = tess::parse(script);
+	std::string source_code = read_file("example.tess");
+	auto results = tess::script::interpret( source_code );
 
-	if (std::holds_alternative<tess::tessera_script>(results)) {
-		const auto& tessera = std::get<tess::tessera_script>(results);
+	if (std::holds_alternative<tess::script>(results)) {
+		const auto& tessera = std::get<tess::script>(results);
 
-		auto output = tessera.execute( get_arguments(argc, argv) );
+		auto output = tessera.execute(get_arguments(argc, argv));
 		if (std::holds_alternative<tess::error>(output)) {
 			std::cout << std::get<tess::error>(output) << "\n";
 			return -1;
 		}
 
 		const auto& tiles = std::get<std::vector<tess::tile>>(output);
-		generate_svg("C:\\test\\tiles.svg", tiles, 50.0 );
+		generate_svg("C:\\test\\tiles.svg", tiles, 50.0);
 
 		std::cout << "success" << "\n";
-	} else {
+	}
+	else {
 		auto err = std::get<tess::error>(results);
 		std::cout << err << "\n";
 	}

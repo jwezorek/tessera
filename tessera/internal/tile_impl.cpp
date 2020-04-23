@@ -1,7 +1,21 @@
 #include "tile_impl.h"
+#include "cluster.h"
+#include "parser/keywords.h"
 #include <symengine/expression.h>
+#include <algorithm>
 
 namespace se = SymEngine;
+
+namespace {
+
+	tess::cluster edges_as_cluster(const std::vector<tess::edge>& edges) {
+		std::vector<tess::expr_value> cluster_contents(edges.size());
+		std::transform(edges.begin(), edges.end(), cluster_contents.begin(),
+			[](const tess::edge& e)->tess::expr_value { return { e }; }
+		);
+		return tess::cluster(cluster_contents);
+	}
+}
 
 tess::tile::impl_type::impl_type( std::shared_ptr<const tile_def> def) :
     def_(def), untouched_(true), parent_(nullptr)
@@ -23,11 +37,6 @@ const std::vector<tess::edge>& tess::tile::impl_type::edges() const
     return edges_;
 }
 
-std::string tess::tile::impl_type::name() const
-{
-    return def_->name();
-}
-
 void tess::tile::impl_type::set( std::vector<tess::vertex>&& vertices, std::vector<tess::edge>&& edges )
 {
 	vertices_ = std::move(vertices);
@@ -36,6 +45,10 @@ void tess::tile::impl_type::set( std::vector<tess::vertex>&& vertices, std::vect
 
 tess::expr_value tess::tile::impl_type::get_field(const std::string& field) const
 {
+	if (field == parser::keyword(parser::kw::edge)) {
+		return { edges_as_cluster(edges_) };
+	}
+
 	int index = def_->get_edge_index(field);
 	if (index >= 0) {
 		return { edges_.at(index) };
@@ -93,12 +106,12 @@ std::string tess::edge::impl_type::edge_class() const
 
 const tess::vertex& tess::edge::impl_type::u() const
 {
-    return parent_->vertex(def_->u);
+    return parent_->vertices().at(def_->u);
 }
 
 const tess::vertex& tess::edge::impl_type::v() const
 {
-    return parent_->vertex(def_->v);
+    return parent_->vertices().at(def_->v);
 }
 
 tess::expr_value tess::edge::impl_type::get_field(const std::string& field) const

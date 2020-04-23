@@ -1,8 +1,11 @@
 #include "basic_expr_parser.h"
+#include "cond_expr_parser.h"
 #include "../expression.h"
-#include "object_ref_expr_parser.h"
 #include "special_parser.h"
+#include "function_parser.h"
 #include "expr_parser.h"
+#include "object_expr_parser.h"
+#include "lay_expr_parser.h"
 #include "keywords.h"
 #include "util.h"
 #include <boost/fusion/adapted/std_tuple.hpp>
@@ -20,13 +23,16 @@ namespace tess {
 		x3::rule<class nil_, expr_ptr> const nil = "nil";
 
         auto const expr = expression_();
+        auto const if_expr = if_expr_();
+        auto const lay_expr = lay_expr_();
+        auto const object_expr = object_expr_();
         auto const indentifier_str = indentifier_str_();
-        auto const object_ref_expr = object_ref_expr_();
 		auto const special_expr = special_expr_();
+        auto const function = function_def_();
 		auto const number_def = x3::int32[make_<number_expr>];
 		auto const nil_def = kw_lit<kw::nil>()[make_nil];
 
-		auto const basic_expr_def = nil | object_ref_expr | special_expr | number | ('(' >> expr >> ')');
+		auto const basic_expr_def =  nil | lay_expr | object_expr | special_expr | number | function | if_expr | ('(' >> expr >> ')') ;
 
         BOOST_SPIRIT_DEFINE(
             number,
@@ -36,7 +42,7 @@ namespace tess {
     }
 }
 
-std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::basic_expr_::parse_basic_expr(const text_range& input)
+std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::basic_expr_::parse_aux(const text_range& input) const
 {
     tess::expr_ptr output;
     auto iter = input.begin();

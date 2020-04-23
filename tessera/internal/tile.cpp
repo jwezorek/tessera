@@ -3,11 +3,6 @@
 
 /*--------------------------------------------------------------------------------*/
 
-std::string tess::tile::name() const
-{
-	return impl_->name();
-}
-
 const std::vector<tess::vertex>& tess::tile::vertices() const
 {
 	return impl_->vertices();

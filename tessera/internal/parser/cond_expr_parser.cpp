@@ -1,3 +1,4 @@
+#include "../expression.h"
 #include "cond_expr_parser.h"
 #include "expr_parser.h"
 #include "util.h"
@@ -20,6 +21,8 @@ namespace tess {
 		x3::rule<class basic_cond_expr_, tess::expr_ptr> const basic_cond_expr = "basic_cond_expr";
 		x3::rule<class and_expr_, tess::expr_ptr> const and_expr = "and_expr";
 		x3::rule<class cond_expr_parser_, tess::expr_ptr> const  cond_expr = "cond_expr";
+		x3::rule <class if_aux_, std::tuple< expr_ptr, expr_ptr, expr_ptr>> if_aux = "if_aux";
+		x3::rule<class if_expr_parser_, tess::expr_ptr> const if_expr = "if_expr";
 
 		const auto eq_expr_def = (expr % x3::lit(equ))[make_<equality_expr>];
 		const auto rel_op = x3::string(not_equ) | x3::string(lt) | x3::string(gt) |
@@ -32,18 +35,23 @@ namespace tess {
 		const auto and_expr_def = (basic_cond_expr % kw_lit<kw::and_>())[make_<tess::and_expr>];
 		const auto cond_expr_def = (and_expr % kw_lit<kw::or_>())[make_<tess::or_expr>];
 
+		const auto if_aux_def = kw_lit<kw::if_>() > cond_expr > expr > kw_lit<kw::else_>() > expr;
+		const auto if_expr_def = if_aux[make_<tess::if_expr>];
+
 		BOOST_SPIRIT_DEFINE(
 			eq_expr,
 			rel_expr_aux,
 			rel_expr,
 			basic_cond_expr,
 			and_expr,
-			cond_expr
+			cond_expr,
+			if_aux,
+			if_expr
 		);
 	}
 }
 
-std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::cond_expr_::parse_cond_expr(const text_range& input)
+std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::cond_expr_::parse_aux(const tess::text_range& input) const
 {
 	tess::expr_ptr output;
 	auto iter = input.begin();
@@ -51,6 +59,24 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::cond_expr_
 
 	try {
 		success = x3::phrase_parse(iter, input.end(), tess::parser::cond_expr, x3::space, output);
+	}
+	catch (...) {
+	}
+
+	if (success)
+		return { output, iter };
+	else
+		return { tess::expr_ptr(), iter };
+}
+
+std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::if_expr_::parse_aux(const tess::text_range& input) const
+{
+	tess::expr_ptr output;
+	auto iter = input.begin();
+	bool success = false;
+
+	try {
+		success = x3::phrase_parse(iter, input.end(), tess::parser::if_expr, x3::space, output);
 	}
 	catch (...) {
 	}

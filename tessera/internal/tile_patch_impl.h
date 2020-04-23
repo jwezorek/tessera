@@ -16,7 +16,18 @@ namespace tess {
 		impl_type(const std::vector<tess::tile>& tiles);
         const std::vector<tess::tile>& tiles() const;
 		expr_value get_field(const std::string& field) const;
+        expr_value get_ary_item(int i) const;
 		void apply(const matrix& mat);
         bool is_untouched() const;
+    };
+
+    class cluster::impl_type : public tessera_impl
+    {
+    private:
+        std::vector<expr_value> values_;
+    public:
+        impl_type(const std::vector<expr_value>& tiles);
+        expr_value get_field(const std::string& field) const;
+        expr_value get_ary_item(int i) const;
     };
 }
