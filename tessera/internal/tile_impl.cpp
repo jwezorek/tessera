@@ -17,14 +17,15 @@ namespace {
 	}
 }
 
-tess::tile::impl_type::impl_type( std::shared_ptr<const tile_def> def) :
-    def_(def), untouched_(true), parent_(nullptr)
+tess::tile::impl_type::impl_type(const std::vector<tess::vert_fields>& v, const std::vector<tess::edge_fields>& e) :
+    fields_(std::make_shared<tess::tile::impl_type::fields>(v,e)), untouched_(true), parent_(nullptr)
 {
 }
 
 const tess::vertex& tess::tile::impl_type::vertex(const std::string& v) const
 {
-    return vertices_[def_->vertex(v).index];
+	int index = fields_->vert_name_to_index.at(v);
+    return vertices_[index];
 }
 
 const std::vector<tess::vertex>& tess::tile::impl_type::vertices() const
@@ -49,11 +50,11 @@ tess::expr_value tess::tile::impl_type::get_field(const std::string& field) cons
 		return { edges_as_cluster(edges_) };
 	}
 
-	int index = def_->get_edge_index(field);
+	int index = fields_->get_edge_index(field);
 	if (index >= 0) {
 		return { edges_.at(index) };
 	}
-	index = def_->get_vertex_index(field);
+	index = fields_->get_vert_index(field);
 	if (index >= 0) {
 		return { vertices_.at(index) };
 	}
@@ -78,14 +79,14 @@ void tess::tile::impl_type::set_parent(tess::tile_patch::impl_type* parent) {
 	untouched_ = true;
 }
 
-const tess::vertex_def& tess::tile::impl_type::vert_fields(int i) const
+const tess::vert_fields& tess::tile::impl_type::vert_fields(int i) const
 {
-	return def_->vertex(i);
+	return fields_->vertices.at(i);
 }
 
-const tess::edge_def& tess::tile::impl_type::edge_fields(int i) const
+const tess::edge_fields& tess::tile::impl_type::edge_fields(int i) const
 {
-	return def_->edge(i);
+	return fields_->edges.at(i);
 }
 
 bool tess::tile::impl_type::has_parent() const {
@@ -185,4 +186,25 @@ void tess::vertex::impl_type::apply(const tess::matrix& mat) {
 tess::tile::impl_type* tess::vertex::impl_type::parent() const
 {
 	return parent_;
+}
+
+int tess::tile::impl_type::fields::get_edge_index(const std::string& e) {
+	auto i = edge_name_to_index.find(e);
+	return (i != edge_name_to_index.end()) ? i->second : -1;
+}
+
+int tess::tile::impl_type::fields::get_vert_index(const std::string& v) {
+	auto i = vert_name_to_index.find(v);
+	return (i != vert_name_to_index.end()) ? i->second : -1;
+}
+
+tess::tile::impl_type::fields::fields(const std::vector<tess::vert_fields>& v, const std::vector<tess::edge_fields>& e) :
+	vertices(v), edges(e)
+{
+	std::transform(v.begin(), v.end(), std::inserter(vert_name_to_index, vert_name_to_index.end()),
+		[](const tess::vert_fields& f)->std::pair<std::string, int> { return { f.name, f.index }; }
+	);
+	std::transform(e.begin(), e.end(), std::inserter(edge_name_to_index, edge_name_to_index.end()),
+		[](const tess::edge_fields& f)->std::pair<std::string, int> { return { f.name, f.index }; }
+	);
 }

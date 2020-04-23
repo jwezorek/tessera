@@ -19,28 +19,28 @@ namespace {
 
 	tess::expr_value generate_regular_polygon_tile(tess::number num_sides) {
 		int n = tess::to_int(num_sides);
-		std::vector<std::shared_ptr<tess::vertex_def>> vertices(n);
+		std::vector<tess::vertex_def> vertices(n);
 		int i = 0;
 		tess::expr_ptr theta = get_interior_angle_expr(n);
 		std::generate(vertices.begin(), vertices.end(),
 			[&i, &theta]() {
-				return std::make_shared< tess::vertex_def>(
+				return tess::vertex_def(
 					std::string(),
 					theta,
 					std::string(),
 					i++
-					);
+				);
 			}
 		);
-		std::vector<std::shared_ptr<tess::edge_def>> edges(n);
+		std::vector<tess::edge_def> edges(n);
 		for (i = 0; i < n; i++) {
-			edges[i] = std::make_shared<tess::edge_def>(
+			edges[i] = tess::edge_def(
 				"",
 				i, (i < n - 1) ? i + 1 : 0,
 				"",
 				std::make_shared<tess::number_expr>(1),
 				i
-				);
+			);
 		}
 
 		auto tile_definition = std::make_shared<tess::tile_def>(std::vector<std::string>(), vertices, edges);

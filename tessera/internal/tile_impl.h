@@ -46,18 +46,28 @@ namespace tess {
 
     class tile::impl_type : public tessera_impl {
         private:
-            std::vector<tess::edge> edges_;
+            struct fields {
+                std::vector<tess::vert_fields> vertices;
+                std::vector<tess::edge_fields> edges;
+                std::unordered_map<std::string, int> vert_name_to_index;
+                std::unordered_map<std::string, int> edge_name_to_index;
+
+                int get_edge_index(const std::string& e);
+                int get_vert_index(const std::string& v);
+
+                fields(const std::vector<tess::vert_fields>& v, const std::vector<tess::edge_fields>& e);
+            };
             std::vector<tess::vertex> vertices_;
-            std::shared_ptr<const tile_def> def_;
+            std::vector<tess::edge> edges_;
+            std::shared_ptr<fields> fields_;
             tile_patch::impl_type* parent_;
 			bool untouched_;
         public:
-			impl_type(std::shared_ptr<const tile_def> def);
+			impl_type(const std::vector<vert_fields>& v, const std::vector<edge_fields>& e);
 
             const tess::vertex& vertex(const std::string& v) const;
             const std::vector<tess::vertex>& vertices() const;
             const std::vector<tess::edge>& edges() const;
-            std::string name() const;
             void set(std::vector<tess::vertex>&& vertices, std::vector<tess::edge>&& edges );
 			expr_value get_field(const std::string& field) const;
 			bool is_untouched() const;
@@ -66,7 +76,7 @@ namespace tess {
             tile_patch::impl_type* parent() const;
             void  set_parent(tile_patch::impl_type* parent);
 
-            const vertex_def& vert_fields(int i) const;
-            const edge_def& edge_fields(int i) const;
+            const vert_fields& vert_fields(int i) const;
+            const edge_fields& edge_fields(int i) const;
     };
 }
