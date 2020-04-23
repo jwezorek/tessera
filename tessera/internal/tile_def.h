@@ -96,6 +96,8 @@ namespace tess {
         std::vector<std::string> get_variables() const;
         tile_def simplify() const;
 		expr_value call( eval_context& ) const;
+        const vertex_def& vertex(int i) const;
+        const edge_def& edge(int i) const;
         const vertex_def& vertex(const std::string& v) const;
         const edge_def& edge(const std::string& e) const;
 		int num_vertices() const;

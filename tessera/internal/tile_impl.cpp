@@ -78,6 +78,16 @@ void tess::tile::impl_type::set_parent(tess::tile_patch::impl_type* parent) {
 	untouched_ = true;
 }
 
+const tess::vertex_def& tess::tile::impl_type::vert_fields(int i) const
+{
+	return def_->vertex(i);
+}
+
+const tess::edge_def& tess::tile::impl_type::edge_fields(int i) const
+{
+	return def_->edge(i);
+}
+
 bool tess::tile::impl_type::has_parent() const {
 	return parent_ != nullptr;
 }
@@ -89,29 +99,31 @@ tess::tile_patch::impl_type* tess::tile::impl_type::parent() const {
 
 /*--------------------------------------------------------------------------------*/
 
-tess::edge::impl_type::impl_type( tile::impl_type* parent, std::shared_ptr<const edge_def> prototype) :
+tess::edge::impl_type::impl_type( tile::impl_type* parent, int index) :
 	parent_(parent),
-	def_(prototype)
+	index_(index)
 {}
 
 std::string tess::edge::impl_type::name() const
 {
-    return def_->name;
+    return parent_->edge_fields(index_).name;
 }
 
 std::string tess::edge::impl_type::edge_class() const
 {
-    return def_->class_;
+	return parent_->edge_fields(index_).class_;
 }
 
 const tess::vertex& tess::edge::impl_type::u() const
 {
-    return parent_->vertices().at(def_->u);
+	int index = parent_->edge_fields(index_).u;
+    return parent_->vertices().at(index);
 }
 
 const tess::vertex& tess::edge::impl_type::v() const
 {
-    return parent_->vertices().at(def_->v);
+	int index = parent_->edge_fields(index_).v;
+    return parent_->vertices().at(index);
 }
 
 tess::expr_value tess::edge::impl_type::get_field(const std::string& field) const
@@ -126,19 +138,19 @@ tess::tile::impl_type* tess::edge::impl_type::parent() const
 
 /*--------------------------------------------------------------------------------*/
 
-tess::vertex::impl_type::impl_type( tile::impl_type* parent, std::shared_ptr<const vertex_def> prototype, std::tuple<number, number> loc) :
-    parent_(parent), def_(prototype), x_(std::get<0>(loc)), y_(std::get<1>(loc))
+tess::vertex::impl_type::impl_type( tile::impl_type* parent, int n, std::tuple<number, number> loc) :
+    parent_(parent), index_(n), x_(std::get<0>(loc)), y_(std::get<1>(loc))
 {
 }
 
 std::string tess::vertex::impl_type::name() const
 {
-    return def_->name;
+    return parent_->vert_fields(index_).name;
 }
 
 std::string tess::vertex::impl_type::vertex_class() const
 {
-    return def_->class_;
+    return parent_->vert_fields(index_).class_;
 }
 
 std::tuple<double, double> tess::vertex::impl_type::to_floats() const

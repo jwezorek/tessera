@@ -186,9 +186,8 @@ tess::expr_value tess::tile_def::call( eval_context& ctxt) const
     std::vector<tess::vertex> verts(n);
     std::transform(vertices_.cbegin(), vertices_.cend(), verts.begin(),
         [&](auto v) {
-            std::shared_ptr<const vertex_def> definition = v;
 			return make_tess_obj<tess::vertex>(
-				new_tile_impl.get(), definition, vert_locations[v->index]
+				new_tile_impl.get(), v->index, vert_locations[v->index]
 			);
         }
     );
@@ -196,8 +195,7 @@ tess::expr_value tess::tile_def::call( eval_context& ctxt) const
 	std::vector<tess::edge> edges(n);
 	std::transform(edges_.cbegin(), edges_.cend(), edges.begin(),
 		[&](auto e) {
-			std::shared_ptr<const edge_def> definition = e;
-			return make_tess_obj<tess::edge>(new_tile_impl.get(), definition);
+			return make_tess_obj<tess::edge>(new_tile_impl.get(), e->index);
 		}
 	);
    
@@ -207,6 +205,16 @@ tess::expr_value tess::tile_def::call( eval_context& ctxt) const
             new_tile_impl
         )
 	};
+}
+
+const tess::vertex_def& tess::tile_def::vertex(int  i) const
+{
+    return *vertices_.at(i);
+}
+
+const tess::edge_def& tess::tile_def::edge(int i) const
+{
+    return *edges_.at(i);
 }
 
 const tess::vertex_def& tess::tile_def::vertex(const std::string& v) const
