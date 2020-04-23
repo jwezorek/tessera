@@ -37,7 +37,7 @@ namespace tess {
                 auto [tab_params, tab_body] = tab_spec;
                 return make_tess_obj<tess::script>(
                     globals,
-                    patch_def(tab_params, tab_body)
+                    std::make_shared<function_def>(tab_params, tab_body)
                 );
             }
         };

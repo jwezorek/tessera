@@ -15,8 +15,7 @@ namespace tess {
 
 		auto make_patch = [&](auto& ctx) { 
 			auto [params, body] = _attr(ctx);
-			auto patch_definition = tess::patch_def(params, body);
-			_val(ctx) = std::make_shared<function_def>(patch_definition);
+			_val(ctx) = std::make_shared<function_def>(params, body);
 		};
 
 		x3::rule<class patch_, std::tuple<std::vector<std::string>, expr_ptr>> const patch_aux = "patch_aux";

@@ -128,31 +128,4 @@ namespace tess {
         void get_dependencies(std::vector<std::string>& dependencies) const override;
     };
 
-    class tile_def : public tessera_impl
-    {
-    private: 
-        std::vector<std::string> params_;
-        expr_ptr body_;
-
-    public:
-        tile_def(const std::vector<std::string>& params, expr_ptr body);
-        const std::vector<std::string>& parameters() const;
-        std::vector<std::string> get_variables() const;
-        tile_def simplify() const;
-		expr_value call( eval_context& ) const;
-    };
-
-    class patch_def : public tessera_impl
-    {
-    private:
-        std::vector<std::string> params_;
-        expr_ptr body_;
-    public:
-        patch_def(const std::vector<std::string>& params, expr_ptr body);
-        std::vector<std::string> get_variables() const;
-        patch_def simplify() const;
-        expr_value call(eval_context&) const;
-        const std::vector<std::string>& parameters() const;
-        expr_ptr body() const;
-    };
 }

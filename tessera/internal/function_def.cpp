@@ -25,28 +25,19 @@ tess::expr_value tess::function_def::eval(eval_context& ctxt) const
 
 const std::vector<std::string>& tess::function_def::parameters() const
 {
-    return std::visit(
-        [](const auto& impl)->const std::vector<std::string>& {
-            return impl->parameters();
-        },
-        impl_
-    );
+    return parameters_;
 }
 
-const std::variant<std::shared_ptr<tess::tile_def>, std::shared_ptr<tess::patch_def>>& tess::function_def::impl() const
+tess::expr_ptr tess::function_def::body() const
 {
-    return impl_;
+    return body_;
 }
 
 tess::expr_ptr tess::function_def::simplify() const
 {
-    return std::visit(
-        [](const auto& def)->std::shared_ptr<function_def> {
-            return std::make_shared<function_def>(
-                def->simplify()
-            );
-        },
-        impl_
+    return std::make_shared<function_def>(
+        parameters_,
+        body_->simplify()
     );
 }
 
@@ -62,24 +53,16 @@ void tess::function_def::get_dependencies(std::vector<std::string>& dependencies
     }
 }
 
-tess::function_def::function_def(const tile_def& tile_definition) :
-    impl_(std::make_shared<tile_def>(tile_definition))
-{
-}
-
-tess::function_def::function_def(const patch_def& patch_definition) :
-    impl_(std::make_shared<patch_def>(patch_definition))
+tess::function_def::function_def(const std::vector<std::string>& params, expr_ptr body) :
+    parameters_(params), body_(body)
 {
 }
 
 std::vector<std::string> tess::function_def::get_variables() const
 {
-    return std::visit(
-        [](const auto& impl)->std::vector<std::string> {
-            return impl->get_variables();
-        },
-        impl_
-    );
+    std::vector<std::string> vars;
+    body_->get_dependencies(vars);
+    return vars;
 }
 
 

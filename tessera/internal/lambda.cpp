@@ -45,17 +45,12 @@ tess::expr_value tess::lambda::call(const std::vector<expr_value>& args) const
 
     scope_frame frame = impl.closure;
     const auto& parameters = impl.func.parameters();
-    const auto& func = impl.func.impl();
+    auto body = impl.func.body();
 
     frame.set(parameters, args);
     eval_context ctxt(frame);
 
-    return std::visit(
-        [&ctxt](const auto& fn)->expr_value {
-            return fn->call(ctxt);
-        },
-        func
-    );
+    return body->eval(ctxt);
 }
 
 tess::lambda tess::lambda::get_ref() const

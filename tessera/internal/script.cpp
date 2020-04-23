@@ -37,10 +37,15 @@ namespace {
 		return declarations.eval(ctxt);
 	}
 
-	tess::expr_value execute_script(const std::vector<tess::expr_value>& args, tess::eval_context& ctxt, const tess::patch_def& tableau) {
-		auto func_def = tess::function_def(tableau);
-		auto func = func_def.eval(ctxt);
-		return func.call(args);
+	tess::expr_value execute_script(const std::vector<tess::expr_value>& args, tess::eval_context& ctxt, const tess::expr_ptr& tableau) {
+		auto maybe_lambda = tableau->eval(ctxt);
+
+		if (!std::holds_alternative<tess::lambda>(maybe_lambda))
+			return (std::holds_alternative<tess::error>(maybe_lambda)) ? 
+				maybe_lambda : tess::expr_value{ tess::error("unknown error") };
+
+		const auto& lambda = std::get<tess::lambda>(maybe_lambda);
+		return lambda.call(args);
 	}
 
 	tess::result extract_tiles(const tess::expr_value& output) {
