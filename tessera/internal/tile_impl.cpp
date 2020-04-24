@@ -211,5 +211,6 @@ tess::tile::impl_type::fields::fields(const std::vector<tess::vert_fields>& v, c
 
 void tess::tile::impl_type::insert_field(const std::string& var, const expr_value& val)
 {
-
+	int aaa;
+	aaa = 5;
 }

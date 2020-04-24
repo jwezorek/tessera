@@ -3,6 +3,8 @@ let theta =  pi/3;
 let triangle = tile {
 	vertex a{angle : theta}, b{angle : theta}, c{angle : theta};
 	edge left{ c -> a }, right{ b -> c }, bottom{ a -> b };
+} where {
+    let foo = 5;
 };
 
 let tri_pair = patch {

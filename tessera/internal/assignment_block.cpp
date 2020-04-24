@@ -55,8 +55,13 @@ std::vector<std::string> tess::assignment_block::get_variables() const
 	return variables;
 }
 
+bool tess::assignment_block::empty() const
+{
+	return !impl_ || impl_->empty();
+}
+
 tess::where_expr::where_expr(const assignment_block& assignments, expr_ptr body) :
-	assignments_(assignments)
+	assignments_(assignments), body_(body)
 {
 }
 

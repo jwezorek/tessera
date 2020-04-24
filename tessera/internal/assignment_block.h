@@ -20,6 +20,7 @@ namespace tess {
 			bool operator!=(const assignment_block& block) { return impl_.get() != block.impl_.get(); }
 			assignment_block simplify() const;
 			std::vector<std::string> get_variables() const;
+			bool empty() const;
 		private:
 			std::shared_ptr<std::vector<var_assignment>> impl_;
 	};
