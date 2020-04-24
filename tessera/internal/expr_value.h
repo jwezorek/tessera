@@ -23,9 +23,12 @@ namespace tess {
 	public:
 		bool is_object_like() const;
 		bool is_array_like() const;
+		bool is_valid() const;
+		bool is_error() const;
 		expr_value get_ary_item(int index) const;
 		expr_value get_field(const std::string& field) const;
 		expr_value call(const std::vector<expr_value>& args) const;
+		void insert_field(const std::string& var, expr_value val) const;
 	};
 	
 }

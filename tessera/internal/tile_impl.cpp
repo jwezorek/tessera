@@ -208,3 +208,8 @@ tess::tile::impl_type::fields::fields(const std::vector<tess::vert_fields>& v, c
 		[](const tess::edge_fields& f)->std::pair<std::string, int> { return { f.name, f.index }; }
 	);
 }
+
+void tess::tile::impl_type::insert_field(const std::string& var, const expr_value& val)
+{
+
+}

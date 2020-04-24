@@ -22,6 +22,7 @@ namespace tess {
 			void set(const std::string& var, expr_value val);
 			void set(int i, expr_value val);
 			void set(const::std::vector<std::string>& vars, const::std::vector<expr_value>& vals);
+			const std::unordered_map<std::string, expr_value>& variables() const;
 	};
 
     class eval_context {

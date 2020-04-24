@@ -24,6 +24,16 @@ bool tess::expr_value::is_array_like() const
 		std::holds_alternative<cluster>(*this);
 }
 
+bool tess::expr_value::is_valid() const
+{
+    return ! is_error();
+}
+
+bool tess::expr_value::is_error() const
+{
+	return std::holds_alternative<tess::error>(*this);
+}
+
 tess::expr_value tess::expr_value::get_ary_item(int index) const
 {
 	// currently only patches can be referenced like an array.
@@ -58,5 +68,16 @@ tess::expr_value tess::expr_value::call(const std::vector<expr_value>& args) con
 		return { error("attempted to call a value that is not functionlike") };
 	const auto& lambda = std::get<tess::lambda>(*this);
 	return lambda.call(args);
+}
+
+void tess::expr_value::insert_field(const std::string& var, expr_value val) const
+{
+	if (!is_object_like())
+		return;
+	std::variant<tile, tile_patch, vertex, edge, cluster> obj_variant = variant_cast(static_cast<expr_val_var>(*this));
+	std::visit(
+		[&](auto&& obj) { get_impl(obj)->insert_field(var,val); },
+		obj_variant
+	);
 }
 

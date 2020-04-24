@@ -124,6 +124,11 @@ void tess::scope_frame::set(const::std::vector<std::string>& vars, const::std::v
 		set(var, vals[i++]);
 }
 
+const std::unordered_map<std::string, tess::expr_value>& tess::scope_frame::variables() const
+{
+	return variables_;
+}
+
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 

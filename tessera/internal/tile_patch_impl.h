@@ -19,6 +19,7 @@ namespace tess {
         expr_value get_ary_item(int i) const;
 		void apply(const matrix& mat);
         bool is_untouched() const;
+        void insert_field(const std::string& var, const expr_value& val) {}
     };
 
     class cluster::impl_type : public tessera_impl
@@ -29,5 +30,6 @@ namespace tess {
         impl_type(const std::vector<expr_value>& tiles);
         expr_value get_field(const std::string& field) const;
         expr_value get_ary_item(int i) const;
+        void insert_field(const std::string& var, const expr_value& val) {}
     };
 }
