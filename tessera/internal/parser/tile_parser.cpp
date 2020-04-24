@@ -175,7 +175,7 @@ namespace tess {
             tile_definition
         );
 
-        std::variant<tile_verts_and_edges, exception> unpack(const ve_definitions& defs) {
+        tile_verts_and_edges unpack(const ve_definitions& defs) {
             using v_map = std::unordered_map<std::string, vertex_def>;
             using e_map = std::unordered_map<std::string, edge_def_helper>;
             v_map v;
@@ -264,13 +264,8 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_:
 
     if (success) {
         auto [params, v_e, maybe_where_clause] = output;
-        auto maybe_ve = tess::parser::unpack(v_e);
 
-        if (! std::holds_alternative<tile_verts_and_edges>(maybe_ve))
-            return { tess::expr_ptr(), iter };
-
-        expr_ptr ve_expr = std::make_shared<tile_def_expr>(std::get<tile_verts_and_edges>(maybe_ve));
-
+        expr_ptr ve_expr = std::make_shared<tile_def_expr>(tess::parser::unpack(v_e));
         expr_ptr tile_def = (!maybe_where_clause.has_value()) ?
             std::make_shared<function_def>(params, ve_expr) :
             std::make_shared<function_def>(
