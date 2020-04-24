@@ -87,7 +87,7 @@ namespace tess {
 
         struct tile_def_fields {
             std::vector<std::string> parameters;
-            ve_definitions verts_and_edges;
+            expr_ptr body;
             std::optional<assignment_block> maybe_where;
         };
     }
@@ -118,14 +118,11 @@ BOOST_FUSION_ADAPT_STRUCT(tess::parser::edge_definition,
 )
 
 BOOST_FUSION_ADAPT_STRUCT(tess::parser::tile_def_fields,
-    parameters, verts_and_edges, maybe_where
+    parameters, body, maybe_where
 )
 
 namespace tess {
     namespace parser {
-
-       
-
         x3::rule<class class_field_rule, tess::parser::class_field> const class_field_ = "class_field";
         x3::rule<class edge_field_rule, tess::parser::edge_field> const edge_field_ = "edge_field";
         x3::rule<class angle_field_rule, tess::parser::angle_field> const angle_field_ = "angle_field";
@@ -141,6 +138,8 @@ namespace tess {
         const auto expr = expression_();
         const auto identifier_str = indentifier_str_();
         const auto trailing_where = trailing_where_();
+        const auto tile_def_expr = tile_def_expr_();
+
         auto const class_field__def = kw_<kw::class_>() > x3::lit(':') > identifier_str;
         auto const edge_field__def = identifier_str >> x3::lit("->") > identifier_str;
         auto const angle_field__def = (kw_<kw::angle>() > x3::lit(':') > expr) | (x3::string("") >> expr);
@@ -159,7 +158,7 @@ namespace tess {
         auto const ve_definitions_ = *(ve_defs_var_);
 
         auto const parameters = -(x3::lit('(') >> (identifier_str % x3::lit(',')) >> x3::lit(')'));
-        auto const tile_definition_def = kw_lit<kw::tile>() >> parameters >> x3::lit('{') > ve_definitions_ > trailing_where;
+        auto const tile_definition_def = kw_lit<kw::tile>() >> parameters >> x3::lit('{') > (expr | tile_def_expr) > trailing_where;
 
         BOOST_SPIRIT_DEFINE(
             class_field_,
@@ -250,6 +249,25 @@ namespace tess {
     }
 }
 
+std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_expr_::parse_aux(const text_range& input) const
+{
+    tess::parser::ve_definitions output;
+    bool success = false;
+    auto iter = input.begin();
+
+    try {
+        success = x3::phrase_parse(iter, input.end(), tess::parser::ve_definitions_, x3::space, output);
+    }
+    catch (...)
+    {
+    }
+
+    if (success) 
+        return { std::make_shared<tess::tile_def_expr>(tess::parser::unpack(output)), iter };
+    else
+        return { expr_ptr(), iter };
+}
+
 std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_::parse_aux(const text_range& input) const
 {
     tess::parser::tile_def_fields output;
@@ -263,16 +281,15 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_:
     { }
 
     if (success) {
-        auto [params, v_e, maybe_where_clause] = output;
+        auto [params, body, maybe_where_clause] = output;
 
-        expr_ptr ve_expr = std::make_shared<tile_def_expr>(tess::parser::unpack(v_e));
         expr_ptr tile_def = (!maybe_where_clause.has_value()) ?
-            std::make_shared<function_def>(params, ve_expr) :
+            std::make_shared<function_def>(params, body) :
             std::make_shared<function_def>(
                 params, 
                 std::make_shared<where_expr>(
                     maybe_where_clause.value(),
-                    ve_expr
+                    body
                 )
             );
         return  { tile_def, iter };
