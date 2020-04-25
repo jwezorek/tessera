@@ -1,5 +1,5 @@
 #include "lay_expr.h"
-#include "util.h"
+#include "variant_util.h"
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
 #include "tessera/error.h"

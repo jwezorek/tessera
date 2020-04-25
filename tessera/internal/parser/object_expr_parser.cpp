@@ -2,7 +2,7 @@
 #include "../expression.h"
 #include "expr_parser.h"
 #include "util.h"
-#include "../util.h"
+#include "../variant_util.h"
 #include "keywords.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>

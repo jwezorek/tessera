@@ -44,9 +44,23 @@ void tess::tile::impl_type::set( std::vector<tess::vertex>&& vertices, std::vect
     edges_ = std::move(edges);
 }
 
+void tess::tile::impl_type::insert_field(const std::string& var, const expr_value& val)
+{
+	// TODO: implement use_weak_reference_to
+	if (std::holds_alternative<tess::tile>(val)) {
+		if (this == get_impl(std::get<tess::tile>(val)).get())
+			return;
+	}
+	fields_->custom_fields[var] = val;
+}
+
 tess::expr_value tess::tile::impl_type::get_field(const std::string& field) const
 {
-	if (field == parser::keyword(parser::kw::edge)) {
+	const auto& custom_fields = fields_->custom_fields;
+	if (custom_fields.find(field) != custom_fields.end())
+		return custom_fields.at(field);
+
+	if (field == parser::keyword(parser::kw::edge) || field == "edges") {
 		return { edges_as_cluster(edges_) };
 	}
 
@@ -209,8 +223,3 @@ tess::tile::impl_type::fields::fields(const std::vector<tess::vert_fields>& v, c
 	);
 }
 
-void tess::tile::impl_type::insert_field(const std::string& var, const expr_value& val)
-{
-	int aaa;
-	aaa = 5;
-}
