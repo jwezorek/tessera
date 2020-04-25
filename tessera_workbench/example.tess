@@ -9,6 +9,8 @@ let triangle = tile {
 
 let tri_pair = patch {
     lay triangle , triangle such_that $1.right <-> $2.right
+} where {
+    let bar = 42;
 };
 
 let tri_strip = patch( n ) {

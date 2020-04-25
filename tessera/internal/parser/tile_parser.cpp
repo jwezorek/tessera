@@ -268,15 +268,15 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_:
     if (success) {
         auto [params, body, maybe_where_clause] = output;
 
-        expr_ptr tile_def = (!maybe_where_clause.has_value()) ?
-            std::make_shared<function_def>(params, body) :
+        expr_ptr tile_def = (maybe_where_clause.has_value() && !maybe_where_clause.value().empty()) ?
             std::make_shared<function_def>(
-                params, 
+                params,
                 std::make_shared<where_expr>(
                     maybe_where_clause.value(),
                     body
-                )
-            );
+                    )
+                ) :
+            std::make_shared<function_def>(params, body);
         return  { tile_def, iter };
     }
     return { tess::expr_ptr(), iter };
