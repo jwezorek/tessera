@@ -27,14 +27,7 @@ std::tuple<tess::assignment_block, std::string::const_iterator> tess::parser::as
 {
 	std::vector<var_assignment> output;
 	auto iter = input.begin();
-	bool success = false;
-
-	try {
-		success = x3::phrase_parse(iter, input.end(), tess::parser::assignments, x3::space, output);
-	}
-	catch (...) {
-	}
-
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::assignments, x3::space, output);
 	if (success)
 		return { assignment_block(output), iter };
 	else
@@ -45,13 +38,7 @@ std::tuple<std::optional<tess::assignment_block>, std::string::const_iterator> t
 {
 	assignment_block output;
 	auto iter = input.begin();
-	bool success = false;
-
-	try {
-		success = x3::phrase_parse(iter, input.end(), tess::parser::trailing_where, x3::space, output);
-	}
-	catch (...) {
-	}
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::trailing_where, x3::space, output);
 
 	if (success)
 		return { assignment_block(output), iter };

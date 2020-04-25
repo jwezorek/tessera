@@ -99,14 +99,7 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::object_exp
 {
 	tess::parser::obj_list_t output;
 	auto iter = input.begin();
-	bool success = false;
-
-	try {
-		success = x3::phrase_parse(iter, input.end(), tess::parser::obj_list, x3::space, output);
-	}
-	catch (...) {
-	}
-
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::obj_list, x3::space, output);
 	if (success)
 		return { unpack_object_list(output) , iter };
 	else

@@ -55,14 +55,7 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::cond_expr_
 {
 	tess::expr_ptr output;
 	auto iter = input.begin();
-	bool success = false;
-
-	try {
-		success = x3::phrase_parse(iter, input.end(), tess::parser::cond_expr, x3::space, output);
-	}
-	catch (...) {
-	}
-
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::cond_expr, x3::space, output);
 	if (success)
 		return { output, iter };
 	else
@@ -73,14 +66,7 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::if_expr_::
 {
 	tess::expr_ptr output;
 	auto iter = input.begin();
-	bool success = false;
-
-	try {
-		success = x3::phrase_parse(iter, input.end(), tess::parser::if_expr, x3::space, output);
-	}
-	catch (...) {
-	}
-
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::if_expr, x3::space, output);
 	if (success)
 		return { output, iter };
 	else
