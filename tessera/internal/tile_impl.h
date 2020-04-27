@@ -9,6 +9,7 @@
 #include <vector>
 #include <tuple>
 #include <memory>
+#include <map>
 
 namespace tess {
 
@@ -51,8 +52,9 @@ namespace tess {
             struct fields {
                 std::vector<tess::vert_fields> vertices;
                 std::vector<tess::edge_fields> edges;
-                std::unordered_map<std::string, int> vert_name_to_index;
-                std::unordered_map<std::string, int> edge_name_to_index;
+                std::map<std::string, int> vert_name_to_index;
+                std::map<std::string, int> edge_name_to_index;
+                std::map<std::string, expr_value> custom_fields;
 
                 int get_edge_index(const std::string& e);
                 int get_vert_index(const std::string& v);

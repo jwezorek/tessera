@@ -59,13 +59,7 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::expression
 {
     tess::expr_ptr output;
     auto iter = input.begin();
-    bool success = false;
-
-    try {
-        success = x3::phrase_parse(iter, input.end(), tess::parser::expr, x3::space, output);
-    } catch (...) {
-    }
-
+    bool success = x3::phrase_parse(iter, input.end(), tess::parser::expr, x3::space, output);
     if (success)
         return { output, iter };
     else
