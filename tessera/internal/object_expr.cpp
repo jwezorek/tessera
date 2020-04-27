@@ -15,7 +15,20 @@ tess::var_expr::var_expr(const std::string& var) :
 
 tess::expr_value tess::var_expr::eval(eval_context& ctx) const
 {
-    return ctx.get(var_);
+    auto value = ctx.get(var_);
+
+    // syntactic sugar: when evaluating a lambda with no parameters call the lambda
+    // even if it does not have a trailing "()".
+    // TODO: make it so it is possible to refer to a parameter less lambda by prepending
+    // its name with "fn" as in "fn square_tile" 
+
+    if (std::holds_alternative<tess::lambda>(value)) {
+        auto lambda = std::get<tess::lambda>(value);
+        if (lambda.parameters().size() == 0)
+            return value.call({});
+    }
+
+    return value;
 }
 
 void tess::var_expr::get_dependencies(std::vector<std::string>& dependencies) const
