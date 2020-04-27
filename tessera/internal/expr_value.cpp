@@ -36,7 +36,7 @@ bool tess::expr_value::is_error() const
 
 tess::expr_value tess::expr_value::get_ary_item(int index) const
 {
-	// currently only patches can be referenced like an array.
+	// patches and clusters can be referenced like an array.
 	if (!is_array_like())
 		return { error("attempted reference to a sub-tile of a value that is not a tile patch.") };
 	auto value = static_cast<expr_val_var>(*this);
@@ -44,6 +44,20 @@ tess::expr_value tess::expr_value::get_ary_item(int index) const
 
 	return std::visit(
 		[&](auto&& obj)->expr_value { return get_impl(obj)->get_ary_item(index); },
+		ary_variant
+	);
+}
+
+int tess::expr_value::get_ary_count() const
+{
+	// patches and clusters can be referenced like an array.
+	if (!is_array_like())
+		return -1;
+	auto value = static_cast<expr_val_var>(*this);
+	std::variant<tile_patch, cluster> ary_variant = variant_cast(value);
+
+	return std::visit(
+		[&](auto&& obj)->int { return get_impl(obj)->get_ary_count(); },
 		ary_variant
 	);
 }

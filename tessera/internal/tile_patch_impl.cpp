@@ -24,6 +24,11 @@ tess::expr_value tess::tile_patch::impl_type::get_ary_item(int i) const
 	return { tiles_.at(i) };
 }
 
+int tess::tile_patch::impl_type::get_ary_count() const
+{
+	return static_cast<int>(tiles_.size());
+}
+
 void tess::tile_patch::impl_type::apply(const matrix& mat)
 {
 	for (auto& tile : tiles_)
@@ -50,4 +55,9 @@ tess::expr_value tess::cluster::impl_type::get_field(const std::string& field) c
 tess::expr_value tess::cluster::impl_type::get_ary_item(int i) const
 {
 	return values_.at(i);
+}
+
+int tess::cluster::impl_type::get_ary_count() const
+{
+	return static_cast<int>(values_.size());
 }

@@ -14,8 +14,10 @@ namespace tess {
 			std::unordered_map<int, expr_value> placeholders_;
 			std::unordered_map<std::string, expr_value> variables_;
 		public:
+			scope_frame() {};
 			scope_frame(const std::vector<std::string>& param, const std::vector<expr_value>& arg);
 			scope_frame(const std::vector<std::tuple<std::string , expr_value>>& assignments);
+			scope_frame(const std::string& var, expr_value val);
 			scope_frame(const std::vector<expr_value>& arg);
 			std::optional<expr_value> get(int ph) const;
 			std::optional<expr_value> get(std::string str) const;

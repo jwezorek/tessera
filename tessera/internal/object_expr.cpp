@@ -1,6 +1,6 @@
 #include "object_expr.h"
 
-std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
+std::optional<int> tess::eval_integer_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
 {
     auto int_val = expr->eval(ctxt);
     if (!std::holds_alternative<tess::number>(int_val))

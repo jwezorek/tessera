@@ -55,7 +55,7 @@ tess::scope_frame& tess::eval_context::peek()
 
 void tess::eval_context::push_scope()
 {
-	push_scope(scope_frame({}, {}));
+	push_scope(scope_frame());
 }
 
 void tess::eval_context::push_scope(scope_frame&& scope)
@@ -81,6 +81,10 @@ tess::scope_frame::scope_frame(const std::vector<std::string>& param, const std:
 tess::scope_frame::scope_frame(const std::vector<std::tuple<std::string, expr_value>>& assignments) {
 	for(const auto& [var,val] : assignments) 
 		variables_[var] = val;
+}
+
+tess::scope_frame::scope_frame(const std::string& var, expr_value val) {
+	variables_[var] = val;
 }
 
 tess::scope_frame::scope_frame(const std::vector<expr_value>& args)

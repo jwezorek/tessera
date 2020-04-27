@@ -106,6 +106,9 @@
     <ClCompile Include="internal\cluster.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
+    <ClCompile Include="internal\cluster_expr.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="internal\expression.h">
@@ -208,6 +211,9 @@
       <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="internal\variant_util.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\cluster_expr.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
   </ItemGroup>

@@ -6,6 +6,8 @@
 
 namespace tess {
 
+    std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt);
+
     class var_expr : public expression
     {
     private:

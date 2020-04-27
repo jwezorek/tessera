@@ -26,6 +26,7 @@ namespace tess {
 		bool is_valid() const;
 		bool is_error() const;
 		expr_value get_ary_item(int index) const;
+		int get_ary_count() const;
 		expr_value get_field(const std::string& field) const;
 		expr_value call(const std::vector<expr_value>& args) const;
 		void insert_field(const std::string& var, expr_value val) const;
