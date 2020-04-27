@@ -252,16 +252,8 @@ namespace tess {
 std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_expr_::parse_aux(const text_range& input) const
 {
     tess::parser::ve_definitions output;
-    bool success = false;
     auto iter = input.begin();
-
-    try {
-        success = x3::phrase_parse(iter, input.end(), tess::parser::ve_definitions_, x3::space, output);
-    }
-    catch (...)
-    {
-    }
-
+    bool success = x3::phrase_parse(iter, input.end(), tess::parser::ve_definitions_, x3::space, output);
     if (success) 
         return { std::make_shared<tess::tile_def_expr>(tess::parser::unpack(output)), iter };
     else
@@ -271,27 +263,20 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_e
 std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::tile_def_::parse_aux(const text_range& input) const
 {
     tess::parser::tile_def_fields output;
-    bool success = false;
     auto iter = input.begin();
-
-    try {
-        success = x3::phrase_parse(iter, input.end(), tess::parser::tile_definition, x3::space, output);
-    }
-    catch (...)
-    { }
-
+    bool success = x3::phrase_parse(iter, input.end(), tess::parser::tile_definition, x3::space, output);
     if (success) {
         auto [params, body, maybe_where_clause] = output;
 
-        expr_ptr tile_def = (!maybe_where_clause.has_value()) ?
-            std::make_shared<function_def>(params, body) :
+        expr_ptr tile_def = (maybe_where_clause.has_value() && !maybe_where_clause.value().empty()) ?
             std::make_shared<function_def>(
-                params, 
+                params,
                 std::make_shared<where_expr>(
                     maybe_where_clause.value(),
                     body
-                )
-            );
+                    )
+                ) :
+            std::make_shared<function_def>(params, body);
         return  { tile_def, iter };
     }
     return { tess::expr_ptr(), iter };
