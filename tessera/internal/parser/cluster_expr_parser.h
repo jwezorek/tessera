@@ -13,7 +13,7 @@ namespace x3 = boost::spirit::x3;
 namespace tess {
 	namespace parser {
 
-		struct object_expr_ : public tess_expr<object_expr_> {
+		struct cluster_expr_ : public tess_expr<cluster_expr_> {
 			std::tuple<tess::expr_ptr, std::string::const_iterator> parse_aux(const text_range& input) const;
 		};
 

@@ -43,6 +43,11 @@ tess::num_range_expr::num_range_expr(expr_ptr from, expr_ptr to) :
 {
 }
 
+tess::num_range_expr::num_range_expr(const std::tuple<expr_ptr, expr_ptr>& tup) :
+    num_range_expr(std::get<0>(tup), std::get<1>(tup))
+{
+}
+
 tess::expr_value tess::num_range_expr::eval(eval_context& ctxt) const
 {
     auto maybe_from = eval_integer_expr(from_, ctxt);
@@ -83,6 +88,11 @@ void tess::num_range_expr::get_dependencies(std::vector<std::string>& dependenci
 
 tess::cluster_comprehension_expr::cluster_comprehension_expr(expr_ptr ex, const std::string& var, expr_ptr range_expr) :
     item_expr_(ex), var_(var), range_expr_(range_expr)
+{
+}
+
+tess::cluster_comprehension_expr::cluster_comprehension_expr(std::tuple<expr_ptr, std::string, expr_ptr> tup) :
+    cluster_comprehension_expr(std::get<0>(tup), std::get<1>(tup), std::get<2>(tup))
 {
 }
 

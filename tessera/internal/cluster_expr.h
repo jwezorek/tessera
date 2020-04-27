@@ -20,6 +20,7 @@ namespace tess {
         expr_ptr from_, to_;
     public:
         num_range_expr(expr_ptr from, expr_ptr to);
+        num_range_expr(const std::tuple<expr_ptr, expr_ptr>& tup);
         expr_value eval(eval_context&) const override;
         expr_ptr simplify() const override;
         void get_dependencies(std::vector<std::string>& dependencies) const override;
@@ -33,6 +34,7 @@ namespace tess {
         expr_ptr range_expr_;
     public:
         cluster_comprehension_expr(expr_ptr ex, const std::string& var, expr_ptr range_expr);
+        cluster_comprehension_expr( std::tuple<expr_ptr, std::string, expr_ptr> tup);
         expr_value eval(eval_context&) const override;
         expr_ptr simplify() const override;
         void get_dependencies(std::vector<std::string>& dependencies) const override;
