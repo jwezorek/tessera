@@ -30,7 +30,7 @@ tess::expr_ptr tess::cluster_expr::simplify() const
     return std::make_shared<tess::cluster_expr>(simplified);
 }
 
-void tess::cluster_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::cluster_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
     for (const auto& e : exprs_)
         e->get_dependencies(dependencies);
@@ -80,7 +80,7 @@ tess::expr_ptr tess::num_range_expr::simplify() const
 
 /*---------------------------------------------------------------------------------------------------------*/
 
-void tess::num_range_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::num_range_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
     from_->get_dependencies(dependencies);
     to_->get_dependencies(dependencies);
@@ -120,12 +120,12 @@ tess::expr_ptr tess::cluster_comprehension_expr::simplify() const
     );
 }
 
-void tess::cluster_comprehension_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::cluster_comprehension_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
-    std::vector<std::string> item_expr_dependencies;
+    std::unordered_set<std::string> item_expr_dependencies;
     item_expr_->get_dependencies(item_expr_dependencies);
     for (const auto& var : item_expr_dependencies)
         if (var != var_)
-            dependencies.push_back(var);
+            dependencies.insert(var);
     range_expr_->get_dependencies(dependencies);
 }

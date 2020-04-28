@@ -8,7 +8,7 @@
 
 tess::expr_value tess::function_def::eval(eval_context& ctxt) const
 {
-    std::vector<std::string> dependent_vars;
+    std::unordered_set<std::string> dependent_vars;
     get_dependencies(dependent_vars);
 
     std::vector<std::tuple<std::string, expr_value>> closure;
@@ -41,7 +41,7 @@ tess::expr_ptr tess::function_def::simplify() const
     );
 }
 
-void tess::function_def::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::function_def::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
     const auto& params = parameters();
     std::unordered_set<std::string> param_set(params.begin(), params.end());
@@ -49,7 +49,7 @@ void tess::function_def::get_dependencies(std::vector<std::string>& dependencies
     auto all_vars = get_variables();
     for (const auto& var : all_vars) {
         if (param_set.find(var) == param_set.end())
-            dependencies.push_back(var);
+            dependencies.insert(var);
     }
 }
 
@@ -60,9 +60,9 @@ tess::function_def::function_def(const std::vector<std::string>& params, expr_pt
 
 std::vector<std::string> tess::function_def::get_variables() const
 {
-    std::vector<std::string> vars;
+    std::unordered_set<std::string> vars;
     body_->get_dependencies(vars);
-    return vars;
+    return std::vector<std::string>(vars.begin(),vars.end());
 }
 
 

@@ -88,7 +88,7 @@ tess::expr_ptr tess::where_expr::simplify() const
 	);
 }
 
-void tess::where_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::where_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	// return the dependencies of the body expression that are not
 	// satisfied by the assignments made by this "where" expression.
@@ -97,10 +97,10 @@ void tess::where_expr::get_dependencies(std::vector<std::string>& dependencies) 
 	std::unordered_set<std::string> var_set;
 	std::copy(variables.begin(), variables.end(), std::inserter(var_set, var_set.end()));
 	
-	std::vector<std::string> new_dependencies;
+	std::unordered_set<std::string> new_dependencies;
 	body_->get_dependencies(new_dependencies);
 
 	for (const auto& new_dependency : new_dependencies)
 		if (var_set.find(new_dependency) == var_set.end())
-			dependencies.push_back(new_dependency);
+			dependencies.insert(new_dependency);
 }

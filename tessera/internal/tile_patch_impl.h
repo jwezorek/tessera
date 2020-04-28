@@ -20,7 +20,7 @@ namespace tess {
         int get_ary_count() const;
 		void apply(const matrix& mat);
         bool is_untouched() const;
-        void insert_field(const std::string& var, const expr_value& val) {}
+        void insert_field(const std::string& var, const expr_value& val);
     };
 
     class cluster::impl_type : public tessera_impl

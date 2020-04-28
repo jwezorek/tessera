@@ -125,7 +125,7 @@ namespace tess {
         tile_def_expr(const std::vector<vertex_def>& v, const std::vector<edge_def>& e);
         expr_value eval(eval_context&) const override;
         expr_ptr simplify() const override;
-        void get_dependencies(std::vector<std::string>& dependencies) const override;
+        void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
     };
 
 }

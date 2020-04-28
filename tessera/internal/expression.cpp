@@ -85,7 +85,7 @@ tess::expr_ptr tess::number_expr::simplify() const
 	return std::make_shared<number_expr>(val_);
 }
 
-void tess::number_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::number_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 }
 
@@ -115,7 +115,7 @@ tess::expr_value tess::addition_expr::eval( tess::eval_context& ctxt) const {
 	return tess::expr_value{ sum };
 }
 
-void tess::addition_expr::get_dependencies(std::vector<std::string>& dependencies) const {
+void tess::addition_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const {
 	for (auto [dummy, term_expr] : terms_)
 		term_expr->get_dependencies(dependencies);
 }
@@ -163,7 +163,7 @@ tess::expr_value tess::multiplication_expr::eval( tess::eval_context& ctxt) cons
 	return tess::expr_value{ product };
 }
 
-void tess::multiplication_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::multiplication_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	for (auto [op, factor_expr] : factors_)
 		factor_expr->get_dependencies(dependencies);
@@ -218,7 +218,7 @@ tess::expr_value tess::exponent_expr::eval( tess::eval_context& ctxt) const
 }
 
 
-void  tess::exponent_expr::get_dependencies(std::vector<std::string>& dependencies) const {
+void  tess::exponent_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const {
 
 	base_->get_dependencies(dependencies);
 	for (const auto& exponent_expr : exponents_)
@@ -273,7 +273,7 @@ tess::expr_ptr tess::special_number_expr::simplify() const
 	return std::make_shared<special_number_expr>(num_);
 }
 
-void tess::special_number_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::special_number_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 }
 
@@ -346,7 +346,7 @@ tess::expr_value tess::special_function_expr::eval( tess::eval_context& ctxt) co
 	return tess::expr_value{ e };
 }
 
-void tess::special_function_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::special_function_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	arg_->get_dependencies(dependencies);
 }
@@ -375,7 +375,7 @@ tess::expr_value tess::and_expr::eval( tess::eval_context& ctx) const
 	return tess::expr_value{ true };
 }
 
-void tess::and_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::and_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	for (const auto& conjunct : conjuncts_)
 		conjunct->get_dependencies(dependencies);
@@ -417,7 +417,7 @@ tess::expr_value tess::equality_expr::eval( tess::eval_context& ctx) const
 	return tess::expr_value{ true };
 }
 
-void tess::equality_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::equality_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	for (const auto& op : operands_)
 		op->get_dependencies(dependencies);
@@ -453,7 +453,7 @@ tess::expr_value tess::or_expr::eval( tess::eval_context& ctx) const
 	return tess::expr_value{ false };
 }
 
-void tess::or_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::or_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	for (const auto& disjunct : disjuncts_)
 		disjunct->get_dependencies(dependencies);
@@ -529,7 +529,7 @@ tess::expr_value tess::relation_expr::eval( tess::eval_context& ctx) const
 	return tess::expr_value{result };
 }
 
-void tess::relation_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::relation_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	lhs_->get_dependencies(dependencies);
 	rhs_->get_dependencies(dependencies);
@@ -558,7 +558,7 @@ tess::expr_ptr tess::nil_expr::simplify() const
 	return std::make_shared<nil_expr>();
 }
 
-void tess::nil_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::nil_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 }
 
@@ -591,7 +591,7 @@ tess::expr_value tess::if_expr::eval(eval_context& ctxt) const
 		return else_clause_->eval(ctxt);
 }
 
-void tess::if_expr::get_dependencies(std::vector<std::string>& dependencies) const
+void tess::if_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	condition_->get_dependencies(dependencies);
 	then_clause_->get_dependencies(dependencies);

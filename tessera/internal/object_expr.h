@@ -17,7 +17,7 @@ namespace tess {
     public:
         var_expr(const std::string& var);
         expr_value eval(eval_context& ctx) const override;
-        void get_dependencies(std::vector<std::string>& dependencies) const override;
+        void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
 
@@ -28,7 +28,7 @@ namespace tess {
     public:
         placeholder_expr(int  placeholder);
         expr_value eval(eval_context& ctx) const override;
-        void get_dependencies(std::vector<std::string>& dependencies) const override;
+        void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
 
@@ -40,7 +40,7 @@ namespace tess {
     public:
         array_item_expr(expr_ptr ary, expr_ptr index);
         expr_value eval(eval_context& ctx) const override;
-        void get_dependencies(std::vector<std::string>& dependencies) const override;
+        void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
 
@@ -52,7 +52,7 @@ namespace tess {
     public:
         func_call_expr(expr_ptr func_, const std::vector<expr_ptr>& args);
         expr_value eval(eval_context& ctx) const override;
-        void get_dependencies(std::vector<std::string>& dependencies) const override;
+        void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
 
@@ -64,7 +64,7 @@ namespace tess {
     public:
         obj_field_expr(expr_ptr obj, std::string field);
         expr_value eval(eval_context& ctx) const override;
-        void get_dependencies(std::vector<std::string>& dependencies) const override;
+        void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
 

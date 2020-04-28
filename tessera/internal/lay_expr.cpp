@@ -200,7 +200,7 @@ tess::expr_value tess::lay_expr::eval(eval_context& ctxt) const
     };
 }
 
-void tess::lay_expr::get_dependencies( std::vector<std::string>& dependencies ) const
+void tess::lay_expr::get_dependencies( std::unordered_set<std::string>& dependencies ) const
 {
     for (auto tile : tiles_)
         tile->get_dependencies(dependencies);

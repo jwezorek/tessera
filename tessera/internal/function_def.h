@@ -19,7 +19,7 @@ namespace tess {
             const std::vector<std::string>& parameters() const;
             expr_ptr body() const;
             expr_ptr simplify() const override;
-            void get_dependencies(std::vector<std::string>& dependencies) const override;
+            void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
 
             function_def(const std::vector<std::string>& params, expr_ptr body);
 

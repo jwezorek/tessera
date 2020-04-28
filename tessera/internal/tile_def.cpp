@@ -185,7 +185,7 @@ tess::expr_ptr tess::tile_def_expr::simplify() const
     return std::make_shared<tile_def_expr>(simplified_verts, simplified_edges);
 }
 
-void tess::tile_def_expr::get_dependencies(std::vector<std::string>& vars) const
+void tess::tile_def_expr::get_dependencies(std::unordered_set<std::string>& vars) const
 {
     for (const auto& edge : edges_)
         edge.length->get_dependencies(vars);

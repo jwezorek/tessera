@@ -14,6 +14,13 @@ const std::vector<tess::tile>& tess::tile_patch::impl_type::tiles() const
     return tiles_;
 }
 
+
+void tess::tile_patch::impl_type::insert_field(const std::string& var, const expr_value& val)
+{
+	int aaa;
+	aaa = 5;
+}
+
 tess::expr_value tess::tile_patch::impl_type::get_field(const std::string& field) const
 {
 	return expr_value();

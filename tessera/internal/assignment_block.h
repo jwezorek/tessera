@@ -34,7 +34,7 @@ namespace tess {
 		where_expr(const assignment_block& assignments, expr_ptr body);
 		expr_value eval(eval_context&) const override;
 		expr_ptr simplify() const override;
-		void get_dependencies(std::vector<std::string>& dependencies) const override;
+		void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
 	};
 
 }
