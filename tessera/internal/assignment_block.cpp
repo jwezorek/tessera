@@ -55,6 +55,17 @@ std::vector<std::string> tess::assignment_block::get_variables() const
 	return variables;
 }
 
+std::vector<tess::expr_ptr> tess::assignment_block::get_values() const
+{
+	std::vector<expr_ptr> values(impl_->size());
+	std::transform(impl_->begin(), impl_->end(), values.begin(),
+		[](const auto& var_val) -> expr_ptr {
+			return std::get<1>(var_val);
+		}
+	);
+	return values;
+}
+
 bool tess::assignment_block::empty() const
 {
 	return !impl_ || impl_->empty();
