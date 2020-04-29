@@ -5,6 +5,7 @@
 #include "tessera/tile_patch.h"
 #include "expr_value.h"
 #include <vector>
+#include <map>
 
 namespace tess {
 
@@ -12,6 +13,7 @@ namespace tess {
     {
     private:
         std::vector<tess::tile> tiles_;
+        std::map<std::string, expr_value> fields_;
     public:
 		impl_type(const std::vector<tess::tile>& tiles);
         const std::vector<tess::tile>& tiles() const;
@@ -32,6 +34,6 @@ namespace tess {
         expr_value get_field(const std::string& field) const;
         expr_value get_ary_item(int i) const;
         int get_ary_count() const;
-        void insert_field(const std::string& var, const expr_value& val) {}
+        void insert_field(const std::string& var, const expr_value& val);
     };
 }

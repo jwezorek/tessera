@@ -54,7 +54,7 @@ tess::expr_value tess::num_range_expr::eval(eval_context& ctxt) const
     if (!maybe_from.has_value())
         return { error("invalid integer range cluster") };
 
-    auto maybe_to = eval_integer_expr(from_, ctxt);
+    auto maybe_to = eval_integer_expr(to_, ctxt);
     if (!maybe_to.has_value())
         return { error("invalid integer range cluster") };
 

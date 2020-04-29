@@ -1,28 +1,28 @@
-let theta =  pi/3;
+let triangle = tile {
+    self
+} where {
+    let self = regular_polygon(3);
+    let left, bottom, right = self.edges;
+};
 
-tile triangle {
-	vertex a{angle : theta}, b{angle : theta}, c{angle : theta};
-	edge left{ c -> a }, right{ b -> c }, bottom{ a -> b };
-}
+let tri_pair = patch {
+    lay triangle , triangle such_that $1.right <-> $2.right
+};
 
-patch tri_pair {
-	lay triangle -> triangle such_that $1.right <-> $2.right;
-}
+let tri_strip = patch( n ) {
+    if (n == 1)
+        lay triangle
+    else
+        lay tri_pair , tri_strip(n-1) such_that $1[1].left <-> $2[0].left
+};
 
-patch tri_strip(n) {
-	if (n == 1)
-	    lay triangle;
-	else
-	    lay tri_pair -> tri_strip(n-1) such_that $1[1].left <-> $2[0].left;
-}
-
-patch tri_grid(n) {
-	if (n == 1)
-		lay triangle;
-	else
-		lay tri_strip(n) -> tri_grid(n-1) such_that $1[1].bottom <-> $2[0].bottom;
-}
+let pyramid = patch( n ) {
+    if (n == 1)
+        lay triangle
+    else
+        lay tri_strip(n) , pyramid(n-1) such_that $1[1].bottom <-> $2[0].bottom
+};
 
 tableau( num ) {
-	lay tri_grid( num );
+    lay pyramid( num )
 }

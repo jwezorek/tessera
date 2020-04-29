@@ -17,13 +17,15 @@ const std::vector<tess::tile>& tess::tile_patch::impl_type::tiles() const
 
 void tess::tile_patch::impl_type::insert_field(const std::string& var, const expr_value& val)
 {
-	int aaa;
-	aaa = 5;
+	fields_[var] = val;
 }
 
 tess::expr_value tess::tile_patch::impl_type::get_field(const std::string& field) const
 {
-	return expr_value();
+	auto iter = fields_.find(field);
+	return (iter != fields_.end()) ?
+		tess::expr_value{iter->second} :
+		tess::expr_value{tess::error(std::string("referenced undefined tile patch field: ") + field)};
 }
 
 tess::expr_value tess::tile_patch::impl_type::get_ary_item(int i) const
@@ -57,6 +59,11 @@ tess::cluster::impl_type::impl_type(const std::vector<expr_value>& values) :
 tess::expr_value tess::cluster::impl_type::get_field(const std::string& field) const
 {
 	return expr_value();
+}
+
+
+void  tess::cluster::impl_type::insert_field(const std::string& var, const expr_value& val)
+{
 }
 
 tess::expr_value tess::cluster::impl_type::get_ary_item(int i) const

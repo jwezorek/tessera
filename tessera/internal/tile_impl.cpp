@@ -72,7 +72,7 @@ tess::expr_value tess::tile::impl_type::get_field(const std::string& field) cons
 	if (index >= 0) {
 		return { vertices_.at(index) };
 	}
-	return { error(std::string("refrenced undefined tile edge or vertex: ") + field ) };
+	return { error(std::string("refrenced undefined tile edge, vertex, or field: ") + field ) };
 }
 
 bool tess::tile::impl_type::is_untouched() const
