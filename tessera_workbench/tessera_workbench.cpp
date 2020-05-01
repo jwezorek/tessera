@@ -76,8 +76,8 @@ std::tuple<double, double, double, double> get_bounds(const std::vector<tess::ti
 		}
 	}
 
-	float wd = x2 - x1;
-	float hgt = y2 - y1;
+	auto wd = x2 - x1;
+	auto hgt = y2 - y1;
 
 	return { x1 - scale, y1 - scale, wd + 2*scale, hgt + 2*scale };
 }

@@ -4,17 +4,8 @@
 #include "expr_value.h"
 #include "eval_context.h"
 #include "variant_util.h"
+#include "lambda_impl.h"
 #include <variant>
-
-class tess::lambda::impl_type  {
-    public:
-        function_def func;
-        scope_frame closure;
-
-        impl_type(const function_def& f, const scope_frame& c) :
-            func(f), closure(c)
-        {}
-};
 
 tess::lambda::lambda(const function_def& func, const scope_frame& closure) :
     impl_(std::make_shared<impl_type>(func, closure))
@@ -62,4 +53,9 @@ void tess::lambda::add_to_closure(const std::string& var, const expr_value& val)
 {
     auto& impl = get_impl();
     impl.closure.set(var, val);
+}
+
+tess::lambda::impl_type::impl_type(const function_def& f, const scope_frame& c) :
+    func(f), closure(c)
+{
 }

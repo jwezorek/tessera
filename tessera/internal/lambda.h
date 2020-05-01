@@ -13,8 +13,10 @@ namespace tess{
     class expression;
 
     class lambda {
-        private:
+        public: 
             class impl_type;
+        private:
+            
             using lambda_impl_ptr = std::shared_ptr<impl_type>;
             std::variant<lambda_impl_ptr, impl_type*> impl_;
 

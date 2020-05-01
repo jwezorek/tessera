@@ -112,6 +112,9 @@
     <ClCompile Include="internal\parser\cluster_expr_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="internal\impl_pool.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="internal\expression.h">
@@ -221,6 +224,12 @@
     </ClInclude>
     <ClInclude Include="internal\parser\cluster_expr_parser.h">
       <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\lambda_impl.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\impl_pool.h">
+      <Filter>Source Files\impl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
