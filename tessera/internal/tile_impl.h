@@ -54,13 +54,12 @@ namespace tess {
                 std::vector<tess::edge_fields> edges;
                 std::map<std::string, int> vert_name_to_index;
                 std::map<std::string, int> edge_name_to_index;
-                std::map<std::string, expr_value> custom_fields;
-
                 int get_edge_index(const std::string& e);
                 int get_vert_index(const std::string& v);
 
                 fields(const std::vector<tess::vert_fields>& v, const std::vector<tess::edge_fields>& e);
             };
+            std::map<std::string, expr_value> custom_fields_;
             std::vector<tess::vertex> vertices_;
             std::vector<tess::edge> edges_;
             std::shared_ptr<fields> fields_;

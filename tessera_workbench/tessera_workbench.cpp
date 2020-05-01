@@ -14,7 +14,7 @@ void generate_svg(const std::string& filename, const std::vector<tess::tile>& ti
 
 int main(int argc, char** argv)
 {
-	std::string source_code = read_file("example.tess");
+	std::string source_code = read_file("test.tess");
 	auto results = tess::script::interpret( source_code );
 
 	if (std::holds_alternative<tess::script>(results)) {

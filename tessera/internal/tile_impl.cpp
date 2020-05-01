@@ -51,14 +51,13 @@ void tess::tile::impl_type::insert_field(const std::string& var, const expr_valu
 		if (this == get_impl(std::get<tess::tile>(val)).get())
 			return;
 	}
-	fields_->custom_fields[var] = val;
+	custom_fields_[var] = val;
 }
 
 tess::expr_value tess::tile::impl_type::get_field(const std::string& field) const
 {
-	const auto& custom_fields = fields_->custom_fields;
-	if (custom_fields.find(field) != custom_fields.end())
-		return custom_fields.at(field);
+	if (custom_fields_.find(field) != custom_fields_.end())
+		return custom_fields_.at(field);
 
 	if (field == parser::keyword(parser::kw::edge) || field == "edges") {
 		return { edges_as_cluster(edges_) };
