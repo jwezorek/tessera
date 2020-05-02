@@ -24,13 +24,6 @@ tess::expr_value tess::lambda::call(const std::vector<expr_value>& args) const
     return body->eval(ctxt);
 }
 
-tess::lambda tess::lambda::get_ref() const
-{
-    lambda ref;
-    ref.impl_ = impl_;
-    return ref;
-}
-
 void tess::lambda::add_to_closure(const std::string& var, const expr_value& val)
 {
     impl_->closure.set(var, val);

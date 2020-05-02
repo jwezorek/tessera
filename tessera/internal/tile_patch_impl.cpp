@@ -1,5 +1,6 @@
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
+#include "allocator.h"
 
 tess::tile_patch::impl_type::impl_type(const std::vector<tess::tile>& tiles) :
     tiles_(tiles)
@@ -20,7 +21,7 @@ void tess::tile_patch::impl_type::insert_field(const std::string& var, const exp
 	fields_[var] = val;
 }
 
-tess::expr_value tess::tile_patch::impl_type::get_field(const std::string& field) const
+tess::expr_value tess::tile_patch::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
 	auto iter = fields_.find(field);
 	return (iter != fields_.end()) ?
@@ -56,7 +57,7 @@ tess::cluster::impl_type::impl_type(const std::vector<expr_value>& values) :
 {}
 
 
-tess::expr_value tess::cluster::impl_type::get_field(const std::string& field) const
+tess::expr_value tess::cluster::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
 	return expr_value();
 }

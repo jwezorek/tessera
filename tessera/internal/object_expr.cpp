@@ -138,7 +138,7 @@ tess::obj_field_expr::obj_field_expr(expr_ptr obj, std::string field) :
 
 tess::expr_value tess::obj_field_expr::eval(eval_context& ctx) const
 {
-    return obj_->eval(ctx).get_field(field_);
+    return obj_->eval(ctx).get_field(ctx.allocator(), field_);
 }
 
 void tess::obj_field_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const

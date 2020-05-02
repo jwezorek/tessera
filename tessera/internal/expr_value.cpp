@@ -2,6 +2,7 @@
 #include "expr_value.h"
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
+#include "allocator.h"
 
 tess::nil_val::nil_val()
 {
@@ -62,7 +63,7 @@ int tess::expr_value::get_ary_count() const
 	);
 }
 
-tess::expr_value tess::expr_value::get_field(const std::string& field) const
+tess::expr_value tess::expr_value::get_field(allocator& allocator, const std::string& field) const
 {
 	if (!is_object_like()) {
 		return { error("attempted reference to field of a non-object.") };
@@ -71,7 +72,7 @@ tess::expr_value tess::expr_value::get_field(const std::string& field) const
 	std::variant<tile, tile_patch, vertex, edge, cluster> obj_variant = variant_cast(value);
 	
 	return std::visit(
-		[&](auto&& obj)->expr_value { return get_impl(obj)->get_field(field); },
+		[&](auto&& obj)->expr_value { return get_impl(obj)->get_field(allocator, field); },
 		obj_variant
 	);
 }
