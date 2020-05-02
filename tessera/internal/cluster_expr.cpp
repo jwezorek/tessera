@@ -2,6 +2,7 @@
 #include "object_expr.h"
 #include "expr_value.h"
 #include "cluster.h"
+#include "allocator.h"
 
 tess::cluster_expr::cluster_expr(const std::vector<expr_ptr>& exprs) :
     exprs_(exprs)
@@ -15,8 +16,8 @@ tess::expr_value tess::cluster_expr::eval(eval_context& ctxt) const
         [&ctxt](expr_ptr e) {
             return e->eval(ctxt);
         }
-    ); //TODO: GC
-    return {};// { cluster(values) };
+    ); 
+    return { ctxt.allocator().create<cluster>(values) };
 }
 
 tess::expr_ptr tess::cluster_expr::simplify() const
@@ -63,14 +64,14 @@ tess::expr_value tess::num_range_expr::eval(eval_context& ctxt) const
     int n = (to >= from) ? to - from + 1 : 0;
 
     std::vector<expr_value> range;
-    if (n == 0) //TODO: GC
-        return {};// { cluster(range) };
+    if (n == 0) 
+        return { ctxt.allocator().create<cluster>(range) };
     range.reserve(n);
 
     for (int i = from; i <= to; i++)
         range.push_back(expr_value{ tess::number{i} });
-    //TODO: GC
-    return {}; // { cluster(range) };
+
+    return { ctxt.allocator().create<cluster>(range) };
 }
 
 tess::expr_ptr tess::num_range_expr::simplify() const
@@ -108,8 +109,8 @@ tess::expr_value tess::cluster_comprehension_expr::eval(eval_context& ctxt) cons
         scope(ctxt, scope_frame(var_, range.get_ary_item(i)));
         result[i] = item_expr_->eval(ctxt);
     }
-    //TODO: GC
-    return {}; // { cluster(result) };
+
+    return { ctxt.allocator().create<cluster>(result) };
 }
 
 tess::expr_ptr tess::cluster_comprehension_expr::simplify() const
