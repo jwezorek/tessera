@@ -43,7 +43,7 @@
     <ClCompile Include="internal\parser\script_parser.cpp" />
     <ClCompile Include="internal\parser\special_parser.cpp" />
     <ClCompile Include="internal\parser\tile_parser.cpp" />
-    <ClCompile Include="internal\impl_pool.cpp" />
+    <ClCompile Include="internal\allocator.cpp" />
     <ClCompile Include="internal\script.cpp" />
     <ClCompile Include="internal\script_impl.cpp" />
     <ClCompile Include="internal\tile.cpp" />
@@ -85,7 +85,7 @@
     <ClInclude Include="internal\parser\special_parser.h" />
     <ClInclude Include="internal\parser\tile_parser.h" />
     <ClInclude Include="internal\parser\util.h" />
-    <ClInclude Include="internal\impl_pool.h" />
+    <ClInclude Include="internal\allocator.h" />
     <ClInclude Include="internal\script_impl.h" />
     <ClInclude Include="internal\tessera_impl.h" />
     <ClInclude Include="internal\tile_impl.h" />

@@ -75,3 +75,8 @@ int tess::cluster::impl_type::get_ary_count() const
 {
 	return static_cast<int>(values_.size());
 }
+
+const std::vector<tess::expr_value>& tess::cluster::impl_type::values()
+{
+	return values_;
+}

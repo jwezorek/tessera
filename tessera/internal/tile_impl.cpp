@@ -13,7 +13,7 @@ namespace {
 		std::transform(edges.begin(), edges.end(), cluster_contents.begin(),
 			[](const tess::edge& e)->tess::expr_value { return { e }; }
 		);
-		return tess::cluster(cluster_contents);
+		return tess::cluster( /*cluster_contents*/); //TODO: GC
 	}
 }
 

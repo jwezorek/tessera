@@ -9,11 +9,13 @@ namespace tess {
 
     class cluster {
             friend class tessera_impl;
+            friend class allocator;
         public:
-            cluster(const std::vector<expr_value>& values);
             class impl_type;
+            const std::vector<expr_value>& items() const;
+            int count() const;
         private:
-            std::shared_ptr<impl_type>  impl_;
+            impl_type*  impl_;
     };
 
 }

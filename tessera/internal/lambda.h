@@ -13,6 +13,7 @@ namespace tess{
     class expression;
 
     class lambda {
+            friend class allocator;
         public: 
             class impl_type;
         private:

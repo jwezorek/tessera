@@ -34,6 +34,7 @@ namespace tess {
         expr_value get_field(const std::string& field) const;
         expr_value get_ary_item(int i) const;
         int get_ary_count() const;
+        const std::vector<expr_value>& values();
         void insert_field(const std::string& var, const expr_value& val);
     };
 }
