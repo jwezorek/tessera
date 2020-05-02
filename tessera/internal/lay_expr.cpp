@@ -4,6 +4,7 @@
 #include "tile_patch_impl.h"
 #include "tessera/error.h"
 #include <variant>
+#include "allocator.h"
 
 namespace {
     using edge_parent_type = std::variant<tess::tile::impl_type*, tess::tile_patch::impl_type*>;
@@ -194,7 +195,7 @@ tess::expr_value tess::lay_expr::eval(eval_context& ctxt) const
     }
 
     return {
-        make_tess_obj<tile_patch>(
+        ctxt.allocator().create<tile_patch>(
             flatten_tiles_and_patches(pieces)
         )
     };
