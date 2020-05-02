@@ -5,6 +5,7 @@
 #include <sstream>
 #include <variant>
 #include <unordered_set>
+#include "allocator.h"
 
 tess::expr_value tess::function_def::eval(eval_context& ctxt) const
 {
@@ -19,7 +20,7 @@ tess::expr_value tess::function_def::eval(eval_context& ctxt) const
     }
 
     return {
-        lambda(*this, scope_frame(closure))
+        ctxt.allocator().create<lambda>(*this, scope_frame(closure))
     };
 }
 

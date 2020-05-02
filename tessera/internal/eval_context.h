@@ -9,6 +9,8 @@
 
 namespace tess {
 
+	class allocator;
+
 	class scope_frame {
 		private:
 			std::unordered_map<int, expr_value> placeholders_;
@@ -42,6 +44,7 @@ namespace tess {
 			void push_scope();
 			void push_scope(scope_frame&& scope);
 			scope_frame pop_scope();
+			allocator& allocator();
     };
 
 	class scope {

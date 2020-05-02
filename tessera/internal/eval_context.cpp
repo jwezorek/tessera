@@ -1,4 +1,5 @@
 #include "eval_context.h"
+#include "allocator.h"
 
 tess::eval_context::eval_context()
 {
@@ -68,6 +69,13 @@ tess::scope_frame tess::eval_context::pop_scope()
 	auto frame = scope_stack_.back();
 	scope_stack_.pop_back();
 	return frame;
+}
+
+tess::allocator& tess::eval_context::allocator()
+{
+    // TODO: GC
+	static tess::allocator allocator;
+	return allocator;
 }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
