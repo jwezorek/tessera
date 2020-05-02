@@ -10,17 +10,19 @@ namespace tess {
 
 	class vertex {
 		friend class tessera_impl;
+		friend class allocator;
 	public:
 		std::string name() const;
 		std::string vertex_class() const;
 		std::tuple<double, double> pos() const;
 		class impl_type;
 	private:
-		std::shared_ptr<impl_type> impl_;
+		impl_type* impl_;
 	};
 
 	class edge {
 		friend class tessera_impl;
+		friend class allocator;
 	public:
 		std::string name() const;
 		std::string edge_class() const;
@@ -28,18 +30,19 @@ namespace tess {
 		const vertex& v() const;
 		class impl_type;
 	private:
-		std::shared_ptr<impl_type> impl_;
+		impl_type* impl_;
 	};
 
 	class tile
 	{
 		friend class tessera_impl;
+		friend class allocator;
 	public:
 		const std::vector<vertex>& vertices() const;
 		const std::vector<edge>& edges() const;
 		class impl_type;
 	private:
-		std::shared_ptr<impl_type> impl_;
+		impl_type* impl_;
 	};
 
 }

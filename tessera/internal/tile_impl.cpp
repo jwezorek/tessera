@@ -46,11 +46,6 @@ void tess::tile::impl_type::set( std::vector<tess::vertex>&& vertices, std::vect
 
 void tess::tile::impl_type::insert_field(const std::string& var, const expr_value& val)
 {
-	// TODO: implement use_weak_reference_to
-	if (std::holds_alternative<tess::tile>(val)) {
-		if (this == get_impl(std::get<tess::tile>(val)).get())
-			return;
-	}
 	custom_fields_[var] = val;
 }
 
@@ -82,7 +77,7 @@ bool tess::tile::impl_type::is_untouched() const
 void tess::tile::impl_type::apply(const matrix& mat)
 {
 	for (auto& vertex : vertices_) {
-		get_impl(vertex)->apply(mat);
+		get_implementation(vertex)->apply(mat);
 	}
 	untouched_ = false;
 }

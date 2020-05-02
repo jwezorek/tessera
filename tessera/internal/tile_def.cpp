@@ -3,6 +3,7 @@
 #include "tessera/tile.h"
 #include "tile_impl.h"
 #include "parser/tile_parser.h"
+#include "allocator.h"
 #include <symengine/expression.h>
 #include <symengine/logic.h>
 
@@ -138,31 +139,31 @@ tess::tile_def_expr::tile_def_expr(const std::vector<vertex_def>& v, const std::
 tess::expr_value tess::tile_def_expr::eval(eval_context& ctxt) const
 {
     auto n = static_cast<int>(vertices_.size());
-    auto new_tile_impl = std::make_shared<tile::impl_type>(
+    auto new_tile_impl = ctxt.allocator().create_impl<tile>(
         get_vert_fields(),
         get_edge_fields()
-        );
+    );
     auto vert_locations = evaluate_vertices(ctxt);
 
     std::vector<tess::vertex> verts(n);
     std::transform(vertices_.cbegin(), vertices_.cend(), verts.begin(),
         [&](auto v) {
-            return make_tess_obj<tess::vertex>(
-                new_tile_impl.get(), v.index, vert_locations[v.index]
-                );
+            return ctxt.allocator().create<tess::vertex>(
+                new_tile_impl, v.index, vert_locations[v.index]
+            );
         }
     );
 
     std::vector<tess::edge> edges(n);
     std::transform(edges_.cbegin(), edges_.cend(), edges.begin(),
         [&](auto e) {
-            return make_tess_obj<tess::edge>(new_tile_impl.get(), e.index);
+            return ctxt.allocator().create<tess::edge>(new_tile_impl, e.index);
         }
     );
 
     new_tile_impl->set(std::move(verts), std::move(edges));
     return {
-        make_tess_obj_from_impl<tess::tile>(
+        make_tess_obj_from_impl2<tess::tile>(
             new_tile_impl
         )
     };

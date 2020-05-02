@@ -41,15 +41,15 @@ namespace tess {
                 return cluster_pool_;
         }
 
+    public:
+        allocator(int sz = 1024);
+
         template<typename T, typename... Args>
         typename T::impl_type* create_impl(Args&&... args) {
             auto& imp_pool = get_pool<T>();
             imp_pool.emplace_back(std::make_unique<typename T::impl_type>(std::forward<Args>(args)...));
             return imp_pool.back().get();
         }
-
-    public:
-        allocator(int sz = 1024);
 
         template<typename T, typename... Args>
         T create(Args... args) {
