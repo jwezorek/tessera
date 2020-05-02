@@ -116,8 +116,8 @@ tess::lay_expr::edge_mapping_result tess::lay_expr::eval_edge_mappings(eval_cont
 std::optional<tess::error> tess::lay_expr::apply_mapping(const edge_mapping_value& mapping, eval_context& ctxt) const
 {
     auto [e1, e2] = mapping;
-    auto& edge1 = *get_implementation(e1);
-    auto& edge2 = *get_implementation(e2);
+    auto& edge1 = *get_impl(e1);
+    auto& edge2 = *get_impl(e2);
     auto parent_1 = parent_of_edge(edge1);
     auto parent_2 = parent_of_edge(edge2);
 
@@ -145,10 +145,10 @@ std::optional<tess::error> tess::lay_expr::apply_mapping(const edge_mapping_valu
 
 tess::matrix tess::lay_expr::edge_to_edge_matrix(const edge::impl_type& e1, const edge::impl_type& e2) const
 {
-    auto u1 = get_implementation(e1.u());
-    auto v1 = get_implementation(e1.v());
-    auto u2 = get_implementation(e2.u());
-    auto v2 = get_implementation(e2.v());
+    auto u1 = get_impl(e1.u());
+    auto v1 = get_impl(e1.v());
+    auto u2 = get_impl(e2.u());
+    auto v2 = get_impl(e2.v());
 
     return line_seg_to_line_seg({ u1->pos() , v1->pos() }, { v2->pos() , u2->pos() });
 }

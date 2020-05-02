@@ -10,7 +10,6 @@ namespace tess {
 
 	class vertex {
 		friend class tessera_impl;
-		friend class allocator;
 	public:
 		std::string name() const;
 		std::string vertex_class() const;
@@ -22,7 +21,6 @@ namespace tess {
 
 	class edge {
 		friend class tessera_impl;
-		friend class allocator;
 	public:
 		std::string name() const;
 		std::string edge_class() const;
@@ -36,7 +34,6 @@ namespace tess {
 	class tile
 	{
 		friend class tessera_impl;
-		friend class allocator;
 	public:
 		const std::vector<vertex>& vertices() const;
 		const std::vector<edge>& edges() const;

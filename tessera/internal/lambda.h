@@ -13,7 +13,7 @@ namespace tess{
     class expression;
 
     class lambda {
-            friend class allocator;
+            friend class tessera_impl;
         public: 
 
             const std::vector<std::string>& parameters() const;

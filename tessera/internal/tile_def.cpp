@@ -163,7 +163,7 @@ tess::expr_value tess::tile_def_expr::eval(eval_context& ctxt) const
 
     new_tile_impl->set(std::move(verts), std::move(edges));
     return {
-        make_tess_obj_from_impl2<tess::tile>(
+        make_tess_obj<tess::tile>(
             new_tile_impl
         )
     };

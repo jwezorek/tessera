@@ -77,7 +77,7 @@ bool tess::tile::impl_type::is_untouched() const
 void tess::tile::impl_type::apply(const matrix& mat)
 {
 	for (auto& vertex : vertices_) {
-		get_implementation(vertex)->apply(mat);
+		get_impl(vertex)->apply(mat);
 	}
 	untouched_ = false;
 }

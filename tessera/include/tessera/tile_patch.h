@@ -9,8 +9,7 @@ namespace tess {
 
 	class tile_patch
 	{
-		friend class allocator;
-
+		friend class tessera_impl;
 	public:
 		std::string name() const;
 		const std::vector<tile>& tiles() const;

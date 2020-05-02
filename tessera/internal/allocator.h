@@ -53,9 +53,9 @@ namespace tess {
 
         template<typename T, typename... Args>
         T create(Args... args) {
-            T obj;
-            obj.impl_ = create_impl<T>(std::forward<Args>(args)...);
-            return obj;
+            return make_tess_obj<T>(
+                create_impl<T>(std::forward<Args>(args)...)
+            );
         }
 
         void test();

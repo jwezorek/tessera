@@ -5,7 +5,7 @@ tess::tile_patch::impl_type::impl_type(const std::vector<tess::tile>& tiles) :
     tiles_(tiles)
 {
 	for (auto& tile : tiles) {
-		get_implementation(tile)->set_parent(this);
+		get_impl(tile)->set_parent(this);
 	}
 }
 
@@ -41,12 +41,12 @@ int tess::tile_patch::impl_type::get_ary_count() const
 void tess::tile_patch::impl_type::apply(const matrix& mat)
 {
 	for (auto& tile : tiles_)
-		get_implementation(tile)->apply(mat);
+		get_impl(tile)->apply(mat);
 }
 
 bool tess::tile_patch::impl_type::is_untouched() const 
 {
-	return get_implementation(tiles_.front())->is_untouched();
+	return get_impl(tiles_.front())->is_untouched();
 }
 
 /*---------------------------------------------------------------------------------------------*/

@@ -36,8 +36,10 @@ namespace tess {
                 auto [globals, tab_spec] = ss;
                 auto [tab_params, tab_body] = tab_spec;
                 return make_tess_obj<tess::script>(
-                    globals,
-                    std::make_shared<function_def>(tab_params, tab_body)
+                    std::make_shared<tess::script::impl_type>(
+                        globals,
+                        std::make_shared<function_def>(tab_params, tab_body)
+                    )
                 );
             }
         };
