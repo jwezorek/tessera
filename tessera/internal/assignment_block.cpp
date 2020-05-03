@@ -18,15 +18,27 @@ tess::assignment_block::assignment_block(const std::vector<var_assignment>& assi
 {
 }
 
+void set_one_var(tess::eval_context& ctxt, const std::string& var, tess::expr_value val)
+{
+	add_self_reference(ctxt, var, val);
+	ctxt.peek().set(var, val);
+}
+
 tess::scope_frame tess::assignment_block::eval(eval_context& original_ctxt) const
 {
 	eval_context ctxt = original_ctxt;
 	ctxt.push_scope();
 
-	for (const auto [var, expr] : *impl_) {
+	for (const auto [vars, expr] : *impl_) {
 		auto val = expr->eval(ctxt);
-		add_self_reference(ctxt, var, val);
-		ctxt.peek().set(var, val);
+		if (vars.size() == 1) {
+			set_one_var(ctxt, vars[0], val);
+		} else {
+			if (vars.size() != val.get_ary_count())
+				throw tess::error("multi-assignment count mismatch");
+			for (int i = 0; i < val.get_ary_count(); i++)
+				set_one_var(ctxt, vars[i], val.get_ary_item(i));
+		}
 	}
 
 	return ctxt.pop_scope();
@@ -46,12 +58,10 @@ tess::assignment_block tess::assignment_block::simplify() const
 
 std::vector<std::string> tess::assignment_block::get_variables() const
 {
-	std::vector<std::string> variables(impl_->size());
-	std::transform(impl_->begin(), impl_->end(), variables.begin(),
-		[](const auto& var_val) -> std::string {
-			return std::get<0>(var_val);
-		}
-	);
+	std::vector<std::string> variables;
+	for(const auto& var_assgn : *impl_)
+		for (const auto& var : std::get<0>(var_assgn))
+			variables.push_back(var);
 	return variables;
 }
 

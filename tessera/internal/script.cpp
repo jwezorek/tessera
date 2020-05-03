@@ -79,8 +79,6 @@ const std::vector<std::string>& tess::script::parameters() const
 
 tess::result tess::script::execute(const std::vector<std::string>& arg_strings) const
 {
-	allocator test;
-	test.test();
 	std::vector<expr_value> args = evaluate_arguments(arg_strings);
 	eval_context ctxt;
 	scope global_scope(ctxt, eval_global_declarations(impl_->globals()));

@@ -9,7 +9,7 @@
 
 namespace tess {
 
-	using var_assignment = std::tuple<std::string, tess::expr_ptr>;
+	using var_assignment = std::tuple<std::vector<std::string>, tess::expr_ptr>;
 
 	class assignment_block 
 	{
