@@ -97,3 +97,17 @@ void tess::expr_value::insert_field(const std::string& var, expr_value val) cons
 	);
 }
 
+std::unordered_set<void*> tess::expr_value::get_all_referenced_allocations() const
+{
+	std::unordered_set<void*> references;
+	get_all_referenced_allocations(references);
+	return references;
+}
+
+void tess::expr_value::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+{
+	if (!is_object_like())
+		return;
+
+}
+

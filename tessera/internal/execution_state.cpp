@@ -119,6 +119,7 @@ private:
     tess::allocator allocator_;
     context_set contexts_;
 public:
+    impl_type(execution_state& state) : allocator_(state) {}
     tess::allocator& allocator() { return allocator_; }
     context_set& contexts() { return contexts_; }
     void remove_ctxt(context_set::iterator i) {
@@ -236,7 +237,7 @@ tess::execution_state& tess::evaluation_context::execution_state()
 /*------------------------------------------------------------------------------------------------------*/
 
 tess::execution_state::execution_state() :
-    impl_(std::make_shared<impl_type>())
+    impl_(std::make_shared<impl_type>(*this))
 {
 }
 
@@ -260,4 +261,8 @@ tess::evaluation_context tess::execution_state::create_eval_context(const lex_sc
     auto ctxt = create_eval_context();
     ctxt.push_scope(frame);
     return ctxt;
+}
+
+void tess::execution_state::collect_garbage()
+{
 }

@@ -8,6 +8,7 @@
 #include "math_util.h"
 #include <variant>
 #include <memory>
+#include <unordered_set>
 
 namespace tess {
 
@@ -33,6 +34,9 @@ namespace tess {
 		expr_value get_field(allocator& allocator, const std::string& field) const;
 		expr_value call(execution_state& state, const std::vector<expr_value>& args) const;
 		void insert_field(const std::string& var, expr_value val) const;
+		std::unordered_set<void*> get_all_referenced_allocations() const;
+	private:
+		void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
 	};
 	
 }

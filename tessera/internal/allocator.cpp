@@ -1,7 +1,19 @@
 #include "allocator.h"
 #include "expr_value.h"
+#include "execution_state.h"
 
-tess::allocator::allocator(int sz)
+constexpr int k_gc_freq = 10000;
+
+void tess::allocator::collect_garbage()
+{
+    if (count++ > k_gc_freq) {
+        count = 0;
+        state_.collect_garbage();
+    }
+}
+
+tess::allocator::allocator(execution_state& state, int sz) :
+    state_(state), count(0)
 {
     tile_pool_.reserve(sz);
     patch_pool_.reserve(sz);
@@ -11,16 +23,4 @@ tess::allocator::allocator(int sz)
     lambda_pool_.reserve(sz);
 }
 
-void tess::allocator::test()
-{
 
-    expr_value a{ true }, b{ true }, c{ false };
-    std::vector<expr_value> cluster_arg{ a,b,c };
-
-    //auto& impl_pool = get_pool<cluster>();
-    //impl_pool.emplace_back( std::make_unique<cluster::impl_type>(cluster_arg) );
-
-    auto test = create<cluster>(cluster_arg);
-    int aaa;
-    aaa = 5;
-}

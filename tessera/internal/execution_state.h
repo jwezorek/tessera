@@ -86,6 +86,7 @@ namespace tess {
         allocator& allocator() const;
         evaluation_context create_eval_context();
         evaluation_context create_eval_context(const lex_scope::frame& frame);
+        void collect_garbage();
     };
 
 }
