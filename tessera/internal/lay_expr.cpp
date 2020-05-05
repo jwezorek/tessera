@@ -3,8 +3,9 @@
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
 #include "tessera/error.h"
-#include <variant>
 #include "allocator.h"
+#include "execution_state.h"
+#include <variant>
 
 namespace {
     using edge_parent_type = std::variant<tess::tile::impl_type*, tess::tile_patch::impl_type*>;
@@ -59,7 +60,7 @@ namespace {
 
 }
 
-tess::lay_expr::piece_result tess::lay_expr::eval_pieces(eval_context& ctxt) const
+tess::lay_expr::piece_result tess::lay_expr::eval_pieces(evaluation_context& ctxt) const
 {
     std::vector<expr_value> pieces(tiles_.size());
     std::transform(tiles_.begin(), tiles_.end(), pieces.begin(),
@@ -78,7 +79,7 @@ tess::lay_expr::piece_result tess::lay_expr::eval_pieces(eval_context& ctxt) con
     return pieces;
 }
 
-tess::lay_expr::edge_mapping_result tess::lay_expr::eval_edge_mappings(eval_context& ctxt) const
+tess::lay_expr::edge_mapping_result tess::lay_expr::eval_edge_mappings(evaluation_context& ctxt) const
 {
     std::vector< std::tuple<expr_value, expr_value>> edge_mapping_val_exprs(edge_mappings_.size());
     std::transform(edge_mappings_.begin(), edge_mappings_.end(), edge_mapping_val_exprs.begin(),
@@ -113,7 +114,7 @@ tess::lay_expr::edge_mapping_result tess::lay_expr::eval_edge_mappings(eval_cont
     return mappings;
 }
 
-std::optional<tess::error> tess::lay_expr::apply_mapping(const edge_mapping_value& mapping, eval_context& ctxt) const
+std::optional<tess::error> tess::lay_expr::apply_mapping(const edge_mapping_value& mapping, evaluation_context& ctxt) const
 {
     auto [e1, e2] = mapping;
     auto& edge1 = *get_impl(e1);
@@ -170,7 +171,7 @@ tess::lay_expr::lay_expr(const std::vector<expr_ptr>& tiles, const std::vector<s
 {
 }
 
-tess::expr_value tess::lay_expr::eval(eval_context& ctxt) const
+tess::expr_value tess::lay_expr::eval(evaluation_context& ctxt) const
 {
     piece_result maybe_pieces;
     if (maybe_pieces = eval_pieces(ctxt); std::holds_alternative<error>(maybe_pieces))
@@ -180,7 +181,7 @@ tess::expr_value tess::lay_expr::eval(eval_context& ctxt) const
     if (!edge_mappings_.empty()) {
 
         // push "placeholders' to the pieces on the stack
-        scope scope(ctxt, scope_frame(pieces));
+        lex_scope scope(ctxt, lex_scope::frame(pieces));
 
         edge_mapping_result maybe_mappings;
         if (maybe_mappings = eval_edge_mappings(ctxt); std::holds_alternative<error>(maybe_mappings))

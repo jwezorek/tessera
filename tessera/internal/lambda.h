@@ -11,13 +11,14 @@ namespace tess{
     class expr_value;
     class function_def;
     class expression;
+    class execution_state;
 
     class lambda {
             friend class tessera_impl;
         public: 
 
             const std::vector<std::string>& parameters() const;
-            expr_value call(const std::vector<expr_value>& expr_value) const;
+            expr_value call(execution_state& state, const std::vector<expr_value>& expr_value) const;
             void add_to_closure(const std::string& var, const expr_value& val);
             class impl_type;
 

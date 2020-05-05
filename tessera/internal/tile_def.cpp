@@ -4,6 +4,7 @@
 #include "tile_impl.h"
 #include "parser/tile_parser.h"
 #include "allocator.h"
+#include "execution_state.h"
 #include <symengine/expression.h>
 #include <symengine/logic.h>
 
@@ -75,7 +76,7 @@ std::optional<tess::parser::exception> tess::tile_def_expr::initialize(std::unor
     return std::nullopt;
 }
 
-std::vector<std::tuple<tess::number, tess::number>> tess::tile_def_expr::evaluate_vertices(eval_context& ctxt) const
+std::vector<std::tuple<tess::number, tess::number>> tess::tile_def_expr::evaluate_vertices(evaluation_context& ctxt) const
 {
     auto n = static_cast<int>(vertices_.size());
     tess::number x = 0.0;
@@ -136,7 +137,7 @@ tess::tile_def_expr::tile_def_expr(const std::vector<vertex_def>& v, const std::
 {
 }
 
-tess::expr_value tess::tile_def_expr::eval(eval_context& ctxt) const
+tess::expr_value tess::tile_def_expr::eval(evaluation_context& ctxt) const
 {
     auto n = static_cast<int>(vertices_.size());
     auto new_tile_impl = ctxt.allocator().create_impl<tile>(

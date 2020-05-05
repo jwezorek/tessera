@@ -1,13 +1,13 @@
 #include "function_def.h"
 #include "tile_def.h"
 #include "expr_value.h"
-#include "eval_context.h"
+#include "execution_state.h"
 #include <sstream>
 #include <variant>
 #include <unordered_set>
 #include "allocator.h"
 
-tess::expr_value tess::function_def::eval(eval_context& ctxt) const
+tess::expr_value tess::function_def::eval(evaluation_context& ctxt) const
 {
     std::unordered_set<std::string> dependent_vars;
     get_dependencies(dependent_vars);
@@ -20,7 +20,7 @@ tess::expr_value tess::function_def::eval(eval_context& ctxt) const
     }
 
     return {
-        ctxt.allocator().create<lambda>(*this, scope_frame(closure))
+        ctxt.allocator().create<lambda>(*this, lex_scope::frame(closure))
     };
 }
 

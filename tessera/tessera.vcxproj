@@ -23,7 +23,7 @@
     <ClCompile Include="internal\cluster.cpp" />
     <ClCompile Include="internal\cluster_expr.cpp" />
     <ClCompile Include="internal\error.cpp" />
-    <ClCompile Include="internal\eval_context.cpp" />
+    <ClCompile Include="internal\eval_context_old.cpp" />
     <ClCompile Include="internal\execution_state.cpp" />
     <ClCompile Include="internal\expr_value.cpp" />
     <ClCompile Include="internal\function_def.cpp" />
@@ -63,7 +63,7 @@
     <ClInclude Include="internal\assignment_block.h" />
     <ClInclude Include="internal\cluster.h" />
     <ClInclude Include="internal\cluster_expr.h" />
-    <ClInclude Include="internal\eval_context.h" />
+    <ClInclude Include="internal\eval_context_old.h" />
     <ClInclude Include="internal\execution_state.h" />
     <ClInclude Include="internal\expression.h" />
     <ClInclude Include="internal\expr_value.h" />

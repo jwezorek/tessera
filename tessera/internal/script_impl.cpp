@@ -15,11 +15,16 @@ const std::vector<std::string>& tess::script::impl_type::parameters() const
 }
 
 
-tess::assignment_block tess::script::impl_type::globals() const {
+const tess::assignment_block& tess::script::impl_type::globals() const {
     return globals_;
 }
 
 tess::expr_ptr tess::script::impl_type::tableau() const {
     return tableau_;
+}
+
+tess::execution_state& tess::script::impl_type::state()
+{
+    return state_;
 }
 

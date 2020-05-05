@@ -5,17 +5,18 @@
 #include "parser/script_parser.h"
 #include "parser/expr_parser.h"
 #include "allocator.h"
+#include "execution_state.h"
 
 namespace {
 
-	std::vector<tess::expr_value> evaluate_arguments(const std::vector<std::string>& args) {
+	std::vector<tess::expr_value> evaluate_arguments(tess::execution_state& state, const std::vector<std::string>& args) {
 		std::vector<tess::expr_value> output(args.size());
 		std::transform(args.begin(), args.end(), output.begin(),
-			[](const auto& str)->tess::expr_value {
+			[&state](const auto& str)->tess::expr_value {
 				auto expr = tess::parser::parse_expression(str);
 				if (!expr)
 					return { tess::error(std::string("syntax error in argument: ") + str) };
-				tess::eval_context ctxt;
+				auto ctxt = state.create_eval_context();
 				return expr->eval(ctxt);
 			}
 		);
@@ -33,12 +34,12 @@ namespace {
 		);
 	}
 
-	tess::scope_frame eval_global_declarations(const tess::assignment_block& declarations) {
-		tess::eval_context ctxt;
+	tess::lex_scope::frame eval_global_declarations(tess::execution_state& state, const tess::assignment_block& declarations) {
+		tess::evaluation_context ctxt = state.create_eval_context();
 		return declarations.eval(ctxt);
 	}
 
-	tess::expr_value execute_script(const std::vector<tess::expr_value>& args, tess::eval_context& ctxt, const tess::expr_ptr& tableau) {
+	tess::expr_value execute_script(const std::vector<tess::expr_value>& args, tess::execution_state& state, tess::evaluation_context& ctxt, const tess::expr_ptr& tableau) {
 		auto maybe_lambda = tableau->eval(ctxt);
 
 		if (!std::holds_alternative<tess::lambda>(maybe_lambda))
@@ -46,7 +47,7 @@ namespace {
 				maybe_lambda : tess::expr_value{ tess::error("unknown error") };
 
 		const auto& lambda = std::get<tess::lambda>(maybe_lambda);
-		return lambda.call(args);
+		return lambda.call(state, args);
 	}
 
 	tess::result extract_tiles(const tess::expr_value& output) {
@@ -79,11 +80,12 @@ const std::vector<std::string>& tess::script::parameters() const
 
 tess::result tess::script::execute(const std::vector<std::string>& arg_strings) const
 {
-	std::vector<expr_value> args = evaluate_arguments(arg_strings);
-	eval_context ctxt;
-	scope global_scope(ctxt, eval_global_declarations(impl_->globals()));
+	auto& state = impl_->state();
+	std::vector<expr_value> args = evaluate_arguments(state, arg_strings);
+	evaluation_context ctxt = state.create_eval_context();
+	lex_scope global_scope(ctxt, eval_global_declarations(impl_->state(), impl_->globals()));
 	
-	auto output = execute_script(args, ctxt, impl_->tableau());
+	auto output = execute_script(args, state, ctxt, impl_->tableau());
 
 	return extract_tiles(output);
 

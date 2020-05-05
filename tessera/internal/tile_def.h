@@ -15,6 +15,8 @@
 
 namespace tess {
 
+    class evaluation_context;
+
     struct vert_fields {
         int index;
         std::string name;
@@ -116,14 +118,14 @@ namespace tess {
 
         tess::parser::exception get_exception(const std::string& msg);
         std::optional<parser::exception> initialize(std::unordered_map<std::string, vertex_def>&, std::unordered_map<std::string, edge_def_helper>&);
-        std::vector<std::tuple<number, number>> evaluate_vertices(eval_context&) const;
+        std::vector<std::tuple<number, number>> evaluate_vertices(evaluation_context&) const;
         std::vector<edge_fields> get_edge_fields() const;
         std::vector<vert_fields> get_vert_fields() const;
 
     public:
         tile_def_expr(const tile_verts_and_edges& v_e);
         tile_def_expr(const std::vector<vertex_def>& v, const std::vector<edge_def>& e);
-        expr_value eval(eval_context&) const override;
+        expr_value eval(evaluation_context&) const override;
         expr_ptr simplify() const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
     };

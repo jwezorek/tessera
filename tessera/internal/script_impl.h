@@ -4,7 +4,7 @@
 #include "function_def.h"
 #include "expression.h"
 #include "expr_value.h"
-#include "eval_context.h"
+#include "execution_state.h"
 #include <vector>
 #include <unordered_map>
 
@@ -14,10 +14,12 @@ namespace tess {
         private:
             assignment_block globals_;
             expr_ptr tableau_;
+            execution_state state_;
         public:
             impl_type(const assignment_block& globals, const expr_ptr& tableau);
             const std::vector<std::string>& parameters() const;
-            assignment_block globals() const;
+            const assignment_block& globals() const;
+            execution_state& state();
             expr_ptr tableau() const;
     };
 

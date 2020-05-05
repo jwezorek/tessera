@@ -1,14 +1,14 @@
 #pragma once
 
 #include "function_def.h"
-#include "eval_context.h"
+#include "execution_state.h"
 
 namespace tess {
     class lambda::impl_type {
         public:
             function_def func;
-            scope_frame closure;
+            lex_scope::frame closure;
 
-            impl_type(const function_def& f, const scope_frame& c);
+            impl_type(const function_def& f, const lex_scope::frame& c);
     };
 }

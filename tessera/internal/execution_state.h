@@ -65,7 +65,7 @@ namespace tess {
         void push_scope(const lex_scope::frame& scope);
         lex_scope::frame pop_scope();
         allocator& allocator();
-
+        execution_state& execution_state();
     private:
         class impl_type;
         std::shared_ptr<impl_type> impl_;
@@ -85,6 +85,7 @@ namespace tess {
         execution_state();
         allocator& allocator() const;
         evaluation_context create_eval_context();
+        evaluation_context create_eval_context(const lex_scope::frame& frame);
     };
 
 }

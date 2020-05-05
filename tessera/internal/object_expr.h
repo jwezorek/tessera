@@ -1,14 +1,13 @@
 #pragma once
-
+#include <optional>
 #include <memory>
 #include <vector>
-#include "eval_context.h"
 #include "expression.h"
 #include "expr_value.h"
 
 namespace tess {
 
-    std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt);
+    std::optional<int> eval_integer_expr(const tess::expr_ptr& expr, tess::evaluation_context& ctxt);
 
     class var_expr : public expression
     {
@@ -16,7 +15,7 @@ namespace tess {
         std::string var_;
     public:
         var_expr(const std::string& var);
-        expr_value eval(eval_context& ctx) const override;
+        expr_value eval(evaluation_context& ctx) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
@@ -27,7 +26,7 @@ namespace tess {
         int placeholder_;
     public:
         placeholder_expr(int  placeholder);
-        expr_value eval(eval_context& ctx) const override;
+        expr_value eval(evaluation_context& ctx) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
@@ -39,7 +38,7 @@ namespace tess {
         expr_ptr index_;
     public:
         array_item_expr(expr_ptr ary, expr_ptr index);
-        expr_value eval(eval_context& ctx) const override;
+        expr_value eval(evaluation_context& ctx) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
@@ -51,7 +50,7 @@ namespace tess {
         std::vector<expr_ptr> args_;
     public:
         func_call_expr(expr_ptr func_, const std::vector<expr_ptr>& args);
-        expr_value eval(eval_context& ctx) const override;
+        expr_value eval(evaluation_context& ctx) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
@@ -63,7 +62,7 @@ namespace tess {
         std::string field_;
     public:
         obj_field_expr(expr_ptr obj, std::string field);
-        expr_value eval(eval_context& ctx) const override;
+        expr_value eval(evaluation_context& ctx) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };

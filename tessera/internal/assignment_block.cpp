@@ -3,7 +3,7 @@
 
 namespace {
 
-	void add_self_reference(tess::eval_context& original_ctxt, const std::string& var, tess::expr_value val)
+	void add_self_reference(tess::evaluation_context& original_ctxt, const std::string& var, tess::expr_value val)
 	{
 		if (std::holds_alternative<tess::lambda>(val)) {
 			auto& lambda = std::get<tess::lambda>(val);
@@ -18,15 +18,14 @@ tess::assignment_block::assignment_block(const std::vector<var_assignment>& assi
 {
 }
 
-void set_one_var(tess::eval_context& ctxt, const std::string& var, tess::expr_value val)
+void set_one_var(tess::evaluation_context& ctxt, const std::string& var, tess::expr_value val)
 {
 	add_self_reference(ctxt, var, val);
 	ctxt.peek().set(var, val);
 }
 
-tess::scope_frame tess::assignment_block::eval(eval_context& original_ctxt) const
+tess::lex_scope::frame tess::assignment_block::eval(evaluation_context& ctxt) const
 {
-	eval_context ctxt = original_ctxt;
 	ctxt.push_scope();
 
 	for (const auto [vars, expr] : *impl_) {
@@ -86,15 +85,15 @@ tess::where_expr::where_expr(const assignment_block& assignments, expr_ptr body)
 {
 }
 
-tess::expr_value tess::where_expr::eval(eval_context& ctxt) const
+tess::expr_value tess::where_expr::eval(evaluation_context& ctxt) const
 {
 	auto frame = assignments_.eval(ctxt);
-	auto frame_copy = frame;
-	scope sc(ctxt, std::move(frame));
+	lex_scope sc(ctxt, frame);
+
 	auto result = body_->eval(ctxt);
 
 	if (result.is_valid() && result.is_object_like()) {
-		for (const auto& [var, val] : frame_copy.variables())
+		for (const auto& [var, val] : frame)
 			result.insert_field(var, val);
 	}
 

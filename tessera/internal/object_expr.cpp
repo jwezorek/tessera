@@ -1,6 +1,7 @@
 #include "object_expr.h"
+#include "execution_state.h"
 
-std::optional<int> tess::eval_integer_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
+std::optional<int> tess::eval_integer_expr(const tess::expr_ptr& expr, tess::evaluation_context& ctxt)
 {
     auto int_val = expr->eval(ctxt);
     if (!std::holds_alternative<tess::number>(int_val))
@@ -13,7 +14,7 @@ tess::var_expr::var_expr(const std::string& var) :
 {
 }
 
-tess::expr_value tess::var_expr::eval(eval_context& ctx) const
+tess::expr_value tess::var_expr::eval(evaluation_context& ctx) const
 {
     auto value = ctx.get(var_);
 
@@ -25,7 +26,7 @@ tess::expr_value tess::var_expr::eval(eval_context& ctx) const
     if (std::holds_alternative<tess::lambda>(value)) {
         auto lambda = std::get<tess::lambda>(value);
         if (lambda.parameters().size() == 0)
-            return value.call({});
+            return value.call(ctx.execution_state(),{});
     }
 
     return value;
@@ -48,7 +49,7 @@ tess::placeholder_expr::placeholder_expr(int placeholder) :
 {
 }
 
-tess::expr_value tess::placeholder_expr::eval(eval_context& ctx) const
+tess::expr_value tess::placeholder_expr::eval(evaluation_context& ctx) const
 {
     return ctx.get(placeholder_);
 }
@@ -70,7 +71,7 @@ tess::array_item_expr::array_item_expr(expr_ptr ary, expr_ptr index) :
 {
 }
 
-tess::expr_value tess::array_item_expr::eval(eval_context& ctx) const
+tess::expr_value tess::array_item_expr::eval(evaluation_context& ctx) const
 {
     auto maybe_index = eval_integer_expr(index_, ctx);
     if (!maybe_index.has_value())
@@ -101,12 +102,12 @@ tess::func_call_expr::func_call_expr(expr_ptr func, const std::vector<expr_ptr>&
 {
 }
 
-tess::expr_value tess::func_call_expr::eval(eval_context& ctx) const
+tess::expr_value tess::func_call_expr::eval(evaluation_context& ctx) const
 {
     std::vector<expr_value> args(args_.size());
     std::transform(args_.begin(), args_.end(), args.begin(), 
         [&ctx](auto expr) {return expr->eval(ctx);} );
-    return func_->eval(ctx).call(args);
+    return func_->eval(ctx).call(ctx.execution_state(), args);
 }
 
 void tess::func_call_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -136,7 +137,7 @@ tess::obj_field_expr::obj_field_expr(expr_ptr obj, std::string field) :
 {
 }
 
-tess::expr_value tess::obj_field_expr::eval(eval_context& ctx) const
+tess::expr_value tess::obj_field_expr::eval(evaluation_context& ctx) const
 {
     return obj_->eval(ctx).get_field(ctx.allocator(), field_);
 }

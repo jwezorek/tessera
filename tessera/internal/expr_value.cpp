@@ -3,6 +3,7 @@
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
 #include "allocator.h"
+#include "execution_state.h"
 
 tess::nil_val::nil_val()
 {
@@ -77,12 +78,12 @@ tess::expr_value tess::expr_value::get_field(allocator& allocator, const std::st
 	);
 }
 
-tess::expr_value tess::expr_value::call(const std::vector<expr_value>& args) const
+tess::expr_value tess::expr_value::call(execution_state& state, const std::vector<expr_value>& args) const
 {
 	if (!std::holds_alternative<lambda>(*this))
 		return { error("attempted to call a value that is not functionlike") };
 	const auto& lambda = std::get<tess::lambda>(*this);
-	return lambda.call(args);
+	return lambda.call(state, args);
 }
 
 void tess::expr_value::insert_field(const std::string& var, expr_value val) const

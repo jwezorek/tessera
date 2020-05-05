@@ -1,7 +1,7 @@
 #include "math_util.h"
 #include "expression.h"
 #include "expr_value.h"
-#include "eval_context.h"
+#include "execution_state.h"
 #include "tile_def.h"
 #include "tile_impl.h"
 #include "tessera_impl.h"
@@ -17,7 +17,7 @@ namespace {
 		return tess::parser::parse_expression(ss.str())->simplify();
 	}
 
-	tess::expr_value generate_regular_polygon_tile(tess::number num_sides) {
+	tess::expr_value generate_regular_polygon_tile(tess::execution_state& state, tess::number num_sides) {
 		int n = tess::to_int(num_sides);
 		std::vector<tess::vertex_def> vertices(n);
 		int i = 0;
@@ -45,11 +45,11 @@ namespace {
 		}
 
 		auto tile_def_expr = std::make_shared<tess::tile_def_expr>(vertices, edges);
-		tess::eval_context ctxt;
+		auto ctxt = state.create_eval_context();
 		return tile_def_expr->eval(ctxt);
 	}
 }
-std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
+std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::evaluation_context& ctxt)
 {
 	auto val = expr->eval(ctxt);
 	if (!std::holds_alternative<tess::number>(val))
@@ -57,7 +57,7 @@ std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::e
 	return std::get<tess::number>(val);
 }
 
-std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, tess::eval_context& ctxt)
+std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, tess::evaluation_context& ctxt)
 {
 	auto val = expr->eval(ctxt);
 	if (!std::holds_alternative<bool>(val))
@@ -76,7 +76,7 @@ tess::number_expr::number_expr(int v) : val_(v)
 {
 }
 
-tess::expr_value tess::number_expr::eval( tess::eval_context&) const {
+tess::expr_value tess::number_expr::eval( tess::evaluation_context&) const {
 	return tess::expr_value{ tess::number(val_) };
 }
 
@@ -102,7 +102,7 @@ tess::addition_expr::addition_expr(const std::vector<std::tuple<bool, expr_ptr>>
 {
 }
 
-tess::expr_value tess::addition_expr::eval( tess::eval_context& ctxt) const {
+tess::expr_value tess::addition_expr::eval( tess::evaluation_context& ctxt) const {
 
 	tess::number sum(0);
 
@@ -150,7 +150,7 @@ tess::multiplication_expr::multiplication_expr(const std::vector<std::tuple<bool
 {
 }
 
-tess::expr_value tess::multiplication_expr::eval( tess::eval_context& ctxt) const {
+tess::expr_value tess::multiplication_expr::eval( tess::evaluation_context& ctxt) const {
 
 	tess::number product(1);
 
@@ -198,7 +198,7 @@ tess::exponent_expr::exponent_expr(expr_ptr base, const std::vector<expr_ptr>& e
 {
 }
 
-tess::expr_value tess::exponent_expr::eval( tess::eval_context& ctxt) const
+tess::expr_value tess::exponent_expr::eval( tess::evaluation_context& ctxt) const
 {
     auto base_val = eval_number_expr(base_, ctxt);
 	if (!base_val.has_value())
@@ -255,7 +255,7 @@ tess::special_number_expr::special_number_expr(special_num which) :
 {
 }
 
-tess::expr_value tess::special_number_expr::eval( tess::eval_context& ctxt) const
+tess::expr_value tess::special_number_expr::eval( tess::evaluation_context& ctxt) const
 {
 	switch (num_) {
 		case special_num::pi:
@@ -307,7 +307,7 @@ tess::special_function_expr::special_function_expr(special_func func, expr_ptr a
 {
 }
 
-tess::expr_value tess::special_function_expr::eval( tess::eval_context& ctxt) const
+tess::expr_value tess::special_function_expr::eval( tess::evaluation_context& ctxt) const
 {
 	auto possible_arg = eval_number_expr(arg_, ctxt);
 	if (!possible_arg.has_value())
@@ -339,7 +339,7 @@ tess::expr_value tess::special_function_expr::eval( tess::eval_context& ctxt) co
 			e = tan(arg);
 			break;
 		case special_func::regular_polygon:
-			return generate_regular_polygon_tile(arg);
+			return generate_regular_polygon_tile(ctxt.execution_state(), arg);
 		default:
 			return tess::expr_value{ tess::error("Unknown special function") };
 	}
@@ -363,7 +363,7 @@ tess::and_expr::and_expr(const std::vector<expr_ptr>& conjuncts) :
 {
 }
 
-tess::expr_value tess::and_expr::eval( tess::eval_context& ctx) const
+tess::expr_value tess::and_expr::eval( tess::evaluation_context& ctx) const
 {
 	for (const auto& conjunct : conjuncts_) {
 		auto val = eval_bool_expr(conjunct, ctx);
@@ -399,7 +399,7 @@ tess::equality_expr::equality_expr(const std::vector<expr_ptr> operands) :
 {
 }
 
-tess::expr_value tess::equality_expr::eval( tess::eval_context& ctx) const
+tess::expr_value tess::equality_expr::eval( tess::evaluation_context& ctx) const
 {
 	std::vector<number> expressions;
 	expressions.reserve(operands_.size());
@@ -441,7 +441,7 @@ tess::or_expr::or_expr(const std::vector<expr_ptr> disjuncts) :
 {
 }
 
-tess::expr_value tess::or_expr::eval( tess::eval_context& ctx) const
+tess::expr_value tess::or_expr::eval( tess::evaluation_context& ctx) const
 {
 	for (const auto& disjunct : disjuncts_) {
 		auto val = eval_bool_expr(disjunct, ctx);
@@ -497,7 +497,7 @@ tess::relation_expr::relation_expr(expr_ptr lhs, relation_op op, expr_ptr rhs) :
 {
 }
 
-tess::expr_value tess::relation_expr::eval( tess::eval_context& ctx) const
+tess::expr_value tess::relation_expr::eval( tess::evaluation_context& ctx) const
 {
 	auto maybe_lhs = eval_number_expr(lhs_, ctx);
 	if (! maybe_lhs.has_value())
@@ -548,7 +548,7 @@ tess::nil_expr::nil_expr()
 {
 }
 
-tess::expr_value tess::nil_expr::eval( tess::eval_context& ctx) const
+tess::expr_value tess::nil_expr::eval( tess::evaluation_context& ctx) const
 {
     return tess::expr_value{ nil_val() };
 }
@@ -576,7 +576,7 @@ tess::if_expr::if_expr(expr_ptr condition, expr_ptr then_clause, expr_ptr else_c
 {
 }
 
-tess::expr_value tess::if_expr::eval(eval_context& ctxt) const
+tess::expr_value tess::if_expr::eval(evaluation_context& ctxt) const
 {
 	auto condition_val = condition_->eval(ctxt);
 	if (std::holds_alternative<error>(condition_val))

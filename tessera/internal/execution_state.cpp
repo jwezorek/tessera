@@ -31,6 +31,13 @@ tess::lex_scope::frame::frame(const std::vector<std::tuple<std::string, expr_val
     );
 }
 
+tess::lex_scope::frame::frame(const std::vector<expr_value>& args)
+{
+    int n = static_cast<int>(args.size());
+    for (int i = 0; i < n; i++)
+        definitions_[placeholder(i+1)] = args[i];
+}
+
 std::optional<tess::expr_value> tess::lex_scope::frame::get(int ph) const
 {
     auto i = definitions_.find(placeholder(ph));
@@ -124,18 +131,18 @@ public:
 class tess::evaluation_context::impl_type 
 {
 private:
-    execution_state& state_;
+    tess::execution_state& state_;
     context_set::iterator scopes_;
 
 public:
 
-    impl_type(execution_state& s, context_set::iterator i) :
+    impl_type(tess::execution_state& s, context_set::iterator i) :
         state_(s),
         scopes_(i)
     {
     }
 
-    execution_state& state() {
+    tess::execution_state& state() {
         return state_;
     }
 
@@ -221,6 +228,11 @@ tess::allocator& tess::evaluation_context::allocator()
     return impl_->state().allocator();
 }
 
+tess::execution_state& tess::evaluation_context::execution_state()
+{
+    return impl_->state();
+}
+
 /*------------------------------------------------------------------------------------------------------*/
 
 tess::execution_state::execution_state() :
@@ -241,4 +253,11 @@ tess::evaluation_context tess::execution_state::create_eval_context()
     return evaluation_context(
         std::make_shared<evaluation_context::impl_type>(*this, ctxt_impl_iter)
     );
+}
+
+tess::evaluation_context tess::execution_state::create_eval_context(const lex_scope::frame& frame)
+{
+    auto ctxt = create_eval_context();
+    ctxt.push_scope(frame);
+    return ctxt;
 }

@@ -2,9 +2,14 @@
 
 #include "tessera_impl.h"
 #include "expression.h"
-#include "eval_context.h"
+#include "math_util.h"
+#include "tessera/tile.h"
+#include "tessera/error.h"
+#include <optional>
 
 namespace tess {
+
+	class evaluation_context;
 
 	struct lay_params {
 		std::vector<expr_ptr> tiles;
@@ -22,16 +27,16 @@ namespace tess {
 			std::vector<expr_ptr> tiles_;
 			std::vector<std::tuple<expr_ptr, expr_ptr>> edge_mappings_;
 
-			piece_result eval_pieces(eval_context&) const;
-			edge_mapping_result eval_edge_mappings(eval_context&) const;
-			std::optional<error> apply_mapping(const edge_mapping_value& mappings, eval_context& ctxt) const;
+			piece_result eval_pieces(evaluation_context&) const;
+			edge_mapping_result eval_edge_mappings(evaluation_context&) const;
+			std::optional<error> apply_mapping(const edge_mapping_value& mappings, evaluation_context& ctxt) const;
 			matrix edge_to_edge_matrix(const edge::impl_type& e1, const edge::impl_type& e2) const;
 
 		public:
 			lay_expr(const lay_params& params);
 			lay_expr(const std::vector<expr_ptr>& tiles);
 			lay_expr(const std::vector<expr_ptr>& tiles, const std::vector<std::tuple<expr_ptr, expr_ptr>>& edge_mappings);
-			expr_value eval(eval_context&) const override;
+			expr_value eval(evaluation_context&) const override;
 			void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
 			expr_ptr simplify() const override;
     };

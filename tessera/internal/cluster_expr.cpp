@@ -3,13 +3,14 @@
 #include "expr_value.h"
 #include "cluster.h"
 #include "allocator.h"
+#include "execution_state.h"
 
 tess::cluster_expr::cluster_expr(const std::vector<expr_ptr>& exprs) :
     exprs_(exprs)
 {
 }
 
-tess::expr_value tess::cluster_expr::eval(eval_context& ctxt) const
+tess::expr_value tess::cluster_expr::eval(evaluation_context& ctxt) const
 {
     std::vector<expr_value> values(exprs_.size());
     std::transform(exprs_.begin(), exprs_.end(), values.begin(),
@@ -49,7 +50,7 @@ tess::num_range_expr::num_range_expr(const std::tuple<expr_ptr, expr_ptr>& tup) 
 {
 }
 
-tess::expr_value tess::num_range_expr::eval(eval_context& ctxt) const
+tess::expr_value tess::num_range_expr::eval(evaluation_context& ctxt) const
 {
     auto maybe_from = eval_integer_expr(from_, ctxt);
     if (!maybe_from.has_value())
@@ -97,7 +98,7 @@ tess::cluster_comprehension_expr::cluster_comprehension_expr(std::tuple<expr_ptr
 {
 }
 
-tess::expr_value tess::cluster_comprehension_expr::eval(eval_context& ctxt) const
+tess::expr_value tess::cluster_comprehension_expr::eval(evaluation_context& ctxt) const
 {
     expr_value range = range_expr_->eval(ctxt);
     if (!range.is_array_like())
@@ -106,7 +107,7 @@ tess::expr_value tess::cluster_comprehension_expr::eval(eval_context& ctxt) cons
     int n = range.get_ary_count();
     std::vector<expr_value> result(n);
     for (int i = 0; i < n; i++) {
-        scope(ctxt, scope_frame(var_, range.get_ary_item(i)));
+        lex_scope(ctxt, lex_scope::frame(var_, range.get_ary_item(i)));
         result[i] = item_expr_->eval(ctxt);
     }
 

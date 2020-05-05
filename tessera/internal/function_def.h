@@ -9,13 +9,13 @@
 namespace tess {
 
     class expr_value;
-    class eval_context;
+    class evaluation_context;
     class tile_def;
     class patch_def;
 
     class function_def : public expression {
         public:
-            expr_value eval(eval_context&) const override;
+            expr_value eval(evaluation_context&) const override;
             const std::vector<std::string>& parameters() const;
             expr_ptr body() const;
             expr_ptr simplify() const override;
