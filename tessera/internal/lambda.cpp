@@ -25,12 +25,26 @@ tess::expr_value tess::lambda::call(execution_state& state, const std::vector<ex
     return body->eval(ctxt);
 }
 
-void tess::lambda::add_to_closure(const std::string& var, const expr_value& val)
+void tess::lambda::insert_field(const std::string& var, const expr_value& val)
 {
-    impl_->closure.set(var, val);
+    impl_->insert_field(var, val);
 }
 
 tess::lambda::impl_type::impl_type(const function_def& f, const lex_scope::frame& c) :
     func(f), closure(c)
 {
+}
+
+void tess::lambda::impl_type::insert_field(const std::string& var, const expr_value& val)
+{
+    closure.set(var, val);
+}
+
+tess::expr_value tess::lambda::impl_type::get_field(allocator& allocator, const std::string& field) const
+{
+    auto maybe_value = closure.get(field);
+    if (maybe_value.has_value())
+        return { maybe_value.value() };
+    else
+        return { tess::error("referenced unknown lambda closure item") };
 }

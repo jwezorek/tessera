@@ -16,7 +16,8 @@ bool tess::expr_value::is_object_like() const
 		std::holds_alternative<tile_patch>(*this) ||
 		std::holds_alternative<vertex>(*this) ||
 		std::holds_alternative<edge>(*this) ||
-		std::holds_alternative<cluster>(*this);
+		std::holds_alternative<cluster>(*this) ||
+		std::holds_alternative<lambda>(*this);
 }
 
 bool tess::expr_value::is_array_like() const
@@ -70,7 +71,7 @@ tess::expr_value tess::expr_value::get_field(allocator& allocator, const std::st
 		return { error("attempted reference to field of a non-object.") };
 	}
 	auto value = static_cast<expr_val_var>(*this);
-	std::variant<tile, tile_patch, vertex, edge, cluster> obj_variant = variant_cast(value);
+	std::variant<tile, tile_patch, vertex, edge, cluster, lambda> obj_variant = variant_cast(value);
 	
 	return std::visit(
 		[&](auto&& obj)->expr_value { return get_impl(obj)->get_field(allocator, field); },
@@ -90,7 +91,7 @@ void tess::expr_value::insert_field(const std::string& var, expr_value val) cons
 {
 	if (!is_object_like())
 		return;
-	std::variant<tile, tile_patch, vertex, edge, cluster> obj_variant = variant_cast(static_cast<expr_val_var>(*this));
+	std::variant<tile, tile_patch, vertex, edge, cluster, lambda> obj_variant = variant_cast(static_cast<expr_val_var>(*this));
 	std::visit(
 		[&](auto&& obj) { get_impl(obj)->insert_field(var,val); },
 		obj_variant

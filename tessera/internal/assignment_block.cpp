@@ -7,7 +7,7 @@ namespace {
 	{
 		if (std::holds_alternative<tess::lambda>(val)) {
 			auto& lambda = std::get<tess::lambda>(val);
-			lambda.add_to_closure(var, tess::expr_value{lambda});
+			lambda.insert_field(var, tess::expr_value{lambda});
 		}
 	}
 
