@@ -11,6 +11,7 @@ namespace tess {
 
             impl_type(const function_def& f, const lex_scope::frame& c);
             void insert_field(const std::string& var, const expr_value& val);
-            expr_value get_field(allocator& allocator, const std::string& field) const;
+            expr_value get_field(allocator& allocator, const std::string& field) const; 
+            void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
     };
 }

@@ -3,6 +3,8 @@
 #include "expr_value.h"
 #include "allocator.h"
 #include <algorithm>
+#include <unordered_set>
+#include <iostream>
 
 namespace {
 
@@ -124,6 +126,19 @@ public:
     context_set& contexts() { return contexts_; }
     void remove_ctxt(context_set::iterator i) {
         contexts_.erase(i);
+    }
+
+    std::unordered_set<void*> get_all_reachable_objects()
+    {
+        std::unordered_set<void*> reachable_objects;
+        for (auto scope_stack_ptr : contexts_) {
+            for (const auto& frame : *scope_stack_ptr) {
+                for (const auto& [var, val] : frame) {
+                    val.get_all_referenced_allocations(reachable_objects);
+                }
+            }
+        }
+        return reachable_objects;
     }
 };
 
@@ -265,4 +280,7 @@ tess::evaluation_context tess::execution_state::create_eval_context(const lex_sc
 
 void tess::execution_state::collect_garbage()
 {
+    auto live_objects = impl_->get_all_reachable_objects();
+    std::cout << live_objects.size() << "\n";
+    impl_->allocator().collect(live_objects);
 }

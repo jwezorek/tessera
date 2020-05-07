@@ -48,3 +48,14 @@ tess::expr_value tess::lambda::impl_type::get_field(allocator& allocator, const 
     else
         return { tess::error("referenced unknown lambda closure item") };
 }
+
+void tess::lambda::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+{
+    auto ptr = to_void_star(this);
+    if (alloc_set.find(ptr) != alloc_set.end())
+        return;
+    alloc_set.insert(ptr);
+
+    for (const auto& [var, val] : closure)
+        val.get_all_referenced_allocations(alloc_set);
+}

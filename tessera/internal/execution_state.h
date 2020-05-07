@@ -81,6 +81,7 @@ namespace tess {
     private:
         class impl_type;
         std::shared_ptr<impl_type> impl_;
+
     public:
         execution_state();
         allocator& allocator() const;

@@ -109,6 +109,10 @@ void tess::expr_value::get_all_referenced_allocations(std::unordered_set<void*>&
 {
 	if (!is_object_like())
 		return;
-
+	std::variant<tile, tile_patch, vertex, edge, cluster, lambda> obj_variant = variant_cast(static_cast<expr_val_var>(*this));
+	std::visit(
+		[&](auto&& obj) { get_impl(obj)->get_all_referenced_allocations(alloc_set); },
+		obj_variant
+	);
 }
 

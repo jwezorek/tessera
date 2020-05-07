@@ -50,6 +50,21 @@ void tess::tile::impl_type::insert_field(const std::string& var, const expr_valu
 	custom_fields_[var] = val;
 }
 
+void tess::tile::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+{
+	auto ptr = to_void_star(this);
+	if (alloc_set.find(ptr) != alloc_set.end())
+		return;
+	alloc_set.insert(ptr);
+
+	for (const auto& edge : edges_) 
+		 expr_value{edge}.get_all_referenced_allocations(alloc_set);
+	for (const auto& vertex : vertices_) 
+		expr_value{vertex}.get_all_referenced_allocations(alloc_set);
+	for (const auto& [var, val] : custom_fields_)
+		val.get_all_referenced_allocations(alloc_set);
+}
+
 tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
 	if (custom_fields_.find(field) != custom_fields_.end())
@@ -146,6 +161,16 @@ tess::tile::impl_type* tess::edge::impl_type::parent() const
 	return parent_;
 }
 
+void tess::edge::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+{
+	auto ptr = to_void_star(this);
+	if (alloc_set.find(ptr) != alloc_set.end())
+		return;
+	alloc_set.insert(ptr);
+
+	parent_->get_all_referenced_allocations(alloc_set);
+}
+
 /*--------------------------------------------------------------------------------*/
 
 tess::vertex::impl_type::impl_type( tile::impl_type* parent, int n, std::tuple<number, number> loc) :
@@ -184,6 +209,15 @@ tess::expr_value tess::vertex::impl_type::get_field(allocator& allocator, const 
 	return {};
 }
 
+void tess::vertex::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+{
+	auto ptr = to_void_star(this);
+	if (alloc_set.find(ptr) != alloc_set.end())
+		return;
+	alloc_set.insert(ptr);
+
+	parent_->get_all_referenced_allocations(alloc_set);
+}
 
 void tess::vertex::impl_type::apply(const tess::matrix& mat) {
 

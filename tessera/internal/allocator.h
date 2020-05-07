@@ -52,6 +52,7 @@ namespace tess {
 
         template<typename T, typename... Args>
         typename T::impl_type* create_impl(Args&&... args) {
+            collect_garbage();
             auto& imp_pool = get_pool<T>();
             imp_pool.emplace_back(std::make_unique<typename T::impl_type>(std::forward<Args>(args)...));
             return imp_pool.back().get();
@@ -63,6 +64,8 @@ namespace tess {
                 create_impl<T>(std::forward<Args>(args)...)
             );
         }
+
+        void collect(const std::unordered_set<void*>& live_objects);
     };
 
     

@@ -32,6 +32,7 @@ namespace tess {
 		void apply(const matrix& mat);
 		tile::impl_type* parent() const;
         void insert_field(const std::string& var, const expr_value& val) {}
+        void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
     };
 
     class edge::impl_type : public tessera_impl {
@@ -47,6 +48,7 @@ namespace tess {
 			expr_value get_field(allocator& allocator, const std::string& field) const;
 			tile::impl_type* parent() const;
             void insert_field(const std::string& var, const expr_value& val) {}
+            void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
     };
 
     class tile::impl_type : public tessera_impl {
@@ -84,5 +86,6 @@ namespace tess {
             const vert_fields& vert_fields(int i) const;
             const edge_fields& edge_fields(int i) const;
             void insert_field(const std::string& var, const expr_value& val);
+            void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
     };
 }

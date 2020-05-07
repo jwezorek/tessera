@@ -25,6 +25,7 @@ namespace tess {
 		void apply(const matrix& mat);
         bool is_untouched() const;
         void insert_field(const std::string& var, const expr_value& val);
+        void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
     };
 
     class cluster::impl_type : public tessera_impl
@@ -38,5 +39,6 @@ namespace tess {
         int get_ary_count() const;
         const std::vector<expr_value>& values();
         void insert_field(const std::string& var, const expr_value& val);
+        void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
     };
 }
