@@ -1,19 +1,7 @@
 #include "allocator.h"
 #include "expr_value.h"
-#include "execution_state.h"
 
-constexpr int k_gc_freq = 100;
-
-void tess::allocator::collect_garbage()
-{
-    if (count++ > k_gc_freq) {
-        count = 0;
-        state_.collect_garbage();
-    }
-}
-
-tess::allocator::allocator(execution_state& state, int sz) :
-    state_(state), count(0)
+tess::allocator::allocator( int sz) 
 {
     tile_pool_.reserve(sz);
     patch_pool_.reserve(sz);
@@ -23,10 +11,5 @@ tess::allocator::allocator(execution_state& state, int sz) :
     lambda_pool_.reserve(sz);
 }
 
-void tess::allocator::collect(const std::unordered_set<void*>& live_objects)
-{
-    int aaa;
-    aaa = 5;
-}
 
 

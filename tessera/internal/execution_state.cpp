@@ -110,77 +110,12 @@ tess::lex_scope::~lex_scope()
 {
     ctxt_.pop_scope();
 }
-/*------------------------------------------------------------------------------------------------------*/
-
-using scope_stack = std::vector<tess::lex_scope::frame>;
-using context_set = std::unordered_set<std::shared_ptr<scope_stack>>;
-
-class tess::execution_state::impl_type
-{
-private:
-    tess::allocator allocator_;
-    context_set contexts_;
-public:
-    impl_type(execution_state& state) : allocator_(state) {}
-    tess::allocator& allocator() { return allocator_; }
-    context_set& contexts() { return contexts_; }
-    void remove_ctxt(context_set::iterator i) {
-        contexts_.erase(i);
-    }
-
-    std::unordered_set<void*> get_all_reachable_objects()
-    {
-        std::unordered_set<void*> reachable_objects;
-        for (auto scope_stack_ptr : contexts_) {
-            for (const auto& frame : *scope_stack_ptr) {
-                for (const auto& [var, val] : frame) {
-                    val.get_all_referenced_allocations(reachable_objects);
-                }
-            }
-        }
-        return reachable_objects;
-    }
-};
-
-/*------------------------------------------------------------------------------------------------------*/
-
-class tess::evaluation_context::impl_type 
-{
-private:
-    tess::execution_state& state_;
-    context_set::iterator scopes_;
-
-public:
-
-    impl_type(tess::execution_state& s, context_set::iterator i) :
-        state_(s),
-        scopes_(i)
-    {
-    }
-
-    tess::execution_state& state() {
-        return state_;
-    }
-
-    scope_stack& scopes() {
-        return **scopes_;
-    }
-
-    impl_type(const impl_type&) = delete;
-    impl_type& operator=(const impl_type& other) = delete;
-
-    ~impl_type()
-    {
-        state_.impl_->remove_ctxt(scopes_);
-    }
-};
 
 /*------------------------------------------------------------------------------------------------------*/
 
 std::optional<tess::expr_value> tess::evaluation_context::get_maybe(const std::string& var) const
 {
-    auto& scope_stack = impl_->scopes();
-    for (auto i = scope_stack.rbegin(); i != scope_stack.rend(); ++i) {
+    for (auto i = scopes_.rbegin(); i != scopes_.rend(); ++i) {
         auto maybe_value = i->get(var);
         if (maybe_value.has_value())
             return maybe_value.value();
@@ -213,61 +148,63 @@ tess::expr_value tess::evaluation_context::get(int i) const
 
 tess::lex_scope::frame& tess::evaluation_context::peek()
 {
-    return impl_->scopes().back();
+    return scopes_.back();
 }
 
 void tess::evaluation_context::push_scope()
 {
-    impl_->scopes().push_back({});
+    scopes_.push_back({});
 }
 
 void tess::evaluation_context::push_scope(lex_scope::frame&& scope)
 {
-    impl_->scopes().push_back(std::move(scope));
+    scopes_.push_back(std::move(scope));
 }
 
 void tess::evaluation_context::push_scope(const lex_scope::frame& scope)
 {
-    impl_->scopes().push_back(scope);
+    scopes_.push_back(scope);
 }
 
 tess::lex_scope::frame tess::evaluation_context::pop_scope()
 {
-    auto& scope_stack = impl_->scopes();
-    auto frame = scope_stack.back();
-    scope_stack.pop_back();
+    auto frame = scopes_.back();
+    scopes_.pop_back();
     return frame;
 }
 
 tess::allocator& tess::evaluation_context::allocator()
 {
-    return impl_->state().allocator();
+    return state_.allocator();
 }
 
 tess::execution_state& tess::evaluation_context::execution_state()
 {
-    return impl_->state();
+    return state_;
 }
 
 /*------------------------------------------------------------------------------------------------------*/
 
+class tess::execution_state::impl_type {
+public:
+    tess::allocator allocator_;
+};
+
+
 tess::execution_state::execution_state() :
-    impl_(std::make_shared<impl_type>(*this))
+    impl_(std::make_shared<impl_type>())
 {
 }
 
-tess::allocator& tess::execution_state::allocator() const
+tess::allocator& tess::execution_state::allocator()
 {
-    return impl_->allocator();
+    return impl_->allocator_;
 }
 
 tess::evaluation_context tess::execution_state::create_eval_context()
 {
-    auto [ctxt_impl_iter, dummy] = impl_->contexts().insert(
-        std::make_shared<scope_stack>()
-    );
     return evaluation_context(
-        std::make_shared<evaluation_context::impl_type>(*this, ctxt_impl_iter)
+        *this
     );
 }
 
@@ -278,9 +215,3 @@ tess::evaluation_context tess::execution_state::create_eval_context(const lex_sc
     return ctxt;
 }
 
-void tess::execution_state::collect_garbage()
-{
-    auto live_objects = impl_->get_all_reachable_objects();
-    std::cout << live_objects.size() << "\n";
-    impl_->allocator().collect(live_objects);
-}

@@ -14,8 +14,6 @@
 
 namespace tess {
 
-    class execution_state;
-
     class allocator : public tessera_impl {
         template<typename T>
         using impl_pool = std::vector<std::unique_ptr<typename T::impl_type>>;
@@ -26,8 +24,6 @@ namespace tess {
         impl_pool<vertex> vertex_pool_;
         impl_pool<lambda> lambda_pool_;
         impl_pool<cluster> cluster_pool_;
-        execution_state& state_;
-        int count;
 
         template<typename T>
         impl_pool<T>& get_pool() {
@@ -45,14 +41,12 @@ namespace tess {
                 return cluster_pool_;
         };
 
-        void collect_garbage();
 
     public:
-        allocator(execution_state& state, int sz = 1024);
+        allocator( int sz = 1024);
 
         template<typename T, typename... Args>
         typename T::impl_type* create_impl(Args&&... args) {
-            collect_garbage();
             auto& imp_pool = get_pool<T>();
             imp_pool.emplace_back(std::make_unique<typename T::impl_type>(std::forward<Args>(args)...));
             return imp_pool.back().get();
@@ -65,9 +59,6 @@ namespace tess {
             );
         }
 
-        void collect(const std::unordered_set<void*>& live_objects);
     };
-
-    
 
 };

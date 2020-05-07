@@ -9,7 +9,6 @@
 
 namespace tess {
 
-    class allocator;
     class evaluation_context;
 
     class lex_scope {
@@ -67,27 +66,25 @@ namespace tess {
         allocator& allocator();
         execution_state& execution_state();
     private:
-        class impl_type;
-        std::shared_ptr<impl_type> impl_;
+        std::vector<tess::lex_scope::frame> scopes_;
+        tess::execution_state& state_;
 
-        evaluation_context(std::shared_ptr<impl_type> impl) : 
-            impl_(impl)
+        evaluation_context(tess::execution_state& es) :
+            state_(es)
         {}
     };
 
     class execution_state
     {
         friend class evaluation_context;
+    public:
+        execution_state();
+        allocator& allocator();
+        evaluation_context create_eval_context();
+        evaluation_context create_eval_context(const lex_scope::frame& frame);
     private:
         class impl_type;
         std::shared_ptr<impl_type> impl_;
-
-    public:
-        execution_state();
-        allocator& allocator() const;
-        evaluation_context create_eval_context();
-        evaluation_context create_eval_context(const lex_scope::frame& frame);
-        void collect_garbage();
     };
 
 }
