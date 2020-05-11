@@ -8,6 +8,7 @@
 #include "parser/keywords.h"
 #include "parser/expr_parser.h"
 #include "parser/exception.h"
+#include "execution_state.h"
 #include <sstream>
 
 namespace {

@@ -2,6 +2,7 @@
 #include "script_impl.h"
 #include "function_def.h"
 #include "lambda.h"
+#include "assignment_block.h"
 #include "parser/script_parser.h"
 #include "parser/expr_parser.h"
 #include "allocator.h"
@@ -34,12 +35,8 @@ namespace {
 		);
 	}
 
-	tess::lex_scope::frame eval_global_declarations(tess::execution_state& state, const tess::assignment_block& declarations) {
-		tess::evaluation_context ctxt = state.create_eval_context();
-		return declarations.eval(ctxt);
-	}
-
-	tess::expr_value execute_script(const std::vector<tess::expr_value>& args, tess::execution_state& state, tess::evaluation_context& ctxt, const tess::expr_ptr& tableau) {
+	tess::expr_value execute_script(const std::vector<tess::expr_value>& args, tess::execution_state& state, const tess::expr_ptr& tableau) {
+		auto ctxt = state.create_eval_context();
 		auto maybe_lambda = tableau->eval(ctxt);
 
 		if (!std::holds_alternative<tess::lambda>(maybe_lambda))
@@ -81,11 +78,10 @@ const std::vector<std::string>& tess::script::parameters() const
 tess::result tess::script::execute(const std::vector<std::string>& arg_strings) const
 {
 	auto& state = impl_->state();
+
 	std::vector<expr_value> args = evaluate_arguments(state, arg_strings);
-	evaluation_context ctxt = state.create_eval_context();
-	lex_scope global_scope(ctxt, eval_global_declarations(impl_->state(), impl_->globals()));
-	
-	auto output = execute_script(args, state, ctxt, impl_->tableau());
+	expr_ptr script_expr = std::make_shared<where_expr>(impl_->globals(), impl_->tableau());
+	auto output = execute_script(args, state, script_expr);
 
 	return extract_tiles(output);
 

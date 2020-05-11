@@ -115,6 +115,12 @@
     <ClCompile Include="internal\execution_state.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
+    <ClCompile Include="internal\evaluation_context.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\stack_machine.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="internal\expression.h">
@@ -229,6 +235,12 @@
       <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="internal\execution_state.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\evaluation_context.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\stack_machine.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
   </ItemGroup>
