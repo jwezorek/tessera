@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 	if (std::holds_alternative<tess::script>(results)) {
 		const auto& tessera = std::get<tess::script>(results);
 
-		auto output = tessera.execute(get_arguments(argc, argv));
+		auto output = tessera.exec( get_arguments(argc, argv) );
 		if (std::holds_alternative<tess::error>(output)) {
 			std::cout << std::get<tess::error>(output) << "\n";
 			return -1;

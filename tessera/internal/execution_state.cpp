@@ -12,9 +12,11 @@
 class tess::execution_state::impl_type {
 public:
     tess::allocator allocator_;
-    tess::stack_machine stack_machine;
+    tess::stack_machine::stack main_stack_;
+    tess::stack_machine::stack operand_stack_;
+    tess::stack_machine::context_stack context_stack_;
 
-    impl_type(execution_state& state) : stack_machine(state)
+    impl_type(execution_state& state) 
     {}
 };
 
@@ -28,6 +30,22 @@ tess::execution_state::execution_state() :
 tess::allocator& tess::execution_state::allocator()
 {
     return impl_->allocator_;
+}
+
+
+tess::stack_machine::stack& tess::execution_state::main_stack()
+{
+    return impl_->main_stack_;
+}
+
+tess::stack_machine::stack& tess::execution_state::operand_stack()
+{
+    return impl_->operand_stack_;
+}
+
+tess::stack_machine::context_stack& tess::execution_state::context_stack()
+{
+    return impl_->context_stack_;
 }
 
 tess::evaluation_context tess::execution_state::create_eval_context()

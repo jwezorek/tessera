@@ -68,6 +68,11 @@ std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, tess::evaluation_
 
 /*----------------------------------------------------------------------*/
 
+void tess::expression::compile(stack_machine::stack& stack)
+{
+	stack.push( {expr_value{ std::string("TODO")}} );
+}
+
 tess::number_expr::number_expr(double v) 
 {
     throw std::exception("TODO");

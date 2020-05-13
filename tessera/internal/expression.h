@@ -23,7 +23,7 @@ namespace tess {
     class expression : public std::enable_shared_from_this<expression>
     {
     public:
-        virtual void compile(stack_machine::stack& stack) {}
+        virtual void compile(stack_machine::stack& stack);
         virtual expr_value eval(evaluation_context& ) const = 0;
         virtual expr_ptr simplify() const = 0;
         virtual void get_dependencies(std::unordered_set<std::string>& dependencies) const = 0;

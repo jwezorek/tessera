@@ -22,7 +22,7 @@ namespace tess {
 
         class op;
         using op_ptr = std::shared_ptr<op>;
-        class item : public std::variant<op_ptr, expr_value, std::vector<item>> {
+        class item : public std::variant<op_ptr, int, expr_value, std::vector<item>> {
 
         };
 
@@ -37,22 +37,22 @@ namespace tess {
             }
 
             std::vector<item> pop(int n);
-            std::vector<item> pop_until(std::function<bool(const item&)> pred);
+            bool empty() const;
 
         private:
             std::vector<item> impl_;
         };
 
         class op {
-            private:
+            protected:
+                int number_of_args_;
                 virtual std::variant<std::vector<item>, error> execute(stack& main_stack, const std::vector<item>& operands, context_stack& contexts) const = 0;
-                virtual int number_of_operands() const = 0;
             public:
+                op(int n) : number_of_args_(n) {}
                 std::optional<error> execute(stack& main_stack, stack& operand_stack, context_stack& contexts);
         };
 
-        stack_machine(execution_state& parent);
-    private:
-        tess::execution_state& parent_;
+        stack_machine();
+        expr_value run(execution_state& state);
     };
 };

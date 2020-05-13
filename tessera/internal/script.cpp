@@ -7,6 +7,7 @@
 #include "parser/expr_parser.h"
 #include "allocator.h"
 #include "execution_state.h"
+#include "object_expr.h"
 
 namespace {
 
@@ -21,6 +22,23 @@ namespace {
 				return expr->eval(ctxt);
 			}
 		);
+		return output;
+	}
+
+	std::variant<std::vector<tess::expr_ptr>, tess::error> parse_arguments(const std::vector<std::string>& args) {
+		std::vector<tess::expr_ptr> output(args.size());
+		try {
+			std::transform(args.begin(), args.end(), output.begin(),
+				[](const auto& str)->tess::expr_ptr {
+					auto expr = tess::parser::parse_expression(str);
+					if (!expr)
+						throw  tess::error(std::string("syntax error in argument: ") + str);
+					return expr->simplify();
+				}
+			);
+		} catch (tess::error e) {
+			return e;
+		}
 		return output;
 	}
 
@@ -75,7 +93,8 @@ const std::vector<std::string>& tess::script::parameters() const
 	return impl_->parameters();
 }
 
-tess::result tess::script::execute(const std::vector<std::string>& arg_strings) const
+
+tess::result tess::script::exec(const std::vector<std::string>& arg_strings) const
 {
 	auto& state = impl_->state();
 
@@ -86,3 +105,24 @@ tess::result tess::script::execute(const std::vector<std::string>& arg_strings) 
 	return extract_tiles(output);
 
 }
+
+tess::result tess::script::execute(const std::vector<std::string>& arg_strings) const
+{
+	auto maybe_args = parse_arguments(arg_strings);
+	if (std::holds_alternative<tess::error>(maybe_args))
+		return std::get<tess::error>(maybe_args);
+	auto args = std::get<std::vector<expr_ptr>>(maybe_args);
+
+	expr_ptr script_expr = std::make_shared<where_expr>(impl_->globals(), impl_->tableau());
+	expr_ptr eval_script_expr = std::make_shared<func_call_expr>(script_expr, args);
+
+	auto& state = impl_->state();
+	eval_script_expr->compile(state.main_stack());
+	stack_machine sm;
+	auto output = sm.run(state);
+
+	return extract_tiles(output);
+
+}
+
+
