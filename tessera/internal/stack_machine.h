@@ -22,7 +22,7 @@ namespace tess {
 
         class op;
         using op_ptr = std::shared_ptr<op>;
-        class item : public std::variant<op_ptr, int, expr_value, std::vector<item>> {
+        class item : public std::variant<op_ptr, expr_value, std::vector<item>> {
 
         };
 
@@ -35,9 +35,10 @@ namespace tess {
             void push(Iter beg, Iter end) {
                 std::copy(beg, end, std::back_inserter(impl_));
             }
-
+            void push(const std::vector<item>& item);
             std::vector<item> pop(int n);
             bool empty() const;
+            int count() const;
 
         private:
             std::vector<item> impl_;

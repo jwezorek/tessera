@@ -4,9 +4,17 @@
 #include "evaluation_context.h"
 #include "execution_state.h"
 
-std::optional<tess::error> tess::stack_machine::op::execute(stack& main_stack, stack& operand_stack, context_stack& contexts)
+std::optional<tess::error> tess::stack_machine::op::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
 {
-    return std::optional<error>();
+    if (number_of_args_ > operand_stack.count())
+        return tess::error("operand stack underflow.");
+    auto operands = operand_stack.pop(number_of_args_);
+    auto op_result = execute(main_stack, operands, contexts);
+    if (std::holds_alternative<tess::error>(op_result))
+        return std::get<tess::error>(op_result);
+    auto& items = std::get<std::vector<stack_machine::item>>(op_result);
+    main_stack.push(items);
+    return std::nullopt;
 }
 
 void tess::stack_machine::stack::push(const tess::stack_machine::item& item)
@@ -21,6 +29,11 @@ tess::stack_machine::item tess::stack_machine::stack::pop()
     return val;
 }
 
+void tess::stack_machine::stack::push(const std::vector<item>& items)
+{
+    push(items.begin(), items.end());
+}
+
 std::vector<tess::stack_machine::item> tess::stack_machine::stack::pop(int n)
 {
     std::vector<tess::stack_machine::item> output(n);
@@ -33,6 +46,11 @@ std::vector<tess::stack_machine::item> tess::stack_machine::stack::pop(int n)
 bool tess::stack_machine::stack::empty() const
 {
     return impl_.empty();
+}
+
+int tess::stack_machine::stack::count() const
+{
+    return static_cast<int>(impl_.size());
 }
 
 /*------------------------------------------------------------------------------*/
@@ -60,7 +78,7 @@ tess::expr_value tess::stack_machine::run(execution_state& state)
                             throw maybe_error.value();
                     },
                     [&](auto val) {
-                        operands.push({ val });
+                        operands.push(stack_machine::item{ val });
                     }
                 },
                 stack_item
