@@ -1,7 +1,9 @@
 #pragma once
 
+#include <vector>
 #include <variant>
 #include <stdexcept>
+#include <algorithm>
 
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template<class... Ts> overloaded(Ts...)->overloaded<Ts...>;
@@ -40,4 +42,15 @@ template <class... Args>
 auto variant_cast(const std::variant<Args...>& v) -> variant_cast_proxy<Args...>
 {
 	return { v };
+}
+
+template<typename T, typename Iter>
+std::vector<T> get_vector(Iter beg, Iter end) {
+	std::vector<T> output;
+	std::transform(beg, end, std::back_inserter(output),
+		[](const auto& v)->T {
+			return std::get<T>(v);
+		}
+	);
+	return output;
 }

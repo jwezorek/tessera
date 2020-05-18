@@ -31,6 +31,7 @@
     <ClCompile Include="internal\lay_expr.cpp" />
     <ClCompile Include="internal\math_util.cpp" />
     <ClCompile Include="internal\object_expr.cpp" />
+    <ClCompile Include="internal\ops.cpp" />
     <ClCompile Include="internal\parser\assignment_parser.cpp" />
     <ClCompile Include="internal\parser\basic_expr_parser.cpp" />
     <ClCompile Include="internal\parser\cluster_expr_parser.cpp" />
@@ -74,6 +75,7 @@
     <ClInclude Include="internal\lay_expr.h" />
     <ClInclude Include="internal\math_util.h" />
     <ClInclude Include="internal\object_expr.h" />
+    <ClInclude Include="internal\ops.h" />
     <ClInclude Include="internal\parser\assignment_parser.h" />
     <ClInclude Include="internal\parser\basic_expr_parser.h" />
     <ClInclude Include="internal\parser\cluster_expr_parser.h" />

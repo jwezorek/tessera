@@ -50,6 +50,7 @@ namespace tess {
         std::vector<expr_ptr> args_;
     public:
         func_call_expr(expr_ptr func_, const std::vector<expr_ptr>& args);
+        void compile(stack_machine::stack& stack) const override;
         expr_value eval(evaluation_context& ctx) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;

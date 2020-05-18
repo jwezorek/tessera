@@ -1,6 +1,7 @@
 #include "function_def.h"
 #include "tile_def.h"
 #include "expr_value.h"
+#include "ops.h"
 #include "execution_state.h"
 #include <sstream>
 #include <variant>
@@ -22,6 +23,13 @@ tess::expr_value tess::function_def::eval(evaluation_context& ctxt) const
     return {
         ctxt.allocator().create<lambda>(*this, lex_scope::frame(closure))
     };
+}
+
+void tess::function_def::compile(stack_machine::stack& stack) const
+{
+    compile_dependencies(stack);
+    stack.push(this->simplify());
+    stack.push(std::make_shared<make_lambda>());
 }
 
 const std::vector<std::string>& tess::function_def::parameters() const
@@ -57,6 +65,27 @@ void tess::function_def::get_dependencies(std::unordered_set<std::string>& depen
 tess::function_def::function_def(const std::vector<std::string>& params, expr_ptr body) :
     parameters_(params), body_(body)
 {
+}
+
+void tess::function_def::compile_dependencies(stack_machine::stack& stack) const
+{
+    std::unordered_set<std::string> dependent_vars;
+    get_dependencies(dependent_vars);
+
+    int n = static_cast<int>(dependent_vars.size());
+    std::vector<stack_machine::item> operands;
+    operands.reserve( n * 3 );
+    std::transform(dependent_vars.begin(), dependent_vars.end(), std::back_inserter(operands),
+        [](const auto& var) { return stack_machine::identifier(var); }
+    );
+
+    for (const auto& var : dependent_vars) {
+        operands.push_back(stack_machine::item(std::make_shared<get_var>()));
+        operands.push_back(stack_machine::identifier(var));
+    }
+
+    stack.push(std::make_shared<make_scope_frame>(n));
+    stack.push(operands);
 }
 
 std::vector<std::string> tess::function_def::get_variables() const

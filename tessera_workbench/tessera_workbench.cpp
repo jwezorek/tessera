@@ -30,8 +30,7 @@ int main(int argc, char** argv)
 		generate_svg("C:\\test\\tri.svg", tiles, 50.0);
 
 		std::cout << "success" << "\n";
-	}
-	else {
+	} else {
 		auto err = std::get<tess::error>(results);
 		std::cout << err << "\n";
 	}

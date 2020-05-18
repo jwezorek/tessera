@@ -3,19 +3,30 @@
 #include "variant_util.h"
 #include "evaluation_context.h"
 #include "execution_state.h"
+#include "expression.h"
 
-std::optional<tess::error> tess::stack_machine::op::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
+std::optional<tess::error> tess::stack_machine::op_1::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
 {
     if (number_of_args_ > operand_stack.count())
         return tess::error("operand stack underflow.");
-    auto operands = operand_stack.pop(number_of_args_);
-    auto op_result = execute(main_stack, operands, contexts);
+    auto op_result = execute(operand_stack.pop(number_of_args_), contexts);
     if (std::holds_alternative<tess::error>(op_result))
         return std::get<tess::error>(op_result);
-    auto& items = std::get<std::vector<stack_machine::item>>(op_result);
-    main_stack.push(items);
+    main_stack.push(op_result);
     return std::nullopt;
 }
+
+std::optional<tess::error> tess::stack_machine::op_multi::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
+{
+    if (number_of_args_ > operand_stack.count())
+        return tess::error("operand stack underflow.");
+    auto op_result = execute(operand_stack.pop(number_of_args_), contexts);
+    if (std::holds_alternative<tess::error>(op_result))
+        return std::get<tess::error>(op_result);
+    main_stack.push(std::get<std::vector<stack_machine::item>>(op_result));
+    return std::nullopt;
+}
+
 
 void tess::stack_machine::stack::push(const tess::stack_machine::item& item)
 {
@@ -31,7 +42,13 @@ tess::stack_machine::item tess::stack_machine::stack::pop()
 
 void tess::stack_machine::stack::push(const std::vector<item>& items)
 {
-    push(items.begin(), items.end());
+    push(items.rbegin(), items.rend());
+}
+
+void tess::stack_machine::stack::compile_and_push(const std::vector<tess::expr_ptr>& exprs)
+{
+    for (auto expr_iter = exprs.rbegin(); expr_iter != exprs.rend(); ++expr_iter)
+        (*expr_iter)->compile(*this);
 }
 
 std::vector<tess::stack_machine::item> tess::stack_machine::stack::pop(int n)
@@ -93,3 +110,4 @@ tess::expr_value tess::stack_machine::run(execution_state& state)
     }
     return output;
 }
+

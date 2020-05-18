@@ -1,5 +1,6 @@
 #include "object_expr.h"
 #include "execution_state.h"
+#include "ops.h"
 
 std::optional<int> tess::eval_integer_expr(const tess::expr_ptr& expr, tess::evaluation_context& ctxt)
 {
@@ -100,6 +101,15 @@ tess::func_call_expr::func_call_expr(expr_ptr func, const std::vector<expr_ptr>&
     func_(func),
     args_(args)
 {
+}
+
+void tess::func_call_expr::compile(stack_machine::stack& stack) const
+{
+    stack.push(std::make_shared<pop_eval_context>());
+    stack.push(std::make_shared<call_func>(args_.size()));
+    func_->compile(stack);
+    stack.compile_and_push(args_);
+    stack.push(std::make_shared<push_eval_context>());
 }
 
 tess::expr_value tess::func_call_expr::eval(evaluation_context& ctx) const

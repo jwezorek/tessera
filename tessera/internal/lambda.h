@@ -12,6 +12,7 @@ namespace tess{
     class function_def;
     class expression;
     class execution_state;
+    class scope_frame;
 
     class lambda {
             friend class tessera_impl;
@@ -20,6 +21,7 @@ namespace tess{
             const std::vector<std::string>& parameters() const;
             expr_value call(execution_state& state, const std::vector<expr_value>& expr_value) const;
             void insert_field(const std::string& var, const expr_value& val);
+
             class impl_type;
 
         private:
