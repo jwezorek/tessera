@@ -17,7 +17,7 @@ namespace tess {
 		public:
 			assignment_block() {}
 			assignment_block(const std::vector<var_assignment>& assignments);
-			lex_scope::frame eval(evaluation_context& ctxt) const;
+			scope_frame eval(evaluation_context& ctxt) const;
 			bool operator!=(const assignment_block& block) { return impl_.get() != block.impl_.get(); }
 			assignment_block simplify() const;
 			std::vector<std::string> get_variables() const;

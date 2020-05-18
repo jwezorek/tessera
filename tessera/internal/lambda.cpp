@@ -14,7 +14,7 @@ const std::vector<std::string>& tess::lambda::parameters() const
 
 tess::expr_value tess::lambda::call(execution_state& state, const std::vector<expr_value>& args) const
 {
-    lex_scope::frame frame = impl_->closure;
+    scope_frame frame = impl_->closure;
     const auto& parameters = impl_->func.parameters();
     auto body = impl_->func.body();
 
@@ -30,7 +30,7 @@ void tess::lambda::insert_field(const std::string& var, const expr_value& val)
     impl_->insert_field(var, val);
 }
 
-tess::lambda::impl_type::impl_type(const function_def& f, const lex_scope::frame& c) :
+tess::lambda::impl_type::impl_type(const function_def& f, const scope_frame& c) :
     func(f), closure(c)
 {
 }

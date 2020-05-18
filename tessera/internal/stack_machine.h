@@ -29,7 +29,7 @@ namespace tess {
 
         class op;
         using op_ptr = std::shared_ptr<op>;
-        using item = std::variant<op_ptr, expr_value, error, identifier, lex_scope::frame, std::shared_ptr<expression>>;
+        using item = std::variant<op_ptr, expr_value, error, identifier, scope_frame, std::shared_ptr<expression>>;
 
         class stack {
         public:

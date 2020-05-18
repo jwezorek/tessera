@@ -21,7 +21,7 @@ tess::expr_value tess::function_def::eval(evaluation_context& ctxt) const
     }
 
     return {
-        ctxt.allocator().create<lambda>(*this, lex_scope::frame(closure))
+        ctxt.allocator().create<lambda>(*this, scope_frame(closure))
     };
 }
 

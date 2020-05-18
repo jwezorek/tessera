@@ -107,7 +107,7 @@ tess::expr_value tess::cluster_comprehension_expr::eval(evaluation_context& ctxt
     int n = range.get_ary_count();
     std::vector<expr_value> result(n);
     for (int i = 0; i < n; i++) {
-        lex_scope(ctxt, lex_scope::frame(var_, range.get_ary_item(i)));
+        lex_scope(ctxt, scope_frame(var_, range.get_ary_item(i)));
         result[i] = item_expr_->eval(ctxt);
     }
 

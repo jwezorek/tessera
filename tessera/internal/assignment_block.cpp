@@ -24,7 +24,7 @@ void set_one_var(tess::evaluation_context& ctxt, const std::string& var, tess::e
 	ctxt.peek().set(var, val);
 }
 
-tess::lex_scope::frame tess::assignment_block::eval(evaluation_context& ctxt) const
+tess::scope_frame tess::assignment_block::eval(evaluation_context& ctxt) const
 {
 	ctxt.push_scope();
 

@@ -16,7 +16,7 @@ tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_mac
     try {
         auto def_ptr = std::get<expr_ptr>(operands[0]);
         function_def def = *std::static_pointer_cast<function_def>(def_ptr);
-        auto closure = std::get<lex_scope::frame>(operands[1]);
+        auto closure = std::get<scope_frame>(operands[1]);
         auto lambda = alloc.create<tess::lambda>(def, closure);
         return  make_expr_val_item(lambda) ;
     }  catch (tess::error e) {
@@ -69,7 +69,7 @@ tess::stack_machine::item tess::make_scope_frame::execute(const std::vector<stac
                 return std::get<tess::expr_value>(item);
             }
         );
-        return lex_scope::frame(vars, vals);
+        return scope_frame(vars, vals);
     } catch (tess::error e) {
         return e;
     } catch (...) {
@@ -101,7 +101,7 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::call_fun
         if (func.parameters().size() != args.size())
             return tess::error("func call arg count mismatch.");
 
-        lex_scope::frame frame(func.parameters(), args);
+        scope_frame frame(func.parameters(), args);
         //frame.union_with(func.)
         return tess::error("TODO");
 

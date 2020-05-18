@@ -13,7 +13,7 @@ namespace {
 
 }
 
-tess::lex_scope::frame::frame(const std::vector<std::string>& params, const std::vector<expr_value>& args)
+tess::scope_frame::scope_frame(const std::vector<std::string>& params, const std::vector<expr_value>& args)
 {
     if (params.size() != args.size())
         throw tess::error("params/args count mismatch.");
@@ -22,7 +22,7 @@ tess::lex_scope::frame::frame(const std::vector<std::string>& params, const std:
         definitions_[params[i]] = args[i];
 }
 
-tess::lex_scope::frame::frame(const std::vector<std::tuple<std::string, expr_value>>& assignments)
+tess::scope_frame::scope_frame(const std::vector<std::tuple<std::string, expr_value>>& assignments)
 {
     std::transform(assignments.begin(), assignments.end(), std::inserter(definitions_, definitions_.end()),
         [](const auto& assgn)->std::pair<std::string, expr_value> {
@@ -32,14 +32,14 @@ tess::lex_scope::frame::frame(const std::vector<std::tuple<std::string, expr_val
     );
 }
 
-tess::lex_scope::frame::frame(const std::vector<expr_value>& args)
+tess::scope_frame::scope_frame(const std::vector<expr_value>& args)
 {
     int n = static_cast<int>(args.size());
     for (int i = 0; i < n; i++)
         definitions_[placeholder(i + 1)] = args[i];
 }
 
-std::optional<tess::expr_value> tess::lex_scope::frame::get(int ph) const
+std::optional<tess::expr_value> tess::scope_frame::get(int ph) const
 {
     auto i = definitions_.find(placeholder(ph));
     if (i != definitions_.end())
@@ -48,7 +48,7 @@ std::optional<tess::expr_value> tess::lex_scope::frame::get(int ph) const
         return std::nullopt;
 }
 
-std::optional<tess::expr_value> tess::lex_scope::frame::get(std::string var) const
+std::optional<tess::expr_value> tess::scope_frame::get(std::string var) const
 {
     auto i = definitions_.find(var);
     if (i != definitions_.end())
@@ -57,17 +57,17 @@ std::optional<tess::expr_value> tess::lex_scope::frame::get(std::string var) con
         return std::nullopt;
 }
 
-void tess::lex_scope::frame::set(const std::string& var, expr_value val)
+void tess::scope_frame::set(const std::string& var, expr_value val)
 {
     definitions_[var] = val;
 }
 
-void tess::lex_scope::frame::set(int i, expr_value val)
+void tess::scope_frame::set(int i, expr_value val)
 {
     definitions_[placeholder(i)] = val;
 }
 
-void tess::lex_scope::frame::set(const::std::vector<std::string>& vars, const::std::vector<expr_value>& vals)
+void tess::scope_frame::set(const::std::vector<std::string>& vars, const::std::vector<expr_value>& vals)
 {
     if (vars.size() != vals.size())
         throw tess::error("scope::frame::set: vars/vals count mismatch.");
@@ -76,29 +76,29 @@ void tess::lex_scope::frame::set(const::std::vector<std::string>& vars, const::s
         definitions_[vars[i]] = vals[i];
 }
 
-tess::lex_scope::frame::iterator tess::lex_scope::frame::begin() const
+tess::scope_frame::iterator tess::scope_frame::begin() const
 {
     return definitions_.begin();
 }
 
-tess::lex_scope::frame::iterator tess::lex_scope::frame::end() const
+tess::scope_frame::iterator tess::scope_frame::end() const
 {
     return definitions_.end();
 }
 
-tess::lex_scope::frame::frame(const std::string& var, expr_value val)
+tess::scope_frame::scope_frame(const std::string& var, expr_value val)
 {
     definitions_[var] = val;
 }
 
-tess::lex_scope::lex_scope(tess::evaluation_context& ctxt, tess::lex_scope::frame&& ls) :
+tess::lex_scope::lex_scope(tess::evaluation_context& ctxt, tess::scope_frame&& ls) :
     ctxt_(ctxt)
 {
     ctxt_.push_scope(std::move(ls));
 }
 
 
-tess::lex_scope::lex_scope(evaluation_context& ctxt, const lex_scope::frame& ls) :
+tess::lex_scope::lex_scope(evaluation_context& ctxt, const scope_frame& ls) :
     ctxt_(ctxt)
 {
     ctxt_.push_scope(ls);
@@ -145,7 +145,7 @@ tess::expr_value tess::evaluation_context::get(int i) const
     return get(placeholder(i));
 }
 
-tess::lex_scope::frame& tess::evaluation_context::peek()
+tess::scope_frame& tess::evaluation_context::peek()
 {
     return scopes_.back();
 }
@@ -155,17 +155,17 @@ void tess::evaluation_context::push_scope()
     scopes_.push_back({});
 }
 
-void tess::evaluation_context::push_scope(lex_scope::frame&& scope)
+void tess::evaluation_context::push_scope(scope_frame&& scope)
 {
     scopes_.push_back(std::move(scope));
 }
 
-void tess::evaluation_context::push_scope(const lex_scope::frame& scope)
+void tess::evaluation_context::push_scope(const scope_frame& scope)
 {
     scopes_.push_back(scope);
 }
 
-tess::lex_scope::frame tess::evaluation_context::pop_scope()
+tess::scope_frame tess::evaluation_context::pop_scope()
 {
     auto frame = scopes_.back();
     scopes_.pop_back();

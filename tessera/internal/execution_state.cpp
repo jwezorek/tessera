@@ -55,7 +55,7 @@ tess::evaluation_context tess::execution_state::create_eval_context()
     );
 }
 
-tess::evaluation_context tess::execution_state::create_eval_context(const lex_scope::frame& frame)
+tess::evaluation_context tess::execution_state::create_eval_context(const scope_frame& frame)
 {
     auto ctxt = create_eval_context();
     ctxt.push_scope(frame);

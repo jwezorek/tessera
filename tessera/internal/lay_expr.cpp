@@ -181,7 +181,7 @@ tess::expr_value tess::lay_expr::eval(evaluation_context& ctxt) const
     if (!edge_mappings_.empty()) {
 
         // push "placeholders' to the pieces on the stack
-        lex_scope scope(ctxt, lex_scope::frame(pieces));
+        lex_scope scope(ctxt, scope_frame(pieces));
 
         edge_mapping_result maybe_mappings;
         if (maybe_mappings = eval_edge_mappings(ctxt); std::holds_alternative<error>(maybe_mappings))
