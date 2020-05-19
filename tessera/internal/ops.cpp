@@ -102,8 +102,15 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::call_fun
             return tess::error("func call arg count mismatch.");
 
         scope_frame frame(func.parameters(), args);
-        //frame.union_with(func.)
-        return tess::error("TODO");
+        for (const auto& [var, val] : func.closure()) 
+            frame.set(var, val);
+        contexts.top().push_scope(frame);
+
+        stack_machine::stack func_def;
+        func.body()->compile(func_def);
+        int sz = func_def.count();
+
+        return func_def.pop(sz);
 
     }  catch (tess::error e) {
         return e;

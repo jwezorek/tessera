@@ -30,6 +30,16 @@ void tess::lambda::insert_field(const std::string& var, const expr_value& val)
     impl_->insert_field(var, val);
 }
 
+const tess::scope_frame& tess::lambda::closure() const
+{
+    return impl_->closure;
+}
+
+std::shared_ptr<tess::expression> tess::lambda::body()
+{
+    return impl_->func.body();
+}
+
 tess::lambda::impl_type::impl_type(const function_def& f, const scope_frame& c) :
     func(f), closure(c)
 {

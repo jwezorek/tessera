@@ -21,6 +21,8 @@ namespace tess{
             const std::vector<std::string>& parameters() const;
             expr_value call(execution_state& state, const std::vector<expr_value>& expr_value) const;
             void insert_field(const std::string& var, const expr_value& val);
+            const scope_frame& closure() const;
+            std::shared_ptr<expression> body();
 
             class impl_type;
 

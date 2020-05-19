@@ -34,7 +34,7 @@ struct variant_cast_proxy
 					throw std::runtime_error("bad variant cast");
 			},
 			v
-				);
+		);
 	}
 };
 

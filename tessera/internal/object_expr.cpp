@@ -105,8 +105,9 @@ tess::func_call_expr::func_call_expr(expr_ptr func, const std::vector<expr_ptr>&
 
 void tess::func_call_expr::compile(stack_machine::stack& stack) const
 {
+    int n = static_cast<int>(args_.size());
     stack.push(std::make_shared<pop_eval_context>());
-    stack.push(std::make_shared<call_func>(args_.size()));
+    stack.push(std::make_shared<call_func>(n));
     func_->compile(stack);
     stack.compile_and_push(args_);
     stack.push(std::make_shared<push_eval_context>());

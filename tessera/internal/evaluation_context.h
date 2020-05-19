@@ -19,7 +19,6 @@ namespace tess {
         void set(const std::string& var, expr_value val);
         void set(int i, expr_value val);
         void set(const::std::vector<std::string>& vars, const::std::vector<expr_value>& vals);
-
         using iterator = std::map<std::string, expr_value>::const_iterator;
         iterator begin() const;
         iterator end() const;
