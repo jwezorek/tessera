@@ -60,4 +60,18 @@ namespace tess {
         std::optional<error> execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts) override;
     };
 
+    class neg_op : public stack_machine::op_1 {
+    public:
+        neg_op();
+    protected:
+        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+    };
+
+    class add_op : public stack_machine::op_1 {
+    public:
+        add_op(int args);
+    protected:
+        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+    };
+
 };

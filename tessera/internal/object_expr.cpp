@@ -33,6 +33,12 @@ tess::expr_value tess::var_expr::eval(evaluation_context& ctx) const
     return value;
 }
 
+void tess::var_expr::compile(stack_machine::stack& stack) const
+{
+    stack.push(std::make_shared<get_var>());
+    stack.push(stack_machine::identifier(var_));
+}
+
 void tess::var_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
     dependencies.insert(var_);

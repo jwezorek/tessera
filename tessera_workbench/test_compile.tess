@@ -1,0 +1,7 @@
+let test = patch (a,b,c) {
+    a + b + c
+};
+
+tableau( num ) {
+    test(1,2,3)
+}

@@ -9,6 +9,7 @@
 #include "parser/expr_parser.h"
 #include "parser/exception.h"
 #include "execution_state.h"
+#include "ops.h"
 #include <sstream>
 
 namespace {
@@ -86,6 +87,11 @@ tess::expr_value tess::number_expr::eval( tess::evaluation_context&) const {
 	return tess::expr_value{ tess::number(val_) };
 }
 
+void tess::number_expr::compile(stack_machine::stack& stack) const
+{
+	stack.push(tess::expr_value{ tess::number(val_) });
+}
+
 tess::expr_ptr tess::number_expr::simplify() const
 {
 	return std::make_shared<number_expr>(val_);
@@ -119,6 +125,16 @@ tess::expr_value tess::addition_expr::eval( tess::evaluation_context& ctxt) cons
 		sum += (sign) ? term.value() : -term.value();
 	}
 	return tess::expr_value{ sum };
+}
+
+void tess::addition_expr::compile(stack_machine::stack& stack) const
+{
+	stack.push(std::make_shared<add_op>(terms_.size()));
+	for (auto [sign, term_expr] : terms_) {
+		term_expr->compile(stack);
+		if (!sign)
+			stack.push(std::make_shared<neg_op>());
+	}
 }
 
 void tess::addition_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const {

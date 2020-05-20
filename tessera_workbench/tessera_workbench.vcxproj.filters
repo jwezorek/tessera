@@ -22,5 +22,6 @@
   <ItemGroup>
     <None Include="test.tess" />
     <None Include="example.tess" />
+    <None Include="test_compile.tess" />
   </ItemGroup>
 </Project>

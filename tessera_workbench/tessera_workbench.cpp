@@ -14,13 +14,13 @@ void generate_svg(const std::string& filename, const std::vector<tess::tile>& ti
 
 int main(int argc, char** argv)
 {
-	std::string source_code = read_file("test.tess");
+	std::string source_code = read_file("test_compile.tess");
 	auto results = tess::script::interpret( source_code );
 
 	if (std::holds_alternative<tess::script>(results)) {
 		const auto& tessera = std::get<tess::script>(results);
 
-		auto output = tessera.exec( get_arguments(argc, argv) );
+		auto output = tessera.execute( get_arguments(argc, argv) );
 		if (std::holds_alternative<tess::error>(output)) {
 			std::cout << std::get<tess::error>(output) << "\n";
 			return -1;

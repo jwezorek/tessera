@@ -137,3 +137,27 @@ std::optional<tess::error> tess::push_eval_context::execute(stack_machine::stack
     contexts.pop();
     return std::nullopt;
 }
+
+tess::neg_op::neg_op() : stack_machine::op_1(1)
+{
+}
+
+tess::stack_machine::item tess::neg_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    tess::number val = std::get<tess::number>(std::get<expr_value>(operands[0]));
+    return stack_machine::item(expr_value{ -val });
+}
+
+tess::add_op::add_op(int args) : stack_machine::op_1(args)
+{
+}
+
+tess::stack_machine::item tess::add_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    auto values = get_vector<expr_value>(operands.begin(), operands.end());
+    auto nums = get_vector<tess::number>(values.begin(), values.end());
+    tess::number sum = 0;
+    for (const auto& num : nums)
+        sum += num;
+    return stack_machine::item( expr_value{sum} );
+}
