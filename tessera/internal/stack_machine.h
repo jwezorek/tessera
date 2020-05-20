@@ -24,6 +24,7 @@ namespace tess {
 
         struct identifier {
             std::string name;
+            identifier() {}
             identifier(std::string str) : name(str) {}
         };
 

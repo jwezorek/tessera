@@ -59,6 +59,7 @@ namespace tess {
         scope_frame pop_scope();
         allocator& allocator();
         execution_state& execution_state();
+        bool empty() const;
     private:
         std::vector<scope_frame> scopes_;
         tess::execution_state& state_;

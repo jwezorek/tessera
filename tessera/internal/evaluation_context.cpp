@@ -181,3 +181,8 @@ tess::execution_state& tess::evaluation_context::execution_state()
 {
     return state_;
 }
+
+bool tess::evaluation_context::empty() const
+{
+    return scopes_.empty();
+}

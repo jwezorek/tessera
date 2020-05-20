@@ -74,4 +74,38 @@ namespace tess {
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
     };
 
+    class insert_fields_op : public stack_machine::op_1 {
+    public:
+        insert_fields_op();
+    protected:
+        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+    };
+    
+    class pop_frame_op : public stack_machine::op {
+    public:
+        pop_frame_op();
+        std::optional<error> execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts) override;
+    };
+
+    class push_frame_op : public stack_machine::op {
+    public:
+        push_frame_op();
+        std::optional<error> execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts) override;
+    };
+
+    class dup_op : public stack_machine::op_multi {
+    public:
+        dup_op();
+    protected:
+        std::variant<std::vector<stack_machine::item>, tess::error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+    };
+
+    class assign_op : public stack_machine::op_multi {
+    public:
+        assign_op(int num_vars);
+    protected:
+        std::variant<std::vector<stack_machine::item>, tess::error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+    };
+
+
 };

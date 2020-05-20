@@ -75,11 +75,9 @@ void tess::function_def::compile_dependencies(stack_machine::stack& stack) const
     int n = static_cast<int>(dependent_vars.size());
     std::vector<stack_machine::item> operands;
     operands.reserve( n * 3 );
-    std::transform(dependent_vars.begin(), dependent_vars.end(), std::back_inserter(operands),
-        [](const auto& var) { return stack_machine::identifier(var); }
-    );
 
     for (const auto& var : dependent_vars) {
+        operands.push_back(stack_machine::identifier(var));
         operands.push_back(stack_machine::item(std::make_shared<get_var>()));
         operands.push_back(stack_machine::identifier(var));
     }

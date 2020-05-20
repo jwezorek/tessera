@@ -1,5 +1,6 @@
 #include "assignment_block.h"
 #include "lambda.h"
+#include "ops.h"
 
 namespace {
 
@@ -11,6 +12,31 @@ namespace {
 		}
 	}
 
+	bool is_multi_assignment(tess::var_assignment va) {
+		return std::get<0>(va).size() > 1;
+	}
+
+	void compile_multi_assignment(tess::stack_machine::stack& stack, tess::var_assignment va) {
+		const auto& [vars, val] = va;
+		stack.push(std::make_shared<tess::assign_op>(vars.size()));
+
+		std::vector<tess::stack_machine::item> identifiers(vars.size());
+		std::transform(vars.begin(), vars.end(), identifiers.begin(),
+			[](const auto& var) {
+				return tess::stack_machine::identifier(var);
+			}
+		);
+
+		stack.push(identifiers);
+		val->compile(stack);
+	}
+	
+	void compile_assignment(tess::stack_machine::stack& stack, tess::var_assignment va) {
+		const auto& [vars, val] = va;
+		stack.push(std::make_shared<tess::assign_op>(1));
+		stack.push(tess::stack_machine::identifier(vars[0]));
+		val->compile(stack);
+	}
 }
 
 tess::assignment_block::assignment_block(const std::vector<var_assignment>& assignments) :
@@ -41,6 +67,17 @@ tess::scope_frame tess::assignment_block::eval(evaluation_context& ctxt) const
 	}
 
 	return ctxt.pop_scope();
+}
+
+void tess::assignment_block::compile(stack_machine::stack& stack) const
+{
+	for (auto i = impl_->rbegin(); i != impl_->rend(); ++i) {
+		const auto& assignment = *i;
+		if (is_multi_assignment(assignment))
+			compile_multi_assignment(stack, assignment);
+		else
+			compile_assignment(stack, assignment);
+	}
 }
 
 tess::assignment_block tess::assignment_block::simplify() const
@@ -98,6 +135,16 @@ tess::expr_value tess::where_expr::eval(evaluation_context& ctxt) const
 	}
 
 	return result;
+}
+
+void tess::where_expr::compile(stack_machine::stack& stack) const
+{
+	stack.push(std::make_shared<insert_fields_op>());
+	stack.push(std::make_shared<pop_frame_op>());
+	body_->compile(stack);
+	stack.push(std::make_shared<push_frame_op>());
+	stack.push(std::make_shared<dup_op>());
+	assignments_.compile(stack);
 }
 
 tess::expr_ptr tess::where_expr::simplify() const

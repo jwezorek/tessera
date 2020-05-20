@@ -4,6 +4,7 @@
 #include "lambda_impl.h"
 #include "allocator.h"
 #include "variant_util.h"
+#include "evaluation_context.h"
 
 tess::make_lambda::make_lambda() :
     op_1(2)
@@ -57,18 +58,10 @@ tess::stack_machine::item tess::make_scope_frame::execute(const std::vector<stac
     std::vector<std::string> vars(n);
     std::vector<expr_value> vals(n);
     try {
-        std::transform(operands.begin(), operands.begin() + n, vars.begin(),
-            [&](const auto& item)->std::string {
-                auto ident = std::get<stack_machine::identifier>(item);
-                return ident.name;
-            }
-        );
-        auto val_begin = operands.begin() + n;
-        std::transform(val_begin, operands.end(), vals.begin(),
-            [&](const auto& item)->tess::expr_value {
-                return std::get<tess::expr_value>(item);
-            }
-        );
+        for (int i = 0; i < n; i += 2) {
+            vars.push_back(std::get<stack_machine::identifier>(operands[i]).name);
+            vals.push_back(std::get<expr_value>(operands[i + 1]));
+        }
         return scope_frame(vars, vals);
     } catch (tess::error e) {
         return e;
@@ -138,6 +131,8 @@ std::optional<tess::error> tess::push_eval_context::execute(stack_machine::stack
     return std::nullopt;
 }
 
+/*---------------------------------------------------------------------------------------------*/
+
 tess::neg_op::neg_op() : stack_machine::op_1(1)
 {
 }
@@ -147,6 +142,8 @@ tess::stack_machine::item tess::neg_op::execute(const std::vector<stack_machine:
     tess::number val = std::get<tess::number>(std::get<expr_value>(operands[0]));
     return stack_machine::item(expr_value{ -val });
 }
+
+/*---------------------------------------------------------------------------------------------*/
 
 tess::add_op::add_op(int args) : stack_machine::op_1(args)
 {
@@ -160,4 +157,97 @@ tess::stack_machine::item tess::add_op::execute(const std::vector<stack_machine:
     for (const auto& num : nums)
         sum += num;
     return stack_machine::item( expr_value{sum} );
+}
+
+/*---------------------------------------------------------------------------------------------*/
+
+tess::insert_fields_op::insert_fields_op() : op_1(2)
+{
+}
+
+tess::stack_machine::item tess::insert_fields_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    auto obj = std::get<expr_value>(operands[0]);
+    auto frame = std::get<tess::scope_frame>(operands[1]);
+
+    for (const auto& [var, val] : frame)
+        obj.insert_field(var, val);
+
+    return obj;
+}
+
+/*---------------------------------------------------------------------------------------------*/
+
+tess::pop_frame_op::pop_frame_op() : tess::stack_machine::op(0)
+{
+}
+
+std::optional<tess::error> tess::pop_frame_op::execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts)
+{
+    if (contexts.empty())
+        return tess::error("context stack underflow");
+
+    if (contexts.top().empty())
+        return tess::error("eval context underflow");
+
+    contexts.top().pop_scope();
+    return std::nullopt;
+}
+
+/*---------------------------------------------------------------------------------------------*/
+
+tess::push_frame_op::push_frame_op() : tess::stack_machine::op(1)
+{
+}
+
+std::optional<tess::error> tess::push_frame_op::execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts)
+{
+    if (contexts.empty())
+        return tess::error("context stack underflow");
+    auto frame = std::get<scope_frame>(main_stack.pop());
+    contexts.top().push_scope(frame);
+    return std::nullopt;
+}
+
+/*---------------------------------------------------------------------------------------------*/
+
+tess::dup_op::dup_op() : stack_machine::op_multi(1)
+{
+}
+
+std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::dup_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    return std::vector<tess::stack_machine::item> {
+        operands[0],
+        operands[0]
+    };
+}
+
+tess::assign_op::assign_op(int num_vars) : stack_machine::op_multi(num_vars+1)
+{
+}
+
+std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::assign_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    int num_vars = static_cast<int>(operands.size() - 1);
+    auto value = std::get<expr_value>(operands.back());
+    std::vector<stack_machine::identifier> vars(num_vars);
+    std::transform(operands.begin(), operands.begin() + num_vars, vars.begin(),
+        [](const auto& item) { return std::get<stack_machine::identifier>(item); }
+    );
+
+    if (num_vars == 1) {
+        //TODO: insert self-reference if val is a lambda
+        std::vector<tess::stack_machine::item> output = { vars[0], value };
+        return output;
+    } else {
+        //TODO: insert self-reference if val is a lambda
+        std::vector<tess::stack_machine::item> output(num_vars);
+        int i = 0;
+        for (const auto& var : vars) {
+            output.push_back(var);
+            output.push_back(value.get_ary_item(i++));
+        }
+        return output;
+    }
 }

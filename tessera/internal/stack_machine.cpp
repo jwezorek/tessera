@@ -83,6 +83,8 @@ tess::expr_value tess::stack_machine::run(execution_state& state)
     auto& operands = state.operand_stack();
     expr_value output;
 
+    contexts.push(state.create_eval_context());
+
     try {
 
         while (!main_stack.empty()) {
