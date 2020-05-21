@@ -116,3 +116,8 @@ void tess::expr_value::get_all_referenced_allocations(std::unordered_set<void*>&
 	);
 }
 
+std::string tess::expr_value::to_string() const
+{
+	return "<EXPR_VAL>";
+}
+

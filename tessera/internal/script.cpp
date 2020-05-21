@@ -117,7 +117,9 @@ tess::result tess::script::execute(const std::vector<std::string>& arg_strings) 
 	expr_ptr eval_script_expr = std::make_shared<func_call_expr>(script_expr, args);
 
 	auto& state = impl_->state();
+	std::string expr_str = eval_script_expr->to_string();
 	eval_script_expr->compile(state.main_stack());
+	std::string stack_str = state.main_stack().to_string();
 	stack_machine sm;
 	auto output = sm.run(state);
 

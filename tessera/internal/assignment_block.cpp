@@ -1,6 +1,7 @@
 #include "assignment_block.h"
 #include "lambda.h"
 #include "ops.h"
+#include <sstream>
 
 namespace {
 
@@ -84,6 +85,20 @@ void tess::assignment_block::compile(stack_machine::stack& stack) const
 	stack.push(std::make_shared<make_scope_frame>(count));
 }
 
+std::string tess::assignment_block::to_string() const
+{
+	std::stringstream contents;
+	for (const auto& vars_val : *impl_) {
+		const auto& [vars, val] = vars_val;
+		contents << "(( ";
+		for (const auto& var : vars)
+			contents << var << " ";
+		contents << ") " << val->to_string() << ")";
+	}
+
+	return "( let (" + contents.str() + ") )";
+}
+
 tess::assignment_block tess::assignment_block::simplify() const
 {
 	std::vector<var_assignment> simplified(impl_->size());
@@ -149,6 +164,11 @@ void tess::where_expr::compile(stack_machine::stack& stack) const
 	stack.push(std::make_shared<push_frame_op>());
 	stack.push(std::make_shared<dup_op>());
 	assignments_.compile(stack);
+}
+
+std::string tess::where_expr::to_string() const
+{
+	return "( where " + assignments_.to_string() + " " + body_->to_string() + " )";
 }
 
 tess::expr_ptr tess::where_expr::simplify() const

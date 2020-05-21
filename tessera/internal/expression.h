@@ -39,6 +39,7 @@ namespace tess {
         number_expr(double v); 
         expr_value eval(evaluation_context& ) const override;
         void compile(stack_machine::stack& stack) const override;
+        std::string to_string() const override;
         expr_ptr simplify() const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
     };
@@ -109,6 +110,7 @@ namespace tess {
         addition_expr(const std::vector<std::tuple<bool, expr_ptr>>& terms);
         expr_value eval(evaluation_context& ctx ) const override;
         void compile(stack_machine::stack& stack) const override;
+        std::string to_string() const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };

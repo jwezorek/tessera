@@ -4,6 +4,7 @@
 #include "evaluation_context.h"
 #include "execution_state.h"
 #include "expression.h"
+#include <sstream>
 
 std::optional<tess::error> tess::stack_machine::op_1::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
 {
@@ -68,6 +69,31 @@ bool tess::stack_machine::stack::empty() const
 int tess::stack_machine::stack::count() const
 {
     return static_cast<int>(impl_.size());
+}
+
+std::string tess::stack_machine::stack::to_string() const
+{
+    std::stringstream ss;
+
+    for (const auto& it : impl_) {
+        std::visit(
+            overloaded{
+                [&](op_ptr op) {
+                    ss << op->to_string();
+                },
+                [&](expr_ptr e) {
+                    ss << e->to_string();
+                },
+                [&](const auto& val) {
+                    ss << val.to_string();
+                }
+            },
+            it
+        );
+        ss << "\n";
+    }
+
+    return ss.str();
 }
 
 /*------------------------------------------------------------------------------*/

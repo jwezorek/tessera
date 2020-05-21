@@ -19,6 +19,7 @@ namespace tess {
 			assignment_block(const std::vector<var_assignment>& assignments);
 			scope_frame eval(evaluation_context& ctxt) const;
 			void compile(stack_machine::stack& stack) const;
+			std::string to_string() const;
 			bool operator!=(const assignment_block& block) { return impl_.get() != block.impl_.get(); }
 			assignment_block simplify() const;
 			std::vector<std::string> get_variables() const;
@@ -37,6 +38,7 @@ namespace tess {
 		where_expr(const assignment_block& assignments, expr_ptr body);
 		expr_value eval(evaluation_context&) const override;
 		void compile(stack_machine::stack& stack) const override;
+		std::string to_string() const override;
 		expr_ptr simplify() const override;
 		void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
 	};

@@ -43,7 +43,7 @@ std::string tess::function_def::to_string() const
         }
     );
 
-    return std::string("( define_func (") + parameters + ") (" + body_->to_string() + ") )";
+    return std::string("( lambda (") + parameters + ")  " + body_->to_string() + " )";
 }
 
 const std::vector<std::string>& tess::function_def::parameters() const

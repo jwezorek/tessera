@@ -86,6 +86,11 @@ tess::scope_frame::iterator tess::scope_frame::end() const
     return definitions_.end();
 }
 
+std::string tess::scope_frame::to_string() const
+{
+    return "<scope frame>";
+}
+
 tess::scope_frame::scope_frame(const std::string& var, expr_value val)
 {
     definitions_[var] = val;

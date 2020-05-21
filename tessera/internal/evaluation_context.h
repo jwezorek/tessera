@@ -22,7 +22,7 @@ namespace tess {
         using iterator = std::map<std::string, expr_value>::const_iterator;
         iterator begin() const;
         iterator end() const;
-
+        std::string to_string() const;
     private:
         std::map<std::string, expr_value> definitions_;
     };

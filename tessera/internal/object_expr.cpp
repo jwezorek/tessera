@@ -39,6 +39,11 @@ void tess::var_expr::compile(stack_machine::stack& stack) const
     stack.push(stack_machine::identifier(var_));
 }
 
+std::string tess::var_expr::to_string() const
+{
+    return var_;
+}
+
 void tess::var_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
     dependencies.insert(var_);
@@ -117,6 +122,23 @@ void tess::func_call_expr::compile(stack_machine::stack& stack) const
     func_->compile(stack);
     stack.compile_and_push(args_);
     stack.push(std::make_shared<push_eval_context>());
+}
+
+std::string tess::func_call_expr::to_string() const
+{
+    std::vector<std::string> arg_strs(args_.size());
+    std::transform(args_.begin(), args_.end(), arg_strs.begin(),
+        [](const auto& e) {return e->to_string(); }
+    );
+    std::string args = std::accumulate(
+        std::next(arg_strs.begin()),
+        arg_strs.end(),
+        arg_strs[0],
+        [](std::string a, std::string b) {
+            return a + " " + b;
+        }
+    );
+    return "( call " + func_->to_string() + " " + args + " )";
 }
 
 tess::expr_value tess::func_call_expr::eval(evaluation_context& ctx) const

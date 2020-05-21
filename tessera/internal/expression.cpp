@@ -98,6 +98,13 @@ void tess::number_expr::compile(stack_machine::stack& stack) const
 	stack.push(tess::expr_value{ tess::number(val_) });
 }
 
+std::string tess::number_expr::to_string() const
+{
+	std::stringstream ss;
+	ss << val_;
+	return ss.str();
+}
+
 tess::expr_ptr tess::number_expr::simplify() const
 {
 	return std::make_shared<number_expr>(val_);
@@ -141,6 +148,23 @@ void tess::addition_expr::compile(stack_machine::stack& stack) const
 		if (!sign)
 			stack.push(std::make_shared<neg_op>());
 	}
+}
+
+std::string tess::addition_expr::to_string() const
+{
+	std::stringstream ss;
+	ss << "( + ";
+	for (const auto& [sign, term_expr] : terms_) {
+		if (!sign) {
+			ss << "( - " << term_expr->to_string() << ")";
+		} else {
+			ss << term_expr->to_string();
+		}
+		ss << " ";
+	}
+	ss << ")";
+
+	return ss.str();
 }
 
 void tess::addition_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const {

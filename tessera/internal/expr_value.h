@@ -36,6 +36,7 @@ namespace tess {
 		void insert_field(const std::string& var, expr_value val) const;
 		std::unordered_set<void*> get_all_referenced_allocations() const;
 		void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
+		std::string to_string() const;
 	};
 
 	template <typename T> void* to_void_star(const T* ptr) {

@@ -26,6 +26,7 @@ namespace tess {
             std::string name;
             identifier() {}
             identifier(std::string str) : name(str) {}
+            std::string to_string() const { return name; }
         };
 
         class op;
@@ -53,6 +54,8 @@ namespace tess {
             bool empty() const;
             int count() const;
 
+            std::string to_string() const;
+
         private:
             std::vector<item> impl_;
         };
@@ -63,6 +66,7 @@ namespace tess {
             public:
                 op(int n) : number_of_args_(n) {}
                 virtual std::optional<error> execute(stack& main_stack, stack& operand_stack, context_stack& contexts) = 0;
+                virtual std::string to_string() const { return "<TODO>"; }
         };
 
         class op_1 : public op{
