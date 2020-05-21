@@ -17,6 +17,7 @@ namespace tess {
         public:
             expr_value eval(evaluation_context&) const override;
             void compile(stack_machine::stack& stack) const override;
+            std::string to_string() const override;
             const std::vector<std::string>& parameters() const;
             expr_ptr body() const;
             expr_ptr simplify() const override;

@@ -78,8 +78,7 @@ tess::pop_eval_context::pop_eval_context() : stack_machine::op(0)
 
 std::optional<tess::error> tess::pop_eval_context::execute(tess::stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts)
 {
-    auto& ctxt = contexts.top();
-    contexts.push(ctxt.execution_state().create_eval_context());
+    contexts.pop();
     return std::nullopt;
 }
 
@@ -127,7 +126,8 @@ tess::push_eval_context::push_eval_context() : stack_machine::op(0)
 
 std::optional<tess::error> tess::push_eval_context::execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts)
 {
-    contexts.pop();
+    auto& ctxt = contexts.top();
+    contexts.push(ctxt.execution_state().create_eval_context());
     return std::nullopt;
 }
 
@@ -204,7 +204,7 @@ std::optional<tess::error> tess::push_frame_op::execute(stack_machine::stack& ma
 {
     if (contexts.empty())
         return tess::error("context stack underflow");
-    auto frame = std::get<scope_frame>(main_stack.pop());
+    auto frame = std::get<scope_frame>(operand_stack.pop());
     contexts.top().push_scope(frame);
     return std::nullopt;
 }

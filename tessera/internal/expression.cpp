@@ -74,6 +74,12 @@ void tess::expression::compile(stack_machine::stack& stack) const
 	stack.push( stack_machine::item(expr_value{ std::string("TODO")}) );
 }
 
+
+std::string tess::expression::to_string() const
+{
+	return "<TODO>";
+}
+
 tess::number_expr::number_expr(double v) 
 {
     throw std::exception("TODO");

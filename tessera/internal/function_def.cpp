@@ -27,9 +27,23 @@ tess::expr_value tess::function_def::eval(evaluation_context& ctxt) const
 
 void tess::function_def::compile(stack_machine::stack& stack) const
 {
-    compile_dependencies(stack);
-    stack.push(this->simplify());
     stack.push(std::make_shared<make_lambda>());
+    stack.push(this->simplify());
+    compile_dependencies(stack);
+}
+
+std::string tess::function_def::to_string() const
+{
+    std::string parameters = std::accumulate(
+        std::next(parameters_.begin()),
+        parameters_.end(),
+        parameters_[0],
+        [](std::string a, std::string b) {
+            return a + " , " + b;
+        }
+    );
+
+    return std::string("( define_func (") + parameters + ") (" + body_->to_string() + ") )";
 }
 
 const std::vector<std::string>& tess::function_def::parameters() const

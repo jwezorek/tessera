@@ -24,6 +24,7 @@ namespace tess {
     {
     public:
         virtual void compile(stack_machine::stack& stack) const;
+        virtual std::string to_string() const;
         virtual expr_value eval(evaluation_context& ) const = 0;
         virtual expr_ptr simplify() const = 0;
         virtual void get_dependencies(std::unordered_set<std::string>& dependencies) const = 0;

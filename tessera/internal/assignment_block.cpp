@@ -12,13 +12,13 @@ namespace {
 		}
 	}
 
-	bool is_multi_assignment(tess::var_assignment va) {
-		return std::get<0>(va).size() > 1;
+	int num_vars_in_assignment(tess::var_assignment va) {
+		return static_cast<int>(std::get<0>(va).size() );
 	}
 
 	void compile_multi_assignment(tess::stack_machine::stack& stack, tess::var_assignment va) {
 		const auto& [vars, val] = va;
-		stack.push(std::make_shared<tess::assign_op>(vars.size()));
+		stack.push(std::make_shared<tess::assign_op>(static_cast<int>(vars.size())));
 
 		std::vector<tess::stack_machine::item> identifiers(vars.size());
 		std::transform(vars.begin(), vars.end(), identifiers.begin(),
@@ -71,13 +71,17 @@ tess::scope_frame tess::assignment_block::eval(evaluation_context& ctxt) const
 
 void tess::assignment_block::compile(stack_machine::stack& stack) const
 {
+	int count = 0;
 	for (auto i = impl_->rbegin(); i != impl_->rend(); ++i) {
 		const auto& assignment = *i;
-		if (is_multi_assignment(assignment))
+		int num_vars = num_vars_in_assignment(assignment);
+		if (num_vars > 1)
 			compile_multi_assignment(stack, assignment);
 		else
 			compile_assignment(stack, assignment);
+		count += num_vars;
 	}
+	stack.push(std::make_shared<make_scope_frame>(count));
 }
 
 tess::assignment_block tess::assignment_block::simplify() const
