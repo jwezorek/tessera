@@ -29,7 +29,7 @@ void tess::function_def::compile(stack_machine::stack& stack) const
 {
     stack_machine::stack body;
     body_->compile(body);
-    stack.push(std::make_shared<make_lambda>(parameters_, body.to_vector()));
+    stack.push(std::make_shared<make_lambda>(parameters_, body.pop_all()));
     compile_dependencies(stack);
 }
 

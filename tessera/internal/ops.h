@@ -17,7 +17,7 @@ namespace tess {
 
     template <typename T>
     stack_machine::item make_expr_val_item(const T& val) {
-        return { expr_value{ val } };
+        return stack_machine::item{ expr_value{ val } };
     }
 
     class make_lambda : public stack_machine::op_1 {

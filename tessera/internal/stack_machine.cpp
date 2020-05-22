@@ -96,9 +96,9 @@ std::string tess::stack_machine::stack::to_string() const
     return ss.str();
 }
 
-std::vector<tess::stack_machine::item> tess::stack_machine::stack::to_vector() const
+std::vector<tess::stack_machine::item> tess::stack_machine::stack::pop_all()
 {
-    return impl_;
+    return pop(static_cast<int>(impl_.size()));
 }
 
 /*------------------------------------------------------------------------------*/
@@ -134,6 +134,7 @@ tess::expr_value tess::stack_machine::machine::run(execution_state& state)
                 stack_item
             );
         }
+
         output = std::get<expr_value>(operands.pop());
 
     } catch (tess::error error) {
