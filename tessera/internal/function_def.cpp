@@ -27,8 +27,9 @@ tess::expr_value tess::function_def::eval(evaluation_context& ctxt) const
 
 void tess::function_def::compile(stack_machine::stack& stack) const
 {
-    stack.push(std::make_shared<make_lambda>());
-    stack.push(this->simplify());
+    stack_machine::stack body;
+    body_->compile(body);
+    stack.push(std::make_shared<make_lambda>(parameters_, body.to_vector()));
     compile_dependencies(stack);
 }
 

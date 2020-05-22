@@ -40,8 +40,20 @@ std::shared_ptr<tess::expression> tess::lambda::body()
     return impl_->func.body();
 }
 
+/*
+std::vector<tess::stack_machine::item> tess::lambda::get_body() const
+{
+    return impl_->body;
+}
+*/
+
 tess::lambda::impl_type::impl_type(const function_def& f, const scope_frame& c) :
     func(f), closure(c)
+{
+}
+
+tess::lambda::impl_type::impl_type(const std::vector<std::string>& param, const std::vector<stack_machine::item>& bod, const scope_frame& c) :
+    parameters(param), body(bod), closure(c), func(function_def(std::vector<std::string>(),nullptr))
 {
 }
 

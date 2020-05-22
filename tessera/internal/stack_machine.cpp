@@ -99,6 +99,11 @@ std::string tess::stack_machine::stack::to_string() const
     return ss.str();
 }
 
+std::vector<tess::stack_machine::item> tess::stack_machine::stack::to_vector() const
+{
+    return impl_;
+}
+
 /*------------------------------------------------------------------------------*/
 
 tess::stack_machine::stack_machine() 

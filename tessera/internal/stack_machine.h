@@ -55,7 +55,7 @@ namespace tess {
             int count() const;
 
             std::string to_string() const;
-
+            std::vector<item> to_vector() const;
         private:
             std::vector<item> impl_;
         };

@@ -22,10 +22,12 @@ namespace tess {
 
     class make_lambda : public stack_machine::op_1 {
     public:
-        make_lambda();
+        make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body);
     protected:
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
-        std::string to_string() const override { return "<lambda>"; }
+        std::string to_string() const override;
+        std::vector<std::string> parameters_;
+        std::vector<stack_machine::item> body_;
     };
 
     class get_var : public stack_machine::op_1 {

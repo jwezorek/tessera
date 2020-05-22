@@ -23,7 +23,7 @@ namespace tess{
             void insert_field(const std::string& var, const expr_value& val);
             const scope_frame& closure() const;
             std::shared_ptr<expression> body();
-
+            //std::vector<stack_machine::item> get_body() const;
             class impl_type;
 
         private:

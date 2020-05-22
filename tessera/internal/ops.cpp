@@ -5,9 +5,12 @@
 #include "allocator.h"
 #include "variant_util.h"
 #include "evaluation_context.h"
+#include <sstream>
 
-tess::make_lambda::make_lambda() :
-    op_1(2)
+tess::make_lambda::make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body) : 
+    op_1(1), 
+    parameters_(parameters),
+    body_(body)
 {
 }
 
@@ -15,16 +18,44 @@ tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_mac
 {
     auto& alloc = contexts.top().allocator();
     try {
-        auto def_ptr = std::get<expr_ptr>(operands[0]);
-        function_def def = *std::static_pointer_cast<function_def>(def_ptr);
-        auto closure = std::get<scope_frame>(operands[1]);
-        auto lambda = alloc.create<tess::lambda>(def, closure);
+        auto closure = std::get<scope_frame>(operands[0]);
+        auto lambda = alloc.create<tess::lambda>(parameters_, body_, closure);
         return  make_expr_val_item(lambda) ;
     }  catch (tess::error e) {
         return e;
     } catch (...) {
         return tess::error("bad make_lamba op");
     }
+}
+
+std::string tess::make_lambda::to_string() const
+{
+    std::stringstream ss;
+    ss << "<lambda-ify ( ";
+    for (auto str : parameters_)
+        ss << str << " ";
+    ss << ") { ";
+    auto body = body_;
+    std::reverse(body.begin(), body.end());
+    for (const auto& it : body) {
+        std::visit(
+            overloaded{
+                [&](stack_machine::op_ptr op) {
+                    ss << op->to_string();
+                },
+                [&](expr_ptr e) {
+                    ss << e->to_string();
+                },
+                [&](const auto& val) {
+                    ss << val.to_string();
+                }
+            },
+            it
+        );
+        ss << " ";
+    }
+    ss << "} >";
+    return ss.str();
 }
 
 /*---------------------------------------------------------------------------------------------*/
@@ -98,11 +129,8 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::call_fun
             frame.set(var, val);
         contexts.top().push_scope(frame);
 
-        stack_machine::stack func_def;
-        func.body()->compile(func_def);
-        int sz = func_def.count();
-
-        return func_def.pop(sz);
+        //return func.get_body();
+        return std::vector<tess::stack_machine::item>();
 
     }  catch (tess::error e) {
         return e;
