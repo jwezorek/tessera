@@ -9,20 +9,7 @@
 
 const std::vector<std::string>& tess::lambda::parameters() const
 {
-    return impl_->func.parameters();
-}
-
-tess::expr_value tess::lambda::call(execution_state& state, const std::vector<expr_value>& args) const
-{
-    scope_frame frame = impl_->closure;
-    const auto& parameters = impl_->func.parameters();
-    auto body = impl_->func.body();
-
-    frame.set(parameters, args);
-
-    auto ctxt = state.create_eval_context();
-    lex_scope scope(ctxt, frame);
-    return body->eval(ctxt);
+    return impl_->parameters;
 }
 
 void tess::lambda::insert_field(const std::string& var, const expr_value& val)
@@ -35,25 +22,14 @@ const tess::scope_frame& tess::lambda::closure() const
     return impl_->closure;
 }
 
-std::shared_ptr<tess::expression> tess::lambda::body()
-{
-    return impl_->func.body();
-}
-
-/*
-std::vector<tess::stack_machine::item> tess::lambda::get_body() const
+std::vector<tess::stack_machine::item> tess::lambda::body() const
 {
     return impl_->body;
 }
-*/
 
-tess::lambda::impl_type::impl_type(const function_def& f, const scope_frame& c) :
-    func(f), closure(c)
-{
-}
 
 tess::lambda::impl_type::impl_type(const std::vector<std::string>& param, const std::vector<stack_machine::item>& bod, const scope_frame& c) :
-    parameters(param), body(bod), closure(c), func(function_def(std::vector<std::string>(),nullptr))
+    parameters(param), body(bod), closure(c)
 {
 }
 

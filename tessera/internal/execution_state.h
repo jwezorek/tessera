@@ -9,8 +9,6 @@
 
 namespace tess {
 
-    class stack_machine;
-
     class execution_state
     {
         friend class evaluation_context;

@@ -23,8 +23,8 @@ namespace {
 
 		std::vector<tess::stack_machine::item> identifiers(vars.size());
 		std::transform(vars.begin(), vars.end(), identifiers.begin(),
-			[](const auto& var) {
-				return tess::stack_machine::identifier(var);
+			[](const auto& var)->tess::stack_machine::item {
+				return { tess::stack_machine::identifier( var ) };
 			}
 		);
 

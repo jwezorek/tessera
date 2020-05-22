@@ -16,10 +16,8 @@ namespace tess {
     class execution_state;
     class error;
 
-    class stack_machine
+    namespace stack_machine
     {
-    public:
-
         using context_stack = std::stack<evaluation_context>;
 
         struct identifier {
@@ -31,7 +29,11 @@ namespace tess {
 
         class op;
         using op_ptr = std::shared_ptr<op>;
-        using item = std::variant<op_ptr, expr_value, error, identifier, scope_frame, std::shared_ptr<expression>>;
+
+        class item : public std::variant<op_ptr, expr_value, error, identifier, scope_frame>
+        {
+
+        };
 
         class stack {
         public:
@@ -85,7 +87,11 @@ namespace tess {
             std::optional<error> execute(stack& main_stack, stack& operand_stack, context_stack& contexts);
         };
 
-        stack_machine();
-        expr_value run(execution_state& state);
+        class machine
+        {
+        public:
+            machine();
+            expr_value run(execution_state& state);
+        };
     };
 };

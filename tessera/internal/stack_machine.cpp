@@ -84,9 +84,6 @@ std::string tess::stack_machine::stack::to_string() const
                 [&](op_ptr op) {
                     ss << op->to_string();
                 },
-                [&](expr_ptr e) {
-                    ss << e->to_string();
-                },
                 [&](const auto& val) {
                     ss << val.to_string();
                 }
@@ -106,11 +103,11 @@ std::vector<tess::stack_machine::item> tess::stack_machine::stack::to_vector() c
 
 /*------------------------------------------------------------------------------*/
 
-tess::stack_machine::stack_machine() 
+tess::stack_machine::machine::machine()
 {
 }
 
-tess::expr_value tess::stack_machine::run(execution_state& state)
+tess::expr_value tess::stack_machine::machine::run(execution_state& state)
 {
     auto& contexts = state.context_stack();
     auto& main_stack = state.main_stack();

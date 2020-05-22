@@ -53,18 +53,6 @@ namespace {
 		);
 	}
 
-	tess::expr_value execute_script(const std::vector<tess::expr_value>& args, tess::execution_state& state, const tess::expr_ptr& tableau) {
-		auto ctxt = state.create_eval_context();
-		auto maybe_lambda = tableau->eval(ctxt);
-
-		if (!std::holds_alternative<tess::lambda>(maybe_lambda))
-			return (std::holds_alternative<tess::error>(maybe_lambda)) ? 
-				maybe_lambda : tess::expr_value{ tess::error("unknown error") };
-
-		const auto& lambda = std::get<tess::lambda>(maybe_lambda);
-		return lambda.call(state, args);
-	}
-
 	tess::result extract_tiles(const tess::expr_value& output) {
 		if (std::holds_alternative<tess::error>(output))
 			return { std::get<tess::error>(output) };
@@ -94,17 +82,6 @@ const std::vector<std::string>& tess::script::parameters() const
 }
 
 
-tess::result tess::script::exec(const std::vector<std::string>& arg_strings) const
-{
-	auto& state = impl_->state();
-
-	std::vector<expr_value> args = evaluate_arguments(state, arg_strings);
-	expr_ptr script_expr = std::make_shared<where_expr>(impl_->globals(), impl_->tableau());
-	auto output = execute_script(args, state, script_expr);
-
-	return extract_tiles(output);
-
-}
 
 tess::result tess::script::execute(const std::vector<std::string>& arg_strings) const
 {
@@ -120,7 +97,7 @@ tess::result tess::script::execute(const std::vector<std::string>& arg_strings) 
 	std::string expr_str = eval_script_expr->to_string();
 	eval_script_expr->compile(state.main_stack());
 	std::string stack_str = state.main_stack().to_string();
-	stack_machine sm;
+	stack_machine::machine sm;
 	auto output = sm.run(state);
 
 	return extract_tiles(output);

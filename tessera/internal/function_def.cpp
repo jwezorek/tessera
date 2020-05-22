@@ -21,7 +21,7 @@ tess::expr_value tess::function_def::eval(evaluation_context& ctxt) const
     }
 
     return {
-        ctxt.allocator().create<lambda>(*this, scope_frame(closure))
+        tess::error("COMPILE IT, BITCHEZ")
     };
 }
 
@@ -92,9 +92,9 @@ void tess::function_def::compile_dependencies(stack_machine::stack& stack) const
     operands.reserve( n * 3 );
 
     for (const auto& var : dependent_vars) {
-        operands.push_back(stack_machine::identifier(var));
-        operands.push_back(stack_machine::item(std::make_shared<get_var>()));
-        operands.push_back(stack_machine::identifier(var));
+        operands.push_back({ stack_machine::identifier(var)} );
+        operands.push_back({ std::make_shared<get_var>() });
+        operands.push_back({ stack_machine::identifier(var) });
     }
 
     stack.push(std::make_shared<make_scope_frame>(n));

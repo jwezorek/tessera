@@ -71,7 +71,7 @@ std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, tess::evaluation_
 
 void tess::expression::compile(stack_machine::stack& stack) const
 {
-	stack.push( stack_machine::item(expr_value{ std::string("TODO")}) );
+	stack.push({ expr_value{ std::string("TODO")} });
 }
 
 

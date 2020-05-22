@@ -22,9 +22,9 @@ tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_mac
         auto lambda = alloc.create<tess::lambda>(parameters_, body_, closure);
         return  make_expr_val_item(lambda) ;
     }  catch (tess::error e) {
-        return e;
+        return { e };
     } catch (...) {
-        return tess::error("bad make_lamba op");
+        return { tess::error("bad make_lamba op") };
     }
 }
 
@@ -42,9 +42,6 @@ std::string tess::make_lambda::to_string() const
             overloaded{
                 [&](stack_machine::op_ptr op) {
                     ss << op->to_string();
-                },
-                [&](expr_ptr e) {
-                    ss << e->to_string();
                 },
                 [&](const auto& val) {
                     ss << val.to_string();
@@ -69,11 +66,11 @@ tess::stack_machine::item tess::get_var::execute(const std::vector<stack_machine
     auto& ctxt = contexts.top();
     try {
         auto ident = std::get<stack_machine::identifier>(operands[0]);
-        return ctxt.get(ident.name);
+        return { ctxt.get(ident.name) };
     } catch (tess::error e) {
-        return e;
+        return { e };
     } catch (...) {
-        return tess::error("bad get_var op");
+        return { tess::error("bad get_var op") };
     }
 }
 
@@ -93,11 +90,11 @@ tess::stack_machine::item tess::make_scope_frame::execute(const std::vector<stac
             vars[i] = std::get<stack_machine::identifier>(operands[i]).name;
             vals[i] = std::get<expr_value>(operands[i + 1]);
         }
-        return scope_frame(vars, vals);
+        return { scope_frame(vars, vals) };
     } catch (tess::error e) {
-        return e;
+        return { e };
     } catch (...) {
-        return tess::error("bad get_var op");
+        return { tess::error("bad get_var op") };
     }
 }
 
@@ -129,8 +126,7 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::call_fun
             frame.set(var, val);
         contexts.top().push_scope(frame);
 
-        //return func.get_body();
-        return std::vector<tess::stack_machine::item>();
+        return func.body();
 
     }  catch (tess::error e) {
         return e;
@@ -168,7 +164,7 @@ tess::neg_op::neg_op() : stack_machine::op_1(1)
 tess::stack_machine::item tess::neg_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     tess::number val = std::get<tess::number>(std::get<expr_value>(operands[0]));
-    return stack_machine::item(expr_value{ -val });
+    return { expr_value{ -val } };
 }
 
 /*---------------------------------------------------------------------------------------------*/
@@ -184,7 +180,7 @@ tess::stack_machine::item tess::add_op::execute(const std::vector<stack_machine:
     tess::number sum = 0;
     for (const auto& num : nums)
         sum += num;
-    return stack_machine::item( expr_value{sum} );
+    return { expr_value{sum} };
 }
 
 /*---------------------------------------------------------------------------------------------*/
@@ -201,7 +197,7 @@ tess::stack_machine::item tess::insert_fields_op::execute(const std::vector<stac
     for (const auto& [var, val] : frame)
         obj.insert_field(var, val);
 
-    return obj;
+    return { obj };
 }
 
 /*---------------------------------------------------------------------------------------------*/
@@ -218,7 +214,7 @@ std::optional<tess::error> tess::pop_frame_op::execute(stack_machine::stack& mai
     if (contexts.top().empty())
         return tess::error("eval context underflow");
 
-    contexts.top().pop_scope();
+    auto scope = contexts.top().pop_scope();
     return std::nullopt;
 }
 
@@ -266,15 +262,15 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::assign_o
 
     if (num_vars == 1) {
         //TODO: insert self-reference if val is a lambda
-        std::vector<tess::stack_machine::item> output = { value, vars[0] };
+        std::vector<tess::stack_machine::item> output = { {value}, {vars[0]} };
         return output;
     } else {
         //TODO: insert self-reference if val is a lambda
         std::vector<tess::stack_machine::item> output(num_vars);
         int i = 0;
         for (const auto& var : vars) {
-            output.push_back(var);
-            output.push_back(value.get_ary_item(i++));
+            output.push_back({ var } );
+            output.push_back({ value.get_ary_item(i++) });
         }
         return output;
     }

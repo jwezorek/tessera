@@ -24,11 +24,7 @@ tess::expr_value tess::var_expr::eval(evaluation_context& ctx) const
     // TODO: make it so it is possible to refer to a parameter less lambda by prepending
     // its name with "fn" as in "fn square_tile" 
 
-    if (std::holds_alternative<tess::lambda>(value)) {
-        auto lambda = std::get<tess::lambda>(value);
-        if (lambda.parameters().size() == 0)
-            return value.call(ctx.execution_state(),{});
-    }
+
 
     return value;
 }
@@ -143,10 +139,7 @@ std::string tess::func_call_expr::to_string() const
 
 tess::expr_value tess::func_call_expr::eval(evaluation_context& ctx) const
 {
-    std::vector<expr_value> args(args_.size());
-    std::transform(args_.begin(), args_.end(), args.begin(), 
-        [&ctx](auto expr) {return expr->eval(ctx);} );
-    return func_->eval(ctx).call(ctx.execution_state(), args);
+    return {};
 }
 
 void tess::func_call_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const

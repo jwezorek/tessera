@@ -4,6 +4,7 @@
 #include "tile_patch_impl.h"
 #include "allocator.h"
 #include "execution_state.h"
+#include <sstream>
 
 tess::nil_val::nil_val()
 {
@@ -79,14 +80,6 @@ tess::expr_value tess::expr_value::get_field(allocator& allocator, const std::st
 	);
 }
 
-tess::expr_value tess::expr_value::call(execution_state& state, const std::vector<expr_value>& args) const
-{
-	if (!std::holds_alternative<lambda>(*this))
-		return { error("attempted to call a value that is not functionlike") };
-	const auto& lambda = std::get<tess::lambda>(*this);
-	return lambda.call(state, args);
-}
-
 void tess::expr_value::insert_field(const std::string& var, expr_value val) const
 {
 	if (!is_object_like())
@@ -118,6 +111,11 @@ void tess::expr_value::get_all_referenced_allocations(std::unordered_set<void*>&
 
 std::string tess::expr_value::to_string() const
 {
-	return "<EXPR_VAL>";
+	if (std::holds_alternative<tess::number>(*this)) {
+		std::stringstream ss;
+		ss << "#(" << std::get<tess::number>(*this) << ")";
+		return ss.str();
+	}
+	return "#(some expr value)";
 }
 
