@@ -59,8 +59,8 @@ tess::stack_machine::item tess::make_scope_frame::execute(const std::vector<stac
     std::vector<expr_value> vals(n);
     try {
         for (int i = 0; i < n; i += 2) {
-            vars.push_back(std::get<stack_machine::identifier>(operands[i]).name);
-            vals.push_back(std::get<expr_value>(operands[i + 1]));
+            vars[i] = std::get<stack_machine::identifier>(operands[i]).name;
+            vals[i] = std::get<expr_value>(operands[i + 1]);
         }
         return scope_frame(vars, vals);
     } catch (tess::error e) {
@@ -238,7 +238,7 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::assign_o
 
     if (num_vars == 1) {
         //TODO: insert self-reference if val is a lambda
-        std::vector<tess::stack_machine::item> output = { vars[0], value };
+        std::vector<tess::stack_machine::item> output = { value, vars[0] };
         return output;
     } else {
         //TODO: insert self-reference if val is a lambda

@@ -72,7 +72,7 @@ tess::scope_frame tess::assignment_block::eval(evaluation_context& ctxt) const
 
 void tess::assignment_block::compile(stack_machine::stack& stack) const
 {
-	int count = 0;
+	stack.push(std::make_shared<make_scope_frame>(num_vars()));
 	for (auto i = impl_->rbegin(); i != impl_->rend(); ++i) {
 		const auto& assignment = *i;
 		int num_vars = num_vars_in_assignment(assignment);
@@ -80,9 +80,7 @@ void tess::assignment_block::compile(stack_machine::stack& stack) const
 			compile_multi_assignment(stack, assignment);
 		else
 			compile_assignment(stack, assignment);
-		count += num_vars;
 	}
-	stack.push(std::make_shared<make_scope_frame>(count));
 }
 
 std::string tess::assignment_block::to_string() const
@@ -134,6 +132,15 @@ std::vector<tess::expr_ptr> tess::assignment_block::get_values() const
 bool tess::assignment_block::empty() const
 {
 	return !impl_ || impl_->empty();
+}
+
+int tess::assignment_block::num_vars() const
+{
+	// TODO: use std::accumulate
+	int count = 0;
+	for (const auto& [vars, val] : *impl_) 
+		count += static_cast<int>(vars.size());
+	return count;
 }
 
 tess::where_expr::where_expr(const assignment_block& assignments, expr_ptr body) :

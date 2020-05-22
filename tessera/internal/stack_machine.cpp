@@ -75,7 +75,10 @@ std::string tess::stack_machine::stack::to_string() const
 {
     std::stringstream ss;
 
-    for (const auto& it : impl_) {
+    auto stack = impl_;
+    std::reverse(stack.begin(), stack.end());
+
+    for (const auto& it : stack) {
         std::visit(
             overloaded{
                 [&](op_ptr op) {

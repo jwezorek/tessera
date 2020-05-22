@@ -66,7 +66,7 @@ namespace tess {
             public:
                 op(int n) : number_of_args_(n) {}
                 virtual std::optional<error> execute(stack& main_stack, stack& operand_stack, context_stack& contexts) = 0;
-                virtual std::string to_string() const { return "<TODO>"; }
+                virtual std::string to_string() const = 0;
         };
 
         class op_1 : public op{

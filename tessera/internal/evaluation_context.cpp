@@ -88,7 +88,7 @@ tess::scope_frame::iterator tess::scope_frame::end() const
 
 std::string tess::scope_frame::to_string() const
 {
-    return "<scope frame>";
+    return "# scope frame #";
 }
 
 tess::scope_frame::scope_frame(const std::string& var, expr_value val)
