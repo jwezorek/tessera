@@ -18,9 +18,39 @@ namespace {
 	}
 }
 
+std::shared_ptr<tess::tile::impl_type::fields> tess::tile::impl_type::generate_n_fields(int n)
+{
+	std::vector< tess::vert_fields> v(n);
+	std::vector<tess::edge_fields> e(n);
+	for (int i = 0; i < n; ++i) {
+		v[i] = { i, "", "" };
+		e[i] = { i, "", "", i, (i + 1) % n };
+	};
+	return std::make_shared<tess::tile::impl_type::fields>(v, e);
+}
+
 tess::tile::impl_type::impl_type(const std::vector<tess::vert_fields>& v, const std::vector<tess::edge_fields>& e) :
     fields_(std::make_shared<tess::tile::impl_type::fields>(v,e)), untouched_(true), parent_(nullptr)
 {
+}
+
+std::vector<std::tuple<tess::number, tess::number>> get_regular_poly_vert_loc(int n) {
+	std::vector<std::tuple<tess::number, tess::number>> points(n);
+	return points;
+}
+
+tess::tile::impl_type::impl_type(tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations, bool foo) :
+	untouched_(true), parent_(nullptr)
+{
+	auto n = static_cast<int>(vertex_locations.size());
+	fields_ = generate_n_fields(n);
+	vertices_.resize(n);
+	edges_.resize(n);
+
+	for (int i = 0; i < n; ++i) {
+		vertices_[i] = allocator->create<tess::vertex>(this, i, vertex_locations[i]);
+		edges_[i] = allocator->create<tess::edge>(this, i);
+	}
 }
 
 const tess::vertex& tess::tile::impl_type::vertex(const std::string& v) const

@@ -69,8 +69,12 @@ namespace tess {
             std::shared_ptr<fields> fields_;
             tile_patch::impl_type* parent_;
 			bool untouched_;
+
+            static std::shared_ptr<fields> generate_n_fields(int n);
+
         public:
 			impl_type(const std::vector<vert_fields>& v, const std::vector<edge_fields>& e);
+            impl_type(tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations, bool foo);
 
             const tess::vertex& vertex(const std::string& v) const;
             const std::vector<tess::vertex>& vertices() const;

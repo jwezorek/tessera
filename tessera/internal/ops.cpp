@@ -275,3 +275,15 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::assign_o
         return output;
     }
 }
+
+tess::one_param_op::one_param_op(std::function<expr_value(tess::allocator&, const expr_value&)> func, std::string name) :
+    stack_machine::op_1(1), func_(func), name_(name)
+{
+}
+
+tess::stack_machine::item tess::one_param_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    return {
+        func_(contexts.top().allocator(), std::get<expr_value>(operands[0]))
+    };
+}

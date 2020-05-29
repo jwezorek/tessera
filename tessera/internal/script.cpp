@@ -56,6 +56,8 @@ namespace {
 	tess::result extract_tiles(const tess::expr_value& output) {
 		if (std::holds_alternative<tess::error>(output))
 			return { std::get<tess::error>(output) };
+		if (std::holds_alternative<tess::tile>(output))
+			return std::vector<tess::tile>{ std::get<tess::tile>(output) };
 		if (!std::holds_alternative<tess::tile_patch>(output))
 			return { tess::error("tableau does not evaulate to a tile patch.") };
 

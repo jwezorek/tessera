@@ -82,6 +82,7 @@ namespace tess {
         special_function_expr(std::tuple<std::string, expr_ptr> param);
         special_function_expr(special_func func, expr_ptr arg);
         expr_value eval(evaluation_context& ctxt ) const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };

@@ -5,6 +5,8 @@
 
 namespace tess {
 
+    class allocator;
+
     template <typename T>
     T get_from_item(const stack_machine::item& item) {
         if (std::holds_alternative<expr_value>(item)) {
@@ -122,5 +124,15 @@ namespace tess {
         std::string to_string() const override { return "<assign " + std::to_string(number_of_args_-1) + ">"; }
     };
 
+    class one_param_op : public stack_machine::op_1 {
+    public:
+        one_param_op(std::function<expr_value(allocator& a, const expr_value & v)> func, std::string name);
+    protected:
+        std::string name_;
+        std::function<expr_value(allocator & a, const expr_value & v)> func_;
+        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+        std::string to_string() const override { return name_; }
 
-};
+    };
+
+}

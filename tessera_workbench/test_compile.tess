@@ -1,7 +1,7 @@
-let test = patch (a,b,c) {
-    a + b + c
+let test = tile (a,b,c) {
+   regular_polygon(a+b+c)
 };
 
 tableau( num ) {
-    test(1,2,3)
+    test(num,num,num)
 }

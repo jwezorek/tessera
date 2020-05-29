@@ -10,6 +10,7 @@
 #include "parser/exception.h"
 #include "execution_state.h"
 #include "ops.h"
+#include "allocator.h"
 #include <sstream>
 
 namespace {
@@ -17,6 +18,25 @@ namespace {
 		std::stringstream ss;
 		ss << "( pi / " << n << ") * " << n - 2;
 		return tess::parser::parse_expression(ss.str())->simplify();
+	}
+
+	tess::number central_angle(int n) {
+		std::string expr_str = "(2 * pi) / " + std::to_string(n);
+		return tess::number( expr_str );
+	}
+
+	std::vector<std::tuple<tess::number, tess::number>> regular_polygon_vertices(tess::number num_sides)
+	{
+		int n = tess::to_int(num_sides);
+		std::vector<std::tuple<tess::number, tess::number>> points(n);
+
+		auto angle = central_angle( n );
+		for (int i = 0; i < n; i++) {
+			auto theta = tess::number(i) * angle;
+			points[i] = { tess::cos(theta), tess::sin(theta) };
+		}
+
+		return points;
 	}
 
 	tess::expr_value generate_regular_polygon_tile(tess::execution_state& state, tess::number num_sides) {
@@ -359,6 +379,57 @@ tess::special_function_expr::special_function_expr(special_func func, expr_ptr a
 {
 }
 
+std::function<tess::expr_value(tess::allocator&, tess::expr_value)> get_special_function(tess::special_func code) {
+	switch (code)
+	{
+	case tess::special_func::arccos:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::acos(std::get<tess::number>(arg)) }; };
+	case tess::special_func::arcsin:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::asin(std::get<tess::number>(arg)) }; };
+	case tess::special_func::arctan:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::atan(std::get<tess::number>(arg)) }; };
+	case tess::special_func::cos:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::cos(std::get<tess::number>(arg)) }; };
+	case tess::special_func::sin:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::sin(std::get<tess::number>(arg)) }; };
+	case tess::special_func::sqrt:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::sqrt(std::get<tess::number>(arg)) }; };
+	case tess::special_func::tan:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::tan(std::get<tess::number>(arg)) }; };
+	case tess::special_func::regular_polygon:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
+			auto locs = regular_polygon_vertices(std::get<tess::number>(arg));
+			return { a.create<tess::tile>(&a, locs, true) };
+		};
+	default:
+		throw tess::error("Unknown special function");
+	}
+}
+
+std::string get_special_function_name(tess::special_func code) {
+	switch (code)
+	{
+	case tess::special_func::arccos:
+		return "arcos";
+	case tess::special_func::arcsin:
+		return "arcsin";
+	case tess::special_func::arctan:
+		return "arctan";
+	case tess::special_func::cos:
+		return "cosine";
+	case tess::special_func::sin:
+		return "sine";
+	case tess::special_func::sqrt:
+		return "sqrt";
+	case tess::special_func::tan:
+		return "tan";
+	case tess::special_func::regular_polygon:
+		return "regular_poly";
+	default:
+		throw tess::error("Unknown special function");
+	}
+}
+
 tess::expr_value tess::special_function_expr::eval( tess::evaluation_context& ctxt) const
 {
 	auto possible_arg = eval_number_expr(arg_, ctxt);
@@ -396,6 +467,17 @@ tess::expr_value tess::special_function_expr::eval( tess::evaluation_context& ct
 			return tess::expr_value{ tess::error("Unknown special function") };
 	}
 	return tess::expr_value{ e };
+}
+
+void tess::special_function_expr::compile(stack_machine::stack& stack) const
+{
+	stack.push(
+		std::make_shared<one_param_op>(
+			get_special_function(func_),
+			get_special_function_name(func_)
+		)
+	);
+	arg_->compile(stack);
 }
 
 void tess::special_function_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
