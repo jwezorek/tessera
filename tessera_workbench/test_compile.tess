@@ -1,5 +1,7 @@
 let test = tile (a,b,c) {
-   regular_polygon(a+b+c)
+   self
+} where {
+   let self = regular_polygon( a + b + c);
 };
 
 tableau( num ) {

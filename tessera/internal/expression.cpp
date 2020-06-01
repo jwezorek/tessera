@@ -490,6 +490,13 @@ tess::expr_ptr tess::special_function_expr::simplify() const
 	return std::make_shared< special_function_expr>(func_, arg_->simplify());
 }
 
+std::string tess::special_function_expr::to_string() const
+{
+	std::stringstream ss;
+	ss << "( " << get_special_function_name(func_) << " " << arg_->to_string() << " )";
+	return ss.str();
+}
+
 /*----------------------------------------------------------------------*/
 
 tess::and_expr::and_expr(const std::vector<expr_ptr>& conjuncts) :

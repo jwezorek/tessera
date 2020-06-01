@@ -60,7 +60,7 @@ namespace tess {
         std::variant<std::vector<stack_machine::item>, tess::error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
     public:
         call_func(int num_args);
-        std::string to_string() const override { return "<call " + std::to_string(number_of_args_ - 1) + ">"; }
+        std::string to_string() const override { return "<apply " + std::to_string(number_of_args_ - 1) + ">"; }
     };
 
     class push_eval_context : public stack_machine::op {

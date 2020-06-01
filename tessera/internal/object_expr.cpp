@@ -134,7 +134,7 @@ std::string tess::func_call_expr::to_string() const
             return a + " " + b;
         }
     );
-    return "( call " + func_->to_string() + " " + args + " )";
+    return "( apply " + func_->to_string() + " " + args + " )";
 }
 
 tess::expr_value tess::func_call_expr::eval(evaluation_context& ctx) const
