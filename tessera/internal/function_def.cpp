@@ -38,15 +38,17 @@ void tess::function_def::compile(stack_machine::stack& stack) const
 
 std::string tess::function_def::to_string() const
 {
-    std::string parameters = std::accumulate(
-        std::next(parameters_.begin()),
-        parameters_.end(),
-        parameters_[0],
-        [](std::string a, std::string b) {
-            return a + " , " + b;
-        }
-    );
-
+    std::string parameters;
+    if (!parameters_.empty()) {
+        parameters = std::accumulate(
+            std::next(parameters_.begin()),
+            parameters_.end(),
+            parameters_[0],
+            [](std::string a, std::string b) {
+                return a + " " + b;
+            }
+        );
+    }
     return std::string("( lambda (") + parameters + ")  " + body_->to_string() + " )";
 }
 

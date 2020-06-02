@@ -12,8 +12,7 @@ std::string read_file(const std::string& file_path);
 std::vector<std::string> get_arguments(int argc, char** argv);
 void generate_svg(const std::string& filename, const std::vector<tess::tile>& tiles, double scale);
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv){
 	std::string source_code = read_file("test_compile.tess");
 	auto results = tess::script::interpret( source_code );
 

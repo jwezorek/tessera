@@ -73,16 +73,29 @@ std::string tess::make_lambda::to_string() const
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::get_var::get_var() : op_1(1)
+tess::get_var::get_var() : op_multi(1)
 {
 }
 
-tess::stack_machine::item tess::get_var::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::get_var::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     auto& ctxt = contexts.top();
     try {
         auto ident = std::get<stack_machine::identifier>(operands[0]);
-        return { ctxt.get(ident.name) };
+        auto value = ctxt.get(ident.name);
+
+        if (std::holds_alternative<lambda>(value)) {
+            auto lambda_val = std::get<lambda>(value);
+            if (lambda_val.parameters().empty()) {
+                return std::vector<tess::stack_machine::item>{
+                    {value},
+                    { std::make_shared<call_func>(0) }
+                };
+            }
+        }
+
+        return std::vector<tess::stack_machine::item>{ {value} };
+
     } catch (tess::error e) {
         return { e };
     } catch (...) {

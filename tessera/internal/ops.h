@@ -32,22 +32,14 @@ namespace tess {
         std::vector<stack_machine::item> body_;
     };
 
-    class get_var : public stack_machine::op_1 {
+    class get_var : public stack_machine::op_multi {
     public:
         get_var();
     protected:
-       stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+       std::variant<std::vector<stack_machine::item>, tess::error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
        std::string to_string() const override { return "<get>"; }
     };
-    /*
-    class make_scope_frame : public stack_machine::op_1 {
-    public:
-        make_scope_frame(int n);
-    protected:
-        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
-        std::string to_string() const override { return "<scope_frame " + std::to_string(number_of_args_/2) + ">"; }
-    };
-    */
+
     class pop_eval_context : public stack_machine::op_0 {
     public:
         pop_eval_context();
