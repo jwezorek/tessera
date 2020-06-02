@@ -30,9 +30,10 @@ namespace tess {
         class op;
         using op_ptr = std::shared_ptr<op>;
 
-        class item : public std::variant<op_ptr, expr_value, error, identifier, scope_frame>
+        class item : public std::variant<op_ptr, expr_value, error, identifier>
         {
-
+        public:
+            std::string to_string() const;
         };
 
         class stack {
@@ -69,6 +70,14 @@ namespace tess {
                 op(int n) : number_of_args_(n) {}
                 virtual std::optional<error> execute(stack& main_stack, stack& operand_stack, context_stack& contexts) = 0;
                 virtual std::string to_string() const = 0;
+        };
+
+        class op_0 : public op {
+        protected:
+            virtual std::optional<error> execute(const std::vector<item>& operands, context_stack& contexts) const = 0;
+        public:
+            op_0(int n) : op(n) {}
+            std::optional<error> execute(stack& main_stack, stack& operand_stack, context_stack& contexts);
         };
 
         class op_1 : public op{

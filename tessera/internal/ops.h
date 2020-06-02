@@ -24,7 +24,7 @@ namespace tess {
 
     class make_lambda : public stack_machine::op_1 {
     public:
-        make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body);
+        make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body, int num_dependencies);
     protected:
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override;
@@ -39,7 +39,7 @@ namespace tess {
        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
        std::string to_string() const override { return "<get>"; }
     };
-
+    /*
     class make_scope_frame : public stack_machine::op_1 {
     public:
         make_scope_frame(int n);
@@ -47,11 +47,11 @@ namespace tess {
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<scope_frame " + std::to_string(number_of_args_/2) + ">"; }
     };
-
-    class pop_eval_context : public stack_machine::op {
+    */
+    class pop_eval_context : public stack_machine::op_0 {
     public:
         pop_eval_context();
-        std::optional<error> execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts) override;
+        std::optional<error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<pop_context>"; }
     };
 
@@ -63,10 +63,10 @@ namespace tess {
         std::string to_string() const override { return "<apply " + std::to_string(number_of_args_ - 1) + ">"; }
     };
 
-    class push_eval_context : public stack_machine::op {
+    class push_eval_context : public stack_machine::op_0 {
     public:
         push_eval_context();
-        std::optional<error> execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts) override;
+        std::optional<error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<push_context>"; }
     };
 
@@ -86,25 +86,25 @@ namespace tess {
         std::string to_string() const override { return "<add " + std::to_string(number_of_args_) + ">"; }
     };
 
-    class insert_fields_op : public stack_machine::op_1 {
+    class pop_and_insert_fields_op : public stack_machine::op_1 {
     public:
-        insert_fields_op();
+        pop_and_insert_fields_op();
     protected:
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
-        std::string to_string() const override { return "<insert_fields>"; }
+        std::string to_string() const override { return "<pop_and_insert_fields>"; }
     };
     
-    class pop_frame_op : public stack_machine::op {
+    class pop_frame_op : public stack_machine::op_0 {
     public:
         pop_frame_op();
-        std::optional<error> execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts) override;
+        std::optional<error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<pop_frame>"; }
     };
 
-    class push_frame_op : public stack_machine::op {
+    class push_frame_op : public stack_machine::op_0 {
     public:
         push_frame_op();
-        std::optional<error> execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts) override;
+        std::optional<error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<push_frame>"; }
     };
 
@@ -116,11 +116,11 @@ namespace tess {
         std::string to_string() const override { return "<dup>"; }
     };
 
-    class assign_op : public stack_machine::op_multi {
+    class assign_op : public stack_machine::op_0 {
     public:
         assign_op(int num_vars);
     protected:
-        std::variant<std::vector<stack_machine::item>, tess::error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+        std::optional<error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<assign " + std::to_string(number_of_args_-1) + ">"; }
     };
 
@@ -133,6 +133,16 @@ namespace tess {
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return name_; }
 
+    };
+
+    class get_field_op : public stack_machine::op_1 {
+    public:
+        get_field_op(const std::string& field);
+    protected:
+        std::string field_;
+
+        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+        std::string to_string() const override;
     };
 
 }

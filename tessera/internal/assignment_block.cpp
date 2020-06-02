@@ -72,7 +72,6 @@ tess::scope_frame tess::assignment_block::eval(evaluation_context& ctxt) const
 
 void tess::assignment_block::compile(stack_machine::stack& stack) const
 {
-	stack.push(std::make_shared<make_scope_frame>(num_vars()));
 	for (auto i = impl_->rbegin(); i != impl_->rend(); ++i) {
 		const auto& assignment = *i;
 		int num_vars = num_vars_in_assignment(assignment);
@@ -162,7 +161,7 @@ tess::expr_value tess::where_expr::eval(evaluation_context& ctxt) const
 
 	return result;
 }
-
+/*
 void tess::where_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(std::make_shared<insert_fields_op>());
@@ -171,6 +170,15 @@ void tess::where_expr::compile(stack_machine::stack& stack) const
 	stack.push(std::make_shared<push_frame_op>());
 	stack.push(std::make_shared<dup_op>());
 	assignments_.compile(stack);
+}
+*/
+
+void tess::where_expr::compile(stack_machine::stack& stack) const
+{
+	stack.push(std::make_shared<pop_and_insert_fields_op>());
+	body_->compile(stack);
+	assignments_.compile(stack);
+	stack.push(std::make_shared<push_frame_op>());
 }
 
 std::string tess::where_expr::to_string() const

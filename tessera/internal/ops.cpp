@@ -7,8 +7,24 @@
 #include "evaluation_context.h"
 #include <sstream>
 
-tess::make_lambda::make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body) : 
-    op_1(1), 
+namespace {
+
+    tess::scope_frame get_closure(const std::vector<tess::stack_machine::item>& operands)
+    {
+        tess::scope_frame frame;
+        int i = 0;
+        while (i < operands.size()) {
+            auto var = std::get<tess::stack_machine::identifier>(operands[i]);
+            auto val = std::get<tess::expr_value>(operands[i + 1]);
+            frame.set(var.name, val);
+            i += 2;
+        }
+        return frame;
+    }
+}
+
+tess::make_lambda::make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body, int num_dependencies) : 
+    op_1(num_dependencies*2),
     parameters_(parameters),
     body_(body)
 {
@@ -18,7 +34,7 @@ tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_mac
 {
     auto& alloc = contexts.top().allocator();
     try {
-        auto closure = std::get<scope_frame>(operands[0]);
+        auto closure = get_closure(operands);
         auto lambda = alloc.create<tess::lambda>(parameters_, body_, closure);
         return  make_expr_val_item(lambda) ;
     }  catch (tess::error e) {
@@ -76,6 +92,7 @@ tess::stack_machine::item tess::get_var::execute(const std::vector<stack_machine
 
 /*---------------------------------------------------------------------------------------------*/
 
+/*
 tess::make_scope_frame::make_scope_frame(int n) : op_1(2*n)
 {
 }
@@ -97,14 +114,15 @@ tess::stack_machine::item tess::make_scope_frame::execute(const std::vector<stac
         return { tess::error("bad get_var op") };
     }
 }
+*/
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::pop_eval_context::pop_eval_context() : stack_machine::op(0)
+tess::pop_eval_context::pop_eval_context() : op_0(0)
 {
 }
 
-std::optional<tess::error> tess::pop_eval_context::execute(tess::stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts)
+std::optional<tess::error> tess::pop_eval_context::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     contexts.pop();
     return std::nullopt;
@@ -144,11 +162,11 @@ tess::call_func::call_func(int num_args) : op_multi(num_args+1)
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::push_eval_context::push_eval_context() : stack_machine::op(0)
+tess::push_eval_context::push_eval_context() : stack_machine::op_0(0)
 {
 }
 
-std::optional<tess::error> tess::push_eval_context::execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts)
+std::optional<tess::error> tess::push_eval_context::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const 
 {
     auto& ctxt = contexts.top();
     contexts.push(ctxt.execution_state().create_eval_context());
@@ -185,16 +203,18 @@ tess::stack_machine::item tess::add_op::execute(const std::vector<stack_machine:
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::insert_fields_op::insert_fields_op() : op_1(2)
+tess::pop_and_insert_fields_op::pop_and_insert_fields_op() : stack_machine::op_1(1)
 {
 }
 
-tess::stack_machine::item tess::insert_fields_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+tess::stack_machine::item tess::pop_and_insert_fields_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
-    auto obj = std::get<expr_value>(operands[0]);
-    auto frame = std::get<tess::scope_frame>(operands[1]);
+    if (contexts.empty())
+        return { tess::error("context stack underflow") };
+    auto scope = contexts.top().pop_scope();
 
-    for (const auto& [var, val] : frame)
+    auto obj = std::get<expr_value>(operands[0]);
+    for (const auto& [var, val] : scope)
         obj.insert_field(var, val);
 
     return { obj };
@@ -202,11 +222,11 @@ tess::stack_machine::item tess::insert_fields_op::execute(const std::vector<stac
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::pop_frame_op::pop_frame_op() : tess::stack_machine::op(0)
+tess::pop_frame_op::pop_frame_op() : tess::stack_machine::op_0(0)
 {
 }
 
-std::optional<tess::error> tess::pop_frame_op::execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts)
+std::optional<tess::error> tess::pop_frame_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     if (contexts.empty())
         return tess::error("context stack underflow");
@@ -220,16 +240,15 @@ std::optional<tess::error> tess::pop_frame_op::execute(stack_machine::stack& mai
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::push_frame_op::push_frame_op() : tess::stack_machine::op(1)
+tess::push_frame_op::push_frame_op() : tess::stack_machine::op_0(0)
 {
 }
 
-std::optional<tess::error> tess::push_frame_op::execute(stack_machine::stack& main_stack, stack_machine::stack& operand_stack, stack_machine::context_stack& contexts)
+std::optional<tess::error> tess::push_frame_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     if (contexts.empty())
         return tess::error("context stack underflow");
-    auto frame = std::get<scope_frame>(operand_stack.pop());
-    contexts.top().push_scope(frame);
+    contexts.top().push_scope(scope_frame());
     return std::nullopt;
 }
 
@@ -247,11 +266,11 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::dup_op::
     };
 }
 
-tess::assign_op::assign_op(int num_vars) : stack_machine::op_multi(num_vars+1)
+tess::assign_op::assign_op(int num_vars) : stack_machine::op_0(num_vars+1)
 {
 }
 
-std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::assign_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+std::optional<tess::error> tess::assign_op::execute(const std::vector<tess::stack_machine::item>& operands, tess::stack_machine::context_stack& contexts) const
 {
     int num_vars = static_cast<int>(operands.size() - 1);
     auto value = std::get<expr_value>(operands.back());
@@ -260,20 +279,18 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::assign_o
         [](const auto& item) { return std::get<stack_machine::identifier>(item); }
     );
 
+    auto& current_scope = contexts.top().peek();
     if (num_vars == 1) {
         //TODO: insert self-reference if val is a lambda
-        std::vector<tess::stack_machine::item> output = { {value}, {vars[0]} };
-        return output;
+        current_scope.set(vars[0].name, value);
     } else {
         //TODO: insert self-reference if val is a lambda
-        std::vector<tess::stack_machine::item> output(num_vars);
         int i = 0;
-        for (const auto& var : vars) {
-            output.push_back({ var } );
-            output.push_back({ value.get_ary_item(i++) });
-        }
-        return output;
+        for (const auto& var : vars) 
+            current_scope.set(var.name, value.get_ary_item(i++));
     }
+
+    return std::nullopt;
 }
 
 tess::one_param_op::one_param_op(std::function<expr_value(tess::allocator&, const expr_value&)> func, std::string name) :
@@ -286,4 +303,20 @@ tess::stack_machine::item tess::one_param_op::execute(const std::vector<stack_ma
     return {
         func_(contexts.top().allocator(), std::get<expr_value>(operands[0]))
     };
+}
+
+tess::get_field_op::get_field_op(const std::string& field) : 
+    stack_machine::op_1(1), field_(field)
+{
+}
+
+tess::stack_machine::item tess::get_field_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+   expr_value val = std::get<expr_value>(operands[0]);
+   return { val.get_field(contexts.top().allocator(), field_) };
+}
+
+std::string tess::get_field_op::to_string() const
+{
+    return std::string("<get_field ") + field_ + ">";
 }

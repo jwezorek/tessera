@@ -6,6 +6,13 @@
 #include "expression.h"
 #include <sstream>
 
+std::optional<tess::error> tess::stack_machine::op_0::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
+{
+    if (number_of_args_ > operand_stack.count())
+        return tess::error("operand stack underflow.");
+    return execute(operand_stack.pop(number_of_args_), contexts);
+}
+
 std::optional<tess::error> tess::stack_machine::op_1::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
 {
     if (number_of_args_ > operand_stack.count())
@@ -79,18 +86,7 @@ std::string tess::stack_machine::stack::to_string() const
     std::reverse(stack.begin(), stack.end());
 
     for (const auto& it : stack) {
-        std::visit(
-            overloaded{
-                [&](op_ptr op) {
-                    ss << op->to_string();
-                },
-                [&](const auto& val) {
-                    ss << val.to_string();
-                }
-            },
-            it
-        );
-        ss << "\n";
+        ss << it.to_string() << "\n";
     }
 
     return ss.str();
@@ -120,6 +116,7 @@ tess::expr_value tess::stack_machine::machine::run(execution_state& state)
 
         while (!main_stack.empty()) {
             auto stack_item = main_stack.pop();
+            std::cout << stack_item.to_string() << "\n";
             std::visit(
                 overloaded{
                     [&](op_ptr op) {
@@ -145,3 +142,19 @@ tess::expr_value tess::stack_machine::machine::run(execution_state& state)
     return output;
 }
 
+std::string tess::stack_machine::item::to_string() const
+{
+    std::stringstream ss;
+    std::visit(
+        overloaded{
+            [&](op_ptr op) {
+                ss << op->to_string();
+            },
+            [&](const auto& val) {
+                ss << val.to_string();
+            }
+        },
+        *this
+     );
+    return ss.str();
+}

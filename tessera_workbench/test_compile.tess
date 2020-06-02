@@ -2,6 +2,7 @@ let test = tile (a,b,c) {
    self
 } where {
    let self = regular_polygon( a + b + c);
+   let left, bottom, right = self.edges;
 };
 
 tableau( num ) {

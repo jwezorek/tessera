@@ -174,6 +174,17 @@ tess::expr_value tess::obj_field_expr::eval(evaluation_context& ctx) const
     return obj_->eval(ctx).get_field(ctx.allocator(), field_);
 }
 
+std::string tess::obj_field_expr::to_string() const
+{
+    return "( get_field " + obj_->to_string() + " " + field_ + " )";
+}
+
+void tess::obj_field_expr::compile(stack_machine::stack& stack) const
+{
+    stack.push(std::make_shared<get_field_op>(field_));
+    obj_->compile(stack);
+}
+
 void tess::obj_field_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
     obj_->get_dependencies(dependencies);
