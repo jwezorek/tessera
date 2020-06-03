@@ -202,6 +202,10 @@ tess::expr_value tess::lay_expr::eval(evaluation_context& ctxt) const
     };
 }
 
+void tess::lay_expr::compile(stack_machine::stack& stack) const
+{
+}
+
 void tess::lay_expr::get_dependencies( std::unordered_set<std::string>& dependencies ) const
 {
     for (auto tile : tiles_)

@@ -14,9 +14,9 @@ namespace {
         tess::scope_frame frame;
         int i = 0;
         while (i < operands.size()) {
-            auto var = std::get<tess::stack_machine::identifier>(operands[i]);
+            auto var = std::get<tess::stack_machine::variable>(operands[i]);
             auto val = std::get<tess::expr_value>(operands[i + 1]);
-            frame.set(var.name, val);
+            frame.set(var.name(), val);
             i += 2;
         }
         return frame;
@@ -81,8 +81,8 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::get_var:
 {
     auto& ctxt = contexts.top();
     try {
-        auto ident = std::get<stack_machine::identifier>(operands[0]);
-        auto value = ctxt.get(ident.name);
+        auto ident = std::get<stack_machine::variable>(operands[0]);
+        auto value = ctxt.get(ident.name());
 
         if (std::holds_alternative<lambda>(value)) {
             auto lambda_val = std::get<lambda>(value);
@@ -287,20 +287,20 @@ std::optional<tess::error> tess::assign_op::execute(const std::vector<tess::stac
 {
     int num_vars = static_cast<int>(operands.size() - 1);
     auto value = std::get<expr_value>(operands.back());
-    std::vector<stack_machine::identifier> vars(num_vars);
+    std::vector<stack_machine::variable> vars(num_vars);
     std::transform(operands.begin(), operands.begin() + num_vars, vars.begin(),
-        [](const auto& item) { return std::get<stack_machine::identifier>(item); }
+        [](const auto& item) { return std::get<stack_machine::variable>(item); }
     );
 
     auto& current_scope = contexts.top().peek();
     if (num_vars == 1) {
         //TODO: insert self-reference if val is a lambda
-        current_scope.set(vars[0].name, value);
+        current_scope.set(vars[0].name(), value);
     } else {
         //TODO: insert self-reference if val is a lambda
         int i = 0;
         for (const auto& var : vars) 
-            current_scope.set(var.name, value.get_ary_item(i++));
+            current_scope.set(var.name(), value.get_ary_item(i++));
     }
 
     return std::nullopt;

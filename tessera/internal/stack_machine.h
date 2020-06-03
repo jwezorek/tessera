@@ -20,17 +20,28 @@ namespace tess {
     {
         using context_stack = std::stack<evaluation_context>;
 
-        struct identifier {
-            std::string name;
-            identifier() {}
-            identifier(std::string str) : name(str) {}
-            std::string to_string() const { return name; }
+        struct variable {
+        private:
+            std::string name_;
+            int index_;
+        public:
+            variable(int i) : index_(i) {}
+            variable(std::string str = "") : index_(-1), name_(str) {}
+            std::string to_string() const {
+                return (index_ > -1) ? std::string("$") + std::to_string(index_) : name_;
+            };
+            std::string name() const {
+                return name_;
+            }
+            int index() const {
+                return index_;
+            }
         };
 
         class op;
         using op_ptr = std::shared_ptr<op>;
 
-        class item : public std::variant<op_ptr, expr_value, error, identifier>
+        class item : public std::variant<op_ptr, expr_value, error, variable>
         {
         public:
             std::string to_string() const;

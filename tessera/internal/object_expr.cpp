@@ -32,7 +32,7 @@ tess::expr_value tess::var_expr::eval(evaluation_context& ctx) const
 void tess::var_expr::compile(stack_machine::stack& stack) const
 {
     stack.push(std::make_shared<get_var>());
-    stack.push(stack_machine::identifier(var_));
+    stack.push(stack_machine::variable(var_));
 }
 
 std::string tess::var_expr::to_string() const

@@ -24,7 +24,7 @@ namespace {
 		std::vector<tess::stack_machine::item> identifiers(vars.size());
 		std::transform(vars.begin(), vars.end(), identifiers.begin(),
 			[](const auto& var)->tess::stack_machine::item {
-				return { tess::stack_machine::identifier( var ) };
+				return { tess::stack_machine::variable( var ) };
 			}
 		);
 
@@ -35,7 +35,7 @@ namespace {
 	void compile_assignment(tess::stack_machine::stack& stack, tess::var_assignment va) {
 		const auto& [vars, val] = va;
 		stack.push(std::make_shared<tess::assign_op>(1));
-		stack.push(tess::stack_machine::identifier(vars[0]));
+		stack.push(tess::stack_machine::variable(vars[0]));
 		val->compile(stack);
 	}
 }
