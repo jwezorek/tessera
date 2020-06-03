@@ -333,3 +333,18 @@ std::string tess::get_field_op::to_string() const
 {
     return std::string("<get_field ") + field_ + ">";
 }
+
+tess::lay_op::lay_op(int num_mappings) : stack_machine::op_1(2*num_mappings)
+{
+}
+
+tess::stack_machine::item tess::lay_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    auto tiles = contexts.top().pop_scope();
+    return stack_machine::item();
+}
+
+std::string tess::lay_op::to_string() const
+{
+    return std::string("<lay " + std::to_string(number_of_args_/2) + ">");
+}

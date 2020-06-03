@@ -137,4 +137,12 @@ namespace tess {
         std::string to_string() const override;
     };
 
+    class lay_op : public stack_machine::op_1 {
+    public:
+        lay_op(int num_mappings);
+    protected:
+        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+        std::string to_string() const override;
+    };
+
 }

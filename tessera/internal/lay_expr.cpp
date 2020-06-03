@@ -5,6 +5,7 @@
 #include "tessera/error.h"
 #include "allocator.h"
 #include "execution_state.h"
+#include "ops.h"
 #include <variant>
 
 namespace {
@@ -58,6 +59,15 @@ namespace {
         return tiles;
     }
 
+    std::optional<tess::error> compile_edge_mappings(const std::vector<std::tuple<tess::expr_ptr, tess::expr_ptr>>& mappings, tess::stack_machine::stack& stack)
+    {
+        for (auto i = mappings.rbegin(); i != mappings.rend(); ++i) {
+            auto [lhs, rhs] = *i;
+            rhs->compile(stack);
+            lhs->compile(stack);
+        }
+        return std::nullopt;
+    }
 }
 
 tess::lay_expr::piece_result tess::lay_expr::eval_pieces(evaluation_context& ctxt) const
@@ -204,6 +214,19 @@ tess::expr_value tess::lay_expr::eval(evaluation_context& ctxt) const
 
 void tess::lay_expr::compile(stack_machine::stack& stack) const
 {
+    stack.push(std::make_shared<lay_op>(edge_mappings_.size()));
+    auto result = compile_edge_mappings(edge_mappings_, stack);
+
+    int index = 1;
+    for (auto tile : tiles_) {
+        stack.push(std::make_shared<assign_op>(1));
+        stack.push(stack_machine::variable(index++));
+        tile->compile(stack);
+    }
+    stack.push(std::make_shared<push_frame_op>());
+
+
+
 }
 
 void tess::lay_expr::get_dependencies( std::unordered_set<std::string>& dependencies ) const
