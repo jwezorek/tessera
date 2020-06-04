@@ -397,3 +397,16 @@ tess::stack_machine::item tess::val_func_op::execute(const std::vector<stack_mac
     std::vector<expr_value> args = get_vector<expr_value>(operands.begin(), operands.end());
     return { func_(args) };
 }
+
+tess::if_op::if_op(const std::vector<stack_machine::item>& if_clause, const std::vector<stack_machine::item>& else_clause) :
+    stack_machine::op_multi(1), if_(if_clause), else_(else_clause)
+{
+}
+
+std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::if_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    bool cond = std::get<bool>(std::get<expr_value>(operands[0]));
+    return (cond) ?
+        if_ :
+        else_;
+}

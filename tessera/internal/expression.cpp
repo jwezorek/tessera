@@ -518,7 +518,21 @@ tess::expr_value tess::and_expr::eval( tess::evaluation_context& ctx) const
 
 void tess::and_expr::compile(stack_machine::stack& stack) const
 {
-
+	stack.push(
+		std::make_shared<val_func_op>(conjuncts_.size(),
+			[](const std::vector<expr_value>& args)->expr_value {
+				for (const auto& conjunct : args) {
+					auto val = std::get<bool>(conjunct);
+					if (!val)
+						return { false };
+				}
+				return { true };
+			},
+			"<and>"
+		)
+	);
+	for (const auto& conjuct : conjuncts_)
+		conjuct->compile(stack);
 }
 
 void tess::and_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -565,6 +579,28 @@ tess::expr_value tess::equality_expr::eval( tess::evaluation_context& ctx) const
 
 void tess::equality_expr::compile(stack_machine::stack& stack) const
 {
+	stack.push(
+		std::make_shared<val_func_op>(operands_.size(),
+			[](const std::vector<expr_value>& args) -> expr_value {
+
+				std::vector<number> expressions;
+				expressions.reserve(args.size());
+				for (const auto& op : args) {
+					expressions.push_back(std::get<number>(op));
+				}
+
+				auto first = expressions.front();
+				for (int i = 1; i < expressions.size(); ++i)
+					if (!equals(first, expressions[i]))
+						return { false };
+
+				return { true };
+			},
+			"<eq>"
+		)
+	);
+	for (const auto& o : operands_)
+		o->compile(stack);
 }
 
 void tess::equality_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -605,6 +641,21 @@ tess::expr_value tess::or_expr::eval( tess::evaluation_context& ctx) const
 
 void tess::or_expr::compile(stack_machine::stack& stack) const
 {
+	stack.push(
+		std::make_shared<val_func_op>(disjuncts_.size(),
+			[](const std::vector<expr_value>& args) -> expr_value {
+				for (const auto& disjunct : args) {
+					auto val = std::get<bool>(disjunct);
+					if (val)
+						return { true };
+				}
+				return { false };
+			},
+			"<or>"
+		)
+	);
+	for (const auto& d : disjuncts_)
+		d->compile(stack);
 }
 
 void tess::or_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -685,6 +736,42 @@ tess::expr_value tess::relation_expr::eval( tess::evaluation_context& ctx) const
 
 void tess::relation_expr::compile(stack_machine::stack& stack) const
 {
+	auto relation = op_;
+	stack.push(
+		std::make_shared<val_func_op>(
+			2,
+			[relation](const std::vector<expr_value>& args) -> expr_value {
+				for (const auto& disjunct : args) {
+					auto lhs = std::get<number>(args[0]);
+					auto rhs = std::get<number>(args[1]);
+
+					bool result;
+					switch (relation) {
+					case relation_op::ge:
+						result = is_ge(lhs, rhs);
+						break;
+					case relation_op::gt:
+						result = is_gt(lhs, rhs);
+						break;
+					case relation_op::le:
+						result = is_le(lhs, rhs);
+						break;
+					case relation_op::lt:
+						result = is_lt(lhs, rhs);
+						break;
+					case relation_op::ne:
+						result = is_ne(lhs, rhs);
+						break;
+					}
+					return tess::expr_value{ result };
+				}
+				return { false };
+			},
+			"<relation>"
+		)
+	);
+	lhs_->compile(stack);
+	rhs_->compile(stack);
 }
 
 void tess::relation_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -755,6 +842,14 @@ tess::expr_value tess::if_expr::eval(evaluation_context& ctxt) const
 
 void tess::if_expr::compile(stack_machine::stack& stack) const
 {
+	stack_machine::stack then;
+	stack_machine::stack else_;
+
+	then_clause_->compile(then);
+	else_clause_->compile(else_);
+
+	stack.push(std::make_shared<if_op>(then.pop_all(), else_.pop_all()));
+	condition_->compile(stack);
 }
 
 void tess::if_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const

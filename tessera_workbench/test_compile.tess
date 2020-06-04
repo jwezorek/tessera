@@ -10,5 +10,8 @@ let tri_pair = patch {
 };
 
 tableau( num ) {
-    lay tri_pair
+    if (num == 1)
+        lay triangle
+    else
+        lay tri_pair
 }
