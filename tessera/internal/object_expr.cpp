@@ -94,6 +94,13 @@ tess::expr_value tess::array_item_expr::eval(evaluation_context& ctx) const
     return ary_->eval(ctx).get_ary_item(maybe_index.value());
 }
 
+void tess::array_item_expr::compile(stack_machine::stack& stack) const
+{
+    stack.push(std::make_shared<get_ary_item_op>());
+    ary_->compile(stack);
+    index_->compile(stack);
+}
+
 void tess::array_item_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
     ary_->get_dependencies(dependencies);

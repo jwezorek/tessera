@@ -83,8 +83,6 @@ const std::vector<std::string>& tess::script::parameters() const
 	return impl_->parameters();
 }
 
-
-
 tess::result tess::script::execute(const std::vector<std::string>& arg_strings) const
 {
 	auto maybe_args = parse_arguments(arg_strings);

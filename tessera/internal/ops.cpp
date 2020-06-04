@@ -303,10 +303,13 @@ std::optional<tess::error> tess::assign_op::execute(const std::vector<tess::stac
 
     auto& current_scope = contexts.top().peek();
     if (num_vars == 1) {
-        //TODO: insert self-reference if val is a lambda
         current_scope.set(vars[0].identifier(), value);
+        if (std::holds_alternative<lambda>(value)) {
+            // if we are assigning a name to a lambda, insert a self-reference
+            // into the lambda's closure in case it is recursive.
+            std::get<lambda>(value).insert_field(vars[0].identifier(), value);
+        }
     } else {
-        //TODO: insert self-reference if val is a lambda
         int i = 0;
         for (const auto& var : vars) 
             current_scope.set(var.identifier(), value.get_ary_item(i++));
@@ -409,4 +412,15 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::if_op::e
     return (cond) ?
         if_ :
         else_;
+}
+
+tess::get_ary_item_op::get_ary_item_op() : stack_machine::op_1(2)
+{
+}
+
+tess::stack_machine::item tess::get_ary_item_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    auto ary = std::get<expr_value>(operands[0]);
+    auto index = std::get<tess::number>(std::get<expr_value>(operands[1]));
+    return { ary.get_ary_item(tess::to_int(index)) };
 }

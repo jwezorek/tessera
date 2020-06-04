@@ -171,4 +171,12 @@ namespace tess {
         std::vector<stack_machine::item> else_;
     };
 
+    class get_ary_item_op : public stack_machine::op_1 {
+    public:
+        get_ary_item_op();
+    protected:
+        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+        std::string to_string() const override { return "<get_ary_item>"; }
+    };
+
 }

@@ -9,9 +9,13 @@ let tri_pair = patch {
     lay triangle , triangle such_that $1.right <-> $2.right
 };
 
-tableau( num ) {
-    if (num == 1)
+let tri_strip = patch( n ) {
+    if (n == 1)
         lay triangle
     else
-        lay tri_pair
+        lay tri_pair , tri_strip(n-1) such_that $1[1].left <-> $2[0].left
+};
+
+tableau( num ) {
+    tri_strip( num )
 }

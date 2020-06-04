@@ -164,9 +164,9 @@ void tess::addition_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(std::make_shared<add_op>( static_cast<int>(terms_.size()) ));
 	for (auto [sign, term_expr] : terms_) {
-		term_expr->compile(stack);
 		if (!sign)
 			stack.push(std::make_shared<neg_op>());
+		term_expr->compile(stack);
 	}
 }
 
