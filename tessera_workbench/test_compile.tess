@@ -16,6 +16,13 @@ let tri_strip = patch( n ) {
         lay tri_pair , tri_strip(n-1) such_that $1[1].left <-> $2[0].left
 };
 
+let pyramid = patch( n ) {
+    if (n == 1)
+        lay triangle
+    else
+        lay tri_strip(n) , pyramid(n-1) such_that $1[1].bottom <-> $2[0].bottom
+};
+
 tableau( num ) {
-    tri_strip( num )
+    pyramid( num )
 }

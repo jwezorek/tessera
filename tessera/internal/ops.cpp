@@ -87,10 +87,6 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::get_var:
         auto ident = std::get<stack_machine::variable>(operands[0]);
         auto value = ctxt.get(ident.identifier());
 
-        if (ident.name() == "triangle") {
-            std::cout << "tri\n";
-        }
-
         if (eval_parameterless_funcs_ && std::holds_alternative<lambda>(value)) {
             auto lambda_val = std::get<lambda>(value);
             if (lambda_val.parameters().empty()) {

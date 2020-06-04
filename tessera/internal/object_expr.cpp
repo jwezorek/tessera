@@ -1,6 +1,7 @@
 #include "object_expr.h"
 #include "execution_state.h"
 #include "ops.h"
+#include <numeric>
 
 std::optional<int> tess::eval_integer_expr(const tess::expr_ptr& expr, tess::evaluation_context& ctxt)
 {

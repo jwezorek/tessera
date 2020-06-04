@@ -117,7 +117,7 @@ tess::expr_value tess::stack_machine::machine::run(execution_state& state)
 
         while (!main_stack.empty()) {
             auto stack_item = main_stack.pop();
-            std::cout << stack_item.to_string() << "\n";
+            //std::cout << stack_item.to_string() << "\n";
             std::visit(
                 overloaded{
                     [&](op_ptr op) {

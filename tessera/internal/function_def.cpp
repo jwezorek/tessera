@@ -3,10 +3,11 @@
 #include "expr_value.h"
 #include "ops.h"
 #include "execution_state.h"
+#include "allocator.h"
 #include <sstream>
 #include <variant>
 #include <unordered_set>
-#include "allocator.h"
+#include <numeric>
 
 tess::expr_value tess::function_def::eval(evaluation_context& ctxt) const
 {
