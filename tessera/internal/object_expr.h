@@ -29,6 +29,7 @@ namespace tess {
     public:
         placeholder_expr(int  placeholder);
         expr_value eval(evaluation_context& ctx) const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };

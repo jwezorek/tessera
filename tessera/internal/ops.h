@@ -34,10 +34,11 @@ namespace tess {
 
     class get_var : public stack_machine::op_multi {
     public:
-        get_var();
+        get_var(bool eval_parameterless_funcs = true);
     protected:
        std::variant<std::vector<stack_machine::item>, tess::error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
        std::string to_string() const override { return "<get>"; }
+       bool eval_parameterless_funcs_;
     };
 
     class pop_eval_context : public stack_machine::op_0 {
@@ -127,6 +128,17 @@ namespace tess {
 
     };
 
+    class val_func_op : public stack_machine::op_1 {
+    public:
+        val_func_op(int n, std::function<expr_value(const std::vector<expr_value>& v)> func, std::string name);
+    protected:
+        std::string name_;
+        std::function<expr_value(const std::vector<expr_value> & v)> func_;
+        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+        std::string to_string() const override { return name_; }
+
+    };
+
     class get_field_op : public stack_machine::op_1 {
     public:
         get_field_op(const std::string& field);
@@ -143,6 +155,9 @@ namespace tess {
     protected:
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override;
+
+        std::optional<tess::error> apply_mapping(const std::vector<stack_machine::item>& operands) const;
+        expr_value flatten_tiles_and_patches(allocator& allocator, const std::vector<expr_value>& mapping_data) const;
     };
 
 }

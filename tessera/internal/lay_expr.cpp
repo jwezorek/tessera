@@ -41,22 +41,21 @@ namespace {
         return count;
     }
 
-    std::vector<tess::tile> flatten_tiles_and_patches(const std::vector<tess::expr_value>& tiles_and_patches) {
-        int n = countTiles(tiles_and_patches);
-        std::vector<tess::tile> tiles;
-        tiles.reserve(n);
-        for (const auto& tile_or_patch : tiles_and_patches)
-            std::visit(
-                overloaded{
-                    [&tiles](const tess::tile& t) { tiles.push_back(t); },
-                    [&tiles](const tess::tile_patch& patch) {
-                        std::copy(patch.tiles().begin(), patch.tiles().end(), std::back_inserter(tiles));
-                    },
-                    [](auto) { throw tess::error("unknown error"); }
-                },
-                tile_or_patch
-                        );
-        return tiles;
+    tess::matrix edge_to_edge_matrix(const tess::edge::impl_type& e1, const tess::edge::impl_type& e2)
+    {
+        //TODO: move lay's implementation into the operator class and get rid of this.
+        struct vert_helper : public tess::tessera_impl {
+            tess::vertex::impl_type* get(const tess::vertex& v) {
+                return get_impl(v);
+            }
+        };
+        auto vert = vert_helper();
+        auto u1 = vert.get(e1.u());
+        auto v1 = vert.get(e1.v());
+        auto u2 = vert.get(e2.u());
+        auto v2 = vert.get(e2.v());
+
+        return tess::line_seg_to_line_seg({ u1->pos() , v1->pos() }, { v2->pos() , u2->pos() });
     }
 
     std::optional<tess::error> compile_edge_mappings(const std::vector<std::tuple<tess::expr_ptr, tess::expr_ptr>>& mappings, tess::stack_machine::stack& stack)
@@ -68,6 +67,65 @@ namespace {
         }
         return std::nullopt;
     }
+
+    std::optional<tess::error> apply_edge_mapping(const std::tuple<tess::edge::impl_type*, tess::edge::impl_type*>& mapping)
+    {
+        auto [ptr_edge1, ptr_edge2] = mapping;
+        auto edge1 = *ptr_edge1;
+        auto edge2 = *ptr_edge2;
+        auto parent_1 = parent_of_edge(edge1);
+        auto parent_2 = parent_of_edge(edge2);
+
+        if (parent_1 == parent_2)
+            return tess::error("edge mapping internal to a single tile");
+
+        bool both_are_touched = !is_untouched(parent_1) && !is_untouched(parent_2);
+        bool both_are_untouched = is_untouched(parent_1) && is_untouched(parent_2);
+        bool just_parent2_is_untouched = !is_untouched(parent_1) && is_untouched(parent_2);
+
+        if (both_are_touched)
+            return tess::error("TODO: tessera currently doesnt handle this kind of lay statement");
+
+        if (both_are_untouched || just_parent2_is_untouched) {
+            //move tile2
+            apply_edge_matrix(parent_2, edge_to_edge_matrix(edge2, edge1));
+        }
+        else {
+            //move tile1
+            apply_edge_matrix(parent_1, edge_to_edge_matrix(edge1, edge2));
+        }
+
+        return std::nullopt;
+    }
+}
+
+std::vector<tess::tile> tess::flatten_tiles_and_patches(const std::vector<tess::expr_value>& tiles_and_patches) {
+    int n = countTiles(tiles_and_patches);
+    std::vector<tess::tile> tiles;
+    tiles.reserve(n);
+    for (const auto& tile_or_patch : tiles_and_patches)
+        std::visit(
+            overloaded{
+                [&tiles](const tess::tile& t) { tiles.push_back(t); },
+                [&tiles](const tess::tile_patch& patch) {
+                    std::copy(patch.tiles().begin(), patch.tiles().end(), std::back_inserter(tiles));
+                },
+                [](auto) { throw tess::error("unknown error"); }
+            },
+            tile_or_patch
+                    );
+    return tiles;
+}
+
+std::optional<tess::error> tess::apply_mapping(const std::vector<std::tuple<edge::impl_type*, edge::impl_type*>>& mappings)
+{
+    for (const auto& mapping : mappings) {
+        auto result = apply_edge_mapping(mapping);
+        if (result.has_value()) {
+            return { result.value() };
+        }
+    }
+    return std::nullopt;
 }
 
 tess::lay_expr::piece_result tess::lay_expr::eval_pieces(evaluation_context& ctxt) const
@@ -124,6 +182,8 @@ tess::lay_expr::edge_mapping_result tess::lay_expr::eval_edge_mappings(evaluatio
     return mappings;
 }
 
+
+
 std::optional<tess::error> tess::lay_expr::apply_mapping(const edge_mapping_value& mapping, evaluation_context& ctxt) const
 {
     auto [e1, e2] = mapping;
@@ -154,15 +214,7 @@ std::optional<tess::error> tess::lay_expr::apply_mapping(const edge_mapping_valu
     return std::nullopt;
 }
 
-tess::matrix tess::lay_expr::edge_to_edge_matrix(const edge::impl_type& e1, const edge::impl_type& e2) const
-{
-    auto u1 = get_impl(e1.u());
-    auto v1 = get_impl(e1.v());
-    auto u2 = get_impl(e2.u());
-    auto v2 = get_impl(e2.v());
 
-    return line_seg_to_line_seg({ u1->pos() , v1->pos() }, { v2->pos() , u2->pos() });
-}
 
 tess::lay_expr::lay_expr(const lay_params& params) :
     tiles_(params.tiles),
@@ -214,7 +266,7 @@ tess::expr_value tess::lay_expr::eval(evaluation_context& ctxt) const
 
 void tess::lay_expr::compile(stack_machine::stack& stack) const
 {
-    stack.push(std::make_shared<lay_op>(edge_mappings_.size()));
+    stack.push(std::make_shared<lay_op>(static_cast<int>(edge_mappings_.size())));
     auto result = compile_edge_mappings(edge_mappings_, stack);
 
     int index = 1;

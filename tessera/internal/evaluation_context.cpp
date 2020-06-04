@@ -57,6 +57,17 @@ std::optional<tess::expr_value> tess::scope_frame::get(std::string var) const
         return std::nullopt;
 }
 
+std::vector<tess::expr_value> tess::scope_frame::values() const
+{
+    std::vector<tess::expr_value> values(definitions_.size());
+    std::transform(definitions_.begin(), definitions_.end(), values.begin(),
+        [](const auto& def)->expr_value {
+            return def.second;
+        }
+    );
+    return values;
+}
+
 void tess::scope_frame::set(const std::string& var, expr_value val)
 {
     definitions_[var] = val;
@@ -140,6 +151,7 @@ bool tess::evaluation_context::contains(int i) const
 tess::expr_value tess::evaluation_context::get(const std::string& var) const
 {
     auto maybe_value = get_maybe(var);
+
     return (maybe_value.has_value()) ?
         expr_value{ maybe_value.value() } :
         expr_value{ error("Unknown variable: " + var) };
@@ -190,4 +202,9 @@ tess::execution_state& tess::evaluation_context::execution_state()
 bool tess::evaluation_context::empty() const
 {
     return scopes_.empty();
+}
+
+int tess::evaluation_context::num_frames() const
+{
+    return static_cast<int>(scopes_.size());
 }

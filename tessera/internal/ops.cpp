@@ -5,6 +5,9 @@
 #include "allocator.h"
 #include "variant_util.h"
 #include "evaluation_context.h"
+#include "lay_expr.h"
+#include "tile_impl.h"
+#include "tessera/tile_patch.h"
 #include <sstream>
 
 namespace {
@@ -73,7 +76,7 @@ std::string tess::make_lambda::to_string() const
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::get_var::get_var() : op_multi(1)
+tess::get_var::get_var(bool eval) : op_multi(1), eval_parameterless_funcs_(eval)
 {
 }
 
@@ -82,14 +85,20 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::get_var:
     auto& ctxt = contexts.top();
     try {
         auto ident = std::get<stack_machine::variable>(operands[0]);
-        auto value = ctxt.get(ident.name());
+        auto value = ctxt.get(ident.identifier());
 
-        if (std::holds_alternative<lambda>(value)) {
+        if (ident.name() == "triangle") {
+            std::cout << "tri\n";
+        }
+
+        if (eval_parameterless_funcs_ && std::holds_alternative<lambda>(value)) {
             auto lambda_val = std::get<lambda>(value);
             if (lambda_val.parameters().empty()) {
                 return std::vector<tess::stack_machine::item>{
-                    {value},
-                    { std::make_shared<call_func>(0) }
+                    { std::make_shared<push_eval_context>() },
+                    { value },
+                    { std::make_shared<call_func>(0) },
+                    { std::make_shared<pop_eval_context>() }
                 };
             }
         }
@@ -295,12 +304,12 @@ std::optional<tess::error> tess::assign_op::execute(const std::vector<tess::stac
     auto& current_scope = contexts.top().peek();
     if (num_vars == 1) {
         //TODO: insert self-reference if val is a lambda
-        current_scope.set(vars[0].name(), value);
+        current_scope.set(vars[0].identifier(), value);
     } else {
         //TODO: insert self-reference if val is a lambda
         int i = 0;
         for (const auto& var : vars) 
-            current_scope.set(var.name(), value.get_ary_item(i++));
+            current_scope.set(var.identifier(), value.get_ary_item(i++));
     }
 
     return std::nullopt;
@@ -339,12 +348,52 @@ tess::lay_op::lay_op(int num_mappings) : stack_machine::op_1(2*num_mappings)
 }
 
 tess::stack_machine::item tess::lay_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
-{
-    auto tiles = contexts.top().pop_scope();
-    return stack_machine::item();
+{ 
+    auto& ctxt = contexts.top();
+    auto layees = ctxt.pop_scope();
+    auto result = apply_mapping(operands);
+
+    return  {
+        flatten_tiles_and_patches(ctxt.allocator(), layees.values())
+    };
+
 }
 
 std::string tess::lay_op::to_string() const
 {
     return std::string("<lay " + std::to_string(number_of_args_/2) + ">");
+}
+
+std::optional<tess::error> tess::lay_op::apply_mapping(const std::vector<stack_machine::item>& operands) const
+{
+    auto values = get_vector<expr_value>(operands.begin(), operands.end());
+    std::vector<std::tuple<edge::impl_type*, edge::impl_type*>> edge_to_edge;
+
+    for (int i = 0; i < values.size(); i += 2) {
+        auto edge1 = get_impl(std::get<edge>(values[i]));
+        auto edge2 = get_impl(std::get<edge>(values[i+1]));
+        edge_to_edge.push_back({ edge1, edge2} );
+    }
+
+    return tess::apply_mapping(edge_to_edge);
+}
+
+tess::expr_value tess::lay_op::flatten_tiles_and_patches( tess::allocator& allocator, const std::vector<expr_value>& pieces) const
+{
+    return{
+        allocator.create<tile_patch>(
+            tess::flatten_tiles_and_patches(pieces)
+        )
+    };
+}
+
+tess::val_func_op::val_func_op(int n, std::function<expr_value(const std::vector<expr_value> & v)> func, std::string name) :
+    stack_machine::op_1(n), name_(name), func_(func)
+{
+}
+
+tess::stack_machine::item tess::val_func_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    std::vector<expr_value> args = get_vector<expr_value>(operands.begin(), operands.end());
+    return { func_(args) };
 }

@@ -5,16 +5,21 @@
 #include "math_util.h"
 #include "tessera/tile.h"
 #include "tessera/error.h"
+#include "tile_impl.h"
 #include <optional>
 
 namespace tess {
 
 	class evaluation_context;
+	class tile;
 
 	struct lay_params {
 		std::vector<expr_ptr> tiles;
 		std::vector<std::tuple<expr_ptr, expr_ptr>> edge_mappings;
 	};
+
+	std::optional<error> apply_mapping(const std::vector<std::tuple<edge::impl_type*, edge::impl_type*>>& mapping_data);
+	std::vector<tile> flatten_tiles_and_patches(const std::vector<expr_value>& tiles_and_patches);
 
     class lay_expr : public expression, public tessera_impl {
 		private:
@@ -30,7 +35,6 @@ namespace tess {
 			piece_result eval_pieces(evaluation_context&) const;
 			edge_mapping_result eval_edge_mappings(evaluation_context&) const;
 			std::optional<error> apply_mapping(const edge_mapping_value& mappings, evaluation_context& ctxt) const;
-			matrix edge_to_edge_matrix(const edge::impl_type& e1, const edge::impl_type& e2) const;
 
 		public:
 			lay_expr(const lay_params& params);

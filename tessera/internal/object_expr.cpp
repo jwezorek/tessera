@@ -62,6 +62,12 @@ tess::expr_value tess::placeholder_expr::eval(evaluation_context& ctx) const
     return ctx.get(placeholder_);
 }
 
+void tess::placeholder_expr::compile(stack_machine::stack& stack) const
+{
+    stack.push(std::make_shared<get_var>());
+    stack.push(stack_machine::variable(placeholder_));
+}
+
 void tess::placeholder_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 }

@@ -94,7 +94,7 @@ void tess::function_def::compile_dependencies(const std::unordered_set<std::stri
     operands.reserve( n * 3 );
     for (const auto& var : dependent_vars) {
         operands.push_back({ stack_machine::variable(var)} );
-        operands.push_back({ std::make_shared<get_var>() });
+        operands.push_back({ std::make_shared<get_var>(false) });
         operands.push_back({ stack_machine::variable(var) });
     }
 

@@ -516,6 +516,11 @@ tess::expr_value tess::and_expr::eval( tess::evaluation_context& ctx) const
 	return tess::expr_value{ true };
 }
 
+void tess::and_expr::compile(stack_machine::stack& stack) const
+{
+
+}
+
 void tess::and_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	for (const auto& conjunct : conjuncts_)
@@ -558,6 +563,10 @@ tess::expr_value tess::equality_expr::eval( tess::evaluation_context& ctx) const
 	return tess::expr_value{ true };
 }
 
+void tess::equality_expr::compile(stack_machine::stack& stack) const
+{
+}
+
 void tess::equality_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	for (const auto& op : operands_)
@@ -592,6 +601,10 @@ tess::expr_value tess::or_expr::eval( tess::evaluation_context& ctx) const
 			return tess::expr_value{ true };
 	}
 	return tess::expr_value{ false };
+}
+
+void tess::or_expr::compile(stack_machine::stack& stack) const
+{
 }
 
 void tess::or_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -670,6 +683,10 @@ tess::expr_value tess::relation_expr::eval( tess::evaluation_context& ctx) const
 	return tess::expr_value{result };
 }
 
+void tess::relation_expr::compile(stack_machine::stack& stack) const
+{
+}
+
 void tess::relation_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	lhs_->get_dependencies(dependencies);
@@ -697,6 +714,10 @@ tess::expr_value tess::nil_expr::eval( tess::evaluation_context& ctx) const
 tess::expr_ptr tess::nil_expr::simplify() const
 {
 	return std::make_shared<nil_expr>();
+}
+
+void tess::nil_expr::compile(stack_machine::stack& stack) const
+{
 }
 
 void tess::nil_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -730,6 +751,10 @@ tess::expr_value tess::if_expr::eval(evaluation_context& ctxt) const
 		return then_clause_->eval(ctxt);
 	else
 		return else_clause_->eval(ctxt);
+}
+
+void tess::if_expr::compile(stack_machine::stack& stack) const
+{
 }
 
 void tess::if_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const

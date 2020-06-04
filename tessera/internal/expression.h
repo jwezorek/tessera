@@ -136,6 +136,7 @@ namespace tess {
 	public:
 		and_expr(const std::vector<expr_ptr>& conjuncts);
         expr_value eval(evaluation_context& ctx ) const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
 	};
@@ -147,6 +148,7 @@ namespace tess {
 	public:
 		or_expr(const std::vector<expr_ptr> disjuncts);
         expr_value eval(evaluation_context& ctx ) const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
 	};
@@ -158,6 +160,7 @@ namespace tess {
 	public:
 		equality_expr(const std::vector<expr_ptr> operands);
         expr_value eval(evaluation_context& ctx ) const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
 	};
@@ -181,6 +184,7 @@ namespace tess {
 		relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> param);
         relation_expr(expr_ptr lhs, relation_op op, expr_ptr rhs);
         expr_value eval(evaluation_context& ctx ) const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
 	};
@@ -191,6 +195,7 @@ namespace tess {
 		nil_expr();
         expr_value eval(evaluation_context& ctx ) const override;
         expr_ptr simplify() const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
 	};
 
@@ -204,6 +209,7 @@ namespace tess {
         if_expr(std::tuple< expr_ptr, expr_ptr, expr_ptr> exprs);
         if_expr(expr_ptr condition, expr_ptr then_clause, expr_ptr else_clause);
         expr_value eval(evaluation_context& ctx) const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };

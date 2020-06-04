@@ -2,6 +2,7 @@
 
 #include "expr_value.h"
 #include "evaluation_context.h"
+#include "tessera_impl.h"
 #include <vector>
 #include <string>
 #include <memory>
@@ -35,6 +36,9 @@ namespace tess {
             }
             int index() const {
                 return index_;
+            }
+            std::string identifier() const {
+                return (index_ > -1) ? std::string("$") + std::to_string(index_) : name_;
             }
         };
 
@@ -74,7 +78,7 @@ namespace tess {
             std::vector<item> impl_;
         };
 
-        class op {
+        class op : public tessera_impl {
             protected:
                 int number_of_args_;
             public:

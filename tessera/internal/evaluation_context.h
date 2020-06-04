@@ -16,6 +16,7 @@ namespace tess {
         scope_frame(const std::vector<expr_value>& arg);
         std::optional<expr_value> get(int ph) const;
         std::optional<expr_value> get(std::string str) const;
+        std::vector<expr_value> values() const;
         void set(const std::string& var, expr_value val);
         void set(int i, expr_value val);
         void set(const::std::vector<std::string>& vars, const::std::vector<expr_value>& vals);
@@ -60,6 +61,7 @@ namespace tess {
         allocator& allocator();
         execution_state& execution_state();
         bool empty() const;
+        int num_frames() const;
     private:
         std::vector<scope_frame> scopes_;
         tess::execution_state& state_;
