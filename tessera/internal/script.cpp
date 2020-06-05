@@ -96,7 +96,7 @@ tess::result tess::script::execute(const std::vector<std::string>& arg_strings) 
 	auto& state = impl_->state();
 	std::string expr_str = eval_script_expr->to_string();
 	eval_script_expr->compile(state.main_stack());
-	std::string stack_str = state.main_stack().to_string();
+	std::string stack_str = state.main_stack().to_formatted_string();
 	stack_machine::machine sm;
 	auto output = sm.run(state);
 

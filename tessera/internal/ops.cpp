@@ -50,12 +50,11 @@ tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_mac
 std::string tess::make_lambda::to_string() const
 {
     std::stringstream ss;
-    ss << "<lambda-ify ( ";
+    ss << "<lambda-ify (deps " << std::to_string(number_of_args_/2) << ") ( ";
     for (auto str : parameters_)
         ss << str << " ";
-    ss << ") { ";
+    ss << ")> { ";
     auto body = body_;
-    std::reverse(body.begin(), body.end());
     for (const auto& it : body) {
         std::visit(
             overloaded{
@@ -68,9 +67,9 @@ std::string tess::make_lambda::to_string() const
             },
             it
         );
-        ss << " ";
+        ss << "; ";
     }
-    ss << "} >";
+    ss << "}";
     return ss.str();
 }
 
@@ -408,6 +407,43 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::if_op::e
     return (cond) ?
         if_ :
         else_;
+}
+
+std::string tess::if_op::to_string() const
+{
+    std::stringstream ss;
+    ss << "<if> {";
+    for (const auto& it : if_) {
+        std::visit(
+            overloaded{
+                [&](stack_machine::op_ptr op) {
+                    ss << op->to_string();
+                },
+                [&](const auto& val) {
+                    ss << val.to_string();
+                }
+            },
+            it
+        );
+        ss << "; ";
+    }
+    ss << "} {";
+    for (const auto& it : else_) {
+        std::visit(
+            overloaded{
+                [&](stack_machine::op_ptr op) {
+                    ss << op->to_string();
+                },
+                [&](const auto& val) {
+                    ss << val.to_string();
+                }
+            },
+            it
+        );
+        ss << "; ";
+    }
+    ss << "}";
+    return ss.str();
 }
 
 tess::get_ary_item_op::get_ary_item_op() : stack_machine::op_1(2)

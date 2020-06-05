@@ -165,7 +165,7 @@ namespace tess {
         if_op(const std::vector<stack_machine::item>& if_clause, const std::vector<stack_machine::item>& else_clause);
     protected:
         std::variant<std::vector<stack_machine::item>, tess::error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
-        std::string to_string() const override { return "<if>"; }
+        std::string to_string() const override;
 
         std::vector<stack_machine::item> if_;
         std::vector<stack_machine::item> else_;

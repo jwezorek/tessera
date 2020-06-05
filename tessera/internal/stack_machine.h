@@ -29,7 +29,7 @@ namespace tess {
             variable(int i) : index_(i) {}
             variable(std::string str = "") : index_(-1), name_(str) {}
             std::string to_string() const {
-                return (index_ > -1) ? std::string("$") + std::to_string(index_) : name_;
+                return  std::string("$(") + ((index_ > -1) ? std::to_string(index_) : name_) + ")";
             };
             std::string name() const {
                 return name_;
@@ -73,6 +73,7 @@ namespace tess {
             int count() const;
 
             std::string to_string() const;
+            std::string to_formatted_string() const;
             std::vector<item> pop_all();
         private:
             std::vector<item> impl_;
