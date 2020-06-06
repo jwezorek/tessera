@@ -11,20 +11,6 @@
 
 namespace {
 
-	std::vector<tess::expr_value> evaluate_arguments(tess::execution_state& state, const std::vector<std::string>& args) {
-		std::vector<tess::expr_value> output(args.size());
-		std::transform(args.begin(), args.end(), output.begin(),
-			[&state](const auto& str)->tess::expr_value {
-				auto expr = tess::parser::parse_expression(str);
-				if (!expr)
-					return { tess::error(std::string("syntax error in argument: ") + str) };
-				auto ctxt = state.create_eval_context();
-				return expr->eval(ctxt);
-			}
-		);
-		return output;
-	}
-
 	std::variant<std::vector<tess::expr_ptr>, tess::error> parse_arguments(const std::vector<std::string>& args) {
 		std::vector<tess::expr_ptr> output(args.size());
 		try {

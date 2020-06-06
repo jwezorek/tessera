@@ -39,52 +39,6 @@ namespace {
 		return points;
 	}
 
-	tess::expr_value generate_regular_polygon_tile(tess::execution_state& state, tess::number num_sides) {
-		int n = tess::to_int(num_sides);
-		std::vector<tess::vertex_def> vertices(n);
-		int i = 0;
-		tess::expr_ptr theta = get_interior_angle_expr(n);
-		std::generate(vertices.begin(), vertices.end(),
-			[&i, &theta]() {
-				return tess::vertex_def(
-					std::string(),
-					theta,
-					std::string(),
-					i++
-				);
-			}
-		);
-
-		std::vector<tess::edge_def> edges(n);
-		for (i = 0; i < n; i++) {
-			edges[i] = tess::edge_def(
-				"",
-				i, (i < n - 1) ? i + 1 : 0,
-				"",
-				std::make_shared<tess::number_expr>(1),
-				i
-			);
-		}
-
-		auto tile_def_expr = std::make_shared<tess::tile_def_expr>(vertices, edges);
-		auto ctxt = state.create_eval_context();
-		return tile_def_expr->eval(ctxt);
-	}
-}
-std::optional<tess::number> eval_number_expr(const tess::expr_ptr& expr, tess::evaluation_context& ctxt)
-{
-	auto val = expr->eval(ctxt);
-	if (!std::holds_alternative<tess::number>(val))
-		return std::nullopt;
-	return std::get<tess::number>(val);
-}
-
-std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, tess::evaluation_context& ctxt)
-{
-	auto val = expr->eval(ctxt);
-	if (!std::holds_alternative<bool>(val))
-		return std::nullopt;
-	return std::get<bool>(val);
 }
 
 /*----------------------------------------------------------------------*/
@@ -102,10 +56,6 @@ tess::number_expr::number_expr(double v)
 
 tess::number_expr::number_expr(int v) : val_(v)
 {
-}
-
-tess::expr_value tess::number_expr::eval( tess::evaluation_context&) const {
-	return tess::expr_value{ tess::number(val_) };
 }
 
 void tess::number_expr::compile(stack_machine::stack& stack) const
@@ -140,19 +90,6 @@ tess::addition_expr::addition_expr(const expression_params& terms) {
 tess::addition_expr::addition_expr(const std::vector<std::tuple<bool, expr_ptr>>& terms) :
 	terms_(terms)
 {
-}
-
-tess::expr_value tess::addition_expr::eval( tess::evaluation_context& ctxt) const {
-
-	tess::number sum(0);
-
-	for (auto [sign, term_expr] : terms_) {
-		auto term = eval_number_expr(term_expr, ctxt);
-		if (!term.has_value())
-			return tess::expr_value{ tess::error("non-number in numeric expression (+)") };
-		sum += (sign) ? term.value() : -term.value();
-	}
-	return tess::expr_value{ sum };
 }
 
 void tess::addition_expr::compile(stack_machine::stack& stack) const
@@ -237,19 +174,6 @@ tess::multiplication_expr::multiplication_expr(const std::vector<std::tuple<bool
 {
 }
 
-tess::expr_value tess::multiplication_expr::eval( tess::evaluation_context& ctxt) const {
-
-	tess::number product(1);
-
-	for (auto [op, factor_expr] : factors_) {
-		auto factor = eval_number_expr(factor_expr, ctxt);
-		if (!factor.has_value())
-			return tess::expr_value{ tess::error("non-number in numeric expression (*)") };
-		product *= (op) ? factor.value() : number(1) / factor.value();
-	}
-	return tess::expr_value{ product };
-}
-
 void tess::multiplication_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(std::make_shared<val_func_op>(
@@ -315,25 +239,6 @@ tess::exponent_expr::exponent_expr(expr_ptr base, const std::vector<expr_ptr>& e
 {
 }
 
-tess::expr_value tess::exponent_expr::eval( tess::evaluation_context& ctxt) const
-{
-    auto base_val = eval_number_expr(base_, ctxt);
-	if (!base_val.has_value())
-		return tess::expr_value{ tess::error("non-number in numeric expression (^)") };
-	if (exponents_.empty())
-		return tess::expr_value{ base_val.value() };
-
-	auto power = base_val.value();
-	for (const auto& exponent_expr : exponents_) {
-		auto exp = eval_number_expr(exponent_expr, ctxt);
-		if ( exp.has_value() )
-			return tess::expr_value{ tess::error("non-number in numeric expression (^)") };
-		power = tess::pow(power, exp.value() );
-	}
-    return tess::expr_value{ power };
-
-}
-
 void tess::exponent_expr::compile(stack_machine::stack& stack) const
 {
 	int n = static_cast<int>(exponents_.size() + 1);
@@ -394,22 +299,19 @@ tess::special_number_expr::special_number_expr(special_num which) :
 {
 }
 
-tess::expr_value tess::special_number_expr::eval( tess::evaluation_context& ctxt) const
+void tess::special_number_expr::compile(stack_machine::stack& stack) const
 {
 	switch (num_) {
 		case special_num::pi:
-			return tess::expr_value{ tess::pi() };
+			stack.push({ tess::expr_value{ tess::pi() } });
+			break;
 		case special_num::phi:
-			return tess::expr_value{ tess::number("(1 + sqrt(5)) / 2") };
+			stack.push({ tess::expr_value{ tess::number("(1 + sqrt(5)) / 2") } });
+			break;
 		case special_num::root_2:
-			return tess::expr_value{ tess::number("sqrt(2)") };
+			stack.push({ tess::expr_value{ tess::number("sqrt(2)") } });
+			break;
 	}
-	return tess::expr_value{ tess::error("Unknown special number.") };
-}
-
-void tess::special_number_expr::compile(stack_machine::stack& stack) const
-{
-	//TODO:COMPILE
 }
 
 tess::expr_ptr tess::special_number_expr::simplify() const
@@ -502,45 +404,6 @@ std::string get_special_function_name(tess::special_func code) {
 	}
 }
 
-tess::expr_value tess::special_function_expr::eval( tess::evaluation_context& ctxt) const
-{
-	auto possible_arg = eval_number_expr(arg_, ctxt);
-	if (!possible_arg.has_value())
-		return tess::expr_value{ tess::error("non-number in special function") };
-
-	auto arg = possible_arg.value();
-	tess::number e;
-	switch (func_)
-	{
-		case special_func::arccos:
-			e = acos(arg);
-			break;
-		case special_func::arcsin:
-			e = asin(arg);
-			break;
-		case special_func::arctan:
-			e = atan(arg);
-			break;
-		case special_func::cos:
-			e = cos(arg);
-			break;
-		case special_func::sin:
-			e = sin(arg);
-			break;
-		case special_func::sqrt:
-			e = sqrt(arg);
-			break;
-		case special_func::tan:
-			e = tan(arg);
-			break;
-		case special_func::regular_polygon:
-			return generate_regular_polygon_tile(ctxt.execution_state(), arg);
-		default:
-			return tess::expr_value{ tess::error("Unknown special function") };
-	}
-	return tess::expr_value{ e };
-}
-
 void tess::special_function_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(
@@ -574,18 +437,6 @@ std::string tess::special_function_expr::to_string() const
 tess::and_expr::and_expr(const std::vector<expr_ptr>& conjuncts) :
 	conjuncts_(conjuncts)
 {
-}
-
-tess::expr_value tess::and_expr::eval( tess::evaluation_context& ctx) const
-{
-	for (const auto& conjunct : conjuncts_) {
-		auto val = eval_bool_expr(conjunct, ctx);
-		if (! val.has_value())
-			return tess::expr_value{ tess::error("non-boolean typed expression in logical-and expression") };
-		if (!val.value())
-			return tess::expr_value{ false };
-	}
-	return tess::expr_value{ true };
 }
 
 void tess::and_expr::compile(stack_machine::stack& stack) const
@@ -631,24 +482,6 @@ tess::expr_ptr tess::and_expr::simplify() const
 tess::equality_expr::equality_expr(const std::vector<expr_ptr> operands) :
 	operands_(operands)
 {
-}
-
-tess::expr_value tess::equality_expr::eval( tess::evaluation_context& ctx) const
-{
-	std::vector<number> expressions;
-	expressions.reserve(operands_.size());
-	for (const auto& op : operands_) {
-		auto val = eval_number_expr(op, ctx);
-		if (!val.has_value())
-			return tess::expr_value{ tess::error("non-number typed expression in an equality expr") };
-		expressions.push_back(val.value());
-	}
-	auto first = expressions.front();
-	for (int i = 1; i < expressions.size(); ++i)
-		if (! equals( first, expressions[i]) )
-			return tess::expr_value{ false };
-
-	return tess::expr_value{ true };
 }
 
 void tess::equality_expr::compile(stack_machine::stack& stack) const
@@ -701,18 +534,6 @@ tess::expr_ptr tess::equality_expr::simplify() const
 tess::or_expr::or_expr(const std::vector<expr_ptr> disjuncts) :
 	disjuncts_(disjuncts)
 {
-}
-
-tess::expr_value tess::or_expr::eval( tess::evaluation_context& ctx) const
-{
-	for (const auto& disjunct : disjuncts_) {
-		auto val = eval_bool_expr(disjunct, ctx);
-		if (!val.has_value())
-			return tess::expr_value{ tess::error("non-boolean typed expression in logical-or expression") };
-		if (val.value())
-			return tess::expr_value{ true };
-	}
-	return tess::expr_value{ false };
 }
 
 void tess::or_expr::compile(stack_machine::stack& stack) const
@@ -779,38 +600,6 @@ tess::relation_expr::relation_expr(expr_ptr lhs, relation_op op, expr_ptr rhs) :
 {
 }
 
-tess::expr_value tess::relation_expr::eval( tess::evaluation_context& ctx) const
-{
-	auto maybe_lhs = eval_number_expr(lhs_, ctx);
-	if (! maybe_lhs.has_value())
-		return tess::expr_value{ tess::error("non-number typed expression in relational expression") };
-	auto maybe_rhs = eval_number_expr(rhs_, ctx);
-	if (!maybe_rhs.has_value())
-		return tess::expr_value{ tess::error("non-number typed expression in relational expression") };
-	auto lhs = maybe_lhs.value();
-	auto rhs = maybe_rhs.value();
-
-	bool result;
-	switch (op_) {
-		case relation_op::ge:
-			result = is_ge(lhs, rhs);
-			break;
-		case relation_op::gt:
-			result = is_gt(lhs, rhs);
-			break;
-		case relation_op::le:
-			result = is_le(lhs, rhs);
-			break;
-		case relation_op::lt:
-			result = is_lt(lhs, rhs);
-			break;
-		case relation_op::ne:
-			result = is_ne(lhs, rhs);
-			break;
-	}
-	return tess::expr_value{result };
-}
-
 void tess::relation_expr::compile(stack_machine::stack& stack) const
 {
 	auto relation = op_;
@@ -870,11 +659,6 @@ tess::nil_expr::nil_expr()
 {
 }
 
-tess::expr_value tess::nil_expr::eval( tess::evaluation_context& ctx) const
-{
-    return tess::expr_value{ nil_val() };
-}
-
 tess::expr_ptr tess::nil_expr::simplify() const
 {
 	return std::make_shared<nil_expr>();
@@ -882,6 +666,7 @@ tess::expr_ptr tess::nil_expr::simplify() const
 
 void tess::nil_expr::compile(stack_machine::stack& stack) const
 {
+	stack.push(expr_value{ nil_val() });
 }
 
 void tess::nil_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -900,21 +685,6 @@ tess::if_expr::if_expr(expr_ptr condition, expr_ptr then_clause, expr_ptr else_c
 	then_clause_(then_clause), 
 	else_clause_(else_clause)
 {
-}
-
-tess::expr_value tess::if_expr::eval(evaluation_context& ctxt) const
-{
-	auto condition_val = condition_->eval(ctxt);
-	if (std::holds_alternative<error>(condition_val))
-		return condition_val;
-
-	if (!std::holds_alternative<bool>(condition_val))
-		return tess::expr_value{ error("if condition must evaluate to a boolean") };
-
-	if (std::get<bool>(condition_val))
-		return then_clause_->eval(ctxt);
-	else
-		return else_clause_->eval(ctxt);
 }
 
 void tess::if_expr::compile(stack_machine::stack& stack) const

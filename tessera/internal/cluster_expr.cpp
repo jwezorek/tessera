@@ -11,17 +11,6 @@ tess::cluster_expr::cluster_expr(const std::vector<expr_ptr>& exprs) :
 {
 }
 
-tess::expr_value tess::cluster_expr::eval(evaluation_context& ctxt) const
-{
-    std::vector<expr_value> values(exprs_.size());
-    std::transform(exprs_.begin(), exprs_.end(), values.begin(),
-        [&ctxt](expr_ptr e) {
-            return e->eval(ctxt);
-        }
-    ); 
-    return { ctxt.allocator().create<cluster>(values) };
-}
-
 void tess::cluster_expr::compile(stack_machine::stack& stack) const
 {
     int n = static_cast<int>(exprs_.size());
@@ -65,31 +54,6 @@ tess::num_range_expr::num_range_expr(expr_ptr from, expr_ptr to) :
 tess::num_range_expr::num_range_expr(const std::tuple<expr_ptr, expr_ptr>& tup) :
     num_range_expr(std::get<0>(tup), std::get<1>(tup))
 {
-}
-
-tess::expr_value tess::num_range_expr::eval(evaluation_context& ctxt) const
-{
-    auto maybe_from = eval_integer_expr(from_, ctxt);
-    if (!maybe_from.has_value())
-        return { error("invalid integer range cluster") };
-
-    auto maybe_to = eval_integer_expr(to_, ctxt);
-    if (!maybe_to.has_value())
-        return { error("invalid integer range cluster") };
-
-    int from = maybe_from.value();
-    int to = maybe_to.value();
-    int n = (to >= from) ? to - from + 1 : 0;
-
-    std::vector<expr_value> range;
-    if (n == 0) 
-        return { ctxt.allocator().create<cluster>(range) };
-    range.reserve(n);
-
-    for (int i = from; i <= to; i++)
-        range.push_back(expr_value{ tess::number{i} });
-
-    return { ctxt.allocator().create<cluster>(range) };
 }
 
 void tess::num_range_expr::compile(stack_machine::stack& stack) const
@@ -140,22 +104,6 @@ tess::cluster_comprehension_expr::cluster_comprehension_expr(expr_ptr ex, const 
 tess::cluster_comprehension_expr::cluster_comprehension_expr(std::tuple<expr_ptr, std::string, expr_ptr> tup) :
     cluster_comprehension_expr(std::get<0>(tup), std::get<1>(tup), std::get<2>(tup))
 {
-}
-
-tess::expr_value tess::cluster_comprehension_expr::eval(evaluation_context& ctxt) const
-{
-    expr_value range = range_expr_->eval(ctxt);
-    if (!range.is_array_like())
-        return { error("attempted to iterate over non-array type") };
-
-    int n = range.get_ary_count();
-    std::vector<expr_value> result(n);
-    for (int i = 0; i < n; i++) {
-        lex_scope(ctxt, scope_frame(var_, range.get_ary_item(i)));
-        result[i] = item_expr_->eval(ctxt);
-    }
-
-    return { ctxt.allocator().create<cluster>(result) };
 }
 
 void tess::cluster_comprehension_expr::compile(stack_machine::stack& stack) const

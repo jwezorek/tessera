@@ -3,31 +3,9 @@
 #include "ops.h"
 #include <numeric>
 
-std::optional<int> tess::eval_integer_expr(const tess::expr_ptr& expr, tess::evaluation_context& ctxt)
-{
-    auto int_val = expr->eval(ctxt);
-    if (!std::holds_alternative<tess::number>(int_val))
-        return std::nullopt;
-    return tess::to_int(std::get<tess::number>(int_val));
-}
-
 tess::var_expr::var_expr(const std::string& var) : 
     var_(var)
 {
-}
-
-tess::expr_value tess::var_expr::eval(evaluation_context& ctx) const
-{
-    auto value = ctx.get(var_);
-
-    // syntactic sugar: when evaluating a lambda with no parameters call the lambda
-    // even if it does not have a trailing "()".
-    // TODO: make it so it is possible to refer to a parameter less lambda by prepending
-    // its name with "fn" as in "fn square_tile" 
-
-
-
-    return value;
 }
 
 void tess::var_expr::compile(stack_machine::stack& stack) const
@@ -58,10 +36,6 @@ tess::placeholder_expr::placeholder_expr(int placeholder) :
 {
 }
 
-tess::expr_value tess::placeholder_expr::eval(evaluation_context& ctx) const
-{
-    return ctx.get(placeholder_);
-}
 
 void tess::placeholder_expr::compile(stack_machine::stack& stack) const
 {
@@ -84,15 +58,6 @@ tess::array_item_expr::array_item_expr(expr_ptr ary, expr_ptr index) :
     ary_(ary),
     index_(index)
 {
-}
-
-tess::expr_value tess::array_item_expr::eval(evaluation_context& ctx) const
-{
-    auto maybe_index = eval_integer_expr(index_, ctx);
-    if (!maybe_index.has_value())
-        return { tess::error("array index evaluated to non-number") };
-
-    return ary_->eval(ctx).get_ary_item(maybe_index.value());
 }
 
 void tess::array_item_expr::compile(stack_machine::stack& stack) const
@@ -151,11 +116,6 @@ std::string tess::func_call_expr::to_string() const
     return "( apply " + func_->to_string() + " " + args + " )";
 }
 
-tess::expr_value tess::func_call_expr::eval(evaluation_context& ctx) const
-{
-    return {};
-}
-
 void tess::func_call_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
     func_->get_dependencies(dependencies);
@@ -181,11 +141,6 @@ tess::obj_field_expr::obj_field_expr(expr_ptr obj, std::string field) :
     obj_(obj),
     field_(field)
 {
-}
-
-tess::expr_value tess::obj_field_expr::eval(evaluation_context& ctx) const
-{
-    return obj_->eval(ctx).get_field(ctx.allocator(), field_);
 }
 
 std::string tess::obj_field_expr::to_string() const

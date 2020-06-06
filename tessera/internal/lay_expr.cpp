@@ -128,62 +128,6 @@ std::optional<tess::error> tess::apply_mapping(const std::vector<std::tuple<edge
     return std::nullopt;
 }
 
-tess::lay_expr::piece_result tess::lay_expr::eval_pieces(evaluation_context& ctxt) const
-{
-    std::vector<expr_value> pieces(tiles_.size());
-    std::transform(tiles_.begin(), tiles_.end(), pieces.begin(),
-        [&ctxt](const auto& piece) {
-            return piece->eval(ctxt);
-        }
-    );
-
-    for (const auto& val : pieces) {
-        if (!is_one_of<tile, tile_patch>(val)) {
-            return std::holds_alternative<error>(val) ?
-                std::get<error>(val) : error("Can only lay tiles or patches.");
-        }
-    }
-
-    return pieces;
-}
-
-tess::lay_expr::edge_mapping_result tess::lay_expr::eval_edge_mappings(evaluation_context& ctxt) const
-{
-    std::vector< std::tuple<expr_value, expr_value>> edge_mapping_val_exprs(edge_mappings_.size());
-    std::transform(edge_mappings_.begin(), edge_mappings_.end(), edge_mapping_val_exprs.begin(),
-        [&ctxt](const auto& exprs)->std::tuple<expr_value, expr_value> {
-            auto [e1, e2] = exprs;
-            return {
-                e1->eval(ctxt),
-                e2->eval(ctxt)
-            };
-        }
-    );
-
-    edge_mapping_values mappings;
-    mappings.reserve(edge_mappings_.size());
-
-    for (const auto& [e1, e2] : edge_mapping_val_exprs) {
-        if (!is_one_of<edge, nil_val>(e1))
-            return std::holds_alternative<error>(e1) ?
-            std::get<error>(e1) : error("Can only lay tiles or patches.");
-        if (!is_one_of<edge, nil_val>(e2))
-            return std::holds_alternative<error>(e2) ?
-            std::get<error>(e2) : error("Can only lay tiles or patches.");
-
-        if (!std::holds_alternative<edge>(e1))
-            continue;
-        if (!std::holds_alternative<edge>(e2))
-            continue;
-
-        mappings.emplace_back(std::get<edge>(e1), std::get<edge>(e2));
-    }
-
-    return mappings;
-}
-
-
-
 std::optional<tess::error> tess::lay_expr::apply_mapping(const edge_mapping_value& mapping, evaluation_context& ctxt) const
 {
     auto [e1, e2] = mapping;
@@ -233,37 +177,6 @@ tess::lay_expr::lay_expr(const std::vector<expr_ptr>& tiles, const std::vector<s
 {
 }
 
-tess::expr_value tess::lay_expr::eval(evaluation_context& ctxt) const
-{
-    piece_result maybe_pieces;
-    if (maybe_pieces = eval_pieces(ctxt); std::holds_alternative<error>(maybe_pieces))
-        return { std::get<error>(maybe_pieces) };
-    auto pieces = std::move(std::get<expr_vals>(maybe_pieces));
-
-    if (!edge_mappings_.empty()) {
-
-        // push "placeholders' to the pieces on the stack
-        lex_scope scope(ctxt, scope_frame(pieces));
-
-        edge_mapping_result maybe_mappings;
-        if (maybe_mappings = eval_edge_mappings(ctxt); std::holds_alternative<error>(maybe_mappings))
-            return { std::get<error>(maybe_mappings) };
-        auto mappings = std::move(std::get<edge_mapping_values>(maybe_mappings));
-        for (const auto& mapping : mappings) {
-            auto result = apply_mapping(mapping, ctxt);
-            if (result.has_value()) {
-                return { result.value() };
-            }
-        }
-    }
-
-    return {
-        ctxt.allocator().create<tile_patch>(
-            flatten_tiles_and_patches(pieces)
-        )
-    };
-}
-
 void tess::lay_expr::compile(stack_machine::stack& stack) const
 {
     stack.push(std::make_shared<lay_op>(static_cast<int>(edge_mappings_.size())));
@@ -276,9 +189,6 @@ void tess::lay_expr::compile(stack_machine::stack& stack) const
         tile->compile(stack);
     }
     stack.push(std::make_shared<push_frame_op>());
-
-
-
 }
 
 void tess::lay_expr::get_dependencies( std::unordered_set<std::string>& dependencies ) const

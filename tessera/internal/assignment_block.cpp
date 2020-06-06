@@ -51,25 +51,6 @@ void set_one_var(tess::evaluation_context& ctxt, const std::string& var, tess::e
 	ctxt.peek().set(var, val);
 }
 
-tess::scope_frame tess::assignment_block::eval(evaluation_context& ctxt) const
-{
-	ctxt.push_scope();
-
-	for (const auto [vars, expr] : *impl_) {
-		auto val = expr->eval(ctxt);
-		if (vars.size() == 1) {
-			set_one_var(ctxt, vars[0], val);
-		} else {
-			if (vars.size() != val.get_ary_count())
-				throw tess::error("multi-assignment count mismatch");
-			for (int i = 0; i < val.get_ary_count(); i++)
-				set_one_var(ctxt, vars[i], val.get_ary_item(i));
-		}
-	}
-
-	return ctxt.pop_scope();
-}
-
 void tess::assignment_block::compile(stack_machine::stack& stack) const
 {
 	for (auto i = impl_->rbegin(); i != impl_->rend(); ++i) {
@@ -147,31 +128,6 @@ tess::where_expr::where_expr(const assignment_block& assignments, expr_ptr body)
 {
 }
 
-tess::expr_value tess::where_expr::eval(evaluation_context& ctxt) const
-{
-	auto frame = assignments_.eval(ctxt);
-	lex_scope sc(ctxt, frame);
-
-	auto result = body_->eval(ctxt);
-
-	if (result.is_valid() && result.is_object_like()) {
-		for (const auto& [var, val] : frame)
-			result.insert_field(var, val);
-	}
-
-	return result;
-}
-/*
-void tess::where_expr::compile(stack_machine::stack& stack) const
-{
-	stack.push(std::make_shared<insert_fields_op>());
-	stack.push(std::make_shared<pop_frame_op>());
-	body_->compile(stack);
-	stack.push(std::make_shared<push_frame_op>());
-	stack.push(std::make_shared<dup_op>());
-	assignments_.compile(stack);
-}
-*/
 
 void tess::where_expr::compile(stack_machine::stack& stack) const
 {

@@ -9,23 +9,6 @@
 #include <unordered_set>
 #include <numeric>
 
-tess::expr_value tess::function_def::eval(evaluation_context& ctxt) const
-{
-    std::unordered_set<std::string> dependent_vars;
-    get_dependencies(dependent_vars);
-
-    std::vector<std::tuple<std::string, expr_value>> closure;
-    for (const auto& var : dependent_vars) {
-        if (ctxt.contains(var)) {
-            closure.push_back({ var, ctxt.get(var) });
-        }
-    }
-
-    return {
-        tess::error("COMPILE IT, BITCHEZ")
-    };
-}
-
 void tess::function_def::compile(stack_machine::stack& stack) const
 {
     stack_machine::stack body;

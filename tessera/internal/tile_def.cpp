@@ -76,27 +76,6 @@ std::optional<tess::parser::exception> tess::tile_def_expr::initialize(std::unor
     return std::nullopt;
 }
 
-std::vector<std::tuple<tess::number, tess::number>> tess::tile_def_expr::evaluate_vertices(evaluation_context& ctxt) const
-{
-    auto n = static_cast<int>(vertices_.size());
-    tess::number x = 0.0;
-    tess::number y = 0.0;
-    tess::number theta = 0.0;
-
-    std::vector<std::tuple<number, number>> locs(n);
-
-    for (int i = 0; i < n; ++i) {
-        locs[i] = { x,y };
-        auto length = std::get<tess::number>(edges_[i].length->eval(ctxt));
-        x = x + length * se::cos(theta);
-        y = y + length * se::sin(theta);
-        auto delta_theta = se::Expression(se::pi) - std::get<tess::number>(vertices_[(i + 1) % n].angle->eval(ctxt));
-        theta = theta + delta_theta;
-    }
-
-    return locs;
-}
-
 std::vector<tess::edge_fields> tess::tile_def_expr::get_edge_fields() const
 {
     std::vector<edge_fields> fields(edges_.size());
@@ -135,39 +114,6 @@ tess::tile_def_expr::tile_def_expr(const tile_verts_and_edges& v_e)
 tess::tile_def_expr::tile_def_expr(const std::vector<vertex_def>& v, const std::vector<edge_def>& e) :
     vertices_(v), edges_(e)
 {
-}
-
-tess::expr_value tess::tile_def_expr::eval(evaluation_context& ctxt) const
-{
-    auto n = static_cast<int>(vertices_.size());
-    auto new_tile_impl = ctxt.allocator().create_impl<tile>(
-        get_vert_fields(),
-        get_edge_fields()
-    );
-    auto vert_locations = evaluate_vertices(ctxt);
-
-    std::vector<tess::vertex> verts(n);
-    std::transform(vertices_.cbegin(), vertices_.cend(), verts.begin(),
-        [&](auto v) {
-            return ctxt.allocator().create<tess::vertex>(
-                new_tile_impl, v.index, vert_locations[v.index]
-            );
-        }
-    );
-
-    std::vector<tess::edge> edges(n);
-    std::transform(edges_.cbegin(), edges_.cend(), edges.begin(),
-        [&](auto e) {
-            return ctxt.allocator().create<tess::edge>(new_tile_impl, e.index);
-        }
-    );
-
-    new_tile_impl->set(std::move(verts), std::move(edges));
-    return {
-        make_tess_obj<tess::tile>(
-            new_tile_impl
-        )
-    };
 }
 
 void tess::tile_def_expr::compile(stack_machine::stack& stack) const
