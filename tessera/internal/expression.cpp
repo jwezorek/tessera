@@ -336,7 +336,24 @@ tess::expr_value tess::exponent_expr::eval( tess::evaluation_context& ctxt) cons
 
 void tess::exponent_expr::compile(stack_machine::stack& stack) const
 {
-	//TODO:COMPILE
+	int n = static_cast<int>(exponents_.size() + 1);
+	stack.push(std::make_shared<val_func_op>(
+			n,
+			[](allocator& a, const std::vector<expr_value>& args)->expr_value {
+				number power = std::get<number>(args[0]);
+				if (args.size() > 1) {
+					for (auto e = std::next(args.begin()); e != args.end(); e++) 
+						power = tess::pow(power, std::get<number>(*e));
+				}
+				return { power };
+			},
+			"<exp " + std::to_string(n) + ">"
+		)
+	);
+	base_->compile(stack);
+	for (auto exp : exponents_) {
+		exp->compile(stack);
+	}
 }
 
 
