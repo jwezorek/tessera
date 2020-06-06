@@ -518,9 +518,11 @@ tess::expr_value tess::and_expr::eval( tess::evaluation_context& ctx) const
 
 void tess::and_expr::compile(stack_machine::stack& stack) const
 {
+	int n = static_cast<int>(conjuncts_.size());
 	stack.push(
-		std::make_shared<val_func_op>(conjuncts_.size(),
-			[](const std::vector<expr_value>& args)->expr_value {
+		std::make_shared<val_func_op>(
+			n,
+			[](allocator& a, const std::vector<expr_value>& args)->expr_value {
 				for (const auto& conjunct : args) {
 					auto val = std::get<bool>(conjunct);
 					if (!val)
@@ -579,9 +581,11 @@ tess::expr_value tess::equality_expr::eval( tess::evaluation_context& ctx) const
 
 void tess::equality_expr::compile(stack_machine::stack& stack) const
 {
+	int n = static_cast<int>(operands_.size());
 	stack.push(
-		std::make_shared<val_func_op>(operands_.size(),
-			[](const std::vector<expr_value>& args) -> expr_value {
+		std::make_shared<val_func_op>(
+			n,
+			[](allocator& a, const std::vector<expr_value>& args) -> expr_value {
 
 				std::vector<number> expressions;
 				expressions.reserve(args.size());
@@ -642,8 +646,9 @@ tess::expr_value tess::or_expr::eval( tess::evaluation_context& ctx) const
 void tess::or_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(
-		std::make_shared<val_func_op>(disjuncts_.size(),
-			[](const std::vector<expr_value>& args) -> expr_value {
+		std::make_shared<val_func_op>(
+			static_cast<int>(disjuncts_.size()),
+			[](allocator& a, const std::vector<expr_value>& args) -> expr_value {
 				for (const auto& disjunct : args) {
 					auto val = std::get<bool>(disjunct);
 					if (val)
@@ -740,7 +745,7 @@ void tess::relation_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<val_func_op>(
 			2,
-			[relation](const std::vector<expr_value>& args) -> expr_value {
+			[relation](allocator& a, const std::vector<expr_value>& args) -> expr_value {
 				for (const auto& disjunct : args) {
 					auto lhs = std::get<number>(args[0]);
 					auto rhs = std::get<number>(args[1]);

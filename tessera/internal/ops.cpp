@@ -7,6 +7,8 @@
 #include "evaluation_context.h"
 #include "lay_expr.h"
 #include "tile_impl.h"
+#include "cluster.h"
+#include "tile_patch_impl.h"
 #include "tessera/tile_patch.h"
 #include <sstream>
 
@@ -385,7 +387,7 @@ tess::expr_value tess::lay_op::flatten_tiles_and_patches( tess::allocator& alloc
     };
 }
 
-tess::val_func_op::val_func_op(int n, std::function<expr_value(const std::vector<expr_value> & v)> func, std::string name) :
+tess::val_func_op::val_func_op(int n, std::function<expr_value(tess::allocator& a, const std::vector<expr_value> & v)> func, std::string name) :
     stack_machine::op_1(n), name_(name), func_(func)
 {
 }
@@ -393,7 +395,7 @@ tess::val_func_op::val_func_op(int n, std::function<expr_value(const std::vector
 tess::stack_machine::item tess::val_func_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     std::vector<expr_value> args = get_vector<expr_value>(operands.begin(), operands.end());
-    return { func_(args) };
+    return { func_( contexts.top().allocator(), args ) };
 }
 
 tess::if_op::if_op(const std::vector<stack_machine::item>& if_clause, const std::vector<stack_machine::item>& else_clause) :
@@ -455,4 +457,68 @@ tess::stack_machine::item tess::get_ary_item_op::execute(const std::vector<stack
     auto ary = std::get<expr_value>(operands[0]);
     auto index = std::get<tess::number>(std::get<expr_value>(operands[1]));
     return { ary.get_ary_item(tess::to_int(index)) };
+}
+
+
+std::vector<tess::stack_machine::item> tess::iterate_op::start_next_item(int index, tess::cluster& ary) const
+{
+    std::vector<stack_machine::item> output{
+        { expr_value{number(index)} },
+        { expr_value{ary} },
+        { std::make_shared<get_ary_item_op>() },
+        { stack_machine::variable(index_var_) },
+        { std::make_shared<assign_op>(1) }
+    };
+    std::copy(body_.begin(), body_.end(), std::back_inserter(output));
+    return output;
+}
+
+tess::iterate_op::iterate_op(std::string index_var, int index_val, const std::vector<stack_machine::item>& body) :
+    stack_machine::op_multi(3),
+    index_var_(index_var),
+    index_val_(index_val),
+    body_(body)
+{
+}
+
+std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::iterate_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    auto& alloc = contexts.top().allocator();
+    auto src = std::get<tess::cluster>(std::get<expr_value>( operands[0] ));
+    auto* dst = (index_val_ > -1) ? get_impl(std::get<tess::cluster>(std::get<expr_value>(operands[1]))) : nullptr;
+    auto curr_item = std::get<expr_value>( operands[2] );
+    
+    auto n = src.count();
+
+    if (dst) 
+        dst->push_value(curr_item);
+    auto i = index_val_ + 1;
+    
+    if (i >= n)
+        return std::vector<tess::stack_machine::item>{ operands[1] };
+
+    auto next_iteration = start_next_item( i, src );
+
+    stack_machine::item new_dst;
+    if (!dst)
+        new_dst = { expr_value{ alloc.create<cluster>(std::vector<expr_value>{}) } };
+    else
+        new_dst = operands[1];
+
+    next_iteration.push_back( new_dst );
+    next_iteration.push_back( operands[0] );
+    next_iteration.push_back({ std::make_shared<iterate_op>(index_var_, i, body_) });
+
+    return next_iteration;
+}
+
+
+std::string tess::iterate_op::to_string() const
+{
+    std::stringstream ss;
+    ss << "<iterate " << index_var_ << " " << std::to_string(index_val_) << " {";
+    for (auto it : body_)
+        ss << it.to_string() << ";";
+    ss << "}>";
+    return ss.str();
 }

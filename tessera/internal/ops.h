@@ -130,10 +130,10 @@ namespace tess {
 
     class val_func_op : public stack_machine::op_1 {
     public:
-        val_func_op(int n, std::function<expr_value(const std::vector<expr_value>& v)> func, std::string name);
+        val_func_op(int n, std::function<expr_value(allocator& a, const std::vector<expr_value>& v)> func, std::string name);
     protected:
         std::string name_;
-        std::function<expr_value(const std::vector<expr_value> & v)> func_;
+        std::function<expr_value(allocator& a, const std::vector<expr_value> & v)> func_;
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return name_; }
 
@@ -179,4 +179,18 @@ namespace tess {
         std::string to_string() const override { return "<get_ary_item>"; }
     };
 
+    class iterate_op : public stack_machine::op_multi {
+    protected:
+        std::variant<std::vector<stack_machine::item>, tess::error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+
+        std::string index_var_;
+        int index_val_;
+        std::vector<stack_machine::item> body_;
+
+        std::vector<stack_machine::item> start_next_item(int index, tess::cluster& ary) const;
+
+    public:
+        iterate_op(std::string index_var, int index_val, const std::vector<stack_machine::item>& body);
+        std::string to_string() const override;
+    };
 }

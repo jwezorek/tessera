@@ -4,6 +4,7 @@
 #include "cluster.h"
 #include "allocator.h"
 #include "execution_state.h"
+#include "ops.h"
 
 tess::cluster_expr::cluster_expr(const std::vector<expr_ptr>& exprs) :
     exprs_(exprs)
@@ -19,6 +20,22 @@ tess::expr_value tess::cluster_expr::eval(evaluation_context& ctxt) const
         }
     ); 
     return { ctxt.allocator().create<cluster>(values) };
+}
+
+void tess::cluster_expr::compile(stack_machine::stack& stack) const
+{
+    int n = static_cast<int>(exprs_.size());
+    stack.push(
+        std::make_shared<val_func_op>(
+            n,
+            [](allocator& a, const std::vector<expr_value>& values)->expr_value {
+                return  { a.create<cluster>(values) };
+            },
+            "<make_cluster " + std::to_string(n) + ">"
+        )
+    );
+    for (auto e : exprs_)
+        e->compile(stack);
 }
 
 tess::expr_ptr tess::cluster_expr::simplify() const
@@ -75,6 +92,33 @@ tess::expr_value tess::num_range_expr::eval(evaluation_context& ctxt) const
     return { ctxt.allocator().create<cluster>(range) };
 }
 
+void tess::num_range_expr::compile(stack_machine::stack& stack) const
+{
+    stack.push(
+        std::make_shared<val_func_op>(
+            2,
+            [](allocator& a, const std::vector<expr_value>& values)->expr_value {
+                int from = to_int(std::get<number>( values[0] ));
+                int to = to_int(std::get<number>( values[1] ));
+                int n = (to >= from) ? to - from + 1 : 0;
+
+                std::vector<expr_value> range;
+                if (n == 0)
+                    return { a.create<cluster>(range) };
+                range.reserve(n);
+
+                for (int i = from; i <= to; i++)
+                    range.push_back(expr_value{ tess::number{i} });
+
+                return { a.create<cluster>(range) };
+            },
+            "<make_range>"
+        )
+    );
+    from_->compile(stack);
+    to_->compile(stack);
+}
+
 tess::expr_ptr tess::num_range_expr::simplify() const
 {
     return std::make_shared<num_range_expr>(from_->simplify(), to_->simplify());
@@ -112,6 +156,18 @@ tess::expr_value tess::cluster_comprehension_expr::eval(evaluation_context& ctxt
     }
 
     return { ctxt.allocator().create<cluster>(result) };
+}
+
+void tess::cluster_comprehension_expr::compile(stack_machine::stack& stack) const
+{
+    stack_machine::stack body;
+    item_expr_->compile(body);
+    stack.push(std::make_shared<pop_frame_op>());
+    stack.push(std::make_shared<iterate_op>(var_, -1, body.pop_all()));
+    range_expr_->compile(stack);
+    stack.push(expr_value());
+    stack.push(expr_value());
+    stack.push(std::make_shared<push_frame_op>());
 }
 
 tess::expr_ptr tess::cluster_comprehension_expr::simplify() const
