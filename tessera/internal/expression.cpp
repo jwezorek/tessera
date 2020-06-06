@@ -170,8 +170,17 @@ void tess::addition_expr::compile(stack_machine::stack& stack) const
 		)
 	);
 	for (auto [sign, term_expr] : terms_) {
-		if (!sign)
-			stack.push(std::make_shared<neg_op>());
+		if (!sign) {
+			stack.push(
+				std::make_shared<val_func_op>(
+					1,
+					[](allocator& a, const std::vector<expr_value>& args)->expr_value {
+						return { -std::get<number>(args[0]) };
+					},
+					"<neg " + std::to_string(terms_.size()) + ">"
+				)
+			);
+		}
 		term_expr->compile(stack);
 	}
 }
@@ -243,7 +252,32 @@ tess::expr_value tess::multiplication_expr::eval( tess::evaluation_context& ctxt
 
 void tess::multiplication_expr::compile(stack_machine::stack& stack) const
 {
-	//TODO:COMPILE
+	stack.push(std::make_shared<val_func_op>(
+			static_cast<int>(factors_.size()),
+			[](allocator& a, const std::vector<expr_value>& args)->expr_value {
+				number product = 1;
+				for (const auto& term : args) {
+					product *= std::get<number>(term);
+				}
+				return { product };
+			},
+			"<multiply " + std::to_string(factors_.size()) + ">"
+		)
+	);
+	for (auto [sign, factor_expr] : factors_) {
+		if (!sign) {
+			stack.push(
+				std::make_shared<val_func_op>(
+					1,
+					[](allocator& a, const std::vector<expr_value>& args)->expr_value {
+						return { number(1) / std::get<number>(args[0]) };
+					},
+					"<reciprocal " + std::to_string(factors_.size()) + ">"
+				)
+			);
+		}
+		factor_expr->compile(stack);
+	}
 }
 
 void tess::multiplication_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const

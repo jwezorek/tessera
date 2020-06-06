@@ -63,14 +63,6 @@ namespace tess {
         std::string to_string() const override { return "<push_context>"; }
     };
 
-    class neg_op : public stack_machine::op_1 {
-    public:
-        neg_op();
-    protected:
-        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
-        std::string to_string() const override { return "<neg>"; }
-    };
-
     class pop_and_insert_fields_op : public stack_machine::op_1 {
     public:
         pop_and_insert_fields_op();

@@ -194,18 +194,6 @@ std::optional<tess::error> tess::push_eval_context::execute(const std::vector<st
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::neg_op::neg_op() : stack_machine::op_1(1)
-{
-}
-
-tess::stack_machine::item tess::neg_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
-{
-    tess::number val = std::get<tess::number>(std::get<expr_value>(operands[0]));
-    return { expr_value{ -val } };
-}
-
-/*---------------------------------------------------------------------------------------------*/
-
 tess::pop_and_insert_fields_op::pop_and_insert_fields_op() : stack_machine::op_1(1)
 {
 }
