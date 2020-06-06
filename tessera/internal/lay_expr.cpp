@@ -27,7 +27,7 @@ namespace {
         return std::visit([&mat](auto ptr) { ptr->apply(mat); }, ep);
     }
 
-    int countTiles(const std::vector<tess::expr_value>& tiles_and_patches) {
+    int count_tiles(const std::vector<tess::expr_value>& tiles_and_patches) {
         int count = 0;
         for (const auto& tile_or_patch : tiles_and_patches)
             std::visit(
@@ -100,7 +100,7 @@ namespace {
 }
 
 std::vector<tess::tile> tess::flatten_tiles_and_patches(const std::vector<tess::expr_value>& tiles_and_patches) {
-    int n = countTiles(tiles_and_patches);
+    int n = count_tiles(tiles_and_patches);
     std::vector<tess::tile> tiles;
     tiles.reserve(n);
     for (const auto& tile_or_patch : tiles_and_patches)
@@ -128,7 +128,7 @@ std::optional<tess::error> tess::apply_mapping(const std::vector<std::tuple<edge
     return std::nullopt;
 }
 
-std::optional<tess::error> tess::lay_expr::apply_mapping(const edge_mapping_value& mapping, evaluation_context& ctxt) const
+std::optional<tess::error> tess::lay_expr::apply_mapping(const std::tuple<edge, edge>& mapping, evaluation_context& ctxt) const
 {
     auto [e1, e2] = mapping;
     auto& edge1 = *get_impl(e1);
