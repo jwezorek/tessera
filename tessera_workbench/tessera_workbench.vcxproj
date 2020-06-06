@@ -166,7 +166,6 @@
   <ItemGroup>
     <None Include="example.tess" />
     <None Include="test.tess" />
-    <None Include="test_compile.tess" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
