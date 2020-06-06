@@ -53,7 +53,6 @@
     <ClCompile Include="internal\tile_patch.cpp" />
     <ClCompile Include="internal\expression.cpp" />
     <ClCompile Include="internal\text_range.cpp" />
-    <ClCompile Include="internal\tile_def.cpp" />
     <ClCompile Include="internal\tile_patch_impl.cpp" />
     <ClCompile Include="internal\stack_machine.cpp" />
   </ItemGroup>
@@ -95,7 +94,6 @@
     <ClInclude Include="internal\tessera_impl.h" />
     <ClInclude Include="internal\tile_impl.h" />
     <ClInclude Include="internal\text_range.h" />
-    <ClInclude Include="internal\tile_def.h" />
     <ClInclude Include="internal\tile_patch_impl.h" />
     <ClInclude Include="internal\stack_machine.h" />
     <ClInclude Include="internal\variant_util.h" />

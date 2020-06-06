@@ -3,7 +3,6 @@
 #include "tessera/tile.h"
 #include "tessera_impl.h"
 #include "tile_patch_impl.h"
-#include "tile_def.h"
 #include "expr_value.h"
 #include <string>
 #include <vector>
@@ -14,6 +13,20 @@
 namespace tess {
 
     class allocator;
+
+    struct vert_fields {
+        int index;
+        std::string name;
+        std::string class_;
+    };
+
+    struct edge_fields {
+        int index;
+        std::string name;
+        std::string class_;
+        int u;
+        int v;
+    };
 
     class vertex::impl_type : public tessera_impl {
     private:

@@ -2,7 +2,6 @@
 #include "expression.h"
 #include "expr_value.h"
 #include "execution_state.h"
-#include "tile_def.h"
 #include "tile_impl.h"
 #include "tessera_impl.h"
 #include "parser/keywords.h"

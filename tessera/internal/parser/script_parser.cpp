@@ -1,4 +1,3 @@
-#include "../tile_def.h"
 #include "../script_impl.h"
 #include "script_parser.h"
 #include "assignment_parser.h"
