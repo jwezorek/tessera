@@ -206,22 +206,6 @@ tess::stack_machine::item tess::neg_op::execute(const std::vector<stack_machine:
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::add_op::add_op(int args) : stack_machine::op_1(args)
-{
-}
-
-tess::stack_machine::item tess::add_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
-{
-    auto values = get_vector<expr_value>(operands.begin(), operands.end());
-    auto nums = get_vector<tess::number>(values.begin(), values.end());
-    tess::number sum = 0;
-    for (const auto& num : nums)
-        sum += num;
-    return { expr_value{sum} };
-}
-
-/*---------------------------------------------------------------------------------------------*/
-
 tess::pop_and_insert_fields_op::pop_and_insert_fields_op() : stack_machine::op_1(1)
 {
 }
@@ -272,18 +256,6 @@ std::optional<tess::error> tess::push_frame_op::execute(const std::vector<stack_
 }
 
 /*---------------------------------------------------------------------------------------------*/
-
-tess::dup_op::dup_op() : stack_machine::op_multi(1)
-{
-}
-
-std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::dup_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
-{
-    return std::vector<tess::stack_machine::item> {
-        operands[0],
-        operands[0]
-    };
-}
 
 tess::assign_op::assign_op(int num_vars) : stack_machine::op_0(num_vars+1)
 {

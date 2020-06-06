@@ -23,7 +23,7 @@ namespace tess {
     class expression : public std::enable_shared_from_this<expression>
     {
     public:
-        virtual void compile(stack_machine::stack& stack) const;
+        virtual void compile(stack_machine::stack& stack) const = 0;
         virtual std::string to_string() const;
         virtual expr_value eval(evaluation_context& ) const = 0;
         virtual expr_ptr simplify() const = 0;
@@ -58,6 +58,7 @@ namespace tess {
         special_number_expr(const std::string& v);
         special_number_expr(special_num which);
         expr_value eval(evaluation_context& ctxt ) const override;
+        virtual void compile(stack_machine::stack& stack) const override;
         expr_ptr simplify() const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
     };
@@ -99,6 +100,7 @@ namespace tess {
         exponent_expr(const expression_params& params);
         exponent_expr(expr_ptr base, const std::vector<expr_ptr>& exponents);
         expr_value eval(evaluation_context& ctxt ) const override;
+        virtual void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
@@ -125,6 +127,7 @@ namespace tess {
         multiplication_expr(const expression_params& factors);
         multiplication_expr(const std::vector<std::tuple<bool, expr_ptr>>& factors);
         expr_value eval(evaluation_context& ctx ) const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };

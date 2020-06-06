@@ -170,6 +170,11 @@ tess::expr_value tess::tile_def_expr::eval(evaluation_context& ctxt) const
     };
 }
 
+void tess::tile_def_expr::compile(stack_machine::stack& stack) const
+{
+    //DEPRECATED
+}
+
 tess::expr_ptr tess::tile_def_expr::simplify() const
 {
     std::vector<vertex_def>  simplified_verts(vertices_.size());

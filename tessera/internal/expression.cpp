@@ -89,11 +89,6 @@ std::optional<bool> eval_bool_expr(const tess::expr_ptr& expr, tess::evaluation_
 
 /*----------------------------------------------------------------------*/
 
-void tess::expression::compile(stack_machine::stack& stack) const
-{
-	stack.push({ expr_value{ std::string("TODO")} });
-}
-
 
 std::string tess::expression::to_string() const
 {
@@ -162,7 +157,18 @@ tess::expr_value tess::addition_expr::eval( tess::evaluation_context& ctxt) cons
 
 void tess::addition_expr::compile(stack_machine::stack& stack) const
 {
-	stack.push(std::make_shared<add_op>( static_cast<int>(terms_.size()) ));
+	stack.push(std::make_shared<val_func_op>( 
+		static_cast<int>(terms_.size()),
+		[](allocator& a, const std::vector<expr_value>& args)->expr_value {
+			number sum = 0;
+			for (const auto& term : args) {
+				sum += std::get<number>(term);
+			}
+			return { sum };
+		},
+		"<add " + std::to_string(terms_.size()) + ">"
+		)
+	);
 	for (auto [sign, term_expr] : terms_) {
 		if (!sign)
 			stack.push(std::make_shared<neg_op>());
@@ -235,6 +241,11 @@ tess::expr_value tess::multiplication_expr::eval( tess::evaluation_context& ctxt
 	return tess::expr_value{ product };
 }
 
+void tess::multiplication_expr::compile(stack_machine::stack& stack) const
+{
+	//TODO:COMPILE
+}
+
 void tess::multiplication_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
 	for (auto [op, factor_expr] : factors_)
@@ -289,6 +300,11 @@ tess::expr_value tess::exponent_expr::eval( tess::evaluation_context& ctxt) cons
 
 }
 
+void tess::exponent_expr::compile(stack_machine::stack& stack) const
+{
+	//TODO:COMPILE
+}
+
 
 void  tess::exponent_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const {
 
@@ -338,6 +354,11 @@ tess::expr_value tess::special_number_expr::eval( tess::evaluation_context& ctxt
 			return tess::expr_value{ tess::number("sqrt(2)") };
 	}
 	return tess::expr_value{ tess::error("Unknown special number.") };
+}
+
+void tess::special_number_expr::compile(stack_machine::stack& stack) const
+{
+	//TODO:COMPILE
 }
 
 tess::expr_ptr tess::special_number_expr::simplify() const
