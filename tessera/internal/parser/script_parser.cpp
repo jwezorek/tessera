@@ -1,6 +1,6 @@
 #include "../script_impl.h"
 #include "script_parser.h"
-#include "assignment_parser.h"
+#include "where_parser.h"
 #include "expr_parser.h"
 #include "keywords.h"
 #include "util.h"

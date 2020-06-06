@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="internal\assignment_block.cpp" />
+    <ClCompile Include="internal\where_expr.cpp" />
     <ClCompile Include="internal\cluster.cpp" />
     <ClCompile Include="internal\cluster_expr.cpp" />
     <ClCompile Include="internal\error.cpp" />
@@ -32,7 +32,7 @@
     <ClCompile Include="internal\math_util.cpp" />
     <ClCompile Include="internal\object_expr.cpp" />
     <ClCompile Include="internal\ops.cpp" />
-    <ClCompile Include="internal\parser\assignment_parser.cpp" />
+    <ClCompile Include="internal\parser\where_parser.cpp" />
     <ClCompile Include="internal\parser\basic_expr_parser.cpp" />
     <ClCompile Include="internal\parser\cluster_expr_parser.cpp" />
     <ClCompile Include="internal\parser\cond_expr_parser.cpp" />
@@ -61,7 +61,7 @@
     <ClInclude Include="include\tessera\script.h" />
     <ClInclude Include="include\tessera\tile.h" />
     <ClInclude Include="include\tessera\tile_patch.h" />
-    <ClInclude Include="internal\assignment_block.h" />
+    <ClInclude Include="internal\where_expr.h" />
     <ClInclude Include="internal\cluster.h" />
     <ClInclude Include="internal\cluster_expr.h" />
     <ClInclude Include="internal\evaluation_context.h" />
@@ -75,7 +75,7 @@
     <ClInclude Include="internal\math_util.h" />
     <ClInclude Include="internal\object_expr.h" />
     <ClInclude Include="internal\ops.h" />
-    <ClInclude Include="internal\parser\assignment_parser.h" />
+    <ClInclude Include="internal\parser\where_parser.h" />
     <ClInclude Include="internal\parser\basic_expr_parser.h" />
     <ClInclude Include="internal\parser\cluster_expr_parser.h" />
     <ClInclude Include="internal\parser\cond_expr_parser.h" />

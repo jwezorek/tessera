@@ -2,7 +2,7 @@
 #include "script_impl.h"
 #include "function_def.h"
 #include "lambda.h"
-#include "assignment_block.h"
+#include "where_expr.h"
 #include "parser/script_parser.h"
 #include "parser/expr_parser.h"
 #include "allocator.h"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "util.h"
-#include "../assignment_block.h"
+#include "../where_expr.h"
 #include "../expression.h"
 #include "../text_range.h"
 #include <boost/spirit/home/x3.hpp>

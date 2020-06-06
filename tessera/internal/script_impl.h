@@ -1,6 +1,6 @@
 #include "tessera/script.h"
 #include "tessera_impl.h"
-#include "assignment_block.h"
+#include "where_expr.h"
 #include "function_def.h"
 #include "expression.h"
 #include "expr_value.h"
