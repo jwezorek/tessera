@@ -28,18 +28,6 @@ namespace tess {
         std::map<std::string, expr_value> definitions_;
     };
 
-    class lex_scope {
-    public:
-        lex_scope(evaluation_context& ctxt, scope_frame&& ls);
-        lex_scope(evaluation_context& ctxt, const scope_frame& ls);
-        lex_scope(const lex_scope&) = delete;
-        lex_scope& operator=(const lex_scope& other) = delete;
-        ~lex_scope();
-
-    private:
-        evaluation_context& ctxt_;
-    };
-
     class execution_state;
 
     class evaluation_context

@@ -115,6 +115,8 @@ std::string tess::expr_value::to_string() const
 		std::stringstream ss;
 		ss << "#(" << std::get<tess::number>(*this) << ")";
 		return ss.str();
+	} else if (std::holds_alternative<tess::nil_val>(*this)) {
+		return "#(nil)";
 	}
 	return "#(some expr value)";
 }

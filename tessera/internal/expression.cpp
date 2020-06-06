@@ -113,7 +113,7 @@ void tess::addition_expr::compile(stack_machine::stack& stack) const
 					[](allocator& a, const std::vector<expr_value>& args)->expr_value {
 						return { -std::get<number>(args[0]) };
 					},
-					"<neg " + std::to_string(terms_.size()) + ">"
+					"<neg>"
 				)
 			);
 		}
@@ -195,7 +195,7 @@ void tess::multiplication_expr::compile(stack_machine::stack& stack) const
 					[](allocator& a, const std::vector<expr_value>& args)->expr_value {
 						return { number(1) / std::get<number>(args[0]) };
 					},
-					"<reciprocal " + std::to_string(factors_.size()) + ">"
+					"<reciprocal>"
 				)
 			);
 		}

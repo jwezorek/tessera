@@ -45,12 +45,6 @@ tess::assignment_block::assignment_block(const std::vector<var_assignment>& assi
 {
 }
 
-void set_one_var(tess::evaluation_context& ctxt, const std::string& var, tess::expr_value val)
-{
-	add_self_reference(ctxt, var, val);
-	ctxt.peek().set(var, val);
-}
-
 void tess::assignment_block::compile(stack_machine::stack& stack) const
 {
 	for (auto i = impl_->rbegin(); i != impl_->rend(); ++i) {

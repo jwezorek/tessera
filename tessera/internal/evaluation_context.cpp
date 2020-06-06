@@ -107,25 +107,6 @@ tess::scope_frame::scope_frame(const std::string& var, expr_value val)
     definitions_[var] = val;
 }
 
-tess::lex_scope::lex_scope(tess::evaluation_context& ctxt, tess::scope_frame&& ls) :
-    ctxt_(ctxt)
-{
-    ctxt_.push_scope(std::move(ls));
-}
-
-
-tess::lex_scope::lex_scope(evaluation_context& ctxt, const scope_frame& ls) :
-    ctxt_(ctxt)
-{
-    ctxt_.push_scope(ls);
-}
-
-
-tess::lex_scope::~lex_scope()
-{
-    ctxt_.pop_scope();
-}
-
 /*------------------------------------------------------------------------------------------------------*/
 
 std::optional<tess::expr_value> tess::evaluation_context::get_maybe(const std::string& var) const
