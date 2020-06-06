@@ -11,11 +11,6 @@
 
 namespace tess {
     namespace parser {
-
-        struct tile_def_expr_ : public tess_expr<tile_def_expr_> {
-            std::tuple<tess::expr_ptr, std::string::const_iterator> parse_aux(const text_range& input) const;
-        };
-
         struct tile_def_ : public tess_expr<tile_def_> {
             std::tuple<tess::expr_ptr, std::string::const_iterator> parse_aux(const text_range& input) const;
         };
