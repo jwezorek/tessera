@@ -27,7 +27,6 @@ namespace tess {
             friend class lambda;
 
         private:
-            void compile_dependencies(const std::unordered_set<std::string>& dependent_vars, stack_machine::stack& stack) const;
             std::vector<std::string> get_variables() const;
 
             std::vector<std::string> parameters_;

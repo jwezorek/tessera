@@ -13,7 +13,7 @@ std::vector<std::string> get_arguments(int argc, char** argv);
 void generate_svg(const std::string& filename, const std::vector<tess::tile>& tiles, double scale);
 
 int main(int argc, char** argv){
-	std::string source_code = read_file("test.tess");
+	std::string source_code = read_file("example.tess");
 	auto results = tess::script::interpret( source_code );
 
 	if (std::holds_alternative<tess::script>(results)) {
@@ -26,7 +26,7 @@ int main(int argc, char** argv){
 		}
 
 		const auto& tiles = std::get<std::vector<tess::tile>>(output);
-		generate_svg("C:\\test\\tri.svg", tiles, 50.0);
+		generate_svg("C:\\test\\sierp.svg", tiles, 50.0);
 
 		std::cout << "success" << "\n";
 	} else {

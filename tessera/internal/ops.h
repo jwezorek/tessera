@@ -24,11 +24,12 @@ namespace tess {
 
     class make_lambda : public stack_machine::op_1 {
     public:
-        make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body, int num_dependencies);
+        make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body, const std::vector<std::string>& deps);
     protected:
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override;
         std::vector<std::string> parameters_;
+        std::vector<std::string> dependencies_;
         std::vector<stack_machine::item> body_;
     };
 
@@ -168,5 +169,13 @@ namespace tess {
     public:
         iterate_op(std::string index_var, int index_val, const std::vector<stack_machine::item>& body);
         std::string to_string() const override;
+    };
+
+    class set_dependencies_op : public stack_machine::op_0 {
+    public:
+        set_dependencies_op();
+    protected:
+        std::optional<error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+        std::string to_string() const override { return "<set dependencies>"; }
     };
 }

@@ -8,15 +8,15 @@
 #include <unordered_set>
 #include <numeric>
 
+
+
 void tess::function_def::compile(stack_machine::stack& stack) const
 {
     stack_machine::stack body;
     body_->compile(body);
-
-    std::unordered_set<std::string> dependent_vars;
-    get_dependencies( dependent_vars );
-    stack.push(std::make_shared<make_lambda>( parameters_, body.pop_all(), static_cast<int>(dependent_vars.size()) ));
-    compile_dependencies(dependent_vars, stack);
+    std::unordered_set<std::string> deps;
+    get_dependencies(deps);
+    stack.push(std::make_shared<make_lambda>(parameters_, body.pop_all(), std::vector<std::string>(deps.begin(), deps.end())));
 }
 
 std::string tess::function_def::to_string() const
@@ -68,20 +68,6 @@ void tess::function_def::get_dependencies(std::unordered_set<std::string>& depen
 tess::function_def::function_def(const std::vector<std::string>& params, expr_ptr body) :
     parameters_(params), body_(body)
 {
-}
-
-void tess::function_def::compile_dependencies(const std::unordered_set<std::string>& dependent_vars, stack_machine::stack& stack) const
-{
-    int n = static_cast<int>(dependent_vars.size());
-    std::vector<stack_machine::item> operands;
-    operands.reserve( n * 3 );
-    for (const auto& var : dependent_vars) {
-        operands.push_back({ stack_machine::variable(var)} );
-        operands.push_back({ std::make_shared<get_var>(false) });
-        operands.push_back({ stack_machine::variable(var) });
-    }
-
-    stack.push(operands);
 }
 
 std::vector<std::string> tess::function_def::get_variables() const

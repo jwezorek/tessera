@@ -127,6 +127,7 @@ void tess::where_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(std::make_shared<pop_and_insert_fields_op>());
 	body_->compile(stack);
+	stack.push(std::make_shared<set_dependencies_op>());
 	assignments_.compile(stack);
 	stack.push(std::make_shared<push_frame_op>());
 }

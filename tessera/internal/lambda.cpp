@@ -26,13 +26,17 @@ std::vector<tess::stack_machine::item> tess::lambda::body() const
     return impl_->body;
 }
 
+std::vector<std::string> tess::lambda::dependencies() const
+{
+    return impl_->dependencies;
+}
 
-tess::lambda::impl_type::impl_type(const std::vector<std::string>& param, const std::vector<stack_machine::item>& bod, const scope_frame& c) :
-    parameters(param), body(bod), closure(c)
+tess::lambda::impl_type::impl_type(const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
+    parameters(params), body(bod), dependencies(deps)
 {
 }
 
-void tess::lambda::impl_type::insert_field(const std::string& var, const expr_value& val)
+    void tess::lambda::impl_type::insert_field(const std::string& var, const expr_value& val)
 {
     closure.set(var, val);
 }

@@ -28,10 +28,11 @@ namespace {
     }
 }
 
-tess::make_lambda::make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body, int num_dependencies) : 
-    op_1(num_dependencies*2),
+tess::make_lambda::make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body, const std::vector<std::string>& deps) :
+    op_1(0),
     parameters_(parameters),
-    body_(body)
+    body_(body),
+    dependencies_(deps)
 {
 }
 
@@ -39,8 +40,7 @@ tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_mac
 {
     auto& alloc = contexts.top().allocator();
     try {
-        auto closure = get_closure(operands);
-        auto lambda = alloc.create<tess::lambda>(parameters_, body_, closure);
+        auto lambda = alloc.create<tess::lambda>(parameters_, body_, dependencies_);
         return  make_expr_val_item(lambda) ;
     }  catch (tess::error e) {
         return { e };
@@ -261,11 +261,6 @@ std::optional<tess::error> tess::assign_op::execute(const std::vector<tess::stac
     auto& current_scope = contexts.top().peek();
     if (num_vars == 1) {
         current_scope.set(vars[0].identifier(), value);
-        if (std::holds_alternative<lambda>(value)) {
-            // if we are assigning a name to a lambda, insert a self-reference
-            // into the lambda's closure in case it is recursive.
-            std::get<lambda>(value).insert_field(vars[0].identifier(), value);
-        }
     } else {
         int i = 0;
         for (const auto& var : vars) 
@@ -481,4 +476,23 @@ std::string tess::iterate_op::to_string() const
         ss << it.to_string() << ";";
     ss << "}>";
     return ss.str();
+}
+
+tess::set_dependencies_op::set_dependencies_op() : stack_machine::op_0(0)
+{
+}
+
+std::optional<tess::error> tess::set_dependencies_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    auto& ctxt = contexts.top();
+    auto& frame = ctxt.peek();
+    for (auto& val : frame.values()) {
+        if (std::holds_alternative<lambda>(val)) {
+            std::vector<std::string> vars;
+            auto& func = std::get<tess::lambda>(val);
+            for (const auto& var : func.dependencies())   
+                func.insert_field(var, ctxt.get(var));
+        }
+    }
+    return std::nullopt;
 }
