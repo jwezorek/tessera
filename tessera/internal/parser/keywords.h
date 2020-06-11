@@ -30,6 +30,7 @@ namespace tess {
             such_that,
             tableau,
             where,
+            with,
             length,
             pi,
             sqrt,

@@ -27,6 +27,7 @@ const std::string& tess::parser::keyword(tess::parser::kw tok)
             {kw::such_that,        "such_that"},
             {kw::tableau,          "tableau"},
             {kw::where,            "where"},
+            {kw::with,             "with"},
             {kw::length,           "length"},
             {kw::sqrt,             "sqrt"},
             {kw::sin,              "sin"},

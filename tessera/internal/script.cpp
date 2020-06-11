@@ -9,6 +9,21 @@
 #include "execution_state.h"
 #include "object_expr.h"
 
+//  The stream to use for debug output
+#if !defined(BOOST_SPIRIT_X3_DEBUG_OUT)
+#define BOOST_SPIRIT_X3_DEBUG_OUT std::cerr
+#endif
+
+//  number of tokens to print while debugging
+#if !defined(BOOST_SPIRIT_X3_DEBUG_PRINT_SOME)
+#define BOOST_SPIRIT_X3_DEBUG_PRINT_SOME 20
+#endif
+
+//  number of spaces to indent
+#if !defined(BOOST_SPIRIT_X3_DEBUG_INDENT)
+#define BOOST_SPIRIT_X3_DEBUG_INDENT 2
+#endif
+
 namespace {
 
 	std::variant<std::vector<tess::expr_ptr>, tess::error> parse_arguments(const std::vector<std::string>& args) {

@@ -121,6 +121,9 @@
     <ClCompile Include="internal\parser\where_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="internal\with_expr.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="internal\expression.h">
@@ -242,6 +245,9 @@
     </ClInclude>
     <ClInclude Include="internal\parser\where_parser.h">
       <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\with_expr.h">
+      <Filter>Source Files\impl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

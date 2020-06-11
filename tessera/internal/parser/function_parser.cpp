@@ -30,7 +30,7 @@ namespace tess {
 		const auto where_clause = trailing_where_();
 		const auto tile = tile_def_();
 		const auto parameters = -(x3::lit('(') >> (identifier % x3::lit(',')) > x3::lit(')'));
-		const auto patch_aux_def = kw_lit<kw::patch>() > parameters > x3::lit('{') > expr > where_clause;
+		const auto patch_aux_def = kw_lit<kw::patch>() > parameters > x3::lit('{') > expr > x3::lit('}') > -where_clause;
 		const auto patch_def = patch_aux[make_patch];
 		const auto function = patch | tile;
 

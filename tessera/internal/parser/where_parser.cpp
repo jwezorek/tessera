@@ -25,12 +25,11 @@ namespace tess {
 		const auto identifier = indentifier_str_();
 		const auto assgnmnt_block = assignment_block_();
 		const auto single_ident_as_vec_def = identifier[make_vector];
-        auto const single_assignment_def = kw_lit<kw::let>() >> single_ident_as_vec >> x3::lit('=') > expr > x3::lit(';');
-		auto const multi_assignment_def = kw_lit<kw::let>() >> (identifier % x3::lit(',')) > x3::lit('=') > expr > x3::lit(';');
+        auto const single_assignment_def = kw_lit<kw::let>() >> single_ident_as_vec > x3::lit('=') > expr > x3::lit(';');
+		auto const multi_assignment_def = kw_lit<kw::let>() >> (identifier % x3::lit(',')) > x3::lit('=') >> expr > x3::lit(';');
 		auto const assignment_stmt_def = multi_assignment | single_assignment;
 		auto const assignments = *(assignment_stmt);
-		auto const trailing_where_aux = x3::lit('}') >> kw_lit<kw::where>() > x3::lit('{') > assgnmnt_block > x3::lit('}');
-		auto const trailing_where_def = trailing_where_aux | x3::lit('}');
+		auto const trailing_where_def = kw_lit<kw::where>() > x3::lit('{') > assgnmnt_block > x3::lit('}');
 
 		BOOST_SPIRIT_DEFINE(
 			trailing_where,
@@ -53,7 +52,7 @@ std::tuple<tess::assignment_block, std::string::const_iterator> tess::parser::as
 		return { assignment_block(), iter };
 }
 
-std::tuple<std::optional<tess::assignment_block>, std::string::const_iterator> tess::parser::trailing_where_::parse_aux(const text_range& input) const
+std::tuple<tess::assignment_block, std::string::const_iterator> tess::parser::trailing_where_::parse_aux(const text_range& input) const
 {
 	assignment_block output;
 	auto iter = input.begin();
@@ -62,6 +61,6 @@ std::tuple<std::optional<tess::assignment_block>, std::string::const_iterator> t
 	if (success)
 		return { assignment_block(output), iter };
 	else
-		return { std::nullopt, iter };
+		return { assignment_block(), iter };
 }
 

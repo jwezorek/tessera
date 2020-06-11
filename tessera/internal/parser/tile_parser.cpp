@@ -37,8 +37,7 @@ namespace tess {
         const auto identifier_str = indentifier_str_();
         const auto trailing_where = trailing_where_();
         auto const parameters = -(x3::lit('(') >> (identifier_str % x3::lit(',')) >> x3::lit(')'));
-        auto const tile_definition_def = kw_lit<kw::tile>() >> parameters >> x3::lit('{') > expr > trailing_where;
-
+        auto const tile_definition_def = kw_lit<kw::tile>() >> parameters >> x3::lit('{') > expr > x3::lit('}') >> -trailing_where;
         BOOST_SPIRIT_DEFINE(
             tile_definition
         );

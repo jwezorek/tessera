@@ -55,6 +55,7 @@
     <ClCompile Include="internal\text_range.cpp" />
     <ClCompile Include="internal\tile_patch_impl.cpp" />
     <ClCompile Include="internal\stack_machine.cpp" />
+    <ClCompile Include="internal\with_expr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\tessera\error.h" />
@@ -97,6 +98,7 @@
     <ClInclude Include="internal\tile_patch_impl.h" />
     <ClInclude Include="internal\stack_machine.h" />
     <ClInclude Include="internal\variant_util.h" />
+    <ClInclude Include="internal\with_expr.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
