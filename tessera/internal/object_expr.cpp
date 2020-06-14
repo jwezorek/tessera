@@ -60,6 +60,11 @@ tess::array_item_expr::array_item_expr(expr_ptr ary, expr_ptr index) :
 {
 }
 
+std::string tess::array_item_expr::to_string() const
+{
+    return "( get_ary_item " + ary_->to_string() + " " + index_->to_string() + " )";
+}
+
 void tess::array_item_expr::compile(stack_machine::stack& stack) const
 {
     stack.push(std::make_shared<get_ary_item_op>());
@@ -137,20 +142,24 @@ tess::expr_ptr tess::func_call_expr::simplify() const
 
 /*--------------------------------------------------------------------------------*/
 
-tess::obj_field_expr::obj_field_expr(expr_ptr obj, std::string field) :
+tess::obj_field_expr::obj_field_expr(expr_ptr obj, std::string field, bool is_ref) :
     obj_(obj),
-    field_(field)
+    field_(field),
+    is_ref_(is_ref)
 {
 }
 
 std::string tess::obj_field_expr::to_string() const
 {
-    return "( get_field " + obj_->to_string() + " " + field_ + " )";
+    if (!is_ref_)
+        return "( get_field " + obj_->to_string() + " " + field_ + " )";
+    else
+        return "( get_field_ref " + obj_->to_string() + " " + field_ + " )";
 }
 
 void tess::obj_field_expr::compile(stack_machine::stack& stack) const
 {
-    stack.push(std::make_shared<get_field_op>(field_));
+    stack.push(std::make_shared<get_field_op>(field_, is_ref_));
     obj_->compile(stack);
 }
 
@@ -163,6 +172,7 @@ tess::expr_ptr tess::obj_field_expr::simplify() const
 {
     return std::make_shared< obj_field_expr>(
         obj_->simplify(),
-        field_
+        field_,
+        is_ref_
     );
 }

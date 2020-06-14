@@ -118,9 +118,10 @@ namespace tess {
 
     class get_field_op : public stack_machine::op_1 {
     public:
-        get_field_op(const std::string& field);
+        get_field_op(const std::string& field, bool get_ref);
     protected:
         std::string field_;
+        bool get_ref_;
 
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override;

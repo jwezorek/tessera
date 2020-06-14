@@ -9,20 +9,7 @@
 #include "execution_state.h"
 #include "object_expr.h"
 
-//  The stream to use for debug output
-#if !defined(BOOST_SPIRIT_X3_DEBUG_OUT)
-#define BOOST_SPIRIT_X3_DEBUG_OUT std::cerr
-#endif
-
-//  number of tokens to print while debugging
-#if !defined(BOOST_SPIRIT_X3_DEBUG_PRINT_SOME)
-#define BOOST_SPIRIT_X3_DEBUG_PRINT_SOME 20
-#endif
-
-//  number of spaces to indent
-#if !defined(BOOST_SPIRIT_X3_DEBUG_INDENT)
-#define BOOST_SPIRIT_X3_DEBUG_INDENT 2
-#endif
+#include "parser/with_parser.h" //TODO: remove
 
 namespace {
 
@@ -86,6 +73,8 @@ const std::vector<std::string>& tess::script::parameters() const
 
 tess::result tess::script::execute(const std::vector<std::string>& arg_strings) const
 {
+	parser::test_with_parser(); //TODO: remove
+
 	auto maybe_args = parse_arguments(arg_strings);
 	if (std::holds_alternative<tess::error>(maybe_args))
 		return std::get<tess::error>(maybe_args);

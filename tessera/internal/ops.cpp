@@ -282,8 +282,8 @@ tess::stack_machine::item tess::one_param_op::execute(const std::vector<stack_ma
     };
 }
 
-tess::get_field_op::get_field_op(const std::string& field) : 
-    stack_machine::op_1(1), field_(field)
+tess::get_field_op::get_field_op(const std::string& field, bool get_ref) : 
+    stack_machine::op_1(1), field_(field), get_ref_(get_ref)
 {
 }
 
@@ -295,7 +295,10 @@ tess::stack_machine::item tess::get_field_op::execute(const std::vector<stack_ma
 
 std::string tess::get_field_op::to_string() const
 {
-    return std::string("<get_field ") + field_ + ">";
+    if (!get_ref_)
+        return std::string("<get_field ") + field_ + ">";
+    else
+        return std::string("<get_field_ref ") + field_ + ">";
 }
 
 tess::lay_op::lay_op(int num_mappings) : stack_machine::op_1(2*num_mappings)
