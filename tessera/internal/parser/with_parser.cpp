@@ -32,30 +32,50 @@ namespace tess {
 		x3::rule<class op_, op_t> const op = "op";
 		x3::rule<class lhs_, expr_ptr> const lhs = "lhs";
 		x3::rule<class trailing_with__, tess::field_definitions> trailing_with = "trailing_with";
+		x3::rule<class single_ref_expr_as_vec_, std::vector<expr_ptr>> single_ref_expr_as_vec = "single_ref_expr_as_vec";
+		x3::rule<class single_ref_expr_, std::tuple<std::vector<expr_ptr>, expr_ptr>> single_ref_expr = "single_ref_expr";
+		x3::rule<class multi_ref_expr_, std::tuple<std::vector<expr_ptr>, expr_ptr>> multi_ref_expr = "multi_ref_expr";
+		x3::rule<class def_ref_expr_, std::tuple<std::vector<expr_ptr>, expr_ptr>> def_ref_expr = "def_ref_expr";
+		x3::rule<class def_ref_exprs_, std::vector<std::tuple<std::vector<expr_ptr>, expr_ptr>> > def_ref_exprs = "def_ref_exprs";
+		x3::rule<class field_defs_, tess::field_definitions> field_defs = "field_defs";
 
 		expr_ptr unpack_obj_list(const obj_ref_list_t& ol);
 		auto make_lhs = [&](auto& ctx) { _val(ctx) = unpack_obj_list(_attr(ctx)); };
+		auto make_vector = [&](auto& ctx) {
+			std::vector<tess::expr_ptr> vec;
+			vec.push_back(_attr(ctx));
+			_val(ctx) = vec; 
+		};
 
 		const auto expr = expression_();
 		const auto identifier = indentifier_str_();
 		const auto field = as<std::string>[identifier | kw_<kw::edge>()];
-
-		const auto placeholder = x3::lit('$') > x3::int32;
 		const auto ary_item = x3::lit('[') >> expr >> x3::lit(']');
 		const auto field_item = x3::lit('.') > field;
 		const auto op_def = ary_item | field_item;
 		const auto obj_list_def = identifier >> *op;
 		const auto lhs_def = obj_list[make_lhs];
-		
 
-		auto const field_defs = x3::lit("foo");
-		auto const trailing_with_def = kw_lit<kw::where>() > x3::lit('{') > field_defs > x3::lit('}');
+		const auto single_ref_expr_as_vec_def = lhs [make_vector];
+		auto const single_ref_expr_def = single_ref_expr_as_vec > kw_lit<kw::is>() > expr > x3::lit(';');
+		auto const multi_ref_expr_def = (lhs % x3::lit(',')) > kw_lit<kw::is>() >> expr > x3::lit(';');
+		auto const def_ref_expr_def = multi_ref_expr | single_ref_expr;
+		auto const def_ref_exprs_def = *(def_ref_expr_def);
+
+		auto const field_defs_def = def_ref_exprs;
+		auto const trailing_with_def = kw_lit<kw::with>() > x3::lit('{') > field_defs > x3::lit('}');
 
 		BOOST_SPIRIT_DEFINE(
 			trailing_with,
 			op,
 			obj_list,
-			lhs
+			lhs,
+			single_ref_expr_as_vec,
+			single_ref_expr,
+			multi_ref_expr,
+			def_ref_expr,
+			def_ref_exprs,
+			field_defs
 		)
 		
 	}
@@ -93,13 +113,11 @@ tess::expr_ptr tess::parser::unpack_obj_list(const obj_ref_list_t& ol) {
 
 void tess::parser::test_with_parser()
 {
-	std::string test_inp = "foo.foo[a].bar";
+	std::string test_inp = "with {foo.bar, mumble is 42; left is right;}";
 	std::string::const_iterator iter = test_inp.begin();
 	std::string::const_iterator end_iter = test_inp.end();
-	tess::expr_ptr output;
-	bool success = x3::phrase_parse(iter, end_iter, tess::parser::lhs, x3::space, output);
-	output = output->simplify();
-	auto str = output->to_string();
+	tess::field_definitions output;
+	bool success = x3::phrase_parse(iter, end_iter, tess::parser::trailing_with, x3::space, output);
 	int aaa;
 	aaa = 5;
 }

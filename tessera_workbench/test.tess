@@ -3,6 +3,8 @@ let triangle = tile {
 } where {
     let self = regular_polygon(3);
     let left, bottom, right = self.edges;
+} with {
+    foo is bar; 
 };
 
 let tri_pair = patch {

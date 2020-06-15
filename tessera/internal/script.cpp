@@ -9,8 +9,6 @@
 #include "execution_state.h"
 #include "object_expr.h"
 
-#include "parser/with_parser.h" //TODO: remove
-
 namespace {
 
 	std::variant<std::vector<tess::expr_ptr>, tess::error> parse_arguments(const std::vector<std::string>& args) {
@@ -73,8 +71,6 @@ const std::vector<std::string>& tess::script::parameters() const
 
 tess::result tess::script::execute(const std::vector<std::string>& arg_strings) const
 {
-	parser::test_with_parser(); //TODO: remove
-
 	auto maybe_args = parse_arguments(arg_strings);
 	if (std::holds_alternative<tess::error>(maybe_args))
 		return std::get<tess::error>(maybe_args);

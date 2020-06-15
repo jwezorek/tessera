@@ -8,16 +8,20 @@ tess::with_expr::with_expr(const field_definitions& field_defs, expr_ptr body) :
 
 void tess::with_expr::compile(stack_machine::stack& stack) const
 {
+    //TODO
+    body_->compile(stack);
 }
 
 std::string tess::with_expr::to_string() const
 {
-    return std::string();
+    //TODO
+    return "( with " + body_->to_string() + " )";
 }
 
 tess::expr_ptr tess::with_expr::simplify() const
 {
-    return expr_ptr();
+    //TODO
+    return std::make_shared< with_expr>(field_defs_, body_->simplify());
 }
 
 void tess::with_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const

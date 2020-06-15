@@ -33,6 +33,7 @@ namespace tess {
             with,
             length,
             pi,
+            is,
             sqrt,
             sin,
             cos,
