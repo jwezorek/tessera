@@ -5,14 +5,6 @@
 
 namespace {
 
-	void add_self_reference(tess::evaluation_context& original_ctxt, const std::string& var, tess::expr_value val)
-	{
-		if (std::holds_alternative<tess::lambda>(val)) {
-			auto& lambda = std::get<tess::lambda>(val);
-			lambda.insert_field(var, tess::expr_value{lambda});
-		}
-	}
-
 	int num_vars_in_assignment(tess::var_assignment va) {
 		return static_cast<int>(std::get<0>(va).size() );
 	}
@@ -62,13 +54,17 @@ std::string tess::assignment_block::to_string() const
 	std::stringstream contents;
 	for (const auto& vars_val : *impl_) {
 		const auto& [vars, val] = vars_val;
-		contents << "(( ";
-		for (const auto& var : vars)
-			contents << var << " ";
-		contents << ") " << val->to_string() << ")";
+		if (vars.size() > 1) {
+			contents << "(( ";
+			for (const auto& var : vars)
+				contents << var << " ";
+			contents << ") " << val->to_string() << " )";
+		} else {
+			contents << "( " << vars[0] << " " << val->to_string() << " )";
+		}
 	}
 
-	return "( let (" + contents.str() + ") )";
+	return "( let " + contents.str() + " )";
 }
 
 tess::assignment_block tess::assignment_block::simplify() const

@@ -499,3 +499,30 @@ std::optional<tess::error> tess::set_dependencies_op::execute(const std::vector<
     }
     return std::nullopt;
 }
+
+tess::set_field_op::set_field_op(int num_fields) : stack_machine::op_0(num_fields + 1)
+{
+}
+
+std::optional<tess::error> tess::set_field_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+{
+    int num_fields = static_cast<int>(operands.size() - 1);
+    auto value = std::get<expr_value>(operands.back());
+    std::vector<tess::expr_value_ref> field_refs(num_fields);
+    std::transform(operands.begin(), operands.begin() + num_fields, field_refs.begin(),
+        [](const auto& item) { 
+            return std::get<expr_value_ref>(std::get<expr_value>(item));
+        }
+    );
+
+    if (num_fields == 1) {
+        field_refs[0].set(value);
+    } else {
+        int i = 0;
+        for (auto& field_ref : field_refs) {
+            field_ref.set(value.get_ary_item(i++));
+        }
+    }
+
+    return std::nullopt;
+}

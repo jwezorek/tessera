@@ -20,7 +20,17 @@ namespace tess {
         nil_val();
     };
 
-	using expr_val_var = std::variant<nil_val, tile, tile_patch, number, std::string, bool, edge, vertex, lambda, cluster, error>;
+	class expr_value;
+	class expr_value_ref
+	{
+	public:
+		expr_value_ref(expr_value* ref = nullptr);
+		void set(const expr_value& val);
+	private:
+		expr_value* ref_;
+	};
+
+	using expr_val_var = std::variant<nil_val, tile, tile_patch, number, std::string, bool, edge, vertex, lambda, cluster, expr_value_ref, error>;
 
 	class expr_value : public expr_val_var, public tessera_impl
 	{

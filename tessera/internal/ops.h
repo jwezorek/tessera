@@ -127,6 +127,14 @@ namespace tess {
         std::string to_string() const override;
     };
 
+    class set_field_op: public stack_machine::op_0{
+    public:
+        set_field_op(int fields);
+    protected:
+        std::optional<error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+        std::string to_string() const override { return "<set_field " + std::to_string(number_of_args_ - 1) + ">"; }
+    };
+
     class lay_op : public stack_machine::op_1 {
     public:
         lay_op(int num_mappings);

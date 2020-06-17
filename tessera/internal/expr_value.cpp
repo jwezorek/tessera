@@ -121,3 +121,9 @@ std::string tess::expr_value::to_string() const
 	return "#(some expr value)";
 }
 
+tess::expr_value_ref::expr_value_ref(expr_value* ref) : ref_(ref) {}
+
+void tess::expr_value_ref::set(const expr_value& val)
+{
+	*ref_ = val;
+}
