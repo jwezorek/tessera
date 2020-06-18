@@ -57,6 +57,11 @@ std::optional<tess::expr_value> tess::scope_frame::get(std::string var) const
         return std::nullopt;
 }
 
+bool tess::scope_frame::has(std::string str) const
+{
+    return definitions_.find(str) != definitions_.end();
+}
+
 std::vector<tess::expr_value> tess::scope_frame::values() const
 {
     std::vector<tess::expr_value> values(definitions_.size());
@@ -127,6 +132,12 @@ bool tess::evaluation_context::contains(const std::string& var) const
 bool tess::evaluation_context::contains(int i) const
 {
     return contains(placeholder(i));
+}
+
+bool tess::evaluation_context::has(const std::string& var) const
+{
+    auto maybe_value = get_maybe(var);
+    return maybe_value.has_value();
 }
 
 tess::expr_value tess::evaluation_context::get(const std::string& var) const

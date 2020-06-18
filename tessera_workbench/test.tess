@@ -1,10 +1,7 @@
 let triangle = tile {
-    self
-} where {
-    let self = regular_polygon(3);
-    let left, bottom, right = self.edges;
+    regular_polygon(3)
 } with {
-    foo is bar; 
+    left, bottom, right is this.edges;
 };
 
 let tri_pair = patch {

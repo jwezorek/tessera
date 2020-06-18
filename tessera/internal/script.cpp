@@ -76,8 +76,10 @@ tess::result tess::script::execute(const std::vector<std::string>& arg_strings) 
 		return std::get<tess::error>(maybe_args);
 	auto args = std::get<std::vector<expr_ptr>>(maybe_args);
 
-	expr_ptr script_expr = std::make_shared<where_expr>(impl_->globals(), impl_->tableau());
-	expr_ptr eval_script_expr = std::make_shared<func_call_expr>(script_expr, args);
+	expr_ptr eval_script_expr = std::make_shared<where_expr>(
+		impl_->globals(), 
+		std::make_shared<func_call_expr>(impl_->tableau(), args)
+	);
 
 	auto& state = impl_->state();
 	std::string expr_str = eval_script_expr->to_string();

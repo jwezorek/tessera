@@ -61,7 +61,7 @@ std::variant<tess::script, tess::parser::exception> tess::parser::parse(const te
         return e;
     } catch (x3::expectation_failure<std::string::const_iterator> const& e) {
         return tess::parser::exception("script", e);
-    } catch (std::exception e) {
+    } catch (...) {
         return tess::parser::exception("script", "unkown error");
     }
     if (success) {

@@ -16,6 +16,7 @@ namespace tess {
         scope_frame(const std::vector<expr_value>& arg);
         std::optional<expr_value> get(int ph) const;
         std::optional<expr_value> get(std::string str) const;
+        bool has(std::string str) const;
         std::vector<expr_value> values() const;
         void set(const std::string& var, expr_value val);
         void set(int i, expr_value val);
@@ -39,6 +40,7 @@ namespace tess {
     public:
         bool contains(const std::string& var) const;
         bool contains(int i) const;
+        bool has(const std::string& var) const;
         expr_value get(const std::string& var) const;
         expr_value get(int i) const;
         scope_frame& peek();

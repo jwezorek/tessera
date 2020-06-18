@@ -31,6 +31,18 @@ std::vector<std::string> tess::lambda::dependencies() const
     return impl_->dependencies;
 }
 
+std::vector<std::string> tess::lambda::unfulfilled_dependencies() const
+{
+    std::vector<std::string> depends;
+    const auto& closure = impl_->closure;
+    std::copy_if(impl_->dependencies.begin(), impl_->dependencies.end(), std::back_inserter(depends),
+        [&closure](std::string var) {
+            return !closure.has(var);
+        }
+    );
+    return depends;
+}
+
 tess::lambda::impl_type::impl_type(const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
     parameters(params), body(bod), dependencies(deps)
 {

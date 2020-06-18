@@ -38,9 +38,15 @@ tess::make_lambda::make_lambda(const std::vector<std::string>& parameters, const
 
 tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
+    auto& ctxt = contexts.top();
     auto& alloc = contexts.top().allocator();
     try {
         auto lambda = alloc.create<tess::lambda>(parameters_, body_, dependencies_);
+
+        for (auto dependency : dependencies_)
+            if (ctxt.has(dependency))
+                lambda.insert_field(dependency, ctxt.get(dependency));
+
         return  make_expr_val_item(lambda) ;
     }  catch (tess::error e) {
         return { e };
@@ -167,8 +173,7 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::call_fun
 
     }  catch (tess::error e) {
         return e;
-    }
-    catch (...) {
+    } catch (...) {
         return tess::error("bad function call op");
     }
 
@@ -190,25 +195,6 @@ std::optional<tess::error> tess::push_eval_context::execute(const std::vector<st
     auto& ctxt = contexts.top();
     contexts.push(ctxt.execution_state().create_eval_context());
     return std::nullopt;
-}
-
-/*---------------------------------------------------------------------------------------------*/
-
-tess::pop_and_insert_fields_op::pop_and_insert_fields_op() : stack_machine::op_1(1)
-{
-}
-
-tess::stack_machine::item tess::pop_and_insert_fields_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
-{
-    if (contexts.empty())
-        return { tess::error("context stack underflow") };
-    auto scope = contexts.top().pop_scope();
-
-    auto obj = std::get<expr_value>(operands[0]);
-    for (const auto& [var, val] : scope)
-        obj.insert_field(var, val);
-
-    return { obj };
 }
 
 /*---------------------------------------------------------------------------------------------*/
@@ -498,7 +484,7 @@ std::optional<tess::error> tess::set_dependencies_op::execute(const std::vector<
         if (std::holds_alternative<lambda>(val)) {
             std::vector<std::string> vars;
             auto& func = std::get<tess::lambda>(val);
-            for (const auto& var : func.dependencies())   
+            for (const auto& var : func.unfulfilled_dependencies())   
                 func.insert_field(var, ctxt.get(var));
         }
     }

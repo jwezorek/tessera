@@ -63,14 +63,6 @@ namespace tess {
         std::optional<error> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<push_context>"; }
     };
-
-    class pop_and_insert_fields_op : public stack_machine::op_1 {
-    public:
-        pop_and_insert_fields_op();
-    protected:
-        stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
-        std::string to_string() const override { return "<pop_and_insert_fields>"; }
-    };
     
     class pop_frame_op : public stack_machine::op_0 {
     public:
