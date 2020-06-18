@@ -21,6 +21,11 @@ int tess::error::line() const
 	return line_;
 }
 
+std::string tess::error::to_string() const
+{
+	return msg();
+}
+
 std::ostream& tess::operator<<(std::ostream& os, const  tess::error& e)
 {
 	os << e.msg() << ", line #" << e.line();

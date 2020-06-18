@@ -18,15 +18,22 @@ namespace {
 	}
 }
 
-tess::tile::impl_type::impl_type(const std::vector<tess::vert_fields>& v, const std::vector<tess::edge_fields>& e) :
-    fields_(std::make_shared<tess::tile::impl_type::fields>(v,e)), untouched_(true), parent_(nullptr)
-{
+std::vector<std::tuple<tess::number, tess::number>> get_regular_poly_vert_loc(int n) {
+	std::vector<std::tuple<tess::number, tess::number>> points(n);
+	return points;
 }
 
-const tess::vertex& tess::tile::impl_type::vertex(const std::string& v) const
+tess::tile::impl_type::impl_type(tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations, bool foo) :
+	untouched_(true), parent_(nullptr)
 {
-	int index = fields_->vert_name_to_index.at(v);
-    return vertices_[index];
+	auto n = static_cast<int>(vertex_locations.size());
+	vertices_.resize(n);
+	edges_.resize(n);
+
+	for (int i = 0; i < n; ++i) {
+		vertices_[i] = allocator->create<tess::vertex>(this, i, vertex_locations[i]);
+		edges_[i] = allocator->create<tess::edge>(this, i, i, (i + 1) % n);
+	}
 }
 
 const std::vector<tess::vertex>& tess::tile::impl_type::vertices() const
@@ -47,7 +54,7 @@ void tess::tile::impl_type::set( std::vector<tess::vertex>&& vertices, std::vect
 
 void tess::tile::impl_type::insert_field(const std::string& var, const expr_value& val)
 {
-	custom_fields_[var] = val;
+	fields_[var] = val;
 }
 
 void tess::tile::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
@@ -61,27 +68,19 @@ void tess::tile::impl_type::get_all_referenced_allocations(std::unordered_set<vo
 		 expr_value{edge}.get_all_referenced_allocations(alloc_set);
 	for (const auto& vertex : vertices_) 
 		expr_value{vertex}.get_all_referenced_allocations(alloc_set);
-	for (const auto& [var, val] : custom_fields_)
+	for (const auto& [var, val] : fields_)
 		val.get_all_referenced_allocations(alloc_set);
 }
 
 tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
-	if (custom_fields_.find(field) != custom_fields_.end())
-		return custom_fields_.at(field);
+	if (fields_.find(field) != fields_.end())
+		return fields_.at(field);
 
 	if (field == parser::keyword(parser::kw::edge) || field == "edges") {
 		return { edges_as_cluster(allocator, edges_) };
 	}
 
-	int index = fields_->get_edge_index(field);
-	if (index >= 0) {
-		return { edges_.at(index) };
-	}
-	index = fields_->get_vert_index(field);
-	if (index >= 0) {
-		return { vertices_.at(index) };
-	}
 	return { error(std::string("refrenced undefined tile edge, vertex, or field: ") + field ) };
 }
 
@@ -103,16 +102,6 @@ void tess::tile::impl_type::set_parent(tess::tile_patch::impl_type* parent) {
 	untouched_ = true;
 }
 
-const tess::vert_fields& tess::tile::impl_type::vert_fields(int i) const
-{
-	return fields_->vertices.at(i);
-}
-
-const tess::edge_fields& tess::tile::impl_type::edge_fields(int i) const
-{
-	return fields_->edges.at(i);
-}
-
 bool tess::tile::impl_type::has_parent() const {
 	return parent_ != nullptr;
 }
@@ -124,31 +113,21 @@ tess::tile_patch::impl_type* tess::tile::impl_type::parent() const {
 
 /*--------------------------------------------------------------------------------*/
 
-tess::edge::impl_type::impl_type( tile::impl_type* parent, int index) :
+tess::edge::impl_type::impl_type( tile::impl_type* parent, int index, int u, int v) :
 	parent_(parent),
-	index_(index)
+	index_(index),
+	u_(u),
+	v_(v)
 {}
-
-std::string tess::edge::impl_type::name() const
-{
-    return parent_->edge_fields(index_).name;
-}
-
-std::string tess::edge::impl_type::edge_class() const
-{
-	return parent_->edge_fields(index_).class_;
-}
 
 const tess::vertex& tess::edge::impl_type::u() const
 {
-	int index = parent_->edge_fields(index_).u;
-    return parent_->vertices().at(index);
+    return parent_->vertices().at(u_);
 }
 
 const tess::vertex& tess::edge::impl_type::v() const
 {
-	int index = parent_->edge_fields(index_).v;
-    return parent_->vertices().at(index);
+    return parent_->vertices().at(v_);
 }
 
 tess::expr_value tess::edge::impl_type::get_field(allocator& allocator, const std::string& field) const
@@ -176,16 +155,6 @@ void tess::edge::impl_type::get_all_referenced_allocations(std::unordered_set<vo
 tess::vertex::impl_type::impl_type( tile::impl_type* parent, int n, std::tuple<number, number> loc) :
     parent_(parent), index_(n), x_(std::get<0>(loc)), y_(std::get<1>(loc))
 {
-}
-
-std::string tess::vertex::impl_type::name() const
-{
-    return parent_->vert_fields(index_).name;
-}
-
-std::string tess::vertex::impl_type::vertex_class() const
-{
-    return parent_->vert_fields(index_).class_;
 }
 
 std::tuple<double, double> tess::vertex::impl_type::to_floats() const
@@ -231,24 +200,4 @@ tess::tile::impl_type* tess::vertex::impl_type::parent() const
 	return parent_;
 }
 
-int tess::tile::impl_type::fields::get_edge_index(const std::string& e) {
-	auto i = edge_name_to_index.find(e);
-	return (i != edge_name_to_index.end()) ? i->second : -1;
-}
-
-int tess::tile::impl_type::fields::get_vert_index(const std::string& v) {
-	auto i = vert_name_to_index.find(v);
-	return (i != vert_name_to_index.end()) ? i->second : -1;
-}
-
-tess::tile::impl_type::fields::fields(const std::vector<tess::vert_fields>& v, const std::vector<tess::edge_fields>& e) :
-	vertices(v), edges(e)
-{
-	std::transform(v.begin(), v.end(), std::inserter(vert_name_to_index, vert_name_to_index.end()),
-		[](const tess::vert_fields& f)->std::pair<std::string, int> { return { f.name, f.index }; }
-	);
-	std::transform(e.begin(), e.end(), std::inserter(edge_name_to_index, edge_name_to_index.end()),
-		[](const tess::edge_fields& f)->std::pair<std::string, int> { return { f.name, f.index }; }
-	);
-}
 

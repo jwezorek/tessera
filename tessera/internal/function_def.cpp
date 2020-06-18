@@ -1,27 +1,38 @@
 #include "function_def.h"
-#include "tile_def.h"
 #include "expr_value.h"
+#include "ops.h"
 #include "execution_state.h"
+#include "allocator.h"
 #include <sstream>
 #include <variant>
 #include <unordered_set>
-#include "allocator.h"
+#include <numeric>
 
-tess::expr_value tess::function_def::eval(evaluation_context& ctxt) const
+
+
+void tess::function_def::compile(stack_machine::stack& stack) const
 {
-    std::unordered_set<std::string> dependent_vars;
-    get_dependencies(dependent_vars);
+    stack_machine::stack body;
+    body_->compile(body);
+    std::unordered_set<std::string> deps;
+    get_dependencies(deps);
+    stack.push(std::make_shared<make_lambda>(parameters_, body.pop_all(), std::vector<std::string>(deps.begin(), deps.end())));
+}
 
-    std::vector<std::tuple<std::string, expr_value>> closure;
-    for (const auto& var : dependent_vars) {
-        if (ctxt.contains(var)) {
-            closure.push_back({ var, ctxt.get(var) });
-        }
+std::string tess::function_def::to_string() const
+{
+    std::string parameters;
+    if (!parameters_.empty()) {
+        parameters = std::accumulate(
+            std::next(parameters_.begin()),
+            parameters_.end(),
+            parameters_[0],
+            [](std::string a, std::string b) {
+                return a + " " + b;
+            }
+        );
     }
-
-    return {
-        ctxt.allocator().create<lambda>(*this, lex_scope::frame(closure))
-    };
+    return std::string("( lambda (") + parameters + ")  " + body_->to_string() + " )";
 }
 
 const std::vector<std::string>& tess::function_def::parameters() const

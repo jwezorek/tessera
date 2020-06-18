@@ -25,7 +25,7 @@ namespace tess {
             return execute({ std::forward<T>(a)... });
         }
 
-        bool operator!=(const script& scr) { return impl_ != scr.impl_;  }
+        //bool operator!=(const script& scr) { return impl_ != scr.impl_;  }
 
         class impl_type;
     private:

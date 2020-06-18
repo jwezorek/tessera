@@ -15,7 +15,8 @@ namespace tess {
 
     class function_def : public expression {
         public:
-            expr_value eval(evaluation_context&) const override;
+            void compile(stack_machine::stack& stack) const override;
+            std::string to_string() const override;
             const std::vector<std::string>& parameters() const;
             expr_ptr body() const;
             expr_ptr simplify() const override;
@@ -26,7 +27,6 @@ namespace tess {
             friend class lambda;
 
         private:
-
             std::vector<std::string> get_variables() const;
 
             std::vector<std::string> parameters_;

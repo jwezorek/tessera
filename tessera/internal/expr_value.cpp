@@ -4,6 +4,7 @@
 #include "tile_patch_impl.h"
 #include "allocator.h"
 #include "execution_state.h"
+#include <sstream>
 
 tess::nil_val::nil_val()
 {
@@ -79,14 +80,6 @@ tess::expr_value tess::expr_value::get_field(allocator& allocator, const std::st
 	);
 }
 
-tess::expr_value tess::expr_value::call(execution_state& state, const std::vector<expr_value>& args) const
-{
-	if (!std::holds_alternative<lambda>(*this))
-		return { error("attempted to call a value that is not functionlike") };
-	const auto& lambda = std::get<tess::lambda>(*this);
-	return lambda.call(state, args);
-}
-
 void tess::expr_value::insert_field(const std::string& var, expr_value val) const
 {
 	if (!is_object_like())
@@ -116,3 +109,30 @@ void tess::expr_value::get_all_referenced_allocations(std::unordered_set<void*>&
 	);
 }
 
+std::string tess::expr_value::to_string() const
+{
+	if (std::holds_alternative<tess::number>(*this)) {
+		std::stringstream ss;
+		ss << "#(" << std::get<tess::number>(*this) << ")";
+		return ss.str();
+	} else if (std::holds_alternative<tess::nil_val>(*this)) {
+		return "#(nil)";
+	}
+	return "#(some expr value)";
+}
+
+class tess::field_ref::impl_type {
+public:
+	expr_value obj;
+	std::string field;
+	impl_type(const expr_value& o, std::string f) : obj(o), field(f)
+	{}
+};
+
+tess::field_ref::field_ref(const expr_value& obj, std::string field) : impl_(std::make_shared< field_ref::impl_type>(obj, field))
+{}
+
+void tess::field_ref::set(const expr_value& val)
+{
+	impl_->obj.insert_field(impl_->field, val);
+}

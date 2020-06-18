@@ -86,6 +86,11 @@ tess::expr_value tess::cluster::impl_type::get_ary_item(int i) const
 	return values_.at(i);
 }
 
+void tess::cluster::impl_type::push_value(expr_value val)
+{
+	values_.push_back(val);
+}
+
 int tess::cluster::impl_type::get_ary_count() const
 {
 	return static_cast<int>(values_.size());

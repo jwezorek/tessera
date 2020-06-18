@@ -15,7 +15,8 @@ namespace tess {
         std::string var_;
     public:
         var_expr(const std::string& var);
-        expr_value eval(evaluation_context& ctx) const override;
+        void compile(stack_machine::stack& stack) const override;
+        std::string to_string() const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
@@ -26,7 +27,7 @@ namespace tess {
         int placeholder_;
     public:
         placeholder_expr(int  placeholder);
-        expr_value eval(evaluation_context& ctx) const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
@@ -38,7 +39,8 @@ namespace tess {
         expr_ptr index_;
     public:
         array_item_expr(expr_ptr ary, expr_ptr index);
-        expr_value eval(evaluation_context& ctx) const override;
+        std::string to_string() const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
@@ -50,7 +52,8 @@ namespace tess {
         std::vector<expr_ptr> args_;
     public:
         func_call_expr(expr_ptr func_, const std::vector<expr_ptr>& args);
-        expr_value eval(evaluation_context& ctx) const override;
+        std::string to_string() const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };
@@ -60,9 +63,11 @@ namespace tess {
     private:
         expr_ptr obj_;
         std::string field_;
+        bool is_ref_;
     public:
-        obj_field_expr(expr_ptr obj, std::string field);
-        expr_value eval(evaluation_context& ctx) const override;
+        obj_field_expr(expr_ptr obj, std::string field, bool is_ref);
+        std::string to_string() const override;
+        void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
     };

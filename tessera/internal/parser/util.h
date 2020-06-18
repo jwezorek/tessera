@@ -33,8 +33,10 @@ namespace tess {
 			{
 				auto [output, iter] = static_cast<const T*>(this)->parse_aux(text_range(first, last));
 				first = iter;
-				attr = output;
-				return (output != A());
+				bool success = output != A();
+				if (success)
+					attr = output;
+				return success;
 			};
 		};
 

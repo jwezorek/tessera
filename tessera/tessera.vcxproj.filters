@@ -28,9 +28,6 @@
     <ClCompile Include="internal\parser\keywords.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
-    <ClCompile Include="internal\parser\tile_parser.cpp">
-      <Filter>Source Files\parser</Filter>
-    </ClCompile>
     <ClCompile Include="internal\parser\expr_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
@@ -44,9 +41,6 @@
       <Filter>Source Files\impl</Filter>
     </ClCompile>
     <ClCompile Include="internal\math_util.cpp">
-      <Filter>Source Files\impl</Filter>
-    </ClCompile>
-    <ClCompile Include="internal\tile_def.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
     <ClCompile Include="internal\tile.cpp">
@@ -73,9 +67,6 @@
     <ClCompile Include="internal\parser\script_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
-    <ClCompile Include="internal\parser\assignment_parser.cpp">
-      <Filter>Source Files\parser</Filter>
-    </ClCompile>
     <ClCompile Include="internal\parser\function_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
@@ -97,9 +88,6 @@
     <ClCompile Include="internal\function_def.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
-    <ClCompile Include="internal\assignment_block.cpp">
-      <Filter>Source Files\impl</Filter>
-    </ClCompile>
     <ClCompile Include="internal\cluster.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
@@ -114,6 +102,27 @@
     </ClCompile>
     <ClCompile Include="internal\execution_state.cpp">
       <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\evaluation_context.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\stack_machine.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\ops.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\where_expr.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\parser\where_parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\with_expr.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\parser\with_parser.cpp">
+      <Filter>Source Files\parser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -135,9 +144,6 @@
     <ClInclude Include="internal\parser\keywords.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
-    <ClInclude Include="internal\parser\tile_parser.h">
-      <Filter>Source Files\parser</Filter>
-    </ClInclude>
     <ClInclude Include="internal\parser\expr_parser.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
@@ -151,9 +157,6 @@
       <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="internal\math_util.h">
-      <Filter>Source Files\impl</Filter>
-    </ClInclude>
-    <ClInclude Include="internal\tile_def.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="include\tessera\tile.h">
@@ -183,9 +186,6 @@
     <ClInclude Include="internal\parser\script_parser.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
-    <ClInclude Include="internal\parser\assignment_parser.h">
-      <Filter>Source Files\parser</Filter>
-    </ClInclude>
     <ClInclude Include="internal\parser\function_parser.h">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
@@ -205,9 +205,6 @@
       <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="internal\function_def.h">
-      <Filter>Source Files\impl</Filter>
-    </ClInclude>
-    <ClInclude Include="internal\assignment_block.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="internal\cluster.h">
@@ -230,6 +227,27 @@
     </ClInclude>
     <ClInclude Include="internal\execution_state.h">
       <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\evaluation_context.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\stack_machine.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\ops.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\where_expr.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\where_parser.h">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\with_expr.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\with_parser.h">
+      <Filter>Source Files\parser</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

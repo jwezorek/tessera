@@ -12,15 +12,14 @@ std::string read_file(const std::string& file_path);
 std::vector<std::string> get_arguments(int argc, char** argv);
 void generate_svg(const std::string& filename, const std::vector<tess::tile>& tiles, double scale);
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv){
 	std::string source_code = read_file("test.tess");
 	auto results = tess::script::interpret( source_code );
 
 	if (std::holds_alternative<tess::script>(results)) {
 		const auto& tessera = std::get<tess::script>(results);
 
-		auto output = tessera.execute(get_arguments(argc, argv));
+		auto output = tessera.execute( get_arguments(argc, argv) );
 		if (std::holds_alternative<tess::error>(output)) {
 			std::cout << std::get<tess::error>(output) << "\n";
 			return -1;
@@ -30,8 +29,7 @@ int main(int argc, char** argv)
 		generate_svg("C:\\test\\tri.svg", tiles, 50.0);
 
 		std::cout << "success" << "\n";
-	}
-	else {
+	} else {
 		auto err = std::get<tess::error>(results);
 		std::cout << err << "\n";
 	}
@@ -85,7 +83,7 @@ std::tuple<double, double, double, double> get_bounds(const std::vector<tess::ti
 std::string tile_to_svg(const tess::tile& tile, double scale) {
 	std::stringstream ss;
 
-	ss << "<polygon stroke=\"black\" fill=\"yellow\" points = \"";
+	ss << "<polygon stroke=\"black\" fill=\"blue\" points = \"";
 	for (const auto& vertex : tile.vertices()) {
 		auto [x, y] = vertex.pos();
 		ss << x*scale << "," << y*scale << " ";

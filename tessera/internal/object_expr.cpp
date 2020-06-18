@@ -1,35 +1,22 @@
 #include "object_expr.h"
 #include "execution_state.h"
-
-std::optional<int> tess::eval_integer_expr(const tess::expr_ptr& expr, tess::evaluation_context& ctxt)
-{
-    auto int_val = expr->eval(ctxt);
-    if (!std::holds_alternative<tess::number>(int_val))
-        return std::nullopt;
-    return tess::to_int(std::get<tess::number>(int_val));
-}
+#include "ops.h"
+#include <numeric>
 
 tess::var_expr::var_expr(const std::string& var) : 
     var_(var)
 {
 }
 
-tess::expr_value tess::var_expr::eval(evaluation_context& ctx) const
+void tess::var_expr::compile(stack_machine::stack& stack) const
 {
-    auto value = ctx.get(var_);
+    stack.push(std::make_shared<get_var>());
+    stack.push(stack_machine::variable(var_));
+}
 
-    // syntactic sugar: when evaluating a lambda with no parameters call the lambda
-    // even if it does not have a trailing "()".
-    // TODO: make it so it is possible to refer to a parameter less lambda by prepending
-    // its name with "fn" as in "fn square_tile" 
-
-    if (std::holds_alternative<tess::lambda>(value)) {
-        auto lambda = std::get<tess::lambda>(value);
-        if (lambda.parameters().size() == 0)
-            return value.call(ctx.execution_state(),{});
-    }
-
-    return value;
+std::string tess::var_expr::to_string() const
+{
+    return var_;
 }
 
 void tess::var_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -49,9 +36,11 @@ tess::placeholder_expr::placeholder_expr(int placeholder) :
 {
 }
 
-tess::expr_value tess::placeholder_expr::eval(evaluation_context& ctx) const
+
+void tess::placeholder_expr::compile(stack_machine::stack& stack) const
 {
-    return ctx.get(placeholder_);
+    stack.push(std::make_shared<get_var>());
+    stack.push(stack_machine::variable(placeholder_));
 }
 
 void tess::placeholder_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -71,13 +60,16 @@ tess::array_item_expr::array_item_expr(expr_ptr ary, expr_ptr index) :
 {
 }
 
-tess::expr_value tess::array_item_expr::eval(evaluation_context& ctx) const
+std::string tess::array_item_expr::to_string() const
 {
-    auto maybe_index = eval_integer_expr(index_, ctx);
-    if (!maybe_index.has_value())
-        return { tess::error("array index evaluated to non-number") };
+    return "( get_ary_item " + ary_->to_string() + " " + index_->to_string() + " )";
+}
 
-    return ary_->eval(ctx).get_ary_item(maybe_index.value());
+void tess::array_item_expr::compile(stack_machine::stack& stack) const
+{
+    stack.push(std::make_shared<get_ary_item_op>());
+    ary_->compile(stack);
+    index_->compile(stack);
 }
 
 void tess::array_item_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -102,12 +94,31 @@ tess::func_call_expr::func_call_expr(expr_ptr func, const std::vector<expr_ptr>&
 {
 }
 
-tess::expr_value tess::func_call_expr::eval(evaluation_context& ctx) const
+void tess::func_call_expr::compile(stack_machine::stack& stack) const
 {
-    std::vector<expr_value> args(args_.size());
-    std::transform(args_.begin(), args_.end(), args.begin(), 
-        [&ctx](auto expr) {return expr->eval(ctx);} );
-    return func_->eval(ctx).call(ctx.execution_state(), args);
+    int n = static_cast<int>(args_.size());
+    stack.push(std::make_shared<pop_eval_context>());
+    stack.push(std::make_shared<call_func>(n));
+    stack.push(std::make_shared<push_eval_context>());
+    func_->compile(stack);
+    stack.compile_and_push(args_);
+}
+
+std::string tess::func_call_expr::to_string() const
+{
+    std::vector<std::string> arg_strs(args_.size());
+    std::transform(args_.begin(), args_.end(), arg_strs.begin(),
+        [](const auto& e) {return e->to_string(); }
+    );
+    std::string args = std::accumulate(
+        std::next(arg_strs.begin()),
+        arg_strs.end(),
+        arg_strs[0],
+        [](std::string a, std::string b) {
+            return a + " " + b;
+        }
+    );
+    return "( apply " + func_->to_string() + " " + args + " )";
 }
 
 void tess::func_call_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -131,15 +142,25 @@ tess::expr_ptr tess::func_call_expr::simplify() const
 
 /*--------------------------------------------------------------------------------*/
 
-tess::obj_field_expr::obj_field_expr(expr_ptr obj, std::string field) :
+tess::obj_field_expr::obj_field_expr(expr_ptr obj, std::string field, bool is_ref) :
     obj_(obj),
-    field_(field)
+    field_(field),
+    is_ref_(is_ref)
 {
 }
 
-tess::expr_value tess::obj_field_expr::eval(evaluation_context& ctx) const
+std::string tess::obj_field_expr::to_string() const
 {
-    return obj_->eval(ctx).get_field(ctx.allocator(), field_);
+    if (!is_ref_)
+        return "( get_field " + obj_->to_string() + " " + field_ + " )";
+    else
+        return "( get_field_ref " + obj_->to_string() + " " + field_ + " )";
+}
+
+void tess::obj_field_expr::compile(stack_machine::stack& stack) const
+{
+    stack.push(std::make_shared<get_field_op>(field_, is_ref_));
+    obj_->compile(stack);
 }
 
 void tess::obj_field_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -151,6 +172,7 @@ tess::expr_ptr tess::obj_field_expr::simplify() const
 {
     return std::make_shared< obj_field_expr>(
         obj_->simplify(),
-        field_
+        field_,
+        is_ref_
     );
 }

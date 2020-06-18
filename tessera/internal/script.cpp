@@ -2,24 +2,29 @@
 #include "script_impl.h"
 #include "function_def.h"
 #include "lambda.h"
+#include "where_expr.h"
 #include "parser/script_parser.h"
 #include "parser/expr_parser.h"
 #include "allocator.h"
 #include "execution_state.h"
+#include "object_expr.h"
 
 namespace {
 
-	std::vector<tess::expr_value> evaluate_arguments(tess::execution_state& state, const std::vector<std::string>& args) {
-		std::vector<tess::expr_value> output(args.size());
-		std::transform(args.begin(), args.end(), output.begin(),
-			[&state](const auto& str)->tess::expr_value {
-				auto expr = tess::parser::parse_expression(str);
-				if (!expr)
-					return { tess::error(std::string("syntax error in argument: ") + str) };
-				auto ctxt = state.create_eval_context();
-				return expr->eval(ctxt);
-			}
-		);
+	std::variant<std::vector<tess::expr_ptr>, tess::error> parse_arguments(const std::vector<std::string>& args) {
+		std::vector<tess::expr_ptr> output(args.size());
+		try {
+			std::transform(args.begin(), args.end(), output.begin(),
+				[](const auto& str)->tess::expr_ptr {
+					auto expr = tess::parser::parse_expression(str);
+					if (!expr)
+						throw  tess::error(std::string("syntax error in argument: ") + str);
+					return expr->simplify();
+				}
+			);
+		} catch (tess::error e) {
+			return e;
+		}
 		return output;
 	}
 
@@ -34,25 +39,11 @@ namespace {
 		);
 	}
 
-	tess::lex_scope::frame eval_global_declarations(tess::execution_state& state, const tess::assignment_block& declarations) {
-		tess::evaluation_context ctxt = state.create_eval_context();
-		return declarations.eval(ctxt);
-	}
-
-	tess::expr_value execute_script(const std::vector<tess::expr_value>& args, tess::execution_state& state, tess::evaluation_context& ctxt, const tess::expr_ptr& tableau) {
-		auto maybe_lambda = tableau->eval(ctxt);
-
-		if (!std::holds_alternative<tess::lambda>(maybe_lambda))
-			return (std::holds_alternative<tess::error>(maybe_lambda)) ? 
-				maybe_lambda : tess::expr_value{ tess::error("unknown error") };
-
-		const auto& lambda = std::get<tess::lambda>(maybe_lambda);
-		return lambda.call(state, args);
-	}
-
 	tess::result extract_tiles(const tess::expr_value& output) {
 		if (std::holds_alternative<tess::error>(output))
 			return { std::get<tess::error>(output) };
+		if (std::holds_alternative<tess::tile>(output))
+			return std::vector<tess::tile>{ std::get<tess::tile>(output) };
 		if (!std::holds_alternative<tess::tile_patch>(output))
 			return { tess::error("tableau does not evaulate to a tile patch.") };
 
@@ -80,13 +71,25 @@ const std::vector<std::string>& tess::script::parameters() const
 
 tess::result tess::script::execute(const std::vector<std::string>& arg_strings) const
 {
+	auto maybe_args = parse_arguments(arg_strings);
+	if (std::holds_alternative<tess::error>(maybe_args))
+		return std::get<tess::error>(maybe_args);
+	auto args = std::get<std::vector<expr_ptr>>(maybe_args);
+
+	expr_ptr eval_script_expr = std::make_shared<where_expr>(
+		impl_->globals(), 
+		std::make_shared<func_call_expr>(impl_->tableau(), args)
+	);
+
 	auto& state = impl_->state();
-	std::vector<expr_value> args = evaluate_arguments(state, arg_strings);
-	evaluation_context ctxt = state.create_eval_context();
-	lex_scope global_scope(ctxt, eval_global_declarations(impl_->state(), impl_->globals()));
-	
-	auto output = execute_script(args, state, ctxt, impl_->tableau());
+	std::string expr_str = eval_script_expr->to_string();
+	eval_script_expr->compile(state.main_stack());
+	std::string stack_str = state.main_stack().to_formatted_string();
+	stack_machine::machine sm;
+	auto output = sm.run(state);
 
 	return extract_tiles(output);
 
 }
+
+

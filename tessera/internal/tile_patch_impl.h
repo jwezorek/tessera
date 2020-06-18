@@ -36,6 +36,7 @@ namespace tess {
         impl_type(const std::vector<expr_value>& tiles);
         expr_value get_field(allocator& allocator, const std::string& field) const;
         expr_value get_ary_item(int i) const;
+        void push_value(expr_value val);
         int get_ary_count() const;
         const std::vector<expr_value>& values();
         void insert_field(const std::string& var, const expr_value& val);

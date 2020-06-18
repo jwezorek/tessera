@@ -78,7 +78,7 @@ namespace tess {
 				overloaded{
 					[&e](const params_t& func_params) { return make_<func_call_expr>(e, func_params); },
 					[&e](expr_ptr ary_index) { return make_<array_item_expr>(e, ary_index); },
-					[&e](const std::string& field) { return make_<obj_field_expr>(e, field);  }
+					[&e](const std::string& field) { return make_<obj_field_expr>(e, field, false);  }
 				},
 				op
 			);

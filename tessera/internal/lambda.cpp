@@ -1,6 +1,5 @@
 #include "lambda.h"
 #include "function_def.h"
-#include "tile_def.h"
 #include "expr_value.h"
 #include "execution_state.h"
 #include "variant_util.h"
@@ -9,20 +8,7 @@
 
 const std::vector<std::string>& tess::lambda::parameters() const
 {
-    return impl_->func.parameters();
-}
-
-tess::expr_value tess::lambda::call(execution_state& state, const std::vector<expr_value>& args) const
-{
-    lex_scope::frame frame = impl_->closure;
-    const auto& parameters = impl_->func.parameters();
-    auto body = impl_->func.body();
-
-    frame.set(parameters, args);
-
-    auto ctxt = state.create_eval_context();
-    lex_scope scope(ctxt, frame);
-    return body->eval(ctxt);
+    return impl_->parameters;
 }
 
 void tess::lambda::insert_field(const std::string& var, const expr_value& val)
@@ -30,12 +16,39 @@ void tess::lambda::insert_field(const std::string& var, const expr_value& val)
     impl_->insert_field(var, val);
 }
 
-tess::lambda::impl_type::impl_type(const function_def& f, const lex_scope::frame& c) :
-    func(f), closure(c)
+const tess::scope_frame& tess::lambda::closure() const
+{
+    return impl_->closure;
+}
+
+std::vector<tess::stack_machine::item> tess::lambda::body() const
+{
+    return impl_->body;
+}
+
+std::vector<std::string> tess::lambda::dependencies() const
+{
+    return impl_->dependencies;
+}
+
+std::vector<std::string> tess::lambda::unfulfilled_dependencies() const
+{
+    std::vector<std::string> depends;
+    const auto& closure = impl_->closure;
+    std::copy_if(impl_->dependencies.begin(), impl_->dependencies.end(), std::back_inserter(depends),
+        [&closure](std::string var) {
+            return !closure.has(var);
+        }
+    );
+    return depends;
+}
+
+tess::lambda::impl_type::impl_type(const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
+    parameters(params), body(bod), dependencies(deps)
 {
 }
 
-void tess::lambda::impl_type::insert_field(const std::string& var, const expr_value& val)
+    void tess::lambda::impl_type::insert_field(const std::string& var, const expr_value& val)
 {
     closure.set(var, val);
 }

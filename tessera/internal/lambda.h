@@ -12,14 +12,22 @@ namespace tess{
     class function_def;
     class expression;
     class execution_state;
+    class scope_frame;
+
+    namespace stack_machine {
+        class item;
+    }
 
     class lambda {
             friend class tessera_impl;
         public: 
 
             const std::vector<std::string>& parameters() const;
-            expr_value call(execution_state& state, const std::vector<expr_value>& expr_value) const;
             void insert_field(const std::string& var, const expr_value& val);
+            const scope_frame& closure() const;
+            std::vector<stack_machine::item> body() const;
+            std::vector<std::string> dependencies() const;
+            std::vector<std::string> unfulfilled_dependencies() const;
             class impl_type;
 
         private:

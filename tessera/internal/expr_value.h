@@ -20,7 +20,19 @@ namespace tess {
         nil_val();
     };
 
-	using expr_val_var = std::variant<nil_val, tile, tile_patch, number, bool, edge, vertex, lambda, cluster, error>;
+	class expr_value;
+	class field_ref
+	{
+	public:
+		field_ref() {}
+		field_ref(const expr_value& obj, std::string field);
+		void set(const expr_value& val);
+	private:
+		class impl_type;
+		std::shared_ptr< impl_type> impl_;
+	};
+
+	using expr_val_var = std::variant<nil_val, tile, tile_patch, number, std::string, bool, edge, vertex, lambda, cluster, field_ref, error>;
 
 	class expr_value : public expr_val_var, public tessera_impl
 	{
@@ -32,10 +44,10 @@ namespace tess {
 		expr_value get_ary_item(int index) const;
 		int get_ary_count() const;
 		expr_value get_field(allocator& allocator, const std::string& field) const;
-		expr_value call(execution_state& state, const std::vector<expr_value>& args) const;
 		void insert_field(const std::string& var, expr_value val) const;
 		std::unordered_set<void*> get_all_referenced_allocations() const;
 		void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
+		std::string to_string() const;
 	};
 
 	template <typename T> void* to_void_star(const T* ptr) {

@@ -11,8 +11,6 @@ namespace tess {
 	class vertex {
 		friend class tessera_impl;
 	public:
-		std::string name() const;
-		std::string vertex_class() const;
 		std::tuple<double, double> pos() const;
 		class impl_type;
 	private:
@@ -22,8 +20,6 @@ namespace tess {
 	class edge {
 		friend class tessera_impl;
 	public:
-		std::string name() const;
-		std::string edge_class() const;
 		const vertex& u() const;
 		const vertex& v() const;
 		class impl_type;
