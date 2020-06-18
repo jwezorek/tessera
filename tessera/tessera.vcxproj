@@ -37,7 +37,6 @@
     <ClCompile Include="internal\parser\basic_expr_parser.cpp" />
     <ClCompile Include="internal\parser\cluster_expr_parser.cpp" />
     <ClCompile Include="internal\parser\cond_expr_parser.cpp" />
-    <ClCompile Include="internal\parser\exception.cpp" />
     <ClCompile Include="internal\parser\expr_parser.cpp" />
     <ClCompile Include="internal\parser\function_parser.cpp" />
     <ClCompile Include="internal\parser\keywords.cpp" />
@@ -81,7 +80,6 @@
     <ClInclude Include="internal\parser\basic_expr_parser.h" />
     <ClInclude Include="internal\parser\cluster_expr_parser.h" />
     <ClInclude Include="internal\parser\cond_expr_parser.h" />
-    <ClInclude Include="internal\parser\exception.h" />
     <ClInclude Include="internal\parser\expr_parser.h" />
     <ClInclude Include="internal\parser\function_parser.h" />
     <ClInclude Include="internal\parser\keywords.h" />

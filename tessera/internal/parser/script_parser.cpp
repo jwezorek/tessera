@@ -7,11 +7,19 @@
 #include "util.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
+#include <sstream>
 
 namespace x3 = boost::spirit::x3;
 
+using x3_expect_error = x3::expectation_failure<std::string::const_iterator>;
+
 namespace tess {
     namespace parser {
+
+        tess::error expectation_failure_to_tess_error(const x3_expect_error& e, const text_range& script) {
+            return tess::error( "syntax error", script.get_line_number(e.where()) );
+        }
+
         const auto assignments = assignment_block_();
         const auto expr = expression_();
         const auto identifier = indentifier_str_();
@@ -46,7 +54,7 @@ namespace tess {
     }
 }
 
-std::variant<tess::script, tess::parser::exception> tess::parser::parse(const text_range& input)
+std::variant<tess::script, tess::error> tess::parser::parse(const text_range& input)
 {
     auto whole_script = tess::text_range(input);
     tess::parser::script_spec output;
@@ -55,20 +63,15 @@ std::variant<tess::script, tess::parser::exception> tess::parser::parse(const te
 
     try {
         success = x3::phrase_parse(iter, input.end(), script_parser, x3::space, output);
-    } catch (tess::parser::exception e) {
-        e.push_stack_item("script");
-        if (!e.has_where())
-            e.set_where(iter);
-        return e;
-    } catch (x3::expectation_failure<std::string::const_iterator> const& e) {
-        return tess::parser::exception("script", e);
-    } catch (std::exception e) {
-        return tess::parser::exception("script", "unkown error");
+    } catch (const x3_expect_error& e) {
+        return expectation_failure_to_tess_error(e, whole_script);
+    } catch ( ... ) {
+        return tess::error("unkown error");
     }
     if (success) {
         tess::parser::script_maker factory;
         return factory.make(output);
     } else {
-        return tess::parser::exception("script", "unkown error");
+        return tess::error("unkown error");
     }
 }

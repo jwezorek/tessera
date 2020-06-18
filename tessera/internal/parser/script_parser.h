@@ -2,7 +2,6 @@
 
 #include "tessera/script.h"
 #include "../text_range.h"
-#include "exception.h"
 #include <variant>
 #include <string>
 
@@ -10,6 +9,6 @@ namespace tess {
 
 
     namespace parser {
-        std::variant<tess::script, tess::parser::exception> parse(const text_range& input);
+        std::variant<tess::script, tess::error> parse(const text_range& input);
     }
 }

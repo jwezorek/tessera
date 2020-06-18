@@ -6,7 +6,6 @@
 #include "tessera_impl.h"
 #include "parser/keywords.h"
 #include "parser/expr_parser.h"
-#include "parser/exception.h"
 #include "execution_state.h"
 #include "ops.h"
 #include "allocator.h"
@@ -290,7 +289,7 @@ tess::special_number_expr::special_number_expr(const std::string& v)
     else if (v == parser::keyword(parser::kw::root_2))
         num_ = special_num::root_2;
     else
-        throw parser::exception("expr", "attempted to parse invalid special number");
+        throw tess::error("attempted to parse invalid special number");
 }
 
 tess::special_number_expr::special_number_expr(special_num which) :
@@ -342,7 +341,7 @@ tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_
 	else if (func_keyword == parser::keyword(parser::kw::regular_polygon))
 		func_ = special_func::regular_polygon;
     else
-        throw parser::exception("expr", "attempted to parse invalid special function");
+        throw tess::error("attempted to parse invalid special function");
 
     arg_ = arg;
 }
@@ -591,7 +590,7 @@ tess::relation_expr::relation_expr(std::tuple<expr_ptr, std::string, expr_ptr> p
     else if (op == parser::le)
         op_ = relation_op::le;
     else
-        throw parser::exception("expr", "attempted to parse invalid relation_expr");
+        throw tess::error("attempted to parse invalid relation_expr");
 }
 
 tess::relation_expr::relation_expr(expr_ptr lhs, relation_op op, expr_ptr rhs) :

@@ -15,8 +15,7 @@ namespace tess {
         text_range(std::string::const_iterator b, std::string::const_iterator e);
         std::string::const_iterator begin() const;
         std::string::const_iterator end() const;
-        text_range left_range(std::string::const_iterator i) const;
-		text_range right_range(std::string::const_iterator i) const;
+        int get_line_number(std::string::const_iterator i) const;
 		int get_line_count() const;
     };
 }

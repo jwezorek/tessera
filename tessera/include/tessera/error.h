@@ -1,20 +1,21 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include <optional>
 
 namespace tess
 {
 	class error
 	{
 	private:
-		int line_;
+		std::optional<int> line_;
 		std::string msg_;
 
 	public:
 		error(const std::string& msg, int line);
 		error(const std::string& msg);
 		const std::string& msg() const;
-		int line() const;
+		std::optional<int> line() const;
 		std::string to_string() const;
 	};
 

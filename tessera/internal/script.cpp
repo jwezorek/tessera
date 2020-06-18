@@ -28,17 +28,6 @@ namespace {
 		return output;
 	}
 
-	tess::error make_error(tess::text_range script, tess::parser::exception e)
-	{
-		int line_number = (e.has_where()) ?
-			tess::text_range(script.begin(), e.where()).get_line_count() :
-			-1;
-		return tess::error(
-			e.to_string(),
-			line_number
-		);
-	}
-
 	tess::result extract_tiles(const tess::expr_value& output) {
 		if (std::holds_alternative<tess::error>(output))
 			return { std::get<tess::error>(output) };
@@ -54,14 +43,8 @@ namespace {
 
 std::variant<tess::script, tess::error> tess::script::interpret(const std::string& script)
 {
-    text_range source_code{ script };
-    auto result = tess::parser::parse(source_code);
-	
-	if (std::holds_alternative<tess::script>(result)) {
-		return std::get<tess::script>(result);
-	} else {
-		return make_error(source_code, std::get<tess::parser::exception>(result));
-	}
+	text_range source_code{ script };
+	return tess::parser::parse(source_code);
 }
 
 const std::vector<std::string>& tess::script::parameters() const

@@ -20,24 +20,18 @@ std::string::const_iterator tess::text_range::end() const
     return end_;
 }
 
-
-tess::text_range tess::text_range::left_range(std::string::const_iterator i) const
+int tess::text_range::get_line_number(std::string::const_iterator j) const
 {
-    return tess::text_range(begin_, i);
-}
-
-tess::text_range tess::text_range::right_range(std::string::const_iterator i) const
-{
-	return text_range(i, end_);
+	int line_number = 1;
+	for (auto i = begin_; i < j; ++i)
+		if (*i == '\n')
+			++line_number;
+	return line_number;
 }
 
 int tess::text_range::get_line_count() const
 {
-	int line_number = 1;
-	for (auto i = begin_; i < end_; ++i)
-		if (*i == '\n')
-			++line_number;
-	return line_number;
+	return get_line_number(end_);
 }
 
 
