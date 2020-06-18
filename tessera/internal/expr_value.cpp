@@ -121,9 +121,18 @@ std::string tess::expr_value::to_string() const
 	return "#(some expr value)";
 }
 
-tess::expr_value_ref::expr_value_ref(expr_value* ref) : ref_(ref) {}
+class tess::field_ref::impl_type {
+public:
+	expr_value obj;
+	std::string field;
+	impl_type(const expr_value& o, std::string f) : obj(o), field(f)
+	{}
+};
 
-void tess::expr_value_ref::set(const expr_value& val)
+tess::field_ref::field_ref(const expr_value& obj, std::string field) : impl_(std::make_shared< field_ref::impl_type>(obj, field))
+{}
+
+void tess::field_ref::set(const expr_value& val)
 {
-	*ref_ = val;
+	impl_->obj.insert_field(impl_->field, val);
 }

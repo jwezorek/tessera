@@ -21,16 +21,18 @@ namespace tess {
     };
 
 	class expr_value;
-	class expr_value_ref
+	class field_ref
 	{
 	public:
-		expr_value_ref(expr_value* ref = nullptr);
+		field_ref() {}
+		field_ref(const expr_value& obj, std::string field);
 		void set(const expr_value& val);
 	private:
-		expr_value* ref_;
+		class impl_type;
+		std::shared_ptr< impl_type> impl_;
 	};
 
-	using expr_val_var = std::variant<nil_val, tile, tile_patch, number, std::string, bool, edge, vertex, lambda, cluster, expr_value_ref, error>;
+	using expr_val_var = std::variant<nil_val, tile, tile_patch, number, std::string, bool, edge, vertex, lambda, cluster, field_ref, error>;
 
 	class expr_value : public expr_val_var, public tessera_impl
 	{

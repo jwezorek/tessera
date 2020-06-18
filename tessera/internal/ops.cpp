@@ -289,8 +289,13 @@ tess::get_field_op::get_field_op(const std::string& field, bool get_ref) :
 
 tess::stack_machine::item tess::get_field_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
-   expr_value val = std::get<expr_value>(operands[0]);
-   return { val.get_field(contexts.top().allocator(), field_) };
+    expr_value val = std::get<expr_value>(operands[0]);
+    if (!get_ref_) {
+        return { val.get_field(contexts.top().allocator(), field_) };
+    }
+    else {
+        return { expr_value{field_ref(val, field_)} };
+    }
 }
 
 std::string tess::get_field_op::to_string() const
@@ -508,10 +513,10 @@ std::optional<tess::error> tess::set_field_op::execute(const std::vector<stack_m
 {
     int num_fields = static_cast<int>(operands.size() - 1);
     auto value = std::get<expr_value>(operands.back());
-    std::vector<tess::expr_value_ref> field_refs(num_fields);
+    std::vector<tess::field_ref> field_refs(num_fields);
     std::transform(operands.begin(), operands.begin() + num_fields, field_refs.begin(),
         [](const auto& item) { 
-            return std::get<expr_value_ref>(std::get<expr_value>(item));
+            return std::get<field_ref>(std::get<expr_value>(item));
         }
     );
 

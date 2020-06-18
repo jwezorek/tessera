@@ -20,8 +20,14 @@ tess::with_expr::with_expr(const field_definitions& field_defs, expr_ptr body) :
 
 void tess::with_expr::compile(stack_machine::stack& stack) const
 {
-    //TODO
+    stack.push(std::make_shared<pop_frame_op>());
+    stack.push(std::make_shared<get_var>());
+    stack.push(tess::stack_machine::variable("this"));
+    field_defs_.compile(stack);
+    stack.push(std::make_shared<tess::assign_op>(1));
+    stack.push(tess::stack_machine::variable("this"));
     body_->compile(stack);
+    stack.push(std::make_shared<push_frame_op>());
 }
 
 std::string tess::with_expr::to_string() const
