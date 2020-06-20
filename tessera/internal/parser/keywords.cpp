@@ -38,6 +38,7 @@ const std::string& tess::parser::keyword(tess::parser::kw tok)
             {kw::arctan,           "arctan"},
             {kw::pi,               "pi"},
             {kw::is,               "is"},
+            {kw::this_,            "this"},
             {kw::phi,              "phi"},
             {kw::root_2,           "root_2"},
 			{kw::and_,		       "and"},

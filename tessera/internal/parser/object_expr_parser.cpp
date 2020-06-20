@@ -31,18 +31,19 @@ namespace tess {
 
 		x3::rule<class obj_list_, obj_list_t> const obj_list = "obj_list";
 		x3::rule<class head_, head_t> const head = "head";
+		x3::rule<class head_var_, std::string> const head_var = "head_var";
 		x3::rule<class op_, op_t> const op = "op";
 		x3::rule<class args_, std::vector<expr_ptr>> const args = "args";
 
 		const auto expr = expression_();
 		const auto identifier = indentifier_str_();
 		const auto field = as<std::string>[identifier | kw_<kw::edge>()];
-
 		const auto placeholder = x3::lit('$') > x3::int32;
 		const auto ary_item = x3::lit('[') >> expr >> x3::lit(']');
 		const auto field_item = x3::lit('.') > field;
 
-		const auto head_def = identifier | placeholder;
+		const auto head_var_def = kw_<kw::this_>() | identifier;
+		const auto head_def = head_var | placeholder;
 		const auto empty_args_list = x3::lit('(') >> x3::lit(')');
 		const auto args_list = x3::lit('(') >> (expr% x3::lit(',')) >> x3::lit(')');
 		const auto args_def = args_list | empty_args_list;
@@ -51,6 +52,7 @@ namespace tess {
 
 		BOOST_SPIRIT_DEFINE(
 			head,
+			head_var,
 			args,
 			op,
 			obj_list
