@@ -49,6 +49,9 @@ namespace tess {
 			or_,
 			not_,
             regular_polygon,
+            isosceles_triangle,
+            polygon,
+            flip,
             for_,
             in,
             none

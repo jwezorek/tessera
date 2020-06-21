@@ -397,6 +397,12 @@ std::string get_special_function_name(tess::special_func code) {
 		return "tan";
 	case tess::special_func::regular_polygon:
 		return "regular_poly";
+	case tess::special_func::polygon:
+		return "polygon";
+	case tess::special_func::isosceles_triangle:
+		return "isosceles_triangle";
+	case tess::special_func::flip:
+		return "flip";
 	default:
 		throw tess::error("Unknown special function");
 	}

@@ -4,8 +4,6 @@ let square = tile {
     north, west, south, east is this.edges;
 };
 
-let foo = 42;
-
 let sierpinski_carpet = patch( n ) {
     lay N, NE, E, SE, S, SW, W, NW such_that 
        N.east <-> NE.west,
