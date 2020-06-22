@@ -35,4 +35,5 @@ namespace tess {
 
 	point apply_matrix(const matrix& matrix, const point& pt);
 	matrix line_seg_to_line_seg(const line_segment& src, const line_segment& dest);
+	matrix flip_matrix();
 }

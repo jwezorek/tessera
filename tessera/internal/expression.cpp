@@ -9,15 +9,10 @@
 #include "execution_state.h"
 #include "ops.h"
 #include "allocator.h"
+#include "variant_util.h"
 #include <sstream>
 
 namespace {
-	tess::expr_ptr get_interior_angle_expr(int n) {
-		std::stringstream ss;
-		ss << "( pi / " << n << ") * " << n - 2;
-		return tess::parser::parse_expression(ss.str())->simplify();
-	}
-
 	tess::number central_angle(int n) {
 		std::string expr_str = "(2 * pi) / " + std::to_string(n);
 		return tess::number( expr_str );
@@ -35,6 +30,70 @@ namespace {
 		}
 
 		return points;
+	}
+
+	std::vector<std::tuple<tess::number, tess::number>> isosceles_triangle(tess::number theta)
+	{
+		namespace se = SymEngine;
+		using num = se::Expression;
+		num half_theta = theta / num(2);
+		num half_base = se::sin(half_theta);
+		num height = se::cos(half_theta);
+
+		return std::vector<std::tuple<tess::number, tess::number>> {
+			{ num(0), num(0) },
+			{ num(2) * half_base, num(0) },
+			{ half_base, height }
+		};
+	}
+
+	struct flipper : public tess::tessera_impl {
+		template<typename T>
+		tess::expr_value operator()(const T& v) {
+			auto* impl = get_impl(v);
+			impl->apply(tess::flip_matrix());
+			return { v };
+		}
+	};
+
+	tess::expr_value flip(tess::allocator& a, const tess::expr_value& arg)
+	{
+		if (!std::holds_alternative<tess::tile>(arg) && !std::holds_alternative<tess::tile_patch>(arg))
+			return { tess::error("attempted to flip a value that is not a tile or patch") };
+		std::variant<tess::tile, tess::tile_patch> flippable_val = variant_cast(arg.clone(a));
+		return std::visit(
+			[](auto&& flippee)->tess::expr_value {
+				flipper f;
+				return f(flippee);
+			},
+			flippable_val
+		);
+	}
+
+	std::vector<std::tuple<tess::number, tess::number>> polygon(const tess::expr_value& arg)
+	{
+		if (! std::holds_alternative<tess::cluster>(arg))
+			return {};
+
+		struct vert_getter : public tess::tessera_impl {
+			tess::cluster::impl_type* get(const tess::expr_value& c) {
+				return get_impl(std::get<tess::cluster>(c));
+			}
+		};
+		vert_getter vg;
+		auto* vertices = vg.get(arg);
+		std::vector<std::tuple<tess::number, tess::number>> tuples(vertices->get_ary_count());
+		try {
+			std::transform(vertices->begin(), vertices->end(), tuples.begin(),
+				[&](const auto& ev)->std::tuple<tess::number, tess::number> {
+					auto* pt = vg.get(ev);
+					return { std::get<tess::number>(pt->get_ary_item(0)),  std::get<tess::number>(pt->get_ary_item(1)) };
+				}
+			);
+		} catch (...) {
+			return {};
+		}
+		return tuples;
 	}
 
 }
@@ -371,6 +430,20 @@ std::function<tess::expr_value(tess::allocator&, tess::expr_value)> get_special_
 	case tess::special_func::regular_polygon:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
 			auto locs = regular_polygon_vertices(std::get<tess::number>(arg));
+			return { a.create<tess::tile>(&a, locs, true) };
+		};
+	case tess::special_func::flip:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
+			return flip(a, arg);
+		};
+	case tess::special_func::isosceles_triangle:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
+			auto locs = isosceles_triangle(std::get<tess::number>(arg));
+			return { a.create<tess::tile>(&a, locs, true) };
+		};
+	case tess::special_func::polygon:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
+			auto locs = polygon( arg );
 			return { a.create<tess::tile>(&a, locs, true) };
 		};
 	default:

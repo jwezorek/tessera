@@ -45,5 +45,7 @@ namespace tess {
         void insert_field(const std::string& var, const expr_value& val);
         void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
         void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, cluster::impl_type* clone) const;
+        std::vector<expr_value>::const_iterator begin() const;
+        std::vector<expr_value>::const_iterator end() const;
     };
 }

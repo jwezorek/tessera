@@ -218,6 +218,11 @@ tess::matrix tess::line_seg_to_line_seg(const line_segment& src, const line_segm
 	return matrix;	
 }
 
+tess::matrix tess::flip_matrix()
+{
+	return scale_matrix(1, -1);
+}
+
 tess::number tess::pow(number base, number ex) {
 	return se::pow(base, ex);
 }

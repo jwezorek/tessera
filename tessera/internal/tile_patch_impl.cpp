@@ -128,3 +128,14 @@ void tess::cluster::impl_type::clone_to(tess::allocator& allocator, std::unorder
 		clone->values_.push_back(value.clone(allocator, orginal_to_clone));
 	}
 }
+
+std::vector<tess::expr_value>::const_iterator tess::cluster::impl_type::begin() const
+{
+	return values_.cbegin();
+}
+
+std::vector<tess::expr_value>::const_iterator tess::cluster::impl_type::end() const
+{
+	return values_.cend();
+}
+
