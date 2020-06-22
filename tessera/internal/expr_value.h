@@ -9,6 +9,7 @@
 #include <variant>
 #include <memory>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace tess {
 
@@ -23,13 +24,14 @@ namespace tess {
 	class expr_value;
 	class field_ref
 	{
+		friend class tessera_impl;
 	public:
+		class impl_type;
 		field_ref() {}
 		field_ref(const expr_value& obj, std::string field);
 		void set(const expr_value& val);
-	private:
-		class impl_type;
-		std::shared_ptr< impl_type> impl_;
+	protected:
+		std::shared_ptr<impl_type> impl_;
 	};
 
 	using expr_val_var = std::variant<nil_val, tile, tile_patch, number, std::string, bool, edge, vertex, lambda, cluster, field_ref, error>;
@@ -37,10 +39,13 @@ namespace tess {
 	class expr_value : public expr_val_var, public tessera_impl
 	{
 	public:
+		bool is_simple_value() const;
 		bool is_object_like() const;
 		bool is_array_like() const;
 		bool is_valid() const;
 		bool is_error() const;
+		expr_value clone( allocator& allocator ) const;
+		expr_value clone( allocator& allocator, std::unordered_map<void*,void*>& original_to_clone) const;
 		expr_value get_ary_item(int index) const;
 		int get_ary_count() const;
 		expr_value get_field(allocator& allocator, const std::string& field) const;

@@ -64,6 +64,16 @@ void tess::tile_patch::impl_type::get_all_referenced_allocations(std::unordered_
 		val.get_all_referenced_allocations(alloc_set);
 }
 
+void tess::tile_patch::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile_patch::impl_type* clone) const
+{
+	for (const auto& t : tiles_) {
+		clone->tiles_.push_back(std::get<tile>(expr_value{ t }.clone(allocator, orginal_to_clone)));
+	}
+	for (const auto& [var, val] : fields_) {
+		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
+	}
+}
+
 /*---------------------------------------------------------------------------------------------*/
 
 tess::cluster::impl_type::impl_type(const std::vector<expr_value>& values) :
@@ -110,4 +120,11 @@ void tess::cluster::impl_type::get_all_referenced_allocations(std::unordered_set
 
 	for (const auto& val : values_)
 		val.get_all_referenced_allocations(alloc_set);
+}
+
+void tess::cluster::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, cluster::impl_type* clone) const
+{
+	for (const auto& value : values_) {
+		clone->values_.push_back(value.clone(allocator, orginal_to_clone));
+	}
 }

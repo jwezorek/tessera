@@ -22,6 +22,7 @@ namespace tess {
         number y_;
 
     public:
+        impl_type() {};
 		impl_type(tile::impl_type* parent, int index, std::tuple<number, number> loc);
         std::tuple<double, double> to_floats() const;
         point pos() const;
@@ -30,6 +31,7 @@ namespace tess {
 		tile::impl_type* parent() const;
         void insert_field(const std::string& var, const expr_value& val) {}
         void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
+        void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, vertex::impl_type* clone) const; 
     };
 
     class edge::impl_type : public tessera_impl {
@@ -38,6 +40,7 @@ namespace tess {
             int index_;
             int u_, v_;
         public:
+            impl_type() {};
 			impl_type(tile::impl_type* parent, int index, int u, int v);
 			const tess::vertex& u() const;
 			const tess::vertex& v() const;
@@ -45,6 +48,7 @@ namespace tess {
 			tile::impl_type* parent() const;
             void insert_field(const std::string& var, const expr_value& val) {}
             void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
+            void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, edge::impl_type* clone) const;
     };
 
     class tile::impl_type : public tessera_impl {
@@ -56,6 +60,7 @@ namespace tess {
 			bool untouched_;
 
         public:
+            impl_type() {};
             impl_type(tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations, bool foo);
 
             const std::vector<tess::vertex>& vertices() const;
@@ -69,5 +74,6 @@ namespace tess {
             void  set_parent(tile_patch::impl_type* parent);
             void insert_field(const std::string& var, const expr_value& val);
             void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
+            void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile::impl_type* clone) const;
     };
 }

@@ -16,6 +16,17 @@ namespace {
 		);
 		return allocator.create<tess::cluster>( cluster_contents ); 
 	}
+
+	struct impl_cloner : public tess::tessera_impl
+	{
+		template<typename T>
+		typename T::impl_type* clone(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, typename T::impl_type* impl)
+		{
+			tess::expr_value wrapper = { make_tess_obj<T>(impl) };
+			auto wrapper_clone = std::get<T>(wrapper.clone(allocator, orginal_to_clone));
+			return  get_impl(wrapper_clone);
+		}
+	};
 }
 
 std::vector<std::tuple<tess::number, tess::number>> get_regular_poly_vert_loc(int n) {
@@ -72,6 +83,26 @@ void tess::tile::impl_type::get_all_referenced_allocations(std::unordered_set<vo
 		val.get_all_referenced_allocations(alloc_set);
 }
 
+void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile::impl_type* clone) const
+{
+	clone->untouched_ = untouched_;
+	for (const auto& v : vertices_) {
+		clone->vertices_.push_back(std::get<vertex>(expr_value{ v }.clone(allocator, orginal_to_clone)));
+	}
+	for (const auto& e : edges_) {
+		clone->edges_.push_back(std::get<edge>(expr_value{ e }.clone(allocator, orginal_to_clone)));
+	}
+
+	if (parent_ != nullptr) {
+		impl_cloner cloner;
+		clone->parent_ = cloner.clone<tile_patch>(allocator, orginal_to_clone, parent_);
+	} else {
+		clone->parent_ = nullptr;
+	}
+
+	for (const auto& [var, val] : fields_)
+		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
+}
 tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
 	if (fields_.find(field) != fields_.end())
@@ -150,6 +181,15 @@ void tess::edge::impl_type::get_all_referenced_allocations(std::unordered_set<vo
 	parent_->get_all_referenced_allocations(alloc_set);
 }
 
+void  tess::edge::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, edge::impl_type* clone) const
+{
+	clone->index_ = index_;
+	clone->u_ = u_;
+	clone->v_ = v_;
+	impl_cloner cloner;
+	clone->parent_ = cloner.clone<tile>(allocator, orginal_to_clone, parent_);
+}
+
 /*--------------------------------------------------------------------------------*/
 
 tess::vertex::impl_type::impl_type( tile::impl_type* parent, int n, std::tuple<number, number> loc) :
@@ -187,6 +227,15 @@ void tess::vertex::impl_type::get_all_referenced_allocations(std::unordered_set<
 
 	parent_->get_all_referenced_allocations(alloc_set);
 }
+
+void tess::vertex::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, vertex::impl_type* clone) const
+{
+	clone->index_ = index_;
+	clone->x_ = x_;
+	clone->y_ = y_;
+	impl_cloner cloner;
+	clone->parent_ = cloner.clone<tile>(allocator, orginal_to_clone, parent_);
+};
 
 void tess::vertex::impl_type::apply(const tess::matrix& mat) {
 

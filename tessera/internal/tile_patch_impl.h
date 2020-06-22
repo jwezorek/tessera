@@ -17,6 +17,7 @@ namespace tess {
         std::vector<tess::tile> tiles_;
         std::map<std::string, expr_value> fields_;
     public:
+        impl_type() {};
 		impl_type(const std::vector<tess::tile>& tiles);
         const std::vector<tess::tile>& tiles() const;
 		expr_value get_field(allocator& allocator, const std::string& field) const;
@@ -26,6 +27,7 @@ namespace tess {
         bool is_untouched() const;
         void insert_field(const std::string& var, const expr_value& val);
         void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
+        void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile_patch::impl_type* clone) const;
     };
 
     class cluster::impl_type : public tessera_impl
@@ -33,6 +35,7 @@ namespace tess {
     private:
         std::vector<expr_value> values_;
     public:
+        impl_type() {};
         impl_type(const std::vector<expr_value>& tiles);
         expr_value get_field(allocator& allocator, const std::string& field) const;
         expr_value get_ary_item(int i) const;
@@ -41,5 +44,6 @@ namespace tess {
         const std::vector<expr_value>& values();
         void insert_field(const std::string& var, const expr_value& val);
         void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
+        void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, cluster::impl_type* clone) const;
     };
 }

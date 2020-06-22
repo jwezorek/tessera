@@ -6,8 +6,54 @@
 #include "execution_state.h"
 #include <sstream>
 
+class tess::field_ref::impl_type : public tessera_impl {
+public:
+	expr_value obj;
+	std::string field;
+	impl_type(const expr_value& o, std::string f) : obj(o), field(f)
+	{}
+};
+
+tess::field_ref::field_ref(const expr_value& obj, std::string field) : impl_(std::make_shared< field_ref::impl_type>(obj, field))
+{}
+
+void tess::field_ref::set(const expr_value& val)
+{
+	impl_->obj.insert_field(impl_->field, val);
+}
+
+struct clone_factory : tess::tessera_impl
+{
+	template<typename T>
+	T operator()(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, T original) {
+		
+		typename T::impl_type* original_impl = get_impl(original);
+		void* key = reinterpret_cast<void*>(original_impl);
+		typename T::impl_type* clone_impl = nullptr;
+
+		if (orginal_to_clone.find(key) != orginal_to_clone.end()) {
+			clone_impl = reinterpret_cast<typename T::impl_type*>(orginal_to_clone[key]);
+		} else {
+			clone_impl = allocator.create_impl<T>();
+			orginal_to_clone[key] = clone_impl;
+			original_impl->clone_to(allocator, orginal_to_clone, clone_impl);
+		}
+
+		return make_tess_obj<T>(clone_impl);
+	}
+};
+
 tess::nil_val::nil_val()
 {
+}
+
+bool tess::expr_value::is_simple_value() const
+{ 
+	return std::holds_alternative<nil_val>(*this) ||
+		std::holds_alternative<number>(*this) ||
+		std::holds_alternative<std::string>(*this) ||
+		std::holds_alternative<bool>(*this) ||
+		std::holds_alternative<error>(*this);
 }
 
 bool tess::expr_value::is_object_like() const
@@ -36,6 +82,29 @@ bool tess::expr_value::is_valid() const
 bool tess::expr_value::is_error() const
 {
 	return std::holds_alternative<tess::error>(*this);
+}
+
+tess::expr_value tess::expr_value::clone( allocator& allocator ) const
+{
+	if (is_simple_value())
+		return *this;
+
+	if (std::holds_alternative<field_ref>(*this))
+		return { tess::error("attempted clone a field ref") };
+	
+	std::unordered_map<void*, void*> original_to_clone;
+	return clone(allocator, original_to_clone);
+	 
+}
+
+tess::expr_value tess::expr_value::clone(allocator& allocator, std::unordered_map<void*, void*>& original_to_clone) const
+{
+	std::variant<tile, tile_patch, vertex, edge, cluster, lambda> obj_variant = variant_cast(*this);
+	clone_factory cloner;
+	return std::visit(
+		[&](auto&& obj)->expr_value { return expr_value{ cloner(allocator, original_to_clone, obj) }; },
+		obj_variant
+	);
 }
 
 tess::expr_value tess::expr_value::get_ary_item(int index) const
@@ -121,18 +190,4 @@ std::string tess::expr_value::to_string() const
 	return "#(some expr value)";
 }
 
-class tess::field_ref::impl_type {
-public:
-	expr_value obj;
-	std::string field;
-	impl_type(const expr_value& o, std::string f) : obj(o), field(f)
-	{}
-};
 
-tess::field_ref::field_ref(const expr_value& obj, std::string field) : impl_(std::make_shared< field_ref::impl_type>(obj, field))
-{}
-
-void tess::field_ref::set(const expr_value& val)
-{
-	impl_->obj.insert_field(impl_->field, val);
-}
