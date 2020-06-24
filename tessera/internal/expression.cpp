@@ -47,27 +47,21 @@ namespace {
 		};
 	}
 
-	struct flipper : public tess::tessera_impl {
-		template<typename T>
-		tess::expr_value operator()(const T& v) {
-			auto* impl = get_impl(v);
-			impl->apply(tess::flip_matrix());
-			return { v };
-		}
-	};
-
 	tess::expr_value flip(tess::allocator& a, const tess::expr_value& arg)
 	{
 		if (!std::holds_alternative<tess::tile>(arg) && !std::holds_alternative<tess::tile_patch>(arg))
 			return { tess::error("attempted to flip a value that is not a tile or patch") };
+
 		std::variant<tess::tile, tess::tile_patch> flippable_val = variant_cast(arg.clone(a));
-		return std::visit(
+		auto flipped = std::visit(
 			[](auto&& flippee)->tess::expr_value {
-				flipper f;
-				return f(flippee);
+				tess::get_impl(flippee)->flip();
+				return { flippee };
 			},
 			flippable_val
 		);
+
+		return flipped;
 	}
 
 	std::vector<std::tuple<tess::number, tess::number>> polygon(const tess::expr_value& arg)
@@ -75,18 +69,12 @@ namespace {
 		if (! std::holds_alternative<tess::cluster>(arg))
 			return {};
 
-		struct vert_getter : public tess::tessera_impl {
-			tess::cluster::impl_type* get(const tess::expr_value& c) {
-				return get_impl(std::get<tess::cluster>(c));
-			}
-		};
-		vert_getter vg;
-		auto* vertices = vg.get(arg);
+		auto* vertices = tess::get_impl(std::get<tess::cluster>(arg));
 		std::vector<std::tuple<tess::number, tess::number>> tuples(vertices->get_ary_count());
 		try {
 			std::transform(vertices->begin(), vertices->end(), tuples.begin(),
 				[&](const auto& ev)->std::tuple<tess::number, tess::number> {
-					auto* pt = vg.get(ev);
+					auto* pt = tess::get_impl(std::get<tess::cluster>(ev));
 					return { std::get<tess::number>(pt->get_ary_item(0)),  std::get<tess::number>(pt->get_ary_item(1)) };
 				}
 			);
@@ -399,7 +387,13 @@ tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_
 		func_ = special_func::arctan;
 	else if (func_keyword == parser::keyword(parser::kw::regular_polygon))
 		func_ = special_func::regular_polygon;
-    else
+	else if (func_keyword == parser::keyword(parser::kw::isosceles_triangle))
+		func_ = special_func::isosceles_triangle;
+	else if (func_keyword == parser::keyword(parser::kw::flip))
+		func_ = special_func::flip;
+	else if (func_keyword == parser::keyword(parser::kw::polygon))
+		func_ = special_func::polygon;
+	else
         throw tess::error("attempted to parse invalid special function");
 
     arg_ = arg;

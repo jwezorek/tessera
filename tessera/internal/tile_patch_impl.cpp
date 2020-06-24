@@ -45,6 +45,12 @@ void tess::tile_patch::impl_type::apply(const matrix& mat)
 		get_impl(tile)->apply(mat);
 }
 
+void tess::tile_patch::impl_type::flip()
+{
+	for (auto& tile : tiles_)
+		get_impl(tile)->flip();
+}
+
 bool tess::tile_patch::impl_type::is_untouched() const 
 {
 	return get_impl(tiles_.front())->is_untouched();
@@ -73,7 +79,13 @@ void tess::tile_patch::impl_type::clone_to(tess::allocator& allocator, std::unor
 		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
 	}
 }
-
+/*
+void tess::tile_patch::impl_type::debug()
+{
+	for (auto t : tiles_) 
+		get_impl(t)->debug();
+}
+*/
 /*---------------------------------------------------------------------------------------------*/
 
 tess::cluster::impl_type::impl_type(const std::vector<expr_value>& values) :

@@ -32,6 +32,7 @@ namespace tess {
         void insert_field(const std::string& var, const expr_value& val) {}
         void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
         void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, vertex::impl_type* clone) const; 
+        //void debug();
     };
 
     class edge::impl_type : public tessera_impl {
@@ -40,7 +41,7 @@ namespace tess {
             int index_;
             int u_, v_;
         public:
-            impl_type() {};
+            impl_type() : parent_(nullptr), index_(-1), u_(-1), v_(-1) {};
 			impl_type(tile::impl_type* parent, int index, int u, int v);
 			const tess::vertex& u() const;
 			const tess::vertex& v() const;
@@ -49,6 +50,7 @@ namespace tess {
             void insert_field(const std::string& var, const expr_value& val) {}
             void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, edge::impl_type* clone) const;
+            void flip();
     };
 
     class tile::impl_type : public tessera_impl {
@@ -60,7 +62,7 @@ namespace tess {
 			bool untouched_;
 
         public:
-            impl_type() {};
+            impl_type(): untouched_(true) {};
             impl_type(tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations, bool foo);
 
             const std::vector<tess::vertex>& vertices() const;
@@ -69,11 +71,13 @@ namespace tess {
 			expr_value get_field(allocator& allocator, const std::string& field) const;
 			bool is_untouched() const;
 			void apply(const matrix& mat);
+            void flip();
             bool has_parent() const;
             tile_patch::impl_type* parent() const;
             void  set_parent(tile_patch::impl_type* parent);
             void insert_field(const std::string& var, const expr_value& val);
             void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile::impl_type* clone) const;
+            //void debug();
     };
 }

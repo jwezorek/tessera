@@ -13,7 +13,7 @@ std::vector<std::string> get_arguments(int argc, char** argv);
 void generate_svg(const std::string& filename, const std::vector<tess::tile>& tiles, double scale);
 
 int main(int argc, char** argv){
-	std::string source_code = read_file("test.tess");
+	std::string source_code = read_file("penrose.tess");
 	auto results = tess::script::interpret( source_code );
 
 	if (std::holds_alternative<tess::script>(results)) {
@@ -26,7 +26,7 @@ int main(int argc, char** argv){
 		}
 
 		const auto& tiles = std::get<std::vector<tess::tile>>(output);
-		generate_svg("C:\\test\\tri.svg", tiles, 50.0);
+		generate_svg("C:\\test\\penrose.svg", tiles, 30.0);
 
 		std::cout << "success" << "\n";
 	} else {
@@ -58,6 +58,7 @@ std::tuple<double, double, double, double> get_bounds(const std::vector<tess::ti
 	double x2 = std::numeric_limits<double>::min();
 	double y2 = std::numeric_limits<double>::min();
 
+	int i = 1;
 	for (const auto& tile : tiles) {
 		for (const auto& vertex : tile.vertices()) {
 			auto [x, y] = vertex.pos();
@@ -72,6 +73,7 @@ std::tuple<double, double, double, double> get_bounds(const std::vector<tess::ti
 			if (y > y2)
 				y2 = y;
 		}
+		std::cout << i++ << "\n";
 	}
 
 	auto wd = x2 - x1;
@@ -98,8 +100,12 @@ void generate_svg(const std::string& filename, const std::vector<tess::tile>& ti
 
 	auto [x, y, wd, hgt] = get_bounds(tiles, scale);
 	out << "<svg viewBox = \"" << x << " " << y << " " << wd << " " << hgt << "\" xmlns = \"http://www.w3.org/2000/svg\">\n";
+//	out << "<g transform = \"scale(1,-1) \">\n";
+//	out << "<g transform = \"tranlate(0,-" << hgt << ") \">\n";
 	for (const auto& tile : tiles)
 		out << tile_to_svg(tile, scale) << "\n";
+//	out << "</g>\n";
+//	out << "</g>\n";
 	out << "</svg>\n";
 
 	out.close();

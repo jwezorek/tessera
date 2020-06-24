@@ -103,6 +103,18 @@ void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_
 	for (const auto& [var, val] : fields_)
 		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
 }
+/*
+void tess::tile::impl_type::debug()
+{
+	std::cout << "{ ";
+	for (int i = 0; i < vertices_.size(); i++) {
+		std::cout << "  vert " << i << " {";
+		get_impl(vertices_[i])->debug();
+		std::cout << "  } ";
+	}
+	std::cout << "}\n";
+}
+*/
 tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
 	if (fields_.find(field) != fields_.end())
@@ -126,6 +138,16 @@ void tess::tile::impl_type::apply(const matrix& mat)
 		get_impl(vertex)->apply(mat);
 	}
 	untouched_ = false;
+}
+
+void tess::tile::impl_type::flip()
+{
+	auto untouched = untouched_;
+	apply(flip_matrix());
+	for (auto& e : edges_) {
+		get_impl(e)->flip();
+	}
+	untouched_ = untouched;
 }
 
 void tess::tile::impl_type::set_parent(tess::tile_patch::impl_type* parent) {
@@ -169,6 +191,11 @@ tess::expr_value tess::edge::impl_type::get_field(allocator& allocator, const st
 tess::tile::impl_type* tess::edge::impl_type::parent() const
 {
 	return parent_;
+}
+
+void  tess::edge::impl_type::flip()
+{
+	std::swap(u_, v_);
 }
 
 void tess::edge::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
@@ -236,6 +263,14 @@ void tess::vertex::impl_type::clone_to(tess::allocator& allocator, std::unordere
 	impl_cloner cloner;
 	clone->parent_ = cloner.clone<tile>(allocator, orginal_to_clone, parent_);
 };
+
+/*
+void tess::vertex::impl_type::debug()
+{
+	auto [x, y] = to_floats();
+	std::cout << index_ << " (" << x << " , " << y << " ) ";
+}
+*/
 
 void tess::vertex::impl_type::apply(const tess::matrix& mat) {
 

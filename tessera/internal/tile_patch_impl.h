@@ -24,10 +24,12 @@ namespace tess {
         expr_value get_ary_item(int i) const;
         int get_ary_count() const;
 		void apply(const matrix& mat);
+        void flip();
         bool is_untouched() const;
         void insert_field(const std::string& var, const expr_value& val);
         void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
         void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile_patch::impl_type* clone) const;
+        //void debug();
     };
 
     class cluster::impl_type : public tessera_impl

@@ -14,7 +14,7 @@ namespace {
 		stack.push(std::make_shared<tess::assign_op>(static_cast<int>(vars.size())));
 
 		std::vector<tess::stack_machine::item> identifiers(vars.size());
-		std::transform(vars.begin(), vars.end(), identifiers.begin(),
+		std::transform(vars.rbegin(), vars.rend(), identifiers.begin(),
 			[](const auto& var)->tess::stack_machine::item {
 				return { tess::stack_machine::variable( var ) };
 			}

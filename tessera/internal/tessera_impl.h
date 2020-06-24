@@ -20,4 +20,27 @@ namespace tess {
 			}
     };
 
+	namespace details {
+		struct impl_getter : tessera_impl {
+			template<typename U>
+			typename U::impl_type* operator()(U& t) {
+				return get_impl(t);
+			}
+		};
+	}
+
+	template<typename T>
+	typename T::impl_type* get_impl(T& tess_obj)
+	{
+		details::impl_getter getter;
+		return getter(tess_obj);
+	}
+
+	template<typename T>
+	const typename T::impl_type* get_impl(const T& tess_obj)
+	{
+		details::impl_getter getter;
+		return getter(tess_obj);
+	}
+
 }

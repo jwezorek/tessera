@@ -301,7 +301,6 @@ tess::stack_machine::item tess::lay_op::execute(const std::vector<stack_machine:
     auto& ctxt = contexts.top();
     auto layees = ctxt.pop_scope();
     auto result = apply_mapping(operands);
-
     return  {
         flatten_tiles_and_patches(ctxt.allocator(), layees.values())
     };

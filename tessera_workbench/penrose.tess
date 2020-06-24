@@ -1,0 +1,43 @@
+let half_thin_rhombus = tile {
+    isosceles_triangle( pi/5 )
+} with {
+    base, b, a is this.edges;
+};
+
+let half_fat_rhombus = tile {
+    isosceles_triangle( 3*pi/5 )
+} with {
+    base, b, a is this.edges;
+};
+
+let inflate_thin_rhombus = patch( n ) {
+    lay top, bottom such_that top.a <-> bottom.b
+} where {
+    let top, bottom = 
+            if (n == 1)
+                [flip( half_fat_rhombus ), half_thin_rhombus]
+            else
+                [flip( inflate_fat_rhombus(n-1) ), inflate_thin_rhombus(n-1) ];
+} with {
+    a is top.base;
+    b is top.b;
+    base is bottom.a;
+};
+
+let inflate_fat_rhombus = patch( n ) {
+    lay left, middle, right such_that  middle.b  <-> left.a, middle.a <-> right.b
+} where {
+    let left, middle, right = 
+        if (n == 1)
+            [ flip(half_fat_rhombus) , half_thin_rhombus, half_fat_rhombus]
+        else
+            [ flip(inflate_fat_rhombus(n-1) ), inflate_thin_rhombus(n-1), inflate_fat_rhombus(n-1) ];
+} with {
+    a is left.b;
+    b is right.base;
+    base is left.base;
+};
+
+tableau (n) {
+    lay inflate_fat_rhombus(3)
+}
