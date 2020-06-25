@@ -2,10 +2,7 @@
 #include "cluster.h"
 #include "parser/keywords.h"
 #include "allocator.h"
-#include <symengine/expression.h>
 #include <algorithm>
-
-namespace se = SymEngine;
 
 namespace {
 
@@ -227,8 +224,8 @@ tess::vertex::impl_type::impl_type( tile::impl_type* parent, int n, std::tuple<n
 std::tuple<double, double> tess::vertex::impl_type::to_floats() const
 {
     return {
-        se::eval_double(x_),
-        se::eval_double(y_),
+        static_cast<double>(x_),
+		static_cast<double>(y_),
     };
 }
 

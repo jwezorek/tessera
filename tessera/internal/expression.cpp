@@ -1,4 +1,4 @@
-#include "math_util.h"
+#include "number.h"
 #include "expression.h"
 #include "expr_value.h"
 #include "execution_state.h"
@@ -14,8 +14,7 @@
 
 namespace {
 	tess::number central_angle(int n) {
-		std::string expr_str = "(2 * pi) / " + std::to_string(n);
-		return tess::number( expr_str );
+		return (tess::number(2) * tess::pi()) / tess::number(n);
 	}
 
 	std::vector<std::tuple<tess::number, tess::number>> regular_polygon_vertices(tess::number num_sides)
@@ -34,11 +33,10 @@ namespace {
 
 	std::vector<std::tuple<tess::number, tess::number>> isosceles_triangle(tess::number theta)
 	{
-		namespace se = SymEngine;
-		using num = se::Expression;
+		using num = tess::number;
 		num half_theta = theta / num(2);
-		num half_base = se::sin(half_theta);
-		num height = se::cos(half_theta);
+		num half_base = tess::sin(half_theta);
+		num height = tess::cos(half_theta);
 
 		return std::vector<std::tuple<tess::number, tess::number>> {
 			{ num(0), num(0) },
@@ -351,10 +349,10 @@ void tess::special_number_expr::compile(stack_machine::stack& stack) const
 			stack.push({ tess::expr_value{ tess::pi() } });
 			break;
 		case special_num::phi:
-			stack.push({ tess::expr_value{ tess::number("(1 + sqrt(5)) / 2") } });
+			stack.push({ tess::expr_value{ tess::phi() } });
 			break;
 		case special_num::root_2:
-			stack.push({ tess::expr_value{ tess::number("sqrt(2)") } });
+			stack.push({ tess::expr_value{ tess::root_2() } });
 			break;
 	}
 }

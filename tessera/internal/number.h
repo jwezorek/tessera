@@ -1,14 +1,14 @@
 #pragma once
 
-#include <symengine/expression.h>
-#include <symengine/logic.h>
-#include <symengine/matrix.h>
+#include <boost/multiprecision/cpp_bin_float.hpp>
+#include <boost/multiprecision/eigen.hpp>
+#include <Eigen/Dense>
 #include <tuple>
 
 namespace tess {
 
-	using number = SymEngine::Expression;
-	using matrix = SymEngine::DenseMatrix;
+	using number = boost::multiprecision::cpp_bin_float_quad;
+	using matrix = Eigen::Matrix<number, 3, 3>;
 	using point = std::tuple<number,number>;
 	using line_segment = std::tuple<point, point>;
 
@@ -21,6 +21,8 @@ namespace tess {
 	number sqrt(number arg);
 	number tan(number arg);
 	number pi();
+	number phi();
+	number root_2();
 
 	bool equals(const number& a, number& b);
 	bool equals(const point& a, const point& b);

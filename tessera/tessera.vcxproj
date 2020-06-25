@@ -30,7 +30,7 @@
     <ClCompile Include="internal\function_def.cpp" />
     <ClCompile Include="internal\lambda.cpp" />
     <ClCompile Include="internal\lay_expr.cpp" />
-    <ClCompile Include="internal\math_util.cpp" />
+    <ClCompile Include="internal\number.cpp" />
     <ClCompile Include="internal\object_expr.cpp" />
     <ClCompile Include="internal\ops.cpp" />
     <ClCompile Include="internal\parser\where_parser.cpp" />
@@ -73,7 +73,7 @@
     <ClInclude Include="internal\lambda.h" />
     <ClInclude Include="internal\lambda_impl.h" />
     <ClInclude Include="internal\lay_expr.h" />
-    <ClInclude Include="internal\math_util.h" />
+    <ClInclude Include="internal\number.h" />
     <ClInclude Include="internal\object_expr.h" />
     <ClInclude Include="internal\ops.h" />
     <ClInclude Include="internal\parser\where_parser.h" />
@@ -188,7 +188,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>./third-party/include;$(SYMENGINE_DIR);$(SYMENGINE_DIR)/out/build/x64-Debug;$(BOOST_DIR);./include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EIGEN_DIR);$(BOOST_DIR);./include</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableSpecificWarnings>4244</DisableSpecificWarnings>
@@ -199,7 +199,8 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(SYMENGINE_DIR)/out/build/x64-Debug/symengine;./third-party/lib;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mpir.lib;symengine.lib;teuchos.lib</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -234,7 +235,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>./third-party/include;$(SYMENGINE_DIR);$(SYMENGINE_DIR)/out/build/x64-Release;$(BOOST_DIR);./include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EIGEN_DIR);$(BOOST_DIR);./include</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableSpecificWarnings>4244</DisableSpecificWarnings>
@@ -247,7 +248,8 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(SYMENGINE_DIR)/out/build/x64-Release/symengine;./third-party/lib;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>mpir.lib;symengine.lib</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

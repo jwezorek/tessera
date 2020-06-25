@@ -20,6 +20,7 @@ int main(int argc, char** argv){
 		const auto& tessera = std::get<tess::script>(results);
 
 		auto output = tessera.execute( get_arguments(argc, argv) );
+		std::cout << "serializing..." << "\n";
 		if (std::holds_alternative<tess::error>(output)) {
 			std::cout << std::get<tess::error>(output) << "\n";
 			return -1;
@@ -73,7 +74,6 @@ std::tuple<double, double, double, double> get_bounds(const std::vector<tess::ti
 			if (y > y2)
 				y2 = y;
 		}
-		std::cout << i++ << "\n";
 	}
 
 	auto wd = x2 - x1;
@@ -100,12 +100,8 @@ void generate_svg(const std::string& filename, const std::vector<tess::tile>& ti
 
 	auto [x, y, wd, hgt] = get_bounds(tiles, scale);
 	out << "<svg viewBox = \"" << x << " " << y << " " << wd << " " << hgt << "\" xmlns = \"http://www.w3.org/2000/svg\">\n";
-//	out << "<g transform = \"scale(1,-1) \">\n";
-//	out << "<g transform = \"tranlate(0,-" << hgt << ") \">\n";
 	for (const auto& tile : tiles)
 		out << tile_to_svg(tile, scale) << "\n";
-//	out << "</g>\n";
-//	out << "</g>\n";
 	out << "</svg>\n";
 
 	out.close();

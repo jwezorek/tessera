@@ -80,7 +80,7 @@ void tess::num_range_expr::compile(stack_machine::stack& stack) const
                 range.reserve(n);
 
                 for (int i = from; i <= to; i++)
-                    range.push_back(expr_value{ tess::number{i} });
+                    range.push_back(expr_value{ tess::number(i) });
 
                 return { a.create<cluster>(range) };
             },

@@ -2,7 +2,7 @@
 
 #include "tessera_impl.h"
 #include "expression.h"
-#include "math_util.h"
+#include "number.h"
 #include "tessera/tile.h"
 #include "tessera/error.h"
 #include "tile_impl.h"

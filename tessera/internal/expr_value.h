@@ -5,7 +5,7 @@
 #include "cluster.h"
 #include "tessera_impl.h"
 #include "lambda.h"
-#include "math_util.h"
+#include "number.h"
 #include <variant>
 #include <memory>
 #include <unordered_set>
