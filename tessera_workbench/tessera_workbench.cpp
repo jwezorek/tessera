@@ -84,8 +84,9 @@ std::tuple<double, double, double, double> get_bounds(const std::vector<tess::ti
 
 std::string tile_to_svg(const tess::tile& tile, double scale) {
 	std::stringstream ss;
-
-	ss << "<polygon stroke=\"black\" fill=\"blue\" points = \"";
+	auto maybe_color = tile.get_prop<std::string>("color");
+	std::string color = (maybe_color.has_value()) ? maybe_color.value() : "white";
+	ss << "<polygon stroke=\"black\" fill=\"" << color << "\" points = \"";
 	for (const auto& vertex : tile.vertices()) {
 		auto [x, y] = vertex.pos();
 		ss << x*scale << "," << y*scale << " ";

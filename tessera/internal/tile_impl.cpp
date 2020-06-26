@@ -97,31 +97,29 @@ void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_
 		clone->parent_ = nullptr;
 	}
 
-	for (const auto& [var, val] : fields_)
+	for (const auto& [var, val] : fields_) {
 		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
-}
-/*
-void tess::tile::impl_type::debug()
-{
-	std::cout << "{ ";
-	for (int i = 0; i < vertices_.size(); i++) {
-		std::cout << "  vert " << i << " {";
-		get_impl(vertices_[i])->debug();
-		std::cout << "  } ";
 	}
-	std::cout << "}\n";
 }
-*/
-tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const std::string& field) const
+
+tess::expr_value tess::tile::impl_type::get_field(const std::string& field) const
 {
 	if (fields_.find(field) != fields_.end())
 		return fields_.at(field);
+	return { nil_val() };
+}
 
+tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const std::string& field) const
+{
 	if (field == parser::keyword(parser::kw::edge) || field == "edges") {
 		return { edges_as_cluster(allocator, edges_) };
 	}
 
-	return { error(std::string("refrenced undefined tile edge, vertex, or field: ") + field ) };
+	auto val = get_field(field);
+	if (!std::holds_alternative< nil_val>(val))
+		return val;
+	else
+		return { error(std::string("refrenced undefined tile edge, vertex, or field: ") + field ) };
 }
 
 bool tess::tile::impl_type::is_untouched() const

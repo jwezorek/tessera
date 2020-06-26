@@ -92,9 +92,8 @@ std::string tess::expression::to_string() const
 	return "<TODO>";
 }
 
-tess::number_expr::number_expr(double v) 
+tess::number_expr::number_expr(double v) : val_(v)
 {
-    throw std::exception("TODO");
 }
 
 tess::number_expr::number_expr(int v) : val_(v)
@@ -356,6 +355,29 @@ void tess::special_number_expr::compile(stack_machine::stack& stack) const
 			break;
 	}
 }
+
+/*----------------------------------------------------------------------*/
+
+tess::string_expr::string_expr(std::string str) : val_(str)
+{}
+
+void tess::string_expr::compile(stack_machine::stack& stack) const
+{
+	stack.push(tess::expr_value{ val_ });
+}
+
+std::string tess::string_expr::to_string() const {
+	return std::string("#(\"") + val_ + "\")";
+}
+
+tess::expr_ptr tess::string_expr::simplify() const {
+	return std::make_shared<string_expr>(val_);
+}
+
+void tess::string_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const {
+}
+
+/*----------------------------------------------------------------------*/
 
 tess::expr_ptr tess::special_number_expr::simplify() const
 {

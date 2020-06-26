@@ -42,6 +42,18 @@ namespace tess {
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
     };
 
+    class string_expr : public expression
+    {
+    private:
+        std::string val_;
+    public:
+        string_expr(std::string str);
+        void compile(stack_machine::stack& stack) const override;
+        std::string to_string() const override;
+        expr_ptr simplify() const override;
+        void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
+    };
+
     enum class special_num {
         pi,
         phi,

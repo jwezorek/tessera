@@ -1,12 +1,14 @@
 let half_thin_rhombus = tile {
     isosceles_triangle( pi/5 )
 } with {
+    color is "palegoldenrod";
     base, b, a is this.edges;
 };
 
 let half_fat_rhombus = tile {
     isosceles_triangle( 3*pi/5 )
 } with {
+    color is "skyblue";
     base, b, a is this.edges;
 };
 

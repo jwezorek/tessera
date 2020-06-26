@@ -15,3 +15,8 @@ int tess::tile_patch::count() const
 {
 	return static_cast<int>( impl_->tiles().size() );
 }
+
+tess::property_value tess::tile_patch::get_property_variant(const std::string& prop) const
+{
+    return property_value();
+}

@@ -68,6 +68,7 @@ namespace tess {
             const std::vector<tess::vertex>& vertices() const;
             const std::vector<tess::edge>& edges() const;
             void set(std::vector<tess::vertex>&& vertices, std::vector<tess::edge>&& edges );
+            expr_value get_field(const std::string& field) const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;
 			bool is_untouched() const;
 			void apply(const matrix& mat);

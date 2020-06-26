@@ -99,6 +99,9 @@ tess::expr_value tess::expr_value::clone( allocator& allocator ) const
 
 tess::expr_value tess::expr_value::clone(allocator& allocator, std::unordered_map<void*, void*>& original_to_clone) const
 {
+	if (is_simple_value())
+		return *this;
+
 	std::variant<tile, tile_patch, vertex, edge, cluster, lambda> obj_variant = variant_cast(*this);
 	clone_factory cloner;
 	return std::visit(

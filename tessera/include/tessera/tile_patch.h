@@ -7,16 +7,15 @@
 
 namespace tess {
 
-	class tile_patch
+	class tile_patch : public details::property_container<tile_patch>
 	{
 		friend class tessera_impl;
 	public:
 		std::string name() const;
 		const std::vector<tile>& tiles() const;
 		int count() const;
-
+		property_value get_property_variant(const std::string& prop) const;
 		class impl_type;
-		
 	private:
 		impl_type* impl_;
 	};

@@ -20,7 +20,9 @@ namespace tess {
 		auto make_nil = [](auto& ctx) { _val(ctx) = std::make_shared<tess::nil_expr>(); };
 
         x3::rule<class basic_expr_tag, expr_ptr> const basic_expr = "basic_expr";
-        x3::rule<class number_, expr_ptr> const number = "number"; 
+        x3::rule<class number_, expr_ptr> const number = "number";
+        x3::rule<class quoted_string_, std::string> const quoted_string = "quoted_string";
+        x3::rule<class string_, expr_ptr> const string = "string";
 		x3::rule<class nil_, expr_ptr> const nil = "nil";
 
         auto const expr = expression_();
@@ -32,12 +34,16 @@ namespace tess {
 		auto const special_expr = special_expr_();
         auto const function = function_def_();
 		auto const number_def = x3::int32[make_<number_expr>];
+        auto const quoted_string_def = lexeme['"' >> +(char_ - '"') >> '"'];
+        auto const string_def = quoted_string[make_<string_expr>];
 		auto const nil_def = kw_lit<kw::nil>()[make_nil];
 
-		auto const basic_expr_def =  nil | lay_expr | object_expr | special_expr | number | function | if_expr | cluster_expr | ('(' >> expr >> ')') ;
+		auto const basic_expr_def =  nil | lay_expr | object_expr | special_expr | number | string | function | if_expr | cluster_expr | ('(' >> expr >> ')') ;
 
         BOOST_SPIRIT_DEFINE(
             number,
+            quoted_string,
+            string,
 			nil,
             basic_expr
         )
