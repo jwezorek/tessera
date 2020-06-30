@@ -20,7 +20,7 @@ namespace tess {
 
     using expr_visit_func = std::function<void(const_expr_ptr)>;
 
-    class expression : public std::enable_shared_from_this<expression>
+    class expression 
     {
     public:
         virtual void compile(stack_machine::stack& stack) const = 0;
