@@ -41,7 +41,7 @@ namespace {
 	}
 }
 
-std::variant<tess::script, tess::error> tess::script::interpret(const std::string& script)
+std::variant<tess::script, tess::error> tess::script::parse(const std::string& script)
 {
 	text_range source_code{ script };
 	return tess::parser::parse(source_code);
