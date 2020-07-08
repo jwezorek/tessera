@@ -13,16 +13,18 @@
 
 std::string read_file(const std::string& file_path); 
 std::tuple<std::string, std::string, std::vector<std::string>> get_arguments(int argc, char** argv);
-void generate_svg(const std::string& filename, const std::vector<tess::tile>& tiles, double scale);
+void generate_svg(const std::string& filename, const std::vector<tess::tile>& tiles, float scale);
 std::string generate_output_filename(const std::string& filename, const std::string& out_dir);
 std::string args_to_string(std::vector<std::string> args);
 
-namespace fs = std::filesystem;
-namespace chr = std::chrono;
+namespace {
+	namespace fs = std::filesystem;
+	namespace chr = std::chrono;
 
-auto timer = chr::high_resolution_clock::now;
-double elapsed_seconds(chr::high_resolution_clock::time_point from) {
-	return chr::duration_cast<chr::duration<double>>(timer() - from).count();
+	auto timer = chr::high_resolution_clock::now;
+	double elapsed_seconds(chr::high_resolution_clock::time_point from) {
+		return chr::duration_cast<chr::duration<double>>(timer() - from).count();
+	}
 }
 
 int main(int argc, char** argv){
@@ -134,7 +136,7 @@ std::string tile_to_svg(const tess::tile& tile, double scale) {
 	return ss.str();
 }
 
-void generate_svg(const std::string& filename, const std::vector<tess::tile>& tiles, double scale) {
+void generate_svg(const std::string& filename, const std::vector<tess::tile>& tiles, float scale) {
 	std::ofstream out(filename);
 
 	auto [x, y, wd, hgt] = get_bounds(tiles, scale);

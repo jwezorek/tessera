@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="internal\parser\with_parser.cpp" />
+    <ClCompile Include="internal\vertex_table.cpp" />
     <ClCompile Include="internal\where_expr.cpp" />
     <ClCompile Include="internal\cluster.cpp" />
     <ClCompile Include="internal\cluster_expr.cpp" />
@@ -62,6 +63,7 @@
     <ClInclude Include="include\tessera\tile.h" />
     <ClInclude Include="include\tessera\tile_patch.h" />
     <ClInclude Include="internal\parser\with_parser.h" />
+    <ClInclude Include="internal\vertex_table.h" />
     <ClInclude Include="internal\where_expr.h" />
     <ClInclude Include="internal\cluster.h" />
     <ClInclude Include="internal\cluster_expr.h" />

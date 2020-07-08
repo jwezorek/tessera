@@ -66,5 +66,11 @@ namespace tess {
 	template<typename T> T* from_void_star(void* ptr) {
 		return reinterpret_cast<T*>(ptr);
 	}
+
+	template<typename T>
+	T clone(allocator& a, const T& tess_obj) {
+		tess::expr_value val{ tess_obj };
+		return std::get<T>(val.clone(a));
+	}
 	
 }

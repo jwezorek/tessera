@@ -1,5 +1,6 @@
 #include "tile_impl.h"
 #include "cluster.h"
+#include "variant_util.h"
 #include "parser/keywords.h"
 #include "allocator.h"
 #include <algorithm>
@@ -215,24 +216,35 @@ void  tess::edge::impl_type::clone_to(tess::allocator& allocator, std::unordered
 /*--------------------------------------------------------------------------------*/
 
 tess::vertex::impl_type::impl_type( tile::impl_type* parent, int n, std::tuple<number, number> loc) :
-    parent_(parent), index_(n), x_(std::get<0>(loc)), y_(std::get<1>(loc))
+    parent_(parent), index_(n), location_(loc)
 {
 }
 
 std::tuple<double, double> tess::vertex::impl_type::to_floats() const
 {
+	auto [x, y] = pos();
     return {
-        static_cast<double>(x_),
-		static_cast<double>(y_),
+        static_cast<double>(x),
+		static_cast<double>(y),
     };
 }
 
 tess::point tess::vertex::impl_type::pos() const
 {
-    return {
-        x_,
-        y_
-    };
+	return std::visit(
+		overloaded{
+			[&](int vert_index)->point { 
+				auto* patch = this->grandparent();
+				if (patch == nullptr)
+					throw error("corrupt tile patch");
+				return patch->get_vertex_location(vert_index);
+			},
+			[&](point pt)->point {
+				return pt;
+			},
+		},
+		location_
+	);
 }
 
 tess::expr_value tess::vertex::impl_type::get_field(allocator& allocator, const std::string& field) const
@@ -253,25 +265,25 @@ void tess::vertex::impl_type::get_all_referenced_allocations(std::unordered_set<
 void tess::vertex::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, vertex::impl_type* clone) const
 {
 	clone->index_ = index_;
-	clone->x_ = x_;
-	clone->y_ = y_;
+	clone->location_ = location_;
 	impl_cloner cloner;
 	clone->parent_ = cloner.clone<tile>(allocator, orginal_to_clone, parent_);
 };
 
-/*
-void tess::vertex::impl_type::debug()
+tess::tile_patch::impl_type* tess::vertex::impl_type::grandparent() const
 {
-	auto [x, y] = to_floats();
-	std::cout << index_ << " (" << x << " , " << y << " ) ";
+	if (!parent_)
+		return nullptr;
+	return parent_->parent();
 }
-*/
 
 void tess::vertex::impl_type::apply(const tess::matrix& mat) {
 
-	auto [x,y] = apply_matrix( mat, pos() );
-	x_ = x;
-	y_ = y;
+	if (std::holds_alternative<point>(location_)) {
+		location_ = apply_matrix(mat, std::get<point>(location_));
+	} else {
+		throw error("vertex::impl_type::apply called on patch vertex");
+	}
 }
 
 tess::tile::impl_type* tess::vertex::impl_type::parent() const

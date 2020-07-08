@@ -19,7 +19,6 @@ namespace tess {
 	};
 
 	std::optional<error> apply_mapping(const std::vector<std::tuple<edge::impl_type*, edge::impl_type*>>& mapping_data);
-	std::vector<tile> flatten_tiles_and_patches(const std::vector<expr_value>& tiles_and_patches);
 
     class lay_expr : public expression, public tessera_impl {
 		private:

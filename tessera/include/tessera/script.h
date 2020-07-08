@@ -16,6 +16,7 @@ namespace tess {
         friend class tessera_impl;
 
     public:
+        script() {}
         static std::variant<tess::script, tess::error> parse(const std::string& script);
         const std::vector<std::string>& parameters() const;
         result execute(const std::vector<std::string>& args) const;
@@ -24,11 +25,10 @@ namespace tess {
         result execute(T&&... a) const {
             return execute({ std::forward<T>(a)... });
         }
-
-        //bool operator!=(const script& scr) { return impl_ != scr.impl_;  }
-
         class impl_type;
-    private:
+    protected:
+        
+        script(std::shared_ptr<impl_type> impl);
         std::shared_ptr<impl_type> impl_;
     };
 

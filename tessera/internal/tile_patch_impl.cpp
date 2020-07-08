@@ -1,18 +1,19 @@
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
 #include "allocator.h"
-
-tess::tile_patch::impl_type::impl_type(const std::vector<tess::tile>& tiles) :
-    tiles_(tiles)
-{
-	for (auto& tile : tiles) {
-		get_impl(tile)->set_parent(this);
-	}
-}
+#include "variant_util.h"
+#include <variant>
 
 const std::vector<tess::tile>& tess::tile_patch::impl_type::tiles() const
 {
     return tiles_;
+}
+
+
+void tess::tile_patch::impl_type::insert_tile( tess::tile& tile ) 
+{
+	get_impl(tile)->set_parent(this);
+	tiles_.push_back(tile);
 }
 
 
@@ -79,6 +80,11 @@ void tess::tile_patch::impl_type::clone_to(tess::allocator& allocator, std::unor
 		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
 	}
 }
+
+tess::point tess::tile_patch::impl_type::get_vertex_location(int index) const {
+	throw error("TODO: tess::tile_patch::impl_type::get_vertex_location");
+}
+
 /*
 void tess::tile_patch::impl_type::debug()
 {
@@ -151,3 +157,40 @@ std::vector<tess::expr_value>::const_iterator tess::cluster::impl_type::end() co
 	return values_.cend();
 }
 
+int count_tiles(const std::vector<tess::expr_value>& tiles_and_patches) {
+	int count = 0;
+	for (const auto& tile_or_patch : tiles_and_patches)
+		std::visit(
+			overloaded{
+				[&count](const tess::tile&) { ++count; },
+				[&count](const tess::tile_patch& patch) { count += patch.count(); },
+				[](auto) { throw tess::error("unknown error"); }
+			},
+			tile_or_patch
+		);
+	return count;
+}
+
+tess::tile_patch tess::flatten(tess::allocator& a, const std::vector<tess::expr_value>& tiles_and_patches) {
+	int n = count_tiles(tiles_and_patches);
+	std::vector<tess::tile> tiles;
+	tiles.reserve(n);
+	for (const auto& tile_or_patch : tiles_and_patches) {
+		std::visit(
+			overloaded{
+				[&tiles](const tess::tile& t) { tiles.push_back(t); },
+				[&tiles](const tess::tile_patch& patch) {
+					std::copy(patch.tiles().begin(), patch.tiles().end(), std::back_inserter(tiles));
+				},
+				[](auto) { throw tess::error("unknown error"); }
+			},
+			tile_or_patch
+		);
+	}
+	auto patch_impl = a.create_impl<tess::tile_patch>();
+	for (const auto& tile : tiles) {
+		auto copy = tess::clone(a, tile);
+		patch_impl->insert_tile(copy);
+	}
+	return tess::make_tess_obj<tess::tile_patch>(patch_impl);
+}

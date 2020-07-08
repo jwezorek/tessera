@@ -15,7 +15,7 @@ namespace tess {
 
 	using property_value = std::variant<double, std::string, bool, nil_property>;
 
-	namespace details {
+	namespace detail {
 		template<typename U>
 		class property_container {
 		public:
@@ -30,7 +30,7 @@ namespace tess {
 		};
 	}
 
-	class vertex : public details::property_container<vertex> {
+	class vertex : public detail::property_container<vertex> {
 		friend class tessera_impl;
 	public:
 		std::tuple<double, double> pos() const;
@@ -40,7 +40,7 @@ namespace tess {
 		impl_type* impl_;
 	};
 
-	class edge : public details::property_container<edge>  {
+	class edge : public detail::property_container<edge>  {
 		friend class tessera_impl;
 	public:
 		const vertex& u() const;
@@ -51,7 +51,7 @@ namespace tess {
 		impl_type* impl_;
 	};
 
-	class tile : public details::property_container<tile> {
+	class tile : public detail::property_container<tile> {
 		friend class tessera_impl;
 	public:
 		const std::vector<vertex>& vertices() const;

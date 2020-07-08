@@ -302,7 +302,9 @@ tess::stack_machine::item tess::lay_op::execute(const std::vector<stack_machine:
     auto layees = ctxt.pop_scope();
     auto result = apply_mapping(operands);
     return  {
-        flatten_tiles_and_patches(ctxt.allocator(), layees.values())
+        expr_value {
+            tess::flatten(ctxt.allocator(), layees.values())
+        }
     };
 
 }
@@ -324,15 +326,6 @@ std::optional<tess::error> tess::lay_op::apply_mapping(const std::vector<stack_m
     }
 
     return tess::apply_mapping(edge_to_edge);
-}
-
-tess::expr_value tess::lay_op::flatten_tiles_and_patches( tess::allocator& allocator, const std::vector<expr_value>& pieces) const
-{
-    return{
-        allocator.create<tile_patch>(
-            tess::flatten_tiles_and_patches(pieces)
-        )
-    };
 }
 
 tess::val_func_op::val_func_op(int n, std::function<expr_value(tess::allocator& a, const std::vector<expr_value> & v)> func, std::string name) :
@@ -438,8 +431,13 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::iterate_
     
     auto n = src.count();
 
+    // we could clone the cluster::impl_type here but that would make iteration n^2
+    // so we will just remove const-ness so we can reuse the same cluster implementation.
+    // The other option would be to make operands non-const but right now
+    // this is the only place where operands const-ness is an issue.
+
     if (dst) 
-        dst->push_value(curr_item);
+        const_cast<cluster::impl_type*>(dst)->push_value(curr_item);
     auto i = index_val_ + 1;
     
     if (i >= n)

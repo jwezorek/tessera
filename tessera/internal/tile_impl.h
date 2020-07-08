@@ -4,11 +4,13 @@
 #include "tessera_impl.h"
 #include "tile_patch_impl.h"
 #include "expr_value.h"
+#include "number.h"
 #include <string>
 #include <vector>
 #include <tuple>
 #include <memory>
 #include <map>
+#include <variant>
 
 namespace tess {
 
@@ -18,12 +20,11 @@ namespace tess {
     private:
         tile::impl_type* parent_;
         int index_;
-        number x_;
-        number y_;
+        std::variant<int, point> location_;
 
     public:
         impl_type() {};
-		impl_type(tile::impl_type* parent, int index, std::tuple<number, number> loc);
+		impl_type(tile::impl_type* parent, int index, point loc);
         std::tuple<double, double> to_floats() const;
         point pos() const;
 		expr_value get_field(allocator& allocator, const std::string& field) const;
@@ -32,7 +33,7 @@ namespace tess {
         void insert_field(const std::string& var, const expr_value& val) {}
         void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
         void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, vertex::impl_type* clone) const; 
-        //void debug();
+        tile_patch::impl_type* grandparent() const;
     };
 
     class edge::impl_type : public tessera_impl {

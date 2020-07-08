@@ -135,7 +135,6 @@ namespace tess {
         std::string to_string() const override;
 
         std::optional<tess::error> apply_mapping(const std::vector<stack_machine::item>& operands) const;
-        expr_value flatten_tiles_and_patches(allocator& allocator, const std::vector<expr_value>& mapping_data) const;
     };
 
     class if_op : public stack_machine::op_multi {

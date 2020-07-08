@@ -7,7 +7,7 @@
 
 namespace tess {
 
-	class tile_patch : public details::property_container<tile_patch>
+	class tile_patch : public detail::property_container<tile_patch>
 	{
 		friend class tessera_impl;
 	public:

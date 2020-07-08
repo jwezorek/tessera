@@ -18,7 +18,7 @@ namespace tess {
         std::map<std::string, expr_value> fields_;
     public:
         impl_type() {};
-		impl_type(const std::vector<tess::tile>& tiles);
+        void insert_tile(tess::tile& t);
         const std::vector<tess::tile>& tiles() const;
 		expr_value get_field(allocator& allocator, const std::string& field) const;
         expr_value get_ary_item(int i) const;
@@ -29,7 +29,7 @@ namespace tess {
         void insert_field(const std::string& var, const expr_value& val);
         void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
         void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile_patch::impl_type* clone) const;
-        //void debug();
+        point get_vertex_location(int index) const;
     };
 
     class cluster::impl_type : public tessera_impl
@@ -50,4 +50,6 @@ namespace tess {
         std::vector<expr_value>::const_iterator begin() const;
         std::vector<expr_value>::const_iterator end() const;
     };
+
+    tile_patch flatten(allocator& a, const std::vector<expr_value>& tiles_and_patches);
 }

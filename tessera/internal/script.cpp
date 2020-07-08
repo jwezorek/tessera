@@ -75,4 +75,8 @@ tess::result tess::script::execute(const std::vector<std::string>& arg_strings) 
 
 }
 
+tess::script::script(std::shared_ptr<impl_type> impl) : impl_(impl)
+{
+}
+
 

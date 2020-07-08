@@ -27,20 +27,6 @@ namespace {
         return std::visit([&mat](auto ptr) { ptr->apply(mat); }, ep);
     }
 
-    int count_tiles(const std::vector<tess::expr_value>& tiles_and_patches) {
-        int count = 0;
-        for (const auto& tile_or_patch : tiles_and_patches)
-            std::visit(
-                overloaded{
-                    [&count](const tess::tile&) { ++count; },
-                    [&count](const tess::tile_patch& patch) { count += patch.count(); },
-                    [](auto) { throw tess::error("unknown error"); }
-                },
-                tile_or_patch
-            );
-        return count;
-    }
-
     tess::matrix edge_to_edge_matrix(const tess::edge::impl_type& e1, const tess::edge::impl_type& e2)
     {
         auto* u1 = tess::get_impl<tess::vertex>(e1.u());
@@ -90,24 +76,6 @@ namespace {
 
         return std::nullopt;
     }
-}
-
-std::vector<tess::tile> tess::flatten_tiles_and_patches(const std::vector<tess::expr_value>& tiles_and_patches) {
-    int n = count_tiles(tiles_and_patches);
-    std::vector<tess::tile> tiles;
-    tiles.reserve(n);
-    for (const auto& tile_or_patch : tiles_and_patches)
-        std::visit(
-            overloaded{
-                [&tiles](const tess::tile& t) { tiles.push_back(t); },
-                [&tiles](const tess::tile_patch& patch) {
-                    std::copy(patch.tiles().begin(), patch.tiles().end(), std::back_inserter(tiles));
-                },
-                [](auto) { throw tess::error("unknown error"); }
-            },
-            tile_or_patch
-                    );
-    return tiles;
 }
 
 std::optional<tess::error> tess::apply_mapping(const std::vector<std::tuple<edge::impl_type*, edge::impl_type*>>& mappings)
