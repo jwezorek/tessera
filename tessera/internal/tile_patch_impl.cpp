@@ -10,10 +10,18 @@ const std::vector<tess::tile>& tess::tile_patch::impl_type::tiles() const
 }
 
 
-void tess::tile_patch::impl_type::insert_tile( tess::tile& tile ) 
+void tess::tile_patch::impl_type::insert_tile( tess::tile& t ) 
 {
-	get_impl(tile)->set_parent(this);
-	tiles_.push_back(tile);
+	auto* tile = get_impl(t);
+	tile->set_parent(this);
+
+	for (auto& v : tile->vertices()) {
+		auto* vert = get_impl(v);
+		int new_vert_index = vert_tbl_.insert(vert->pos());
+		vert->set_location( new_vert_index );
+	}
+
+	tiles_.push_back(t);
 }
 
 
@@ -42,8 +50,7 @@ int tess::tile_patch::impl_type::get_ary_count() const
 
 void tess::tile_patch::impl_type::apply(const matrix& mat)
 {
-	for (auto& tile : tiles_)
-		get_impl(tile)->apply(mat);
+	vert_tbl_.apply_transformation(mat);
 }
 
 void tess::tile_patch::impl_type::flip()
@@ -79,19 +86,13 @@ void tess::tile_patch::impl_type::clone_to(tess::allocator& allocator, std::unor
 	for (const auto& [var, val] : fields_) {
 		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
 	}
+	clone->vert_tbl_ = vert_tbl_;
 }
 
 tess::point tess::tile_patch::impl_type::get_vertex_location(int index) const {
-	throw error("TODO: tess::tile_patch::impl_type::get_vertex_location");
+	return vert_tbl_.get_location(index);
 }
 
-/*
-void tess::tile_patch::impl_type::debug()
-{
-	for (auto t : tiles_) 
-		get_impl(t)->debug();
-}
-*/
 /*---------------------------------------------------------------------------------------------*/
 
 tess::cluster::impl_type::impl_type(const std::vector<expr_value>& values) :
@@ -180,7 +181,10 @@ tess::tile_patch tess::flatten(tess::allocator& a, const std::vector<tess::expr_
 			overloaded{
 				[&tiles](const tess::tile& t) { tiles.push_back(t); },
 				[&tiles](const tess::tile_patch& patch) {
-					std::copy(patch.tiles().begin(), patch.tiles().end(), std::back_inserter(tiles));
+					for (auto t : patch.tiles()) {
+						get_impl(t)->set_parent(nullptr);
+						tiles.push_back(t);
+					}
 				},
 				[](auto) { throw tess::error("unknown error"); }
 			},

@@ -164,9 +164,9 @@
     <ClCompile Include="tessera_workbench.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="example.tess" />
+    <None Include="sierpinski.tess" />
     <None Include="penrose.tess" />
-    <None Include="test.tess" />
+    <None Include="pyramid.tess" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

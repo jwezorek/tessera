@@ -20,8 +20,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="test.tess" />
-    <None Include="example.tess" />
     <None Include="penrose.tess" />
+    <None Include="sierpinski.tess" />
+    <None Include="pyramid.tess" />
   </ItemGroup>
 </Project>

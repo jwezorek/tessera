@@ -24,7 +24,7 @@ namespace tess {
 
     public:
         impl_type() {};
-		impl_type(tile::impl_type* parent, int index, point loc);
+        impl_type(tile::impl_type* parent, int index, point loc);
         std::tuple<double, double> to_floats() const;
         point pos() const;
 		expr_value get_field(allocator& allocator, const std::string& field) const;
@@ -34,6 +34,8 @@ namespace tess {
         void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
         void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, vertex::impl_type* clone) const; 
         tile_patch::impl_type* grandparent() const;
+        void set_location(int vert_index);
+        void set_location(point pt);
     };
 
     class edge::impl_type : public tessera_impl {
@@ -64,10 +66,12 @@ namespace tess {
 
         public:
             impl_type(): untouched_(true) {};
-            impl_type(tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations, bool foo);
+            impl_type(tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
 
             const std::vector<tess::vertex>& vertices() const;
+            std::vector<tess::vertex>& vertices();
             const std::vector<tess::edge>& edges() const;
+            std::vector<tess::edge>& edges();
             void set(std::vector<tess::vertex>&& vertices, std::vector<tess::edge>&& edges );
             expr_value get_field(const std::string& field) const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;

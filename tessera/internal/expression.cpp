@@ -444,7 +444,7 @@ std::function<tess::expr_value(tess::allocator&, tess::expr_value)> get_special_
 	case tess::special_func::regular_polygon:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
 			auto locs = regular_polygon_vertices(std::get<tess::number>(arg));
-			return { a.create<tess::tile>(&a, locs, true) };
+			return { a.create<tess::tile>(&a, locs) };
 		};
 	case tess::special_func::flip:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
@@ -453,12 +453,12 @@ std::function<tess::expr_value(tess::allocator&, tess::expr_value)> get_special_
 	case tess::special_func::isosceles_triangle:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
 			auto locs = isosceles_triangle(std::get<tess::number>(arg));
-			return { a.create<tess::tile>(&a, locs, true) };
+			return { a.create<tess::tile>(&a, locs) };
 		};
 	case tess::special_func::polygon:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
 			auto locs = polygon( arg );
-			return { a.create<tess::tile>(&a, locs, true) };
+			return { a.create<tess::tile>(&a, locs) };
 		};
 	default:
 		throw tess::error("Unknown special function");

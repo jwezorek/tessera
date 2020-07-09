@@ -3,6 +3,7 @@
 #include "tessera_impl.h"
 #include "tessera/tile.h"
 #include "tessera/tile_patch.h"
+#include "vertex_table.h"
 #include "expr_value.h"
 #include <vector>
 #include <map>
@@ -16,6 +17,7 @@ namespace tess {
     private:
         std::vector<tess::tile> tiles_;
         std::map<std::string, expr_value> fields_;
+        vertex_location_table vert_tbl_;
     public:
         impl_type() {};
         void insert_tile(tess::tile& t);

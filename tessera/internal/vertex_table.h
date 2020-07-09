@@ -11,7 +11,7 @@ namespace tess {
         int get_index(const tess::point& pt) const;
         tess::point get_location(int index) const;
         int insert(const tess::point& pt);
-        void merge(const vertex_location_table& tbl);
+        void apply_transformation(const matrix& mat);
     private:
         class impl_type;
         std::shared_ptr<impl_type> impl_;
