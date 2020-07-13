@@ -24,7 +24,7 @@ namespace tess {
     {
     public:
         virtual void compile(stack_machine::stack& stack) const = 0;
-        virtual std::string to_string() const;
+        virtual std::string to_string() const = 0;
         virtual expr_ptr simplify() const = 0;
         virtual void get_dependencies(std::unordered_set<std::string>& dependencies) const = 0;
     };
@@ -70,6 +70,7 @@ namespace tess {
         virtual void compile(stack_machine::stack& stack) const override;
         expr_ptr simplify() const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
+        std::string to_string() const override { return "<TODO>"; }
     };
 
     enum class special_func {
@@ -113,6 +114,7 @@ namespace tess {
         virtual void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
+        std::string to_string() const override { return "<TODO>"; }
     };
 
     class addition_expr : public expression
@@ -138,6 +140,7 @@ namespace tess {
         void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
+        std::string to_string() const override;
     };
 
 	class and_expr : public expression
@@ -149,6 +152,7 @@ namespace tess {
         void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
+        std::string to_string() const override { return "<TODO>"; }
 	};
 
 	class or_expr : public expression
@@ -160,6 +164,7 @@ namespace tess {
         void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
+        std::string to_string() const override { return "<TODO>"; }
 	};
 
 	class equality_expr : public expression
@@ -171,6 +176,7 @@ namespace tess {
         void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
+        std::string to_string() const override { return "<TODO>"; }
 	};
 
 	enum class relation_op
@@ -194,6 +200,7 @@ namespace tess {
         void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
+        std::string to_string() const override { return "<TODO>"; }
 	};
 
 	class nil_expr : public expression
@@ -203,6 +210,7 @@ namespace tess {
         expr_ptr simplify() const override;
         void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
+        std::string to_string() const override { return "(nil)"; }
 	};
 
     class if_expr : public expression
@@ -217,5 +225,6 @@ namespace tess {
         void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
+        std::string to_string() const override;
     };
 }

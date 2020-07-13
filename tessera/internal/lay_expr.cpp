@@ -179,3 +179,17 @@ tess::expr_ptr tess::lay_expr::simplify() const
 
     return std::make_shared<lay_expr>(tiles_simplified, mappings_simplified);
 }
+
+std::string tess::lay_expr::to_string() const
+{
+    std::stringstream ss;
+    ss << "( lay ( ";
+    for (const auto& t : tiles_)
+        ss << t->to_string() << " ";
+    ss << ") ( ";
+    for (const auto& [e1, e2] : edge_mappings_) {
+        ss << "( <-> " << e1->to_string() << " " << e2->to_string() << ")";
+    };
+    ss << ") )";
+    return ss.str();
+}

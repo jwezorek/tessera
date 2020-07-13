@@ -46,6 +46,14 @@ tess::expr_ptr tess::cluster_expr::simplify() const
     return std::make_shared<tess::cluster_expr>(simplified);
 }
 
+std::string tess::cluster_expr::to_string() const
+{
+    std::stringstream ss;
+    for (const auto& e : exprs_)
+        ss << e->to_string() << " ";
+    return "( cluster " + ss.str() + ")";
+}
+
 void tess::cluster_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
     for (const auto& e : exprs_)
@@ -96,6 +104,11 @@ tess::expr_ptr tess::num_range_expr::simplify() const
     return std::make_shared<num_range_expr>(from_->simplify(), to_->simplify());
 }
 
+std::string tess::num_range_expr::to_string() const
+{
+    return "( range " + from_->to_string() + " " + to_->to_string() + " )";
+}
+
 /*---------------------------------------------------------------------------------------------------------*/
 
 void tess::num_range_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -112,6 +125,17 @@ tess::cluster_comprehension_expr::cluster_comprehension_expr(expr_ptr ex, const 
 tess::cluster_comprehension_expr::cluster_comprehension_expr(std::tuple<expr_ptr, std::string, expr_ptr> tup) :
     cluster_comprehension_expr(std::get<0>(tup), std::get<1>(tup), std::get<2>(tup))
 {
+}
+
+std::string tess::cluster_comprehension_expr::to_string() const
+{
+    return "( cluster_comprehension " + 
+        var_ + 
+        " " + 
+        item_expr_->to_string() + 
+        " " + 
+        range_expr_->to_string() + 
+        " )";
 }
 
 void tess::cluster_comprehension_expr::compile(stack_machine::stack& stack) const

@@ -44,6 +44,7 @@ namespace tess {
 		bool is_array_like() const;
 		bool is_valid() const;
 		bool is_error() const;
+		bool is_nil() const;
 		expr_value clone( allocator& allocator ) const;
 		expr_value clone( allocator& allocator, std::unordered_map<void*,void*>& original_to_clone) const;
 		expr_value get_ary_item(int index) const;

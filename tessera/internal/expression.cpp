@@ -86,12 +86,6 @@ namespace {
 
 /*----------------------------------------------------------------------*/
 
-
-std::string tess::expression::to_string() const
-{
-	return "<TODO>";
-}
-
 tess::number_expr::number_expr(double v) : val_(v)
 {
 }
@@ -265,6 +259,24 @@ tess::expr_ptr tess::multiplication_expr::simplify() const
 		}
 	);
 	return std::make_shared< multiplication_expr>(simplified);
+}
+
+std::string tess::multiplication_expr::to_string() const
+{
+	std::stringstream ss;
+	ss << "( * ";
+	for (const auto& [op, factor] : factors_) {
+		if (!op) {
+			ss << "( / 1 " << factor->to_string() << ")";
+		}
+		else {
+			ss << factor->to_string();
+		}
+		ss << " ";
+	}
+	ss << ")";
+
+	return ss.str();
 }
 
 /*----------------------------------------------------------------------*/
@@ -804,4 +816,9 @@ tess::expr_ptr tess::if_expr::simplify() const
 		then_clause_->simplify(),
 		else_clause_->simplify()
 	);
+}
+
+std::string tess::if_expr::to_string() const
+{
+	return "( if " + condition_->to_string() + " " + then_clause_->to_string() + " " + else_clause_->to_string() + " )";
 }

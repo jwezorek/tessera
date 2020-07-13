@@ -20,7 +20,7 @@ let sierpinski_carpet = patch( n ) {
         else
             [ sierpinski_carpet(n-1) for i in [1 ... 8] ];
 } with {
-    north, west, south, east is [N.north, W.west, S.south, E.east];
+    north, west, south, east is [this.on(N.north), this.on(W.west), this.on(S.south), this.on(E.east)];
 };
 
 tableau( num ) {

@@ -30,6 +30,7 @@ namespace tess {
         void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;
+        std::string to_string() const override { return "$(" + std::to_string(placeholder_) +")"; }
     };
 
     class array_item_expr : public expression
@@ -67,6 +68,7 @@ namespace tess {
     public:
         obj_field_expr(expr_ptr obj, std::string field, bool is_ref);
         std::string to_string() const override;
+        expr_ptr get_object() const;
         void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;

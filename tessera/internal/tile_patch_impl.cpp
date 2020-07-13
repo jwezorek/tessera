@@ -30,8 +30,19 @@ void tess::tile_patch::impl_type::insert_field(const std::string& var, const exp
 	fields_[var] = val;
 }
 
+tess::expr_value tess::tile_patch::impl_type::get_method(allocator& allocator, const std::string& field) const
+{
+	if (field != "on")
+		return { nil_val() };
+
+}
+
 tess::expr_value tess::tile_patch::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
+	auto patch_method = get_method(allocator, field);
+	if (!patch_method.is_nil())
+		return patch_method;
+
 	auto iter = fields_.find(field);
 	return (iter != fields_.end()) ?
 		tess::expr_value{iter->second} :

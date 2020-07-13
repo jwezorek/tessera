@@ -34,6 +34,7 @@ namespace tess {
 			void compile(stack_machine::stack& stack) const override;
 			void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
 			expr_ptr simplify() const override;
+			std::string to_string() const override;
     };
 
 }

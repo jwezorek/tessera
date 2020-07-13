@@ -84,6 +84,11 @@ bool tess::expr_value::is_error() const
 	return std::holds_alternative<tess::error>(*this);
 }
 
+bool tess::expr_value::is_nil() const
+{
+	return std::holds_alternative<tess::nil_val>(*this);
+}
+
 tess::expr_value tess::expr_value::clone( allocator& allocator ) const
 {
 	if (is_simple_value())

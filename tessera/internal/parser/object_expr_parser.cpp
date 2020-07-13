@@ -75,10 +75,25 @@ namespace tess {
 			);
 		}
 
+		bool is_field_expr( expr_ptr e) { 
+			return dynamic_cast<obj_field_expr*>(e.get()) != nullptr;
+		}
+
+		expr_ptr func_call_or_method_call_expr(expr_ptr e, const params_t& func_params) {
+			if (! is_field_expr(e))
+				return make_<func_call_expr>(e, func_params);
+
+			// this is a method call so we need to add a "this" argument.
+			std::vector<expr_ptr> method_params(func_params.size() + 1);
+			method_params[0] = std::static_pointer_cast<obj_field_expr>(e)->get_object();
+			std::copy(func_params.begin(), func_params.end(), method_params.begin() + 1);
+			return make_<func_call_expr>(e, method_params);
+		}
+
 		expr_ptr expression_from_op(expr_ptr e, const op_t& op) {
 			return std::visit(
 				overloaded{
-					[&e](const params_t& func_params) { return make_<func_call_expr>(e, func_params); },
+					[&e](const params_t& func_params) { return func_call_or_method_call_expr(e, func_params); },
 					[&e](expr_ptr ary_index) { return make_<array_item_expr>(e, ary_index); },
 					[&e](const std::string& field) { return make_<obj_field_expr>(e, field, false);  }
 				},
