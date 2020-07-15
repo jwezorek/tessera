@@ -2,6 +2,7 @@ let square = tile {
     regular_polygon(4)
 } with {
     north, west, south, east is this.edges;
+    color is "powderblue";
 };
 
 let sierpinski_carpet = patch( n ) {

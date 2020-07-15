@@ -5,6 +5,7 @@
 #include "tile_patch_impl.h"
 #include "expr_value.h"
 #include "number.h"
+#include "geometry.h"
 #include <string>
 #include <vector>
 #include <tuple>
@@ -36,6 +37,7 @@ namespace tess {
         tile_patch::impl_type* grandparent() const;
         void set_location(int vert_index);
         void set_location(point pt);
+        int location_index() const;
     };
 
     class edge::impl_type : public tessera_impl {
@@ -54,6 +56,7 @@ namespace tess {
             void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, edge::impl_type* clone) const;
             void flip();
+            edge_indices get_edge_location_indices() const;
     };
 
     class tile::impl_type : public tessera_impl {
@@ -80,7 +83,7 @@ namespace tess {
             void flip();
             bool has_parent() const;
             tile_patch::impl_type* parent() const;
-            void  set_parent(tile_patch::impl_type* parent);
+            void set_parent(tile_patch::impl_type* parent);
             void insert_field(const std::string& var, const expr_value& val);
             void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile::impl_type* clone) const;

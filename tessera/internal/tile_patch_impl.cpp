@@ -2,15 +2,69 @@
 #include "tile_patch_impl.h"
 #include "allocator.h"
 #include "variant_util.h"
+#include "stack_machine.h"
+#include "ops.h"
 #include <variant>
+
+namespace {
+
+	tess::expr_value on_method(tess::allocator& a, const std::vector<tess::expr_value>& v) {
+		auto patch = std::get<tess::tile_patch>(v[0]);
+		auto edge = std::get<tess::edge>(v[1]);
+		auto maybe_edge = tess::get_impl(patch)->get_edge_on(edge);
+		if (maybe_edge.has_value())
+			return { maybe_edge.value() };
+		else
+			return { tess::nil_val() };
+	}
+
+	tess::expr_value get_on_lambda(tess::allocator& a) {
+		return {
+			a.create<tess::lambda>(
+				std::vector<std::string>{ "_edge", "_patch" },
+				std::vector<tess::stack_machine::item>{ {
+						tess::stack_machine::variable("_edge")
+					} , {
+						std::make_shared<tess::get_var>()
+					} , {
+						tess::stack_machine::variable("_patch")
+					} , {
+						std::make_shared<tess::get_var>()
+					} , {
+						std::make_shared<tess::val_func_op>(
+							2,
+							on_method,
+							"on_method"
+						)
+					} 
+				},
+				std::vector<std::string>{}
+			)
+		};
+	}
+}
 
 const std::vector<tess::tile>& tess::tile_patch::impl_type::tiles() const
 {
     return tiles_;
 }
 
+void tess::tile_patch::impl_type::build_edge_table() const
+{
+	edge_tbl_.clear();
+	for (const auto& tile : tiles_) {
+		for (const auto& e : tile.edges()) {
 
-void tess::tile_patch::impl_type::insert_tile( tess::tile& t ) 
+			auto key = get_impl(e)->get_edge_location_indices();
+			if (edge_tbl_.find(key) == edge_tbl_.end())
+				edge_tbl_[key] = e; 
+			else
+				throw tess::error("invalid tile patch");
+		}
+	}
+}
+
+void tess::tile_patch::impl_type::insert_tile( tess::tile& t )
 {
 	auto* tile = get_impl(t);
 	tile->set_parent(this);
@@ -35,6 +89,7 @@ tess::expr_value tess::tile_patch::impl_type::get_method(allocator& allocator, c
 	if (field != "on")
 		return { nil_val() };
 
+	return get_on_lambda(allocator);
 }
 
 tess::expr_value tess::tile_patch::impl_type::get_field(allocator& allocator, const std::string& field) const
@@ -68,6 +123,23 @@ void tess::tile_patch::impl_type::flip()
 {
 	for (auto& tile : tiles_)
 		get_impl(tile)->flip();
+}
+
+std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(const edge& e) const
+{
+	if (edge_tbl_.empty())
+		build_edge_table();
+
+	edge_indices u_v = {
+		vert_tbl_.get_index(e.u().pos()),
+		vert_tbl_.get_index(e.v().pos())
+	};
+
+	auto iter = edge_tbl_.find( u_v );
+	if (iter != edge_tbl_.end())
+		return iter->second;
+	else
+		return std::nullopt;
 }
 
 bool tess::tile_patch::impl_type::is_untouched() const 

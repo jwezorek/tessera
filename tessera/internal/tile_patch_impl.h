@@ -5,8 +5,10 @@
 #include "tessera/tile_patch.h"
 #include "vertex_table.h"
 #include "expr_value.h"
+#include "geometry.h"
 #include <vector>
 #include <map>
+#include <optional>
 
 namespace tess {
 
@@ -18,6 +20,10 @@ namespace tess {
         std::vector<tess::tile> tiles_;
         std::map<std::string, expr_value> fields_;
         vertex_location_table vert_tbl_;
+        mutable edge_table<edge> edge_tbl_;
+
+        void build_edge_table() const;
+
     public:
         impl_type() {};
         void insert_tile(tess::tile& t);
@@ -28,6 +34,7 @@ namespace tess {
         int get_ary_count() const;
 		void apply(const matrix& mat);
         void flip();
+        std::optional<edge> get_edge_on(const edge& e) const;
         bool is_untouched() const;
         void insert_field(const std::string& var, const expr_value& val);
         void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;

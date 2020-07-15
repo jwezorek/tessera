@@ -214,6 +214,13 @@ void  tess::edge::impl_type::flip()
 	std::swap(u_, v_);
 }
 
+tess::edge_indices tess::edge::impl_type::get_edge_location_indices() const {
+	return edge_indices(
+		get_impl(u())->location_index(),
+		get_impl(v())->location_index()
+	);
+}
+
 void tess::edge::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
 {
 	auto ptr = to_void_star(this);
@@ -305,6 +312,11 @@ void tess::vertex::impl_type::set_location(int n)
 void tess::vertex::impl_type::set_location(point pt)
 {
 	location_ = pt;
+}
+
+int tess::vertex::impl_type::location_index() const
+{
+	return std::get<int>(location_);
 }
 
 void tess::vertex::impl_type::apply(const tess::matrix& mat) {
