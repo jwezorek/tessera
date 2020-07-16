@@ -115,6 +115,41 @@ void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_
 	}
 }
 
+bool tess::tile::impl_type::is_detached() const
+{
+	return parent_ == nullptr;
+}
+
+tess::tile tess::tile::impl_type::clone_detached(tess::allocator& a) const
+{
+	auto this_tile = tess::make_tess_obj<tess::tile>(this);
+	if (is_detached())
+		return tess::clone(a, this_tile);
+	
+	// clone this tile such that its parent is only shallow copied.
+	auto tile_value = expr_value{ this_tile };
+	std::unordered_map<void*, void*> original_to_clone;
+	auto this_patch_key = reinterpret_cast<void*>( parent_ );
+	original_to_clone[this_patch_key] = this_patch_key;
+	expr_value clone_expr_value = tile_value.clone(a, original_to_clone);
+
+	//now return the clone with the parent detached.
+	auto clone_tile = std::get<tess::tile>(clone_expr_value);
+	get_impl(clone_tile)->set_parent(nullptr);
+	return clone_tile;
+}
+
+std::string tess::tile::impl_type::debug() const
+{
+	std::stringstream ss;
+	ss << "{ ";
+	for (const auto& e : edges_) {
+		ss << get_impl(e)->debug() << " ";
+	}
+	ss << "}";
+	return ss.str();
+}
+
 tess::expr_value tess::tile::impl_type::get_field(const std::string& field) const
 {
 	if (fields_.find(field) != fields_.end())
@@ -146,6 +181,19 @@ void tess::tile::impl_type::apply(const matrix& mat)
 		get_impl(vertex)->apply(mat);
 	}
 	untouched_ = false;
+}
+
+tess::tile tess::tile::impl_type::flip(allocator& a) const
+{
+	tess::tile flippee;
+	if (is_detached()) {
+		auto this_tile = tess::make_tess_obj<tess::tile>(this);
+		flippee = tess::clone(a, this_tile);
+	} else {
+		flippee = clone_detached(a);
+	}
+	get_impl(flippee)->flip();
+	return flippee;
 }
 
 void tess::tile::impl_type::flip()
@@ -219,6 +267,14 @@ tess::edge_indices tess::edge::impl_type::get_edge_location_indices() const {
 		get_impl(u())->location_index(),
 		get_impl(v())->location_index()
 	);
+}
+
+
+std::string tess::edge::impl_type::debug() const
+{
+	std::stringstream ss;
+	ss << "[ " << u_ << " -> " << v_ << " ]";
+	return ss.str();
 }
 
 void tess::edge::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const

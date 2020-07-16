@@ -54,6 +54,8 @@ namespace tess {
             flip,
             for_,
             in,
+            on,
+            join,
             none
         };
 

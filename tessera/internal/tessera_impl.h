@@ -25,6 +25,13 @@ namespace tess {
 			}
 
 			template<typename T>
+			T make_tess_obj(const typename T::impl_type* impl) const {
+				T obj;
+				obj.impl_ = const_cast<typename T::impl_type*>(impl);
+				return obj;
+			}
+
+			template<typename T>
 			T make_tess_obj(typename std::shared_ptr<typename T::impl_type> impl) const {
 				T obj;
 				obj.impl_ = impl;
@@ -47,11 +54,18 @@ namespace tess {
 		};
 
 		struct tess_obj_maker : tessera_impl {
+
 			template<typename U>
 			U make(typename U::impl_type* impl) {
 				return make_tess_obj<U>(impl);
 			}
+
+			template<typename U>
+			U make(const typename U::impl_type* impl) {
+				return make_tess_obj<U>(impl);
+			}
 		};
+
 	}
 
 	template<typename T>
@@ -70,6 +84,12 @@ namespace tess {
 
 	template<typename T>
 	T make_tess_obj(typename T::impl_type* impl) {
+		detail::tess_obj_maker maker;
+		return maker.make<T>(impl);
+	}
+
+	template<typename T>
+	T make_tess_obj(const typename T::impl_type* impl) {
 		detail::tess_obj_maker maker;
 		return maker.make<T>(impl);
 	}

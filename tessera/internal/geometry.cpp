@@ -10,17 +10,24 @@ namespace bgi = boost::geometry::index;
 
 namespace {
 
-	using bg_point = bg::model::point<tess::number, 2, bg::cs::cartesian>;
+	using bg_point = bg::model::point<double, 2, bg::cs::cartesian>;
 	using bg_box = bg::model::box<bg_point>;
 	using rtree_value = std::pair< bg_point, int>;
 	using point_rtree = bgi::rtree<rtree_value, bgi::rstar<8>>; //bgi::rtree<rtree_value, bgi::quadratic<16>>;
+
+	bg_point make_bg_point(tess::number x, tess::number y) {
+		return bg_point(
+			static_cast<double>(x),
+			static_cast<double>(y)
+		);
+	}
 
 	bg_box box_from_points(tess::number x1, tess::number y1, tess::number x2, tess::number y2) {
 		if (x2 < x1)
 			std::swap(x1, x2);
 		if (y2 < y1)
 			std::swap(y1, y2);
-		return bg_box(bg_point(x1, y1), bg_point(x2, y2));
+		return bg_box(make_bg_point(x1, y1), bg_point((double)x2, (double)y2));
 	}
 
 	bg_box pad_point(const std::tuple<tess::number, tess::number>& pt, tess::number eps) {
@@ -52,7 +59,7 @@ namespace {
 			auto box = pad_point(pt, eps_);
 			for (const auto& [tbl_pt, index] : impl_) {
 				auto [tbl_pt_x, tbl_pt_y] = tbl_pt;
-				if (bg::within(bg_point(tbl_pt_x, tbl_pt_y), box))
+				if (bg::within(make_bg_point(tbl_pt_x,tbl_pt_y), box))
 					return index;
 			}
 			return std::nullopt;
@@ -96,7 +103,7 @@ namespace {
 			int new_index = static_cast<int>(tree_.size());
 			auto [x, y] = pt;
 			tree_.insert(
-				rtree_value(bg_point(x, y), new_index)
+				rtree_value(make_bg_point(x, y), new_index)
 			);
 			return new_index;
 		}

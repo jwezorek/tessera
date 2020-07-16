@@ -50,11 +50,10 @@ namespace {
 		if (!std::holds_alternative<tess::tile>(arg) && !std::holds_alternative<tess::tile_patch>(arg))
 			return { tess::error("attempted to flip a value that is not a tile or patch") };
 
-		std::variant<tess::tile, tess::tile_patch> flippable_val = variant_cast(arg.clone(a));
+		std::variant<tess::tile, tess::tile_patch> flippable_val = variant_cast(arg);
 		auto flipped = std::visit(
-			[](auto&& flippee)->tess::expr_value {
-				tess::get_impl(flippee)->flip();
-				return { flippee };
+			[&a](auto&& flippee)->tess::expr_value {
+				return { tess::get_impl(flippee)->flip(a) };
 			},
 			flippable_val
 		);
@@ -425,6 +424,8 @@ tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_
 		func_ = special_func::flip;
 	else if (func_keyword == parser::keyword(parser::kw::polygon))
 		func_ = special_func::polygon;
+	else if (func_keyword == parser::keyword(parser::kw::join))
+		func_ = special_func::join;
 	else
         throw tess::error("attempted to parse invalid special function");
 
@@ -472,6 +473,11 @@ std::function<tess::expr_value(tess::allocator&, tess::expr_value)> get_special_
 			auto locs = polygon( arg );
 			return { a.create<tess::tile>(&a, locs) };
 		};
+	case tess::special_func::join:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { 
+			auto patch = std::get<tess::tile_patch>(arg);
+			return { tess::get_impl(patch)->join(a) };
+		};
 	default:
 		throw tess::error("Unknown special function");
 	}
@@ -502,6 +508,8 @@ std::string get_special_function_name(tess::special_func code) {
 		return "isosceles_triangle";
 	case tess::special_func::flip:
 		return "flip";
+	case tess::special_func::join:
+		return "join";
 	default:
 		throw tess::error("Unknown special function");
 	}

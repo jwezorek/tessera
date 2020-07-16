@@ -64,6 +64,12 @@ void tess::tile_patch::impl_type::build_edge_table() const
 	}
 }
 
+
+tess::tile_patch::impl_type::impl_type( std::vector<tess::tile>& tiles) {
+	for ( auto& t : tiles)
+		insert_tile(t);
+}
+
 void tess::tile_patch::impl_type::insert_tile( tess::tile& t )
 {
 	auto* tile = get_impl(t);
@@ -119,10 +125,30 @@ void tess::tile_patch::impl_type::apply(const matrix& mat)
 	vert_tbl_.apply_transformation(mat);
 }
 
-void tess::tile_patch::impl_type::flip()
-{
+tess::tile_patch tess::tile_patch::impl_type::flip(allocator& a) const {
+	tess::tile_patch clone = a.create<tess::tile_patch>();
+	std::unordered_map<void*, void*> tbl;
+	clone_to(a, tbl, get_impl(clone));
+	get_impl(clone)->flip();
+	return clone;
+}
+
+static bool flipped = false;
+
+void  tess::tile_patch::impl_type::flip()  {
+	apply(flip_matrix());
 	for (auto& tile : tiles_)
-		get_impl(tile)->flip();
+		for (edge& e : get_impl(tile)->edges())
+			get_impl(e)->flip();
+	edge_tbl_.clear();
+
+	if (!flipped) {
+		flipped = true;
+		for (const auto& t : tiles_) {
+			std::cout << get_impl(t)->debug() << "\n";
+		}
+	}
+
 }
 
 std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(const edge& e) const
@@ -174,6 +200,11 @@ void tess::tile_patch::impl_type::clone_to(tess::allocator& allocator, std::unor
 
 tess::point tess::tile_patch::impl_type::get_vertex_location(int index) const {
 	return vert_tbl_.get_location(index);
+}
+
+tess::tile tess::tile_patch::impl_type::join(tess::allocator& allocator) const
+{
+    return tile();
 }
 
 /*---------------------------------------------------------------------------------------------*/

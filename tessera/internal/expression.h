@@ -85,6 +85,7 @@ namespace tess {
         polygon,
         isosceles_triangle,
         flip,
+        join
     };
 
     class special_function_expr : public expression

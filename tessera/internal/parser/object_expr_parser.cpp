@@ -37,7 +37,7 @@ namespace tess {
 
 		const auto expr = expression_();
 		const auto identifier = indentifier_str_();
-		const auto field = as<std::string>[identifier | kw_<kw::edge>()];
+		const auto field = as<std::string>[identifier | kw_<kw::edge>() | kw_<kw::on>()];
 		const auto placeholder = x3::lit('$') > x3::int32;
 		const auto ary_item = x3::lit('[') >> expr >> x3::lit(']');
 		const auto field_item = x3::lit('.') > field;

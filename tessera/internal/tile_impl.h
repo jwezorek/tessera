@@ -57,6 +57,7 @@ namespace tess {
             void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, edge::impl_type* clone) const;
             void flip();
             edge_indices get_edge_location_indices() const;
+            std::string debug() const;
     };
 
     class tile::impl_type : public tessera_impl {
@@ -80,6 +81,7 @@ namespace tess {
 			expr_value get_field(allocator& allocator, const std::string& field) const;
 			bool is_untouched() const;
 			void apply(const matrix& mat);
+            tile flip(allocator& a) const;
             void flip();
             bool has_parent() const;
             tile_patch::impl_type* parent() const;
@@ -87,6 +89,8 @@ namespace tess {
             void insert_field(const std::string& var, const expr_value& val);
             void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile::impl_type* clone) const;
-            //void debug();
+            bool is_detached() const;
+            tess::tile clone_detached(tess::allocator& a) const;
+            std::string debug() const;
     };
 }
