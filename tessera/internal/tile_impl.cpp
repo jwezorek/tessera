@@ -33,7 +33,7 @@ std::vector<std::tuple<tess::number, tess::number>> get_regular_poly_vert_loc(in
 }
 
 tess::tile::impl_type::impl_type(tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations) :
-	untouched_(true), parent_(nullptr)
+	parent_(nullptr)
 {
 	auto n = static_cast<int>(vertex_locations.size());
 	vertices_.resize(n);
@@ -95,7 +95,6 @@ void tess::tile::impl_type::get_all_referenced_allocations(std::unordered_set<vo
 
 void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile::impl_type* clone) const
 {
-	clone->untouched_ = untouched_;
 	for (const auto& v : vertices_) {
 		clone->vertices_.push_back(std::get<vertex>(expr_value{ v }.clone(allocator, orginal_to_clone)));
 	}
@@ -170,27 +169,11 @@ tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const st
 		return { error(std::string("refrenced undefined tile edge, vertex, or field: ") + field ) };
 }
 
-bool tess::tile::impl_type::is_untouched() const
-{
-	return untouched_;
-}
-
-void tess::tile::impl_type::touch()
-{
-	untouched_ = false;
-}
-
-void tess::tile::impl_type::untouch()
-{
-	untouched_ = true;
-}
-
 void tess::tile::impl_type::apply(const matrix& mat)
 {
 	for (auto& vertex : vertices_) {
 		get_impl(vertex)->apply(mat);
 	}
-	untouched_ = false;
 }
 
 tess::tile tess::tile::impl_type::flip(allocator& a) const
@@ -208,24 +191,19 @@ tess::tile tess::tile::impl_type::flip(allocator& a) const
 
 void tess::tile::impl_type::flip()
 {
-	auto untouched = untouched_;
 	apply(flip_matrix());
 	for (auto& e : edges_) {
 		get_impl(e)->flip();
 	}
-	untouched_ = untouched;
 }
 
 void tess::tile::impl_type::set_parent(tess::tile_patch::impl_type* parent) {
 	if (parent != nullptr) {
 		parent_ = parent;
-		untouched_ = true;
-	}
-	else {
+	} else {
 		for (auto& v : vertices_) 
 			get_impl(v)->set_location(v.pos());
 		parent_ = nullptr;
-		untouched_ = true;
 	}
 }
 

@@ -18,14 +18,10 @@ namespace tess {
 		std::vector<std::tuple<expr_ptr, expr_ptr>> edge_mappings;
 	};
 
-	std::optional<error> apply_mapping(const std::vector<std::tuple<edge::impl_type*, edge::impl_type*>>& mapping_data);
-
     class lay_expr : public expression, public tessera_impl {
 		private:
 			std::vector<expr_ptr> tiles_;
 			std::vector<std::tuple<expr_ptr, expr_ptr>> edge_mappings_;
-
-			std::optional<error> apply_mapping(const std::tuple<edge, edge>& mapping, evaluation_context& ctxt) const;
 
 		public:
 			lay_expr(const lay_params& params);

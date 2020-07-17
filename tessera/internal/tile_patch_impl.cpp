@@ -123,9 +123,6 @@ int tess::tile_patch::impl_type::get_ary_count() const
 void tess::tile_patch::impl_type::apply(const matrix& mat)
 {
 	vert_tbl_.apply_transformation(mat);
-	for (auto& t : tiles_) {
-		get_impl(t)->touch();
-	}
 }
 
 std::string tess::tile_patch::impl_type::debug() const
@@ -154,9 +151,6 @@ void  tess::tile_patch::impl_type::flip()  {
 		for (edge& e : get_impl(tile)->edges())
 			get_impl(e)->flip();
 	edge_tbl_.clear();
-	for (auto& t : tiles_) {
-		get_impl(t)->untouch();
-	}
 }
 
 std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(const edge& e) const
@@ -174,11 +168,6 @@ std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(const edge& e
 		return iter->second;
 	else
 		return std::nullopt;
-}
-
-bool tess::tile_patch::impl_type::is_untouched() const 
-{
-	return get_impl(tiles_.front())->is_untouched();
 }
 
 void tess::tile_patch::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const

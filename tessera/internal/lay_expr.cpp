@@ -9,34 +9,7 @@
 #include <variant>
 
 namespace {
-    using edge_parent_type = std::variant<tess::tile::impl_type*, tess::tile_patch::impl_type*>;
-
-    edge_parent_type parent_of_edge(const tess::edge::impl_type& e) {
-        auto tile = e.parent();
-        if (!tile->has_parent())
-            return tile;
-        else
-            return tile->parent();
-    }
-
-    bool is_untouched(const edge_parent_type& ep) {
-        return std::visit([](auto ptr) {return ptr->is_untouched(); }, ep);
-    }
-
-    void apply_edge_matrix(const edge_parent_type& ep, const tess::matrix& mat) {
-        return std::visit([&mat](auto ptr) { ptr->apply(mat); }, ep);
-    }
-
-    tess::matrix edge_to_edge_matrix(const tess::edge::impl_type& e1, const tess::edge::impl_type& e2)
-    {
-        auto* u1 = tess::get_impl<tess::vertex>(e1.u());
-        auto* v1 = tess::get_impl<tess::vertex>(e1.v());
-        auto* u2 = tess::get_impl<tess::vertex>(e2.u());
-        auto* v2 = tess::get_impl<tess::vertex>(e2.v());
-
-        return tess::line_seg_to_line_seg({ u1->pos() , v1->pos() }, { v2->pos() , u2->pos() });
-    }
-
+   
     std::optional<tess::error> compile_edge_mappings(const std::vector<std::tuple<tess::expr_ptr, tess::expr_ptr>>& mappings, tess::stack_machine::stack& stack)
     {
         for (auto i = mappings.rbegin(); i != mappings.rend(); ++i) {
@@ -47,79 +20,7 @@ namespace {
         return std::nullopt;
     }
 
-    std::optional<tess::error> apply_edge_mapping(const std::tuple<tess::edge::impl_type*, tess::edge::impl_type*>& mapping)
-    {
-        auto [ptr_edge1, ptr_edge2] = mapping;
-        auto edge1 = *ptr_edge1;
-        auto edge2 = *ptr_edge2;
-        auto parent_1 = parent_of_edge(edge1);
-        auto parent_2 = parent_of_edge(edge2);
-
-        if (parent_1 == parent_2)
-            return tess::error("edge mapping internal to a single tile");
-
-        bool both_are_touched = !is_untouched(parent_1) && !is_untouched(parent_2);
-        bool both_are_untouched = is_untouched(parent_1) && is_untouched(parent_2);
-        bool just_parent2_is_untouched = !is_untouched(parent_1) && is_untouched(parent_2);
-
-        if (both_are_touched)
-            return tess::error("TODO: tessera currently doesnt handle this kind of lay statement");
-
-        if (both_are_untouched || just_parent2_is_untouched) {
-            //move tile2
-            apply_edge_matrix(parent_2, edge_to_edge_matrix(edge2, edge1));
-        }
-        else {
-            //move tile1
-            apply_edge_matrix(parent_1, edge_to_edge_matrix(edge1, edge2));
-        }
-
-        return std::nullopt;
-    }
 }
-
-std::optional<tess::error> tess::apply_mapping(const std::vector<std::tuple<edge::impl_type*, edge::impl_type*>>& mappings)
-{
-    for (const auto& mapping : mappings) {
-        auto result = apply_edge_mapping(mapping);
-        if (result.has_value()) {
-            return { result.value() };
-        }
-    }
-    return std::nullopt;
-}
-
-std::optional<tess::error> tess::lay_expr::apply_mapping(const std::tuple<edge, edge>& mapping, evaluation_context& ctxt) const
-{
-    auto [e1, e2] = mapping;
-    auto& edge1 = *get_impl(e1);
-    auto& edge2 = *get_impl(e2);
-    auto parent_1 = parent_of_edge(edge1);
-    auto parent_2 = parent_of_edge(edge2);
-
-    if (parent_1 == parent_2)
-        return error("edge mapping internal to a single tile");
-
-    bool both_are_touched = !is_untouched(parent_1) && !is_untouched(parent_2);
-    bool both_are_untouched = is_untouched(parent_1) && is_untouched(parent_2);
-    bool just_parent2_is_untouched = !is_untouched(parent_1) && is_untouched(parent_2);
-
-    if (both_are_touched)
-        return error("TODO: tessera currently doesnt handle this kind of lay statement");
-
-    if (both_are_untouched || just_parent2_is_untouched) {
-        //move tile2
-        apply_edge_matrix(parent_2, edge_to_edge_matrix(edge2, edge1));
-    }
-    else {
-        //move tile1
-        apply_edge_matrix(parent_1, edge_to_edge_matrix(edge1, edge2));
-    }
-
-    return std::nullopt;
-}
-
-
 
 tess::lay_expr::lay_expr(const lay_params& params) :
     tiles_(params.tiles),

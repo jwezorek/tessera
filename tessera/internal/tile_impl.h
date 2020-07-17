@@ -67,10 +67,9 @@ namespace tess {
             std::vector<tess::vertex> vertices_;
             std::vector<tess::edge> edges_;
             tile_patch::impl_type* parent_;
-			bool untouched_;
 
         public:
-            impl_type(): untouched_(true) {};
+            impl_type(): parent_(nullptr) {};
             impl_type(tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
 
             const std::vector<tess::vertex>& vertices() const;
@@ -80,9 +79,6 @@ namespace tess {
             void set(std::vector<tess::vertex>&& vertices, std::vector<tess::edge>&& edges );
             expr_value get_field(const std::string& field) const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;
-			bool is_untouched() const;
-            void touch();
-            void untouch();
 			void apply(const matrix& mat);
             tile flip(allocator& a) const;
             void flip();

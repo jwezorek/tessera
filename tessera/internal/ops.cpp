@@ -26,6 +26,91 @@ namespace {
         }
         return frame;
     }
+
+    using edge_parent_type = std::variant<tess::tile::impl_type*, tess::tile_patch::impl_type*>;
+
+    edge_parent_type parent_of_edge(const tess::edge::impl_type& e) {
+        auto tile = e.parent();
+        if (!tile->has_parent())
+            return tile;
+        else
+            return tile->parent();
+    }
+
+    void apply_edge_matrix(const edge_parent_type& ep, const tess::matrix& mat) {
+        return std::visit([&mat](auto ptr) { ptr->apply(mat); }, ep);
+    }
+
+    tess::matrix edge_to_edge_matrix(const tess::edge::impl_type& e1, const tess::edge::impl_type& e2)
+    {
+        auto* u1 = tess::get_impl<tess::vertex>(e1.u());
+        auto* v1 = tess::get_impl<tess::vertex>(e1.v());
+        auto* u2 = tess::get_impl<tess::vertex>(e2.u());
+        auto* v2 = tess::get_impl<tess::vertex>(e2.v());
+
+        return tess::line_seg_to_line_seg({ u1->pos() , v1->pos() }, { v2->pos() , u2->pos() });
+    }
+
+    void* get_key(edge_parent_type obj)
+    {
+        return std::visit([](auto* ptr)->void* {return reinterpret_cast<void*>(ptr); }, obj);
+    }
+
+    bool is_untouched(edge_parent_type obj, const std::unordered_set<void*>& moved)
+    {
+        return moved.find(get_key(obj)) == moved.end();
+    }
+
+    void touch(edge_parent_type obj, std::unordered_set<void*>& moved)
+    {
+        moved.insert(get_key(obj));
+    }
+
+    using edge_mapping = std::tuple<tess::edge::impl_type*, tess::edge::impl_type*>;
+
+    std::optional<tess::error> apply_edge_mapping(const edge_mapping& mapping, std::unordered_set<void*>& moved)
+    {
+        auto [ptr_edge1, ptr_edge2] = mapping;
+        auto edge1 = *ptr_edge1;
+        auto edge2 = *ptr_edge2;
+        auto parent_1 = parent_of_edge(edge1);
+        auto parent_2 = parent_of_edge(edge2);
+
+        if (parent_1 == parent_2)
+            return tess::error("edge mapping internal to a single tile");
+
+        bool both_are_touched = !is_untouched(parent_1, moved) && !is_untouched(parent_2, moved);
+        bool both_are_untouched = is_untouched(parent_1, moved) && is_untouched(parent_2, moved);
+        bool just_parent2_is_untouched = !is_untouched(parent_1, moved) && is_untouched(parent_2, moved);
+
+        if (both_are_touched)
+            return tess::error("TODO: tessera currently doesnt handle this kind of lay statement");
+
+        if (both_are_untouched || just_parent2_is_untouched) {
+            //move tile2
+            apply_edge_matrix(parent_2, edge_to_edge_matrix(edge2, edge1));
+            touch(parent_2, moved);
+        }
+        else {
+            //move tile1
+            apply_edge_matrix(parent_1, edge_to_edge_matrix(edge1, edge2));
+            touch(parent_1, moved);
+        }
+
+        return std::nullopt;
+    }
+}
+
+std::optional<tess::error> apply_mapping(const std::vector<edge_mapping>& mappings)
+{
+    std::unordered_set<void*> moved;
+    for (const auto& mapping : mappings) {
+        auto result = apply_edge_mapping(mapping, moved);
+        if (result.has_value()) {
+            return { result.value() };
+        }
+    }
+    return std::nullopt;
 }
 
 tess::make_lambda::make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body, const std::vector<std::string>& deps) :
@@ -306,7 +391,6 @@ tess::stack_machine::item tess::lay_op::execute(const std::vector<stack_machine:
             tess::flatten(ctxt.allocator(), layees.values())
         }
     };
-
 }
 
 std::string tess::lay_op::to_string() const
@@ -325,7 +409,7 @@ std::optional<tess::error> tess::lay_op::apply_mapping(const std::vector<stack_m
         edge_to_edge.push_back({ edge1, edge2} );
     }
 
-    return tess::apply_mapping(edge_to_edge);
+    return ::apply_mapping(edge_to_edge);
 }
 
 tess::val_func_op::val_func_op(int n, std::function<expr_value(tess::allocator& a, const std::vector<expr_value> & v)> func, std::string name) :
