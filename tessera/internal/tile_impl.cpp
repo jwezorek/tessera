@@ -175,6 +175,16 @@ bool tess::tile::impl_type::is_untouched() const
 	return untouched_;
 }
 
+void tess::tile::impl_type::touch()
+{
+	untouched_ = false;
+}
+
+void tess::tile::impl_type::untouch()
+{
+	untouched_ = true;
+}
+
 void tess::tile::impl_type::apply(const matrix& mat)
 {
 	for (auto& vertex : vertices_) {
@@ -273,7 +283,8 @@ tess::edge_indices tess::edge::impl_type::get_edge_location_indices() const {
 std::string tess::edge::impl_type::debug() const
 {
 	std::stringstream ss;
-	ss << "[ " << u_ << " -> " << v_ << " ]";
+	ss << "[ " << u_ << ":" << get_impl(u())->debug()
+		<< " -> " << v_ << ":" << get_impl(v())->debug() << " ]";
 	return ss.str();
 }
 
@@ -374,6 +385,16 @@ int tess::vertex::impl_type::location_index() const
 {
 	return std::get<int>(location_);
 }
+
+std::string  tess::vertex::impl_type::debug() const
+{
+	std::stringstream ss;
+	auto [x, y] = pos();
+	ss << "{" << index_ << " (" << x << " , " << y << " )} ";
+	return ss.str();
+}
+
+
 
 void tess::vertex::impl_type::apply(const tess::matrix& mat) {
 

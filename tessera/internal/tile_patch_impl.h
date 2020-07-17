@@ -43,6 +43,7 @@ namespace tess {
         void clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile_patch::impl_type* clone) const;
         point get_vertex_location(int index) const;
         tile join(allocator& allocator) const;
+        std::string debug() const;
     };
 
     class cluster::impl_type : public tessera_impl

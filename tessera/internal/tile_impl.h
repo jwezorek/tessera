@@ -38,6 +38,7 @@ namespace tess {
         void set_location(int vert_index);
         void set_location(point pt);
         int location_index() const;
+        std::string debug() const;
     };
 
     class edge::impl_type : public tessera_impl {
@@ -80,6 +81,8 @@ namespace tess {
             expr_value get_field(const std::string& field) const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;
 			bool is_untouched() const;
+            void touch();
+            void untouch();
 			void apply(const matrix& mat);
             tile flip(allocator& a) const;
             void flip();
