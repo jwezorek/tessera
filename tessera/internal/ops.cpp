@@ -51,24 +51,24 @@ namespace {
         return tess::line_seg_to_line_seg({ u1->pos() , v1->pos() }, { v2->pos() , u2->pos() });
     }
 
-    void* get_key(edge_parent_type obj)
+    tess::obj_id get_key(edge_parent_type obj)
     {
-        return std::visit([](auto* ptr)->void* {return reinterpret_cast<void*>(ptr); }, obj);
+        return std::visit([](auto* p)->tess::obj_id {return p->get_id(); }, obj);
     }
 
-    bool is_untouched(edge_parent_type obj, const std::unordered_set<void*>& moved)
+    bool is_untouched(edge_parent_type obj, const std::unordered_set<tess::obj_id>& moved)
     {
         return moved.find(get_key(obj)) == moved.end();
     }
 
-    void touch(edge_parent_type obj, std::unordered_set<void*>& moved)
+    void touch(edge_parent_type obj, std::unordered_set<tess::obj_id >& moved)
     {
         moved.insert(get_key(obj));
     }
 
     using edge_mapping = std::tuple<tess::edge::impl_type*, tess::edge::impl_type*>;
 
-    std::optional<tess::error> apply_edge_mapping(const edge_mapping& mapping, std::unordered_set<void*>& moved)
+    std::optional<tess::error> apply_edge_mapping(const edge_mapping& mapping, std::unordered_set<tess::obj_id>& moved)
     {
         auto [ptr_edge1, ptr_edge2] = mapping;
         auto edge1 = *ptr_edge1;
@@ -103,7 +103,7 @@ namespace {
 
 std::optional<tess::error> apply_mapping(const std::vector<edge_mapping>& mappings)
 {
-    std::unordered_set<void*> moved;
+    std::unordered_set<tess::obj_id> moved;
     for (const auto& mapping : mappings) {
         auto result = apply_edge_mapping(mapping, moved);
         if (result.has_value()) {

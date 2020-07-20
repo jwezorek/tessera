@@ -1,7 +1,7 @@
 #include "allocator.h"
 #include "expr_value.h"
 
-tess::allocator::allocator( int sz) 
+tess::allocator::allocator( int sz) : id_counter_(1)
 {
     tile_pool_.reserve(sz);
     patch_pool_.reserve(sz);

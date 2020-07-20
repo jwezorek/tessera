@@ -46,23 +46,15 @@ namespace tess {
 		bool is_error() const;
 		bool is_nil() const;
 		expr_value clone( allocator& allocator ) const;
-		expr_value clone( allocator& allocator, std::unordered_map<void*,void*>& original_to_clone) const;
+		expr_value clone( allocator& allocator, std::unordered_map<obj_id,void*>& original_to_clone) const;
 		expr_value get_ary_item(int index) const;
 		int get_ary_count() const;
 		expr_value get_field(allocator& allocator, const std::string& field) const;
 		void insert_field(const std::string& var, expr_value val) const;
-		std::unordered_set<void*> get_all_referenced_allocations() const;
-		void get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const;
+		std::unordered_set<obj_id> get_all_referenced_allocations() const;
+		void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
 		std::string to_string() const;
 	};
-
-	template <typename T> void* to_void_star(const T* ptr) {
-		return to_void_star(const_cast<T*>(ptr));
-	}
-
-	template <typename T> void* to_void_star(T* ptr) {
-		return reinterpret_cast<void*>(ptr);
-	}
 
 	template<typename T> T* from_void_star(void* ptr) {
 		return reinterpret_cast<T*>(ptr);

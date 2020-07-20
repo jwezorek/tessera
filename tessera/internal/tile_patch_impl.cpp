@@ -65,7 +65,7 @@ void tess::tile_patch::impl_type::build_edge_table() const
 }
 
 
-tess::tile_patch::impl_type::impl_type( std::vector<tess::tile>& tiles) {
+tess::tile_patch::impl_type::impl_type(obj_id id, std::vector<tess::tile>& tiles) : tessera_impl(id) {
 	for ( auto& t : tiles)
 		insert_tile(t);
 }
@@ -138,7 +138,7 @@ std::string tess::tile_patch::impl_type::debug() const
 
 tess::tile_patch tess::tile_patch::impl_type::flip(allocator& a) const {
 	tess::tile_patch clone = a.create<tess::tile_patch>();
-	std::unordered_map<void*, void*> tbl;
+	std::unordered_map<obj_id, void*> tbl;
 	clone_to(a, tbl, get_impl(clone));
 	get_impl(clone)->flip();
 	return clone;
@@ -170,12 +170,12 @@ std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(const edge& e
 		return std::nullopt;
 }
 
-void tess::tile_patch::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+void tess::tile_patch::impl_type::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
 {
-	auto ptr = to_void_star(this);
-	if (alloc_set.find(ptr) != alloc_set.end())
+	auto key = get_id();
+	if (alloc_set.find(key) != alloc_set.end())
 		return;
-	alloc_set.insert(ptr);
+	alloc_set.insert(key);
 
 	for (const auto& tile : tiles_)
 		expr_value{ tile }.get_all_referenced_allocations(alloc_set);
@@ -184,7 +184,7 @@ void tess::tile_patch::impl_type::get_all_referenced_allocations(std::unordered_
 		val.get_all_referenced_allocations(alloc_set);
 }
 
-void tess::tile_patch::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile_patch::impl_type* clone) const
+void tess::tile_patch::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_patch::impl_type* clone) const
 {
 	for (const auto& t : tiles_) {
 		clone->tiles_.push_back(std::get<tile>(expr_value{ t }.clone(allocator, orginal_to_clone)));
@@ -206,7 +206,8 @@ tess::tile tess::tile_patch::impl_type::join(tess::allocator& allocator) const
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::cluster::impl_type::impl_type(const std::vector<expr_value>& values) :
+tess::cluster::impl_type::impl_type(obj_id id, const std::vector<expr_value>& values) :
+	tessera_impl(id),
 	values_(values)
 {}
 
@@ -241,18 +242,18 @@ const std::vector<tess::expr_value>& tess::cluster::impl_type::values()
 	return values_;
 }
 
-void tess::cluster::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+void tess::cluster::impl_type::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
 {
-	auto ptr = to_void_star(this);
-	if (alloc_set.find(ptr) != alloc_set.end())
+	auto key = get_id();
+	if (alloc_set.find(key) != alloc_set.end())
 		return;
-	alloc_set.insert(ptr);
+	alloc_set.insert(key);
 
 	for (const auto& val : values_)
 		val.get_all_referenced_allocations(alloc_set);
 }
 
-void tess::cluster::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, cluster::impl_type* clone) const
+void tess::cluster::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, cluster::impl_type* clone) const
 {
 	for (const auto& value : values_) {
 		clone->values_.push_back(value.clone(allocator, orginal_to_clone));

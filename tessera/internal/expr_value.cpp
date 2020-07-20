@@ -4,6 +4,7 @@
 #include "tile_patch_impl.h"
 #include "allocator.h"
 #include "execution_state.h"
+#include "tessera_impl.h"
 #include <sstream>
 
 class tess::field_ref::impl_type : public tessera_impl {
@@ -25,10 +26,10 @@ void tess::field_ref::set(const expr_value& val)
 struct clone_factory : tess::tessera_impl
 {
 	template<typename T>
-	T operator()(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, T original) {
+	T operator()(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, T original) {
 		
 		typename T::impl_type* original_impl = get_impl(original);
-		void* key = reinterpret_cast<void*>(original_impl);
+		auto key = original_impl->get_id();
 		typename T::impl_type* clone_impl = nullptr;
 
 		if (orginal_to_clone.find(key) != orginal_to_clone.end()) {
@@ -97,12 +98,12 @@ tess::expr_value tess::expr_value::clone( allocator& allocator ) const
 	if (std::holds_alternative<field_ref>(*this))
 		return { tess::error("attempted clone a field ref") };
 	
-	std::unordered_map<void*, void*> original_to_clone;
+	std::unordered_map<obj_id, void*> original_to_clone;
 	return clone(allocator, original_to_clone);
 	 
 }
 
-tess::expr_value tess::expr_value::clone(allocator& allocator, std::unordered_map<void*, void*>& original_to_clone) const
+tess::expr_value tess::expr_value::clone(allocator& allocator, std::unordered_map<obj_id, void*>& original_to_clone) const
 {
 	if (is_simple_value())
 		return *this;
@@ -168,14 +169,14 @@ void tess::expr_value::insert_field(const std::string& var, expr_value val) cons
 	);
 }
 
-std::unordered_set<void*> tess::expr_value::get_all_referenced_allocations() const
+std::unordered_set<tess::obj_id> tess::expr_value::get_all_referenced_allocations() const
 {
-	std::unordered_set<void*> references;
+	std::unordered_set<obj_id> references;
 	get_all_referenced_allocations(references);
 	return references;
 }
 
-void tess::expr_value::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+void tess::expr_value::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
 {
 	if (!is_object_like())
 		return;

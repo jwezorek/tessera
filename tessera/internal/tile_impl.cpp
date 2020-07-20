@@ -18,7 +18,7 @@ namespace {
 	struct impl_cloner : public tess::tessera_impl
 	{
 		template<typename T>
-		typename T::impl_type* clone(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, typename T::impl_type* impl)
+		typename T::impl_type* clone(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, typename T::impl_type* impl)
 		{
 			tess::expr_value wrapper = { make_tess_obj<T>(impl) };
 			auto wrapper_clone = std::get<T>(wrapper.clone(allocator, orginal_to_clone));
@@ -32,7 +32,8 @@ std::vector<std::tuple<tess::number, tess::number>> get_regular_poly_vert_loc(in
 	return points;
 }
 
-tess::tile::impl_type::impl_type(tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations) :
+tess::tile::impl_type::impl_type(obj_id id, tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations) :
+	tessera_impl(id),
 	parent_(nullptr)
 {
 	auto n = static_cast<int>(vertex_locations.size());
@@ -78,12 +79,12 @@ void tess::tile::impl_type::insert_field(const std::string& var, const expr_valu
 	fields_[var] = val;
 }
 
-void tess::tile::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+void tess::tile::impl_type::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
 {
-	auto ptr = to_void_star(this);
-	if (alloc_set.find(ptr) != alloc_set.end())
+	auto key = get_id();
+	if (alloc_set.find(key) != alloc_set.end())
 		return;
-	alloc_set.insert(ptr);
+	alloc_set.insert(key);
 
 	for (const auto& edge : edges_) 
 		 expr_value{edge}.get_all_referenced_allocations(alloc_set);
@@ -93,7 +94,7 @@ void tess::tile::impl_type::get_all_referenced_allocations(std::unordered_set<vo
 		val.get_all_referenced_allocations(alloc_set);
 }
 
-void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, tile::impl_type* clone) const
+void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile::impl_type* clone) const
 {
 	for (const auto& v : vertices_) {
 		clone->vertices_.push_back(std::get<vertex>(expr_value{ v }.clone(allocator, orginal_to_clone)));
@@ -127,9 +128,9 @@ tess::tile tess::tile::impl_type::clone_detached(tess::allocator& a) const
 	
 	// clone this tile such that its parent is only shallow copied.
 	auto tile_value = expr_value{ this_tile };
-	std::unordered_map<void*, void*> original_to_clone;
-	auto this_patch_key = reinterpret_cast<void*>( parent_ );
-	original_to_clone[this_patch_key] = this_patch_key;
+	std::unordered_map<obj_id, void*> original_to_clone;
+	auto this_patch_key =  parent_->get_id();
+	original_to_clone[this_patch_key] = parent_;
 	expr_value clone_expr_value = tile_value.clone(a, original_to_clone);
 
 	//now return the clone with the parent detached.
@@ -218,7 +219,8 @@ tess::tile_patch::impl_type* tess::tile::impl_type::parent() const {
 
 /*--------------------------------------------------------------------------------*/
 
-tess::edge::impl_type::impl_type( tile::impl_type* parent, int index, int u, int v) :
+tess::edge::impl_type::impl_type( obj_id id, tile::impl_type* parent, int index, int u, int v) :
+	tessera_impl(id),
 	parent_(parent),
 	index_(index),
 	u_(u),
@@ -266,17 +268,17 @@ std::string tess::edge::impl_type::debug() const
 	return ss.str();
 }
 
-void tess::edge::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+void tess::edge::impl_type::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
 {
-	auto ptr = to_void_star(this);
-	if (alloc_set.find(ptr) != alloc_set.end())
+	auto key = get_id();
+	if (alloc_set.find(key) != alloc_set.end())
 		return;
-	alloc_set.insert(ptr);
+	alloc_set.insert(key);
 
 	parent_->get_all_referenced_allocations(alloc_set);
 }
 
-void  tess::edge::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, edge::impl_type* clone) const
+void  tess::edge::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, edge::impl_type* clone) const
 {
 	clone->index_ = index_;
 	clone->u_ = u_;
@@ -287,7 +289,8 @@ void  tess::edge::impl_type::clone_to(tess::allocator& allocator, std::unordered
 
 /*--------------------------------------------------------------------------------*/
 
-tess::vertex::impl_type::impl_type(tile::impl_type* parent, int n, std::tuple<number, number> loc) :
+tess::vertex::impl_type::impl_type(obj_id id, tile::impl_type* parent, int n, std::tuple<number, number> loc) :
+	tessera_impl(id),
 	parent_(parent), index_(n), location_(loc)
 {
 }
@@ -324,17 +327,17 @@ tess::expr_value tess::vertex::impl_type::get_field(allocator& allocator, const 
 	return {};
 }
 
-void tess::vertex::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+void tess::vertex::impl_type::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
 {
-	auto ptr = to_void_star(this);
-	if (alloc_set.find(ptr) != alloc_set.end())
+	auto key = get_id();
+	if (alloc_set.find(key) != alloc_set.end())
 		return;
-	alloc_set.insert(ptr);
+	alloc_set.insert(key);
 
 	parent_->get_all_referenced_allocations(alloc_set);
 }
 
-void tess::vertex::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, vertex::impl_type* clone) const
+void tess::vertex::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, vertex::impl_type* clone) const
 {
 	clone->index_ = index_;
 	clone->location_ = location_;

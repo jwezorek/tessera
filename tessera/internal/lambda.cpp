@@ -43,8 +43,8 @@ std::vector<std::string> tess::lambda::unfulfilled_dependencies() const
     return depends;
 }
 
-tess::lambda::impl_type::impl_type(const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
-    parameters(params), body(bod), dependencies(deps)
+tess::lambda::impl_type::impl_type(obj_id id, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
+    tessera_impl(id), parameters(params), body(bod), dependencies(deps)
 {
 }
 
@@ -62,18 +62,18 @@ tess::expr_value tess::lambda::impl_type::get_field(allocator& allocator, const 
         return { tess::error("referenced unknown lambda closure item") };
 }
 
-void tess::lambda::impl_type::get_all_referenced_allocations(std::unordered_set<void*>& alloc_set) const
+void tess::lambda::impl_type::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
 {
-    auto ptr = to_void_star(this);
-    if (alloc_set.find(ptr) != alloc_set.end())
+    auto key = this->get_id();
+    if (alloc_set.find(key) != alloc_set.end())
         return;
-    alloc_set.insert(ptr);
+    alloc_set.insert(key);
 
     for (const auto& [var, val] : closure)
         val.get_all_referenced_allocations(alloc_set);
 }
 
-void tess::lambda::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<void*, void*>& orginal_to_clone, lambda::impl_type* clone) const
+void tess::lambda::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, lambda::impl_type* clone) const
 {
     clone->parameters = parameters;
     clone->dependencies = dependencies;

@@ -4,8 +4,16 @@
 
 namespace tess {
 
+	using obj_id = uint64_t;
+
     class tessera_impl {
+		private:
+			obj_id id_;
         public:
+
+			tessera_impl(obj_id id = 0) : id_(id) {}
+
+			obj_id get_id() const { return id_; }
 
 			template<typename T>
 			const typename T::impl_type* get_impl(const T& tess_obj) const {
