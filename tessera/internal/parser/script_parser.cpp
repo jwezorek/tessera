@@ -38,19 +38,17 @@ namespace tess {
             tableau,
             script_parser
         );
-        
-        struct script_maker : public tessera_impl {
-            tess::script make(tess::parser::script_spec ss) {
-                auto [globals, tab_spec] = ss;
-                auto [tab_params, tab_body] = tab_spec;
-                return make_tess_obj<tess::script>(
-                    std::make_shared<tess::script::impl_type>(
-                        globals,
-                        std::make_shared<function_def>(tab_params, tab_body)
-                    )
-                );
-            }
-        };
+
+        tess::script make_script(tess::parser::script_spec ss) {
+            auto [globals, tab_spec] = ss;
+            auto [tab_params, tab_body] = tab_spec;
+            return tess::make_tess_obj<tess::script>(
+                std::make_shared<tess::script::impl_type>(
+                    globals,
+                    std::make_shared<function_def>(tab_params, tab_body)
+                )
+            );
+        }
     }
 }
 
@@ -69,8 +67,7 @@ std::variant<tess::script, tess::error> tess::parser::parse(const text_range& in
         return tess::error("unkown error");
     }
     if (success) {
-        script_maker sm;
-        return sm.make(output);
+        return make_script(output);
     } else {
         return tess::error("unkown error");
     }

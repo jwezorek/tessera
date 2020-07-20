@@ -72,6 +72,11 @@ namespace tess {
 			U make(const typename U::impl_type* impl) {
 				return make_tess_obj<U>(impl);
 			}
+
+			template<typename U>
+			U make(std::shared_ptr<typename U::impl_type> impl) {
+				return  make_tess_obj<U>(impl);
+			}
 		};
 
 	}
@@ -98,6 +103,12 @@ namespace tess {
 
 	template<typename T>
 	T make_tess_obj(const typename T::impl_type* impl) {
+		detail::tess_obj_maker maker;
+		return maker.make<T>(impl);
+	}
+
+	template<typename T>
+	T make_tess_obj( std::shared_ptr<typename T::impl_type> impl) {
 		detail::tess_obj_maker maker;
 		return maker.make<T>(impl);
 	}

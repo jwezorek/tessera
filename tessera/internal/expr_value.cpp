@@ -7,7 +7,30 @@
 #include "tessera_impl.h"
 #include <sstream>
 
-class tess::field_ref::impl_type : public tessera_impl {
+namespace {
+
+	template<typename T>
+	T clone_aux(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, T original) {
+
+		typename T::impl_type* original_impl = get_impl(original);
+		auto key = original_impl->get_id();
+		typename T::impl_type* clone_impl = nullptr;
+
+		if (orginal_to_clone.find(key) != orginal_to_clone.end()) {
+			clone_impl = reinterpret_cast<typename T::impl_type*>(orginal_to_clone[key]);
+		}
+		else {
+			clone_impl = allocator.create_impl<T>();
+			orginal_to_clone[key] = clone_impl;
+			original_impl->clone_to(allocator, orginal_to_clone, clone_impl);
+		}
+
+		return tess::make_tess_obj<T>(clone_impl);
+	}
+
+}
+
+class tess::field_ref::impl_type {
 public:
 	expr_value obj;
 	std::string field;
@@ -22,27 +45,6 @@ void tess::field_ref::set(const expr_value& val)
 {
 	impl_->obj.insert_field(impl_->field, val);
 }
-
-struct clone_factory : tess::tessera_impl
-{
-	template<typename T>
-	T operator()(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, T original) {
-		
-		typename T::impl_type* original_impl = get_impl(original);
-		auto key = original_impl->get_id();
-		typename T::impl_type* clone_impl = nullptr;
-
-		if (orginal_to_clone.find(key) != orginal_to_clone.end()) {
-			clone_impl = reinterpret_cast<typename T::impl_type*>(orginal_to_clone[key]);
-		} else {
-			clone_impl = allocator.create_impl<T>();
-			orginal_to_clone[key] = clone_impl;
-			original_impl->clone_to(allocator, orginal_to_clone, clone_impl);
-		}
-
-		return make_tess_obj<T>(clone_impl);
-	}
-};
 
 tess::nil_val::nil_val()
 {
@@ -109,9 +111,8 @@ tess::expr_value tess::expr_value::clone(allocator& allocator, std::unordered_ma
 		return *this;
 
 	std::variant<tile, tile_patch, vertex, edge, cluster, lambda> obj_variant = variant_cast(*this);
-	clone_factory cloner;
 	return std::visit(
-		[&](auto&& obj)->expr_value { return expr_value{ cloner(allocator, original_to_clone, obj) }; },
+		[&](auto&& obj)->expr_value { return expr_value{ clone_aux(allocator, original_to_clone, obj) }; },
 		obj_variant
 	);
 }

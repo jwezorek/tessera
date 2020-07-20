@@ -14,7 +14,7 @@
 
 namespace tess {
 
-    class allocator : public tessera_impl {
+    class allocator {
         template<typename T>
         using impl_pool = std::vector<std::unique_ptr<typename T::impl_type>>;
     private:

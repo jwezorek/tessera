@@ -10,7 +10,7 @@
 
 namespace tess {
 
-    class script::impl_type : public tessera_impl {
+    class script::impl_type {
         private:
             assignment_block globals_;
             expr_ptr tableau_;

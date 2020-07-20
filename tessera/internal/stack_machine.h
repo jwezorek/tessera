@@ -79,7 +79,7 @@ namespace tess {
             std::vector<item> impl_;
         };
 
-        class op : public tessera_impl {
+        class op {
             protected:
                 int number_of_args_;
             public:
