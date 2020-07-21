@@ -28,10 +28,6 @@ tess::lay_expr::lay_expr(const lay_params& params) :
 {
 }
 
-tess::lay_expr::lay_expr(const std::vector<expr_ptr>& tiles) :
-    tiles_(tiles)
-{
-}
 
 tess::lay_expr::lay_expr(const std::vector<expr_ptr>& tiles, const std::vector<std::tuple<expr_ptr, expr_ptr>>& edge_mappings) :
     tiles_(tiles),

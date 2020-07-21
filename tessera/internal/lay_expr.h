@@ -14,6 +14,7 @@ namespace tess {
 	class tile;
 
 	struct lay_params {
+		std::string kw;
 		std::vector<expr_ptr> tiles;
 		std::vector<std::tuple<expr_ptr, expr_ptr>> edge_mappings;
 	};
@@ -25,7 +26,6 @@ namespace tess {
 
 		public:
 			lay_expr(const lay_params& params);
-			lay_expr(const std::vector<expr_ptr>& tiles);
 			lay_expr(const std::vector<expr_ptr>& tiles, const std::vector<std::tuple<expr_ptr, expr_ptr>>& edge_mappings);
 			void compile(stack_machine::stack& stack) const override;
 			void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
