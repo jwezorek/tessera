@@ -1,6 +1,7 @@
 #pragma once    
 
 #include "tessera/tile.h"
+#include "tessera/tile_patch.h"
 #include "number.h"
 #include <unordered_map>
 #include <tuple>
@@ -27,4 +28,6 @@ namespace tess {
 
     template<typename T>
     using edge_table = std::unordered_map<edge_indices, T, edge_hash>;
+
+    std::vector<point> join(const tess::tile_patch::impl_type* tiles);
 }

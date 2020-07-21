@@ -4,6 +4,7 @@
 #include "variant_util.h"
 #include "stack_machine.h"
 #include "ops.h"
+#include "geometry.h"
 #include <variant>
 
 namespace {
@@ -199,9 +200,10 @@ tess::point tess::tile_patch::impl_type::get_vertex_location(int index) const {
 	return vert_tbl_.get_location(index);
 }
 
-tess::tile tess::tile_patch::impl_type::join(tess::allocator& allocator) const
+tess::tile tess::tile_patch::impl_type::join(tess::allocator& a) const
 {
-    return tile();
+	auto points = tess::join(this);
+	return a.create<tess::tile>(&a, points);
 }
 
 /*---------------------------------------------------------------------------------------------*/

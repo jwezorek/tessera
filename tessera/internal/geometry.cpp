@@ -1,36 +1,41 @@
 #include "boost/functional/hash.hpp"
 #include "geometry.h"
 #include "tessera/error.h"
+#include "tessera/tile_patch.h"
+#include "tessera_impl.h"
+#include "tile_impl.h"
 #include <boost/geometry.hpp>
 #include <boost/geometry/index/rtree.hpp>
 #include <unordered_set>
 
 namespace bg = boost::geometry;
 namespace bgi = boost::geometry::index;
+using rtree_point = bg::model::point<double, 2, bg::cs::cartesian>;
+using rtree_box = bg::model::box<rtree_point>;
+using rtree_value = std::pair< rtree_point, int>;
+using rtree = bgi::rtree<rtree_value, bgi::rstar<8>>; //bgi::rtree<rtree_value, bgi::quadratic<16>>;
+
+using bg_point = bg::model::d2::point_xy<double>;
+using bg_polygon = bg::model::polygon<bg_point, false>;
 
 namespace {
 
-	using bg_point = bg::model::point<double, 2, bg::cs::cartesian>;
-	using bg_box = bg::model::box<bg_point>;
-	using rtree_value = std::pair< bg_point, int>;
-	using point_rtree = bgi::rtree<rtree_value, bgi::rstar<8>>; //bgi::rtree<rtree_value, bgi::quadratic<16>>;
-
-	bg_point make_bg_point(tess::number x, tess::number y) {
-		return bg_point(
+	rtree_point make_rtree_point(tess::number x, tess::number y) {
+		return rtree_point(
 			static_cast<double>(x),
 			static_cast<double>(y)
 		);
 	}
 
-	bg_box box_from_points(tess::number x1, tess::number y1, tess::number x2, tess::number y2) {
+	rtree_box box_from_points(tess::number x1, tess::number y1, tess::number x2, tess::number y2) {
 		if (x2 < x1)
 			std::swap(x1, x2);
 		if (y2 < y1)
 			std::swap(y1, y2);
-		return bg_box(make_bg_point(x1, y1), bg_point((double)x2, (double)y2));
+		return rtree_box(make_rtree_point(x1, y1), make_rtree_point(x2, y2));
 	}
 
-	bg_box pad_point(const std::tuple<tess::number, tess::number>& pt, tess::number eps) {
+	rtree_box pad_point(const std::tuple<tess::number, tess::number>& pt, tess::number eps) {
 		auto [x, y] = pt;
 		tess::number padding = eps / tess::number(2);
 		tess::number x1 = x - padding;
@@ -59,7 +64,7 @@ namespace {
 			auto box = pad_point(pt, eps_);
 			for (const auto& [tbl_pt, index] : impl_) {
 				auto [tbl_pt_x, tbl_pt_y] = tbl_pt;
-				if (bg::within(make_bg_point(tbl_pt_x,tbl_pt_y), box))
+				if (bg::within(make_rtree_point(tbl_pt_x,tbl_pt_y), box))
 					return index;
 			}
 			return std::nullopt;
@@ -103,7 +108,7 @@ namespace {
 			int new_index = static_cast<int>(tree_.size());
 			auto [x, y] = pt;
 			tree_.insert(
-				rtree_value(make_bg_point(x, y), new_index)
+				rtree_value(make_rtree_point(x, y), new_index)
 			);
 			return new_index;
 		}
@@ -113,9 +118,51 @@ namespace {
 
 	private:
 		tess::number eps_;
-		point_rtree tree_;
+		rtree tree_;
 	};
 
+	std::optional<bg_polygon> join_polygons(const std::vector<bg_polygon>& polygons) {
+
+		if (polygons.empty())
+			return std::nullopt;
+
+		if (polygons.size() == 1)
+			return polygons.front();
+
+		bg_polygon joined_so_far = polygons.front();
+		for (auto i = polygons.begin() + 1; i != polygons.end(); ++i) {
+			const auto& polygon = *i;
+			std::vector<bg_polygon> joined;
+			bg::union_(joined_so_far, polygon, joined);
+			if (joined.size() != 1)
+				return std::nullopt;
+			joined_so_far = joined.front();
+		}
+
+		return joined_so_far;
+	}
+
+	bg_polygon tile_to_polygon(const tess::tile& tile) {
+		bg_polygon poly;
+		for (const  auto& vertex : tile.vertices()) {
+			const auto [x, y] = tess::get_impl(vertex)->pos();
+			bg::append(poly, bg::make<bg_point>(x, y));
+		}
+		auto [x_1, y_1] = tess::get_impl(tile.vertices()[0])->pos();
+		bg::append(poly, bg::make<bg_point>(x_1, y_1));
+		return poly;
+	}
+
+	std::vector<bg_polygon> tile_patch_to_polygons(const tess::tile_patch::impl_type* patch) {
+		const auto& tiles = patch->tiles();
+		std::vector<bg_polygon> polygons(tiles.size());
+		std::transform(tiles.begin(), tiles.end(), polygons.begin(),
+			[](const auto& tile)->bg_polygon {
+				return tile_to_polygon(tile);
+			}
+		);
+		return polygons;
+	}
 }
 
 class tess::vertex_location_table::impl_type {
@@ -169,3 +216,19 @@ std::size_t tess::edge_hash::operator()(const edge_indices& key) const
 {
     return boost::hash_value(key);
 }
+
+std::vector<tess::point> tess::join(const tess::tile_patch::impl_type* tiles)
+{
+	auto maybe_polygon = join_polygons(tile_patch_to_polygons(tiles));
+	if (!maybe_polygon.has_value())
+		return {};
+	const auto& polygon = maybe_polygon.value().outer();
+	std::vector<tess::point> points(polygon.size());
+	std::transform(polygon.begin(), polygon.end(), points.begin(),
+		[](bg_point pt)->tess::point {
+			return { pt.x(),pt.y() };
+		}
+	);
+	return points;
+}
+
