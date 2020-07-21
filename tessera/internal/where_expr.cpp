@@ -2,6 +2,7 @@
 #include "lambda.h"
 #include "ops.h"
 #include <sstream>
+#include <numeric>
 
 namespace {
 
@@ -104,20 +105,10 @@ bool tess::assignment_block::empty() const
 	return !impl_ || impl_->empty();
 }
 
-int tess::assignment_block::num_vars() const
-{
-	// TODO: use std::accumulate
-	int count = 0;
-	for (const auto& [vars, val] : *impl_) 
-		count += static_cast<int>(vars.size());
-	return count;
-}
-
 tess::where_expr::where_expr(const assignment_block& assignments, expr_ptr body) :
 	assignments_(assignments), body_(body)
 {
 }
-
 
 void tess::where_expr::compile(stack_machine::stack& stack) const
 {

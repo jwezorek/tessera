@@ -84,7 +84,7 @@ namespace {
         bool just_parent2_is_untouched = !is_untouched(parent_1, moved) && is_untouched(parent_2, moved);
 
         if (both_are_touched)
-            return tess::error("TODO: tessera currently doesnt handle this kind of lay statement");
+            return tess::error("TODO: this should verify the two edges lie on each other and error out if not");
 
         if (both_are_untouched || just_parent2_is_untouched) {
             //move tile2
