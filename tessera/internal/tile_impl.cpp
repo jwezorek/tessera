@@ -4,6 +4,7 @@
 #include "parser/keywords.h"
 #include "allocator.h"
 #include <algorithm>
+#include "ops.h"
 
 namespace {
 
@@ -15,6 +16,7 @@ namespace {
 		return allocator.create<tess::cluster>( cluster_contents ); 
 	}
 
+	//TODO: remove this
 	struct impl_cloner : public tess::tessera_impl
 	{
 		template<typename T>
@@ -25,6 +27,42 @@ namespace {
 			return  get_impl(wrapper_clone);
 		}
 	};
+
+	tess::expr_value on_method(tess::allocator& a, const std::vector<tess::expr_value>& v) {
+		auto t = std::get<tess::tile>(v[0]);
+		auto edge = std::get<tess::edge>(v[1]);
+		auto maybe_edge = tess::get_impl(t)->get_edge_on(edge);
+		if (maybe_edge.has_value())
+			return { maybe_edge.value() };
+		else
+			return { tess::nil_val() };
+	}
+
+	tess::expr_value get_on_lambda(tess::allocator& a) {
+		return {
+			a.create<tess::lambda>(
+				std::vector<std::string>{ "_edge", "_tile" },
+				std::vector<tess::stack_machine::item>{ {
+						tess::stack_machine::variable("_edge")
+					} , {
+						std::make_shared<tess::get_var>()
+					} , {
+						tess::stack_machine::variable("_tile")
+					} , {
+						std::make_shared<tess::get_var>()
+					} , {
+						std::make_shared<tess::val_func_op>(
+							2,
+							on_method,
+							"on_method"
+						)
+					}
+				},
+				std::vector<std::string>{}
+			)
+		};
+	}
+
 }
 
 std::vector<std::tuple<tess::number, tess::number>> get_regular_poly_vert_loc(int n) {
@@ -34,7 +72,8 @@ std::vector<std::tuple<tess::number, tess::number>> get_regular_poly_vert_loc(in
 
 tess::tile::impl_type::impl_type(obj_id id, tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations) :
 	tessera_impl(id),
-	parent_(nullptr)
+	parent_(nullptr),
+	index_(-1)
 {
 	auto n = static_cast<int>(vertex_locations.size());
 	vertices_.resize(n);
@@ -135,7 +174,7 @@ tess::tile tess::tile::impl_type::clone_detached(tess::allocator& a) const
 
 	//now return the clone with the parent detached.
 	auto clone_tile = std::get<tess::tile>(clone_expr_value);
-	get_impl(clone_tile)->set_parent(nullptr);
+	get_impl(clone_tile)->detach();
 	return clone_tile;
 }
 
@@ -150,10 +189,59 @@ std::string tess::tile::impl_type::debug() const
 	return ss.str();
 }
 
+tess::tile::impl_type* tess::tile::impl_type::get_adjacent_tile(int edge_index) const
+{
+	if (is_detached())
+		return nullptr;
+
+	auto* e = get_impl(edges_[edge_index]);
+	int u = get_impl(e->u())->location_index();
+	int v = get_impl(e->v())->location_index();
+
+	auto maybe_adj_edge = parent_->get_edge_on(v, u);
+	if (!maybe_adj_edge.has_value())
+		return nullptr;
+
+	auto adj_edge = maybe_adj_edge.value();
+	return get_impl(adj_edge)->parent();
+}
+
+
+std::optional<tess::edge> tess::tile::impl_type::get_edge_on(const edge& edge) const
+{
+	if (!is_detached())
+		return parent_->get_edge_on(edge);
+
+	//TODO: use an rtree here.
+	tess::point u = get_impl(edge.u())->pos();
+	tess::point v = get_impl(edge.v())->pos();
+
+	static auto eps = static_cast<tess::number>(std::numeric_limits<float>::epsilon());
+
+	for (const auto& e : edges()) {
+		auto e_u = get_impl(e.u())->pos();
+		auto e_v = get_impl(e.v())->pos();
+
+		if (tess::distance(e_u, u) <= eps && tess::distance(e_v, v) <= eps)
+			return e;
+	}
+
+	return std::nullopt;
+}
+
+tess::expr_value tess::tile::impl_type::get_method(allocator& allocator, const std::string& field) const
+{
+	if (field != "on")
+		return { nil_val() };
+
+	return get_on_lambda(allocator);
+}
+
 tess::expr_value tess::tile::impl_type::get_field(const std::string& field) const
 {
 	if (fields_.find(field) != fields_.end())
 		return fields_.at(field);
+
 	return { nil_val() };
 }
 
@@ -162,6 +250,10 @@ tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const st
 	if (field == parser::keyword(parser::kw::edge) || field == "edges") {
 		return { edges_as_cluster(allocator, edges_) };
 	}
+
+	auto tile_method = get_method(allocator, field);
+	if (!tile_method.is_nil())
+		return tile_method;
 
 	auto val = get_field(field);
 	if (!std::holds_alternative< nil_val>(val))
@@ -198,14 +290,20 @@ void tess::tile::impl_type::flip()
 	}
 }
 
-void tess::tile::impl_type::set_parent(tess::tile_patch::impl_type* parent) {
-	if (parent != nullptr) {
-		parent_ = parent;
-	} else {
-		for (auto& v : vertices_) 
-			get_impl(v)->set_location(v.pos());
-		parent_ = nullptr;
-	}
+void tess::tile::impl_type::set_parent(tess::tile_patch::impl_type* parent, int index) {
+
+	if (parent == nullptr)
+		throw tess::error("invalid tile parent");
+	parent_ = parent;
+	index_ = index;
+}
+
+void tess::tile::impl_type::detach()
+{
+	for (auto& v : vertices_)
+		get_impl(v)->set_location(v.pos());
+	parent_ = nullptr;
+	index_ = -1;
 }
 
 bool tess::tile::impl_type::has_parent() const {

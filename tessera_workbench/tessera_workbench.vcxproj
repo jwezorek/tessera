@@ -164,6 +164,7 @@
     <ClCompile Include="tessera_workbench.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="join.tess" />
     <None Include="sierpinski.tess" />
     <None Include="penrose.tess" />
     <None Include="pyramid.tess" />

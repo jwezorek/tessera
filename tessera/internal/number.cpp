@@ -153,6 +153,17 @@ int tess::to_int(const number& num)
 	return static_cast<int>( num );
 }
 
+tess::number tess::distance(point p1, point p2)
+{
+	auto [x1, y1] = p1;
+	auto [x2, y2] = p2;
+
+	auto diff_x = x2 - x1;
+	auto diff_y = y2 - y1;
+
+	return bm::sqrt(diff_x * diff_x + diff_y * diff_y);
+}
+
 tess::point tess::apply_matrix(const matrix& mat, const point& pt)
 {
 	using num = tess::number;

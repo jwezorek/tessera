@@ -23,5 +23,6 @@
     <None Include="penrose.tess" />
     <None Include="sierpinski.tess" />
     <None Include="pyramid.tess" />
+    <None Include="join.tess" />
   </ItemGroup>
 </Project>

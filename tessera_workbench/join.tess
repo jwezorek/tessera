@@ -1,0 +1,41 @@
+let square = tile {
+	regular_polygon(4)
+} with {
+   N, W, S, E is this.edges;
+};
+
+let plus_sign = tile {
+	join north, west, south, east, center such_that 
+		center.N <-> north.S, 
+		center.W <-> west.E, 
+		center.S <-> south.N, 
+		center.E <-> east.W
+} where {
+	let center = square;
+	let north, west, south, east = [square, square, square, square];
+} with {
+	N, W, S, E is [this.on( north.N ), this.on( west.W ), this.on( south.S ), this.on( east.E )];
+	NW, SW, SE, NE is [this.on(north.W), this.on(west.S), this.on(south.E), this.on(east.N)];
+    color is "red";
+};
+
+let plus_sign_fractal = patch(n) {
+	lay north, west, south, east, center such_that 
+		center.N <-> north.SW, 
+		center.W <-> west.SE, 
+		center.S <-> south.NE, 
+		center.E <-> east.NW
+} where {
+	 let north, west, south, east, center = 
+		 if (n == 1)
+			[ plus_sign, plus_sign, plus_sign, plus_sign, plus_sign ]
+		 else
+			[ plus_sign_fractal(n-1), plus_sign_fractal(n-1), plus_sign_fractal(n-1), plus_sign_fractal(n-1), plus_sign_fractal(n-1) ];
+} with {
+	N, W, S, E is [ this.on(north.N), this.on(west.W), this.on(south.S), this.on(east.E) ];
+	NW, SW, SE, NE is [ this.on(west.NW), this.on(south.SW), this.on(east.SE), this.on(north.NE) ];
+};
+
+tableau( n ) {
+	lay plus_sign_fractal(n)
+}

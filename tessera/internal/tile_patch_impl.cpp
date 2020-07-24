@@ -9,6 +9,17 @@
 
 namespace {
 
+	std::vector<const tess::tile::impl_type*> get_neighbors(const tess::tile::impl_type* t) {
+		int num_edges = static_cast<int>(t->edges().size());
+		std::vector<const tess::tile::impl_type*> neighbors;
+		for (int i = 0; i < num_edges; ++i) {
+			const auto adj = t->get_adjacent_tile(i);
+			if (adj != nullptr)
+				neighbors.push_back(adj);
+		}
+		return neighbors;
+	}
+
 	tess::expr_value on_method(tess::allocator& a, const std::vector<tess::expr_value>& v) {
 		auto patch = std::get<tess::tile_patch>(v[0]);
 		auto edge = std::get<tess::edge>(v[1]);
@@ -65,7 +76,6 @@ void tess::tile_patch::impl_type::build_edge_table() const
 	}
 }
 
-
 tess::tile_patch::impl_type::impl_type(obj_id id, std::vector<tess::tile>& tiles) : tessera_impl(id) {
 	for ( auto& t : tiles)
 		insert_tile(t);
@@ -74,7 +84,7 @@ tess::tile_patch::impl_type::impl_type(obj_id id, std::vector<tess::tile>& tiles
 void tess::tile_patch::impl_type::insert_tile( tess::tile& t )
 {
 	auto* tile = get_impl(t);
-	tile->set_parent(this);
+	tile->set_parent(this, static_cast<int>(tiles_.size()) );
 
 	for (auto& v : tile->vertices()) {
 		auto* vert = get_impl(v);
@@ -145,7 +155,6 @@ tess::tile_patch tess::tile_patch::impl_type::flip(allocator& a) const {
 	return clone;
 }
 
-
 void  tess::tile_patch::impl_type::flip()  {
 	apply(flip_matrix());
 	for (auto& tile : tiles_)
@@ -154,21 +163,24 @@ void  tess::tile_patch::impl_type::flip()  {
 	edge_tbl_.clear();
 }
 
-std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(const edge& e) const
+std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(int u, int v) const
 {
 	if (edge_tbl_.empty())
 		build_edge_table();
 
-	edge_indices u_v = {
-		vert_tbl_.get_index(e.u().pos()),
-		vert_tbl_.get_index(e.v().pos())
-	};
-
-	auto iter = edge_tbl_.find( u_v );
+	auto iter = edge_tbl_.find(edge_indices{ u, v });
 	if (iter != edge_tbl_.end())
 		return iter->second;
 	else
 		return std::nullopt;
+}
+
+std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(const edge& e) const
+{
+	return get_edge_on(
+		vert_tbl_.get_index(e.u().pos()),
+		vert_tbl_.get_index(e.v().pos())
+	);
 }
 
 void tess::tile_patch::impl_type::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
@@ -205,6 +217,25 @@ tess::tile tess::tile_patch::impl_type::join(tess::allocator& a) const
 	auto points = tess::join(this);
 	return a.create<tess::tile>(&a, points);
 }
+
+void tess::tile_patch::impl_type::dfs(tile_visitor visit) const
+{
+	std::unordered_set<const tile::impl_type*> visited;
+
+	std::function<void(const tile& tile)> dfs_aux;
+	dfs_aux = [&](const tile& tile) {
+		const auto* t = get_impl(tile);
+		if (visited.find(t) != visited.end())
+			return;
+		visited.insert(t);
+		visit(tile);
+		for (const auto* neighbor : get_neighbors(t)) {
+			dfs_aux(make_tess_obj<tess::tile>(neighbor));
+		}
+	};
+	dfs_aux(tiles_[0]);
+}
+
 
 /*---------------------------------------------------------------------------------------------*/
 
@@ -296,7 +327,7 @@ tess::tile_patch tess::flatten(tess::allocator& a, const std::vector<tess::expr_
 				[&tiles](const tess::tile& t) { tiles.push_back(t); },
 				[&tiles](const tess::tile_patch& patch) {
 					for (auto t : patch.tiles()) {
-						get_impl(t)->set_parent(nullptr);
+						get_impl(t)->detach();
 						tiles.push_back(t);
 					}
 				},

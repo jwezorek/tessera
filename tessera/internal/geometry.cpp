@@ -142,19 +142,32 @@ namespace {
 		return joined_so_far;
 	}
 
-	bg_polygon tile_to_polygon(const tess::tile& tile) {
+	bg_polygon tile_to_polygon(const tess::tile::impl_type* tile) {
 		bg_polygon poly;
-		for (const  auto& vertex : tile.vertices()) {
+		for (const auto& vertex : tile->vertices()) {
 			const auto [x, y] = tess::get_impl(vertex)->pos();
 			bg::append(poly, bg::make<bg_point>(x, y));
 		}
-		auto [x_1, y_1] = tess::get_impl(tile.vertices()[0])->pos();
+		auto [x_1, y_1] = tess::get_impl(tile->vertices()[0])->pos();
 		bg::append(poly, bg::make<bg_point>(x_1, y_1));
 		return poly;
 	}
 
-	std::vector<bg_polygon> tile_patch_to_polygons(const tess::tile_patch::impl_type* patch) {
-		const auto& tiles = patch->tiles();
+	bg_polygon tile_to_polygon(const tess::tile& tile) {
+		return tile_to_polygon(get_impl(tile));
+	}
+
+	std::vector<const tess::tile::impl_type*> topological_sort_tiles(const tess::tile_patch::impl_type* patch) {
+		std::vector<const tess::tile::impl_type*> tiles;
+		patch->dfs(
+			[&tiles](const tess::tile& t) {
+				tiles.push_back(get_impl(t));
+			}
+		);
+		return tiles;
+	}
+
+	std::vector<bg_polygon> tile_patch_to_polygons(std::vector<const tess::tile::impl_type*> tiles) {
 		std::vector<bg_polygon> polygons(tiles.size());
 		std::transform(tiles.begin(), tiles.end(), polygons.begin(),
 			[](const auto& tile)->bg_polygon {
@@ -219,9 +232,12 @@ std::size_t tess::edge_hash::operator()(const edge_indices& key) const
 
 std::vector<tess::point> tess::join(const tess::tile_patch::impl_type* tiles)
 {
-	auto maybe_polygon = join_polygons(tile_patch_to_polygons(tiles));
+	auto ordered_tiles = topological_sort_tiles(tiles);
+	auto maybe_polygon = join_polygons(tile_patch_to_polygons(ordered_tiles));
+
 	if (!maybe_polygon.has_value())
 		return {};
+
 	const auto& polygon = maybe_polygon.value().outer();
 	std::vector<tess::point> points(polygon.size());
 	std::transform(polygon.begin(), polygon.end(), points.begin(),
@@ -229,6 +245,7 @@ std::vector<tess::point> tess::join(const tess::tile_patch::impl_type* tiles)
 			return { pt.x(),pt.y() };
 		}
 	);
+
 	return points;
 }
 

@@ -67,9 +67,12 @@ namespace tess {
             std::vector<tess::vertex> vertices_;
             std::vector<tess::edge> edges_;
             tile_patch::impl_type* parent_;
+            int index_;
+
+            expr_value get_method(allocator& allocator, const std::string& field) const;
 
         public:
-            impl_type(obj_id id): tessera_impl(id), parent_(nullptr) {};
+            impl_type(obj_id id): tessera_impl(id), parent_(nullptr), index_(-1) {};
             impl_type(obj_id id, tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
 
             const std::vector<tess::vertex>& vertices() const;
@@ -84,12 +87,15 @@ namespace tess {
             void flip();
             bool has_parent() const;
             tile_patch::impl_type* parent() const;
-            void set_parent(tile_patch::impl_type* parent);
+            void set_parent(tile_patch::impl_type* parent, int index);
+            void detach();
             void insert_field(const std::string& var, const expr_value& val);
             void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile::impl_type* clone) const;
             bool is_detached() const;
             tess::tile clone_detached(tess::allocator& a) const;
             std::string debug() const;
+            tile::impl_type* get_adjacent_tile(int edge_index) const;
+            std::optional<edge> get_edge_on(const edge& e) const;
     };
 }

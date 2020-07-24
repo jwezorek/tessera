@@ -9,10 +9,13 @@
 #include <vector>
 #include <map>
 #include <optional>
+#include <functional>
 
 namespace tess {
 
     class allocator;
+
+    using tile_visitor = std::function<void(const tess::tile&)>;
 
     class tile_patch::impl_type : public tessera_impl
     {
@@ -36,12 +39,15 @@ namespace tess {
 		void apply(const matrix& mat);
         tile_patch flip(allocator& allocator) const;
         void flip();
+        std::optional<edge> get_edge_on(int u, int v) const;
         std::optional<edge> get_edge_on(const edge& e) const;
         void insert_field(const std::string& var, const expr_value& val);
         void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
         void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_patch::impl_type* clone) const;
         point get_vertex_location(int index) const;
         tile join(allocator& allocator) const;
+        void dfs(tile_visitor visit) const;
+        
         std::string debug() const;
     };
 
