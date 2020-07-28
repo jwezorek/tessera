@@ -4,7 +4,7 @@
 namespace {
 
     void compile_field_def(tess::stack_machine::stack& stack, tess::field_def fd) {
-        const auto& [fields, val] = fd;
+        const auto& [fields, verb, val] = fd;
         stack.push(std::make_shared<tess::set_field_op>(static_cast<int>(fields.size())));
         for (const auto& field : fields)
             field->compile(stack);
@@ -61,7 +61,7 @@ std::string tess::field_definitions::to_string() const
 {
     std::stringstream contents;
     for (const auto& fields_val : *impl_) {
-        const auto& [fields, val] = fields_val;
+        const auto& [fields, verb, val] = fields_val;
         if (fields.size() > 1) {
             contents << "(( ";
             for (const auto& field : fields)
@@ -80,14 +80,14 @@ tess::field_definitions tess::field_definitions::simplify() const
     std::vector<field_def> simplified(impl_->size());
     std::transform(impl_->begin(), impl_->end(), simplified.begin(),
         [](const field_def& fd) ->field_def {
-            const auto& [lhs, rhs] = fd;
+            const auto& [lhs, verb, rhs] = fd;
             std::vector<expr_ptr> simplified_lhs(lhs.size());
             std::transform(lhs.begin(), lhs.end(), simplified_lhs.begin(),
                 [](auto ex) {
                     return ex->simplify();
                 }
             );
-            return { simplified_lhs, rhs->simplify() };
+            return { simplified_lhs, verb, rhs->simplify() };
         }
     );
     return tess::field_definitions(simplified);
@@ -96,7 +96,7 @@ tess::field_definitions tess::field_definitions::simplify() const
 void tess::field_definitions::get_dependencies(std::unordered_set<std::string>& dependencies)
 {
     std::unordered_set<std::string> deps;
-    for (const auto& [lhs, rhs] : *impl_) {
+    for (const auto& [lhs, verb, rhs] : *impl_) {
         for (const auto& v : lhs)
             v->get_dependencies(deps);
         rhs->get_dependencies(deps);

@@ -4,7 +4,7 @@
 
 namespace tess {
 
-	using field_def = std::tuple<std::vector<tess::expr_ptr>, tess::expr_ptr>;
+	using field_def = std::tuple< std::vector<tess::expr_ptr>, std::string, tess::expr_ptr >;
 
 	class field_definitions
 	{

@@ -33,10 +33,10 @@ namespace tess {
 		x3::rule<class lhs_, expr_ptr> const lhs = "lhs";
 		x3::rule<class trailing_with__, tess::field_definitions> trailing_with = "trailing_with";
 		x3::rule<class single_ref_expr_as_vec_, std::vector<expr_ptr>> single_ref_expr_as_vec = "single_ref_expr_as_vec";
-		x3::rule<class single_ref_expr_, std::tuple<std::vector<expr_ptr>, expr_ptr>> single_ref_expr = "single_ref_expr";
-		x3::rule<class multi_ref_expr_, std::tuple<std::vector<expr_ptr>, expr_ptr>> multi_ref_expr = "multi_ref_expr";
-		x3::rule<class def_ref_expr_, std::tuple<std::vector<expr_ptr>, expr_ptr>> def_ref_expr = "def_ref_expr";
-		x3::rule<class def_ref_exprs_, std::vector<std::tuple<std::vector<expr_ptr>, expr_ptr>> > def_ref_exprs = "def_ref_exprs";
+		x3::rule<class single_ref_expr_, tess::field_def> single_ref_expr = "single_ref_expr";
+		x3::rule<class multi_ref_expr_, tess::field_def> multi_ref_expr = "multi_ref_expr";
+		x3::rule<class def_ref_expr_, tess::field_def> def_ref_expr = "def_ref_expr";
+		x3::rule<class def_ref_exprs_, std::vector<tess::field_def> > def_ref_exprs = "def_ref_exprs";
 		x3::rule<class field_defs_, tess::field_definitions> field_defs = "field_defs";
 
 		expr_ptr unpack_obj_list(const obj_ref_list_t& ol);
@@ -57,8 +57,9 @@ namespace tess {
 		const auto lhs_def = obj_list[make_lhs];
 
 		const auto single_ref_expr_as_vec_def = lhs [make_vector];
-		auto const single_ref_expr_def = single_ref_expr_as_vec > kw_lit<kw::is>() > expr > x3::lit(';');
-		auto const multi_ref_expr_def = (lhs % x3::lit(',')) > kw_lit<kw::is>() >> expr > x3::lit(';');
+		auto const verb = as<std::string>[kw_<kw::is>() | kw_<kw::on>()];
+		auto const single_ref_expr_def = single_ref_expr_as_vec > verb > expr > x3::lit(';');
+		auto const multi_ref_expr_def = (lhs % x3::lit(',')) > verb >> expr > x3::lit(';');
 		auto const def_ref_expr_def = multi_ref_expr | single_ref_expr;
 		auto const def_ref_exprs_def = *(def_ref_expr_def);
 
@@ -109,17 +110,6 @@ tess::expr_ptr tess::parser::unpack_obj_list(const obj_ref_list_t& ol) {
 		std::make_shared<tess::var_expr>("this"),
 		pieces
 	);
-}
-
-void tess::parser::test_with_parser()
-{
-	std::string test_inp = "with {foo.bar, mumble is 42; left is right;}";
-	std::string::const_iterator iter = test_inp.begin();
-	std::string::const_iterator end_iter = test_inp.end();
-	tess::field_definitions output;
-	bool success = x3::phrase_parse(iter, end_iter, tess::parser::trailing_with, x3::space, output);
-	int aaa;
-	aaa = 5;
 }
 
 std::tuple<tess::field_definitions, std::string::const_iterator> tess::parser::trailing_with_::parse_aux(const text_range& input) const

@@ -399,6 +399,8 @@ void tess::special_number_expr::get_dependencies(std::unordered_set<std::string>
 {
 }
 
+/*----------------------------------------------------------------------*/
+
 tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_ptr> param)
 {
     auto [func_keyword, arg] = param;
@@ -429,15 +431,24 @@ tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_
 	else
         throw tess::error("attempted to parse invalid special function");
 
-    arg_ = arg;
+	args_ = { arg };
 }
 
 tess::special_function_expr::special_function_expr(special_func func, expr_ptr arg) :
-	func_(func), arg_(arg)
+	func_(func), args_({ arg })
 {
 }
 
-std::function<tess::expr_value(tess::allocator&, tess::expr_value)> get_special_function(tess::special_func code) {
+tess::special_function_expr::special_function_expr(special_func func, const std::vector<expr_ptr>& args) :
+	func_(func), args_(args)
+{
+}
+
+std::function<tess::expr_value(tess::allocator & a, const std::vector<tess::expr_value> & v)> get_special_function(tess::special_func code) {
+	return [](tess::allocator& a, const std::vector<tess::expr_value>& v)->tess::expr_value { return { tess::nil_val() }; };
+}
+
+std::function<tess::expr_value(tess::allocator&, tess::expr_value)> get_special_one_param_function(tess::special_func code) {
 	switch (code)
 	{
 	case tess::special_func::arccos:
@@ -515,31 +526,58 @@ std::string get_special_function_name(tess::special_func code) {
 	}
 }
 
+int get_num_params(tess::special_func code)
+{
+	return 1;
+}
+
 void tess::special_function_expr::compile(stack_machine::stack& stack) const
 {
-	stack.push(
-		std::make_shared<one_param_op>(
-			get_special_function(func_),
-			get_special_function_name(func_)
-		)
-	);
-	arg_->compile(stack);
+	if (args_.size() == 1) {
+		stack.push(
+			std::make_shared<one_param_op>(
+				get_special_one_param_function(func_),
+				get_special_function_name(func_)
+				)
+		);
+		args_[0]->compile(stack);
+	} else {
+		stack.push(
+			std::make_shared<val_func_op>(
+				get_num_params(func_),
+				get_special_function(func_),
+				get_special_function_name(func_)
+			)
+		);
+		for (auto arg : args_)
+			arg->compile(stack);
+	}
 }
 
 void tess::special_function_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
-	arg_->get_dependencies(dependencies);
+	for (auto arg: args_)
+		arg->get_dependencies(dependencies);
 }
 
 tess::expr_ptr tess::special_function_expr::simplify() const
 {
-	return std::make_shared< special_function_expr>(func_, arg_->simplify());
+	std::vector<expr_ptr> simplified_args(args_.size());
+	std::transform(args_.begin(), args_.end(), simplified_args.begin(),
+		[](const expr_ptr& e)->expr_ptr {
+			return e->simplify();
+		}
+	);
+	return std::make_shared< special_function_expr>(func_, simplified_args);
 }
 
 std::string tess::special_function_expr::to_string() const
 {
 	std::stringstream ss;
-	ss << "( " << get_special_function_name(func_) << " " << arg_->to_string() << " )";
+	ss << "( " << get_special_function_name(func_) << " ";
+	for (auto e : args_)
+		ss << e->to_string() << " ";
+	ss << ")";
 	return ss.str();
 }
 
