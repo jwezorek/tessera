@@ -16,17 +16,13 @@ namespace {
 		return allocator.create<tess::cluster>( cluster_contents ); 
 	}
 
-	//TODO: remove this
-	struct impl_cloner : public tess::tessera_impl
+	template<typename T>
+	typename T::impl_type* perform_clone(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, typename T::impl_type* impl)
 	{
-		template<typename T>
-		typename T::impl_type* clone(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, typename T::impl_type* impl)
-		{
-			tess::expr_value wrapper = { make_tess_obj<T>(impl) };
-			auto wrapper_clone = std::get<T>(wrapper.clone(allocator, orginal_to_clone));
-			return  get_impl(wrapper_clone);
-		}
-	};
+		tess::expr_value wrapper = { tess::make_tess_obj<T>(impl) };
+		auto wrapper_clone = std::get<T>(wrapper.clone(allocator, orginal_to_clone));
+		return  tess::get_impl(wrapper_clone);
+	}
 }
 
 std::vector<std::tuple<tess::number, tess::number>> get_regular_poly_vert_loc(int n) {
@@ -107,8 +103,7 @@ void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_
 	}
 
 	if (parent_ != nullptr) {
-		impl_cloner cloner;
-		clone->parent_ = cloner.clone<tile_patch>(allocator, orginal_to_clone, parent_);
+		clone->parent_ = perform_clone<tile_patch>(allocator, orginal_to_clone, parent_);
 	} else {
 		clone->parent_ = nullptr;
 	}
@@ -333,8 +328,7 @@ void  tess::edge::impl_type::clone_to(tess::allocator& allocator, std::unordered
 	clone->index_ = index_;
 	clone->u_ = u_;
 	clone->v_ = v_;
-	impl_cloner cloner;
-	clone->parent_ = cloner.clone<tile>(allocator, orginal_to_clone, parent_);
+	clone->parent_ = perform_clone<tile>(allocator, orginal_to_clone, parent_);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -391,8 +385,7 @@ void tess::vertex::impl_type::clone_to(tess::allocator& allocator, std::unordere
 {
 	clone->index_ = index_;
 	clone->location_ = location_;
-	impl_cloner cloner;
-	clone->parent_ = cloner.clone<tile>(allocator, orginal_to_clone, parent_);
+	clone->parent_ = perform_clone<tile>(allocator, orginal_to_clone, parent_);
 };
 
 tess::tile_patch::impl_type* tess::vertex::impl_type::grandparent() const
