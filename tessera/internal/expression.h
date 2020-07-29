@@ -229,4 +229,17 @@ namespace tess {
         expr_ptr simplify() const override;
         std::string to_string() const override;
     };
+
+    class on_expr : public expression
+    {
+    private:
+        expr_ptr patch_expr_;
+        expr_ptr arg_expr_;
+    public:
+        on_expr(expr_ptr patch_expr, expr_ptr arg_expr);
+        void compile(stack_machine::stack& stack) const override;
+        void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
+        expr_ptr simplify() const override;
+        std::string to_string() const override;
+    };
 }

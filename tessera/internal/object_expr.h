@@ -69,6 +69,7 @@ namespace tess {
         obj_field_expr(expr_ptr obj, std::string field, bool is_ref);
         std::string to_string() const override;
         expr_ptr get_object() const;
+        std::string get_field() const;
         void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;

@@ -868,3 +868,51 @@ std::string tess::if_expr::to_string() const
 {
 	return "( if " + condition_->to_string() + " " + then_clause_->to_string() + " " + else_clause_->to_string() + " )";
 }
+
+tess::on_expr::on_expr(expr_ptr patch_expr, expr_ptr arg_expr) :
+	patch_expr_(patch_expr),
+	arg_expr_(arg_expr)
+{
+}
+
+void tess::on_expr::compile(stack_machine::stack& stack) const
+{
+	stack.push(
+		std::make_shared<val_func_op>(
+			2,
+			[](allocator& a, const std::vector<expr_value>& args) -> expr_value {
+				std::variant<tess::tile, tess::tile_patch> tile_or_patch = variant_cast(args[0]);
+				auto e = std::get<tess::edge>(args[1]);
+				return std::visit(
+					[e](const auto& t)->expr_value {
+						auto maybe_edge = tess::get_impl(t)->get_edge_on(e);
+						if (maybe_edge.has_value())
+							return { maybe_edge.value() };
+						else
+							return { tess::nil_val() };
+					},
+					tile_or_patch
+				);
+			},
+			"<on>"
+		)		
+	);
+	patch_expr_->compile(stack);
+	arg_expr_->compile(stack);
+}
+
+void tess::on_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
+{
+	patch_expr_->get_dependencies(dependencies);
+	arg_expr_->get_dependencies(dependencies);
+}
+
+tess::expr_ptr tess::on_expr::simplify() const
+{
+	return std::make_shared< on_expr>(patch_expr_->simplify(), arg_expr_->simplify());
+}
+
+std::string tess::on_expr::to_string() const
+{
+	return "( on " + patch_expr_->to_string() + " " + arg_expr_->to_string() + " )";
+}

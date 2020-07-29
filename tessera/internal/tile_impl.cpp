@@ -27,42 +27,6 @@ namespace {
 			return  get_impl(wrapper_clone);
 		}
 	};
-
-	tess::expr_value on_method(tess::allocator& a, const std::vector<tess::expr_value>& v) {
-		auto t = std::get<tess::tile>(v[0]);
-		auto edge = std::get<tess::edge>(v[1]);
-		auto maybe_edge = tess::get_impl(t)->get_edge_on(edge);
-		if (maybe_edge.has_value())
-			return { maybe_edge.value() };
-		else
-			return { tess::nil_val() };
-	}
-
-	tess::expr_value get_on_lambda(tess::allocator& a) {
-		return {
-			a.create<tess::lambda>(
-				std::vector<std::string>{ "_edge", "_tile" },
-				std::vector<tess::stack_machine::item>{ {
-						tess::stack_machine::variable("_edge")
-					} , {
-						std::make_shared<tess::get_var>()
-					} , {
-						tess::stack_machine::variable("_tile")
-					} , {
-						std::make_shared<tess::get_var>()
-					} , {
-						std::make_shared<tess::val_func_op>(
-							2,
-							on_method,
-							"on_method"
-						)
-					}
-				},
-				std::vector<std::string>{}
-			)
-		};
-	}
-
 }
 
 std::vector<std::tuple<tess::number, tess::number>> get_regular_poly_vert_loc(int n) {
@@ -229,14 +193,6 @@ std::optional<tess::edge> tess::tile::impl_type::get_edge_on(const edge& edge) c
 	return std::nullopt;
 }
 
-tess::expr_value tess::tile::impl_type::get_method(allocator& allocator, const std::string& field) const
-{
-	if (field != "on")
-		return { nil_val() };
-
-	return get_on_lambda(allocator);
-}
-
 tess::expr_value tess::tile::impl_type::get_field(const std::string& field) const
 {
 	if (fields_.find(field) != fields_.end())
@@ -250,10 +206,6 @@ tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const st
 	if (field == parser::keyword(parser::kw::edge) || field == "edges") {
 		return { edges_as_cluster(allocator, edges_) };
 	}
-
-	auto tile_method = get_method(allocator, field);
-	if (!tile_method.is_nil())
-		return tile_method;
 
 	auto val = get_field(field);
 	if (!std::holds_alternative< nil_val>(val))

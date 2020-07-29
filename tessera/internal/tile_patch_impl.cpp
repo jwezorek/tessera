@@ -19,41 +19,6 @@ namespace {
 		}
 		return neighbors;
 	}
-
-	tess::expr_value on_method(tess::allocator& a, const std::vector<tess::expr_value>& v) {
-		auto patch = std::get<tess::tile_patch>(v[0]);
-		auto edge = std::get<tess::edge>(v[1]);
-		auto maybe_edge = tess::get_impl(patch)->get_edge_on(edge);
-		if (maybe_edge.has_value())
-			return { maybe_edge.value() };
-		else
-			return { tess::nil_val() };
-	}
-
-	tess::expr_value get_on_lambda(tess::allocator& a) {
-		return {
-			a.create<tess::lambda>(
-				std::vector<std::string>{ "_edge", "_patch" },
-				std::vector<tess::stack_machine::item>{ {
-						tess::stack_machine::variable("_edge")
-					} , {
-						std::make_shared<tess::get_var>()
-					} , {
-						tess::stack_machine::variable("_patch")
-					} , {
-						std::make_shared<tess::get_var>()
-					} , {
-						std::make_shared<tess::val_func_op>(
-							2,
-							on_method,
-							"on_method"
-						)
-					} 
-				},
-				std::vector<std::string>{}
-			)
-		};
-	}
 }
 
 const std::vector<tess::tile>& tess::tile_patch::impl_type::tiles() const
@@ -101,20 +66,8 @@ void tess::tile_patch::impl_type::insert_field(const std::string& var, const exp
 	fields_[var] = val;
 }
 
-tess::expr_value tess::tile_patch::impl_type::get_method(allocator& allocator, const std::string& field) const
-{
-	if (field != "on")
-		return { nil_val() };
-
-	return get_on_lambda(allocator);
-}
-
 tess::expr_value tess::tile_patch::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
-	auto patch_method = get_method(allocator, field);
-	if (!patch_method.is_nil())
-		return patch_method;
-
 	auto iter = fields_.find(field);
 	return (iter != fields_.end()) ?
 		tess::expr_value{iter->second} :

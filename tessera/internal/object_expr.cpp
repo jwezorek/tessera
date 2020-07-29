@@ -162,6 +162,11 @@ tess::expr_ptr tess::obj_field_expr::get_object() const
     return obj_;
 }
 
+std::string tess::obj_field_expr::get_field() const
+{
+    return field_;
+}
+
 void tess::obj_field_expr::compile(stack_machine::stack& stack) const
 {
     stack.push(std::make_shared<get_field_op>(field_, is_ref_));

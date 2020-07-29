@@ -33,7 +33,6 @@ namespace tess {
         void insert_tile( tess::tile& t);
         const std::vector<tess::tile>& tiles() const;
 		expr_value get_field(allocator& allocator, const std::string& field) const;
-        expr_value get_method(allocator& allocator, const std::string& field) const;
         expr_value get_ary_item(int i) const;
         int get_ary_count() const;
 		void apply(const matrix& mat);

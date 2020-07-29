@@ -79,15 +79,24 @@ namespace tess {
 			return dynamic_cast<obj_field_expr*>(e.get()) != nullptr;
 		}
 
+		expr_ptr make_method_call(expr_ptr self, std::string method, const params_t& func_params)
+		{
+			// this is a method call so we need to add a "this" argument.
+			std::vector<expr_ptr> method_params(func_params.size() + 1);
+			if (method == "on" && func_params.size() == 1) {
+				return std::make_shared<on_expr>(self, func_params[0]);
+			};
+			throw tess::error("bad method call");
+		}
+
 		expr_ptr func_call_or_method_call_expr(expr_ptr e, const params_t& func_params) {
 			if (! is_field_expr(e))
 				return make_<func_call_expr>(e, func_params);
 
-			// this is a method call so we need to add a "this" argument.
-			std::vector<expr_ptr> method_params(func_params.size() + 1);
-			method_params[0] = std::static_pointer_cast<obj_field_expr>(e)->get_object();
-			std::copy(func_params.begin(), func_params.end(), method_params.begin() + 1);
-			return make_<func_call_expr>(e, method_params);
+			auto field_expr = std::static_pointer_cast<obj_field_expr>(e);
+			auto this_ptr = field_expr->get_object();
+			auto method = field_expr->get_field();
+			return make_method_call(this_ptr, method, func_params);
 		}
 
 		expr_ptr expression_from_op(expr_ptr e, const op_t& op) {

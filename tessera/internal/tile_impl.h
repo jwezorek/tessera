@@ -69,8 +69,6 @@ namespace tess {
             tile_patch::impl_type* parent_;
             int index_;
 
-            expr_value get_method(allocator& allocator, const std::string& field) const;
-
         public:
             impl_type(obj_id id): tessera_impl(id), parent_(nullptr), index_(-1) {};
             impl_type(obj_id id, tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
