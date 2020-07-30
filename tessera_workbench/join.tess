@@ -14,8 +14,8 @@ let plus_sign = tile {
 	let center = square;
 	let north, west, south, east = [square, square, square, square];
 } with {
-	N, W, S, E is [this.on( north.N ), this.on( west.W ), this.on( south.S ), this.on( east.E )];
-	NW, SW, SE, NE is [this.on(north.W), this.on(west.S), this.on(south.E), this.on(east.N)];
+	N, W, S, E on [ north.N , west.W, south.S, east.E];
+	NW, SW, SE, NE on [north.W, west.S, south.E, east.N];
     color is "red";
 };
 
@@ -32,8 +32,8 @@ let plus_sign_fractal = patch(n) {
 		 else
 			[ plus_sign_fractal(n-1), plus_sign_fractal(n-1), plus_sign_fractal(n-1), plus_sign_fractal(n-1), plus_sign_fractal(n-1) ];
 } with {
-	N, W, S, E is [ this.on(north.N), this.on(west.W), this.on(south.S), this.on(east.E) ];
-	NW, SW, SE, NE is [ this.on(west.NW), this.on(south.SW), this.on(east.SE), this.on(north.NE) ];
+	N, W, S, E on [ north.N, west.W, south.S, east.E ];
+	NW, SW, SE, NE on [ west.NW, south.SW, east.SE, north.NE ];
 };
 
 tableau( n ) {

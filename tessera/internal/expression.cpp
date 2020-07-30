@@ -882,14 +882,10 @@ void tess::on_expr::compile(stack_machine::stack& stack) const
 			2,
 			[](allocator& a, const std::vector<expr_value>& args) -> expr_value {
 				std::variant<tess::tile, tess::tile_patch> tile_or_patch = variant_cast(args[0]);
-				auto e = std::get<tess::edge>(args[1]);
+				std::variant<tess::edge, tess::cluster> arg = variant_cast(args[1]);
 				return std::visit(
-					[e](const auto& t)->expr_value {
-						auto maybe_edge = tess::get_impl(t)->get_edge_on(e);
-						if (maybe_edge.has_value())
-							return { maybe_edge.value() };
-						else
-							return { tess::nil_val() };
+					[&](const auto& t)->expr_value {
+						return tess::get_impl(t)->get_on(a, arg);
 					},
 					tile_or_patch
 				);

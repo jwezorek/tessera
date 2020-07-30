@@ -21,9 +21,9 @@ let inflate_thin_rhombus = patch( n ) {
         else
             [flip( inflate_fat_rhombus(n-1) ), inflate_thin_rhombus(n-1) ];
 } with {
-    a is this.on(top.base);
-    b is this.on(top.b);
-    base is this.on(bottom.a);
+    a on top.base;
+    b on top.b;
+    base on bottom.a;
 };
 
 let inflate_fat_rhombus = patch( n ) {
@@ -35,9 +35,9 @@ let inflate_fat_rhombus = patch( n ) {
         else
             [ flip(inflate_fat_rhombus(n-1) ), inflate_thin_rhombus(n-1), inflate_fat_rhombus(n-1) ];
 } with {
-    a is this.on(left.b);
-    b is this.on(right.base);
-    base is this.on(left.base);
+    a on left.b;
+    b on right.base;
+    base on left.base;
 };
 
 tableau (n) {

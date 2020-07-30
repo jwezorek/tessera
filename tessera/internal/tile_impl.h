@@ -94,6 +94,7 @@ namespace tess {
             tess::tile clone_detached(tess::allocator& a) const;
             std::string debug() const;
             tile::impl_type* get_adjacent_tile(int edge_index) const;
-            std::optional<edge> get_edge_on(const edge& e) const;
+            std::optional<edge> get_edge_on(allocator& a, const edge& e) const;
+            expr_value get_on(allocator& a, const std::variant<tess::edge, tess::cluster>& e) const;
     };
 }

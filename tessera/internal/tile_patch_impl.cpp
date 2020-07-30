@@ -128,11 +128,34 @@ std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(int u, int v)
 		return std::nullopt;
 }
 
-std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(const edge& e) const
+tess::expr_value tess::tile_patch::impl_type::get_on(allocator& a, const std::variant<tess::edge, tess::cluster>& var) const
 {
-	return get_edge_on(
-		vert_tbl_.get_index(e.u().pos()),
-		vert_tbl_.get_index(e.v().pos())
+	return std::visit(
+		overloaded{
+			[&](const tess::edge& e) -> expr_value {
+				auto maybe_edge = get_edge_on(
+					vert_tbl_.get_index(e.u().pos()),
+					vert_tbl_.get_index(e.v().pos())
+				);
+				if (maybe_edge.has_value()) {
+					return { maybe_edge.value() };
+				} else {
+					return {};
+				}
+			},
+			[&](const tess::cluster& c) -> expr_value {
+				const auto& items = c.items();
+				std::vector<tess::expr_value> on_edges(c.count());
+				std::transform(items.begin(), items.end(), on_edges.begin(),
+					[&](const expr_value& v) -> expr_value {
+						std::variant<tess::edge, tess::cluster> edge_or_cluster = variant_cast(v);
+						return this->get_on(a, edge_or_cluster);
+					}
+				);
+				return { a.create<tess::cluster>(on_edges) };
+			}
+		},
+		var
 	);
 }
 

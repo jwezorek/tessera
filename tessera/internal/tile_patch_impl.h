@@ -39,7 +39,7 @@ namespace tess {
         tile_patch flip(allocator& allocator) const;
         void flip();
         std::optional<edge> get_edge_on(int u, int v) const;
-        std::optional<edge> get_edge_on(const edge& e) const;
+        expr_value get_on(allocator& a, const std::variant<tess::edge, tess::cluster>& e) const;
         void insert_field(const std::string& var, const expr_value& val);
         void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
         void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_patch::impl_type* clone) const;

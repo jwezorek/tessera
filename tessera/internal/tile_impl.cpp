@@ -166,10 +166,11 @@ tess::tile::impl_type* tess::tile::impl_type::get_adjacent_tile(int edge_index) 
 }
 
 
-std::optional<tess::edge> tess::tile::impl_type::get_edge_on(const edge& edge) const
+std::optional<tess::edge> tess::tile::impl_type::get_edge_on(tess::allocator& a, const edge& edge) const
 {
-	if (!is_detached())
-		return parent_->get_edge_on(edge);
+	if (!is_detached()) {
+		return std::get<tess::edge>(parent_->get_on(a, edge));
+	}
 
 	//TODO: use an rtree here.
 	tess::point u = get_impl(edge.u())->pos();
@@ -186,6 +187,34 @@ std::optional<tess::edge> tess::tile::impl_type::get_edge_on(const edge& edge) c
 	}
 
 	return std::nullopt;
+}
+
+tess::expr_value tess::tile::impl_type::get_on(tess::allocator& a, const std::variant<tess::edge, tess::cluster>& var) const
+{
+	return std::visit(
+		overloaded{
+			[&](const tess::edge& e) -> expr_value {
+				auto maybe_edge = get_edge_on(a,e);
+				if (maybe_edge.has_value()) {
+					return { maybe_edge.value() };
+				} else {
+				  return {};
+				}
+			},
+			[&](const tess::cluster& c) -> expr_value {
+				const auto& items = c.items();
+				std::vector<tess::expr_value> on_edges(c.count());
+				std::transform(items.begin(), items.end(), on_edges.begin(),
+					[&](const expr_value& v) -> expr_value {
+						std::variant<tess::edge, tess::cluster> var = variant_cast(v);
+						return this->get_on(a, var);
+					}
+				);
+				return { a.create<tess::cluster>(on_edges) };
+			}
+		},
+		var
+	);
 }
 
 tess::expr_value tess::tile::impl_type::get_field(const std::string& field) const

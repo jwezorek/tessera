@@ -9,8 +9,11 @@ namespace tess {
 	class field_definitions
 	{
 	public:
+		using field_def_pair = std::tuple<std::vector<tess::expr_ptr>, tess::expr_ptr >;
+
 		field_definitions() {}
-		field_definitions(const std::vector<field_def>& assignments);
+		field_definitions(const std::vector<field_def>& defs);
+		field_definitions(const std::vector<field_def_pair>& defs);
 		void compile(stack_machine::stack& stack) const;
 		std::string to_string() const;
 		bool operator!=(const field_definitions& block) { return impl_.get() != block.impl_.get(); }
@@ -18,7 +21,7 @@ namespace tess {
 		void get_dependencies(std::unordered_set<std::string>& dependencies);
 		bool empty() const;
 	private:
-		std::shared_ptr<std::vector<field_def>> impl_;
+		std::shared_ptr<std::vector<field_def_pair>> impl_;
 	};
 
 	class with_expr : public expression
