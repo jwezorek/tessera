@@ -313,7 +313,35 @@ const tess::vertex& tess::edge::impl_type::v() const
 
 tess::expr_value tess::edge::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
-	return {};
+	return get_field(field);
+}
+
+tess::expr_value tess::edge::impl_type::get_field(const std::string& field) const
+{
+	if (fields_.find(field) != fields_.end())
+		return fields_.at(field);
+
+	return { nil_val() };
+}
+
+void tess::edge::impl_type::insert_field(const std::string& var, const expr_value& val)
+{
+	fields_[var] = val;
+}
+
+bool tess::edge::impl_type::has_property(const std::string& prop) const
+{
+	return std::visit(
+		overloaded{
+			[&](bool b) -> bool {
+				return b;
+			},
+			[&](const auto& v) -> bool {
+				return false;
+			}
+		},
+		get_field( prop )
+	);
 }
 
 tess::tile::impl_type* tess::edge::impl_type::parent() const

@@ -145,6 +145,19 @@ namespace tess {
         std::string to_string() const override;
     };
 
+    class bool_lit_expr : public expression
+    {
+    private:
+        bool val_;
+    public:
+        bool_lit_expr(bool val);
+        bool_lit_expr(const std::string& keyword);
+        void compile(stack_machine::stack& stack) const override;
+        void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
+        expr_ptr simplify() const override;
+        std::string to_string() const override;
+    };
+
 	class and_expr : public expression
 	{
 	private:

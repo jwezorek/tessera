@@ -56,6 +56,8 @@ namespace tess {
             in,
             on,
             join,
+            true_,
+            false_,
             none
         };
 

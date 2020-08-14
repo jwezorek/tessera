@@ -53,7 +53,9 @@ const std::string& tess::parser::keyword(tess::parser::kw tok)
             {kw::for_,               "for"},
             {kw::in,                 "in"},
             {kw::on,                 "on"},
-            {kw::join,               "join"}
+            {kw::join,               "join"},
+            {kw::true_,              "true"},
+            {kw::false_,             "false"}
     };
 
     assertm( (keyword_tbl.size() == static_cast<int>(kw::none) - static_cast<int>(kw::if_)), "keyword table is messed up!");

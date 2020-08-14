@@ -46,14 +46,17 @@ namespace tess {
             tile::impl_type* parent_;
             int index_;
             int u_, v_;
+            std::map<std::string, expr_value> fields_;
         public:
             impl_type(obj_id id) : tessera_impl(id), parent_(nullptr), index_(-1), u_(-1), v_(-1) {};
 			impl_type(obj_id id, tile::impl_type* parent, int index, int u, int v);
 			const tess::vertex& u() const;
 			const tess::vertex& v() const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;
+            expr_value get_field(const std::string& field) const;
+            bool has_property(const std::string& prop) const;
 			tile::impl_type* parent() const;
-            void insert_field(const std::string& var, const expr_value& val) {}
+            void insert_field(const std::string& var, const expr_value& val);
             void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, edge::impl_type* clone) const;
             void flip();

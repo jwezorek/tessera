@@ -912,3 +912,33 @@ std::string tess::on_expr::to_string() const
 {
 	return "( on " + patch_expr_->to_string() + " " + arg_expr_->to_string() + " )";
 }
+
+tess::bool_lit_expr::bool_lit_expr(const std::string& val) : val_(val == parser::keyword(parser::kw::true_))
+{
+}
+
+tess::bool_lit_expr::bool_lit_expr(bool val) : val_(val)
+{
+}
+
+void tess::bool_lit_expr::compile(stack_machine::stack& stack) const
+{
+	stack.push(
+		tess::expr_value{ val_ }
+	);
+}
+
+void tess::bool_lit_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
+{
+}
+
+tess::expr_ptr tess::bool_lit_expr::simplify() const
+{
+	return std::make_shared<tess::bool_lit_expr>(val_);
+}
+
+std::string tess::bool_lit_expr::to_string() const
+{
+	using namespace std::string_literals;
+	return "#("s + ( (val_) ? "true"s : "false"s) + ")"s;
+}

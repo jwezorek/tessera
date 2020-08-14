@@ -3,6 +3,7 @@ let half_thin_rhombus = tile {
 } with {
     color is "palegoldenrod";
     base, b, a is this.edges;
+    base.broken is true;
 };
 
 let half_fat_rhombus = tile {
@@ -10,6 +11,7 @@ let half_fat_rhombus = tile {
 } with {
     color is "skyblue";
     base, b, a is this.edges;
+    base.broken is true;
 };
 
 let inflate_thin_rhombus = patch( n ) {

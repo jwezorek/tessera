@@ -23,6 +23,7 @@ namespace tess {
         x3::rule<class number_, expr_ptr> const number = "number";
         x3::rule<class quoted_string_, std::string> const quoted_string = "quoted_string";
         x3::rule<class string_, expr_ptr> const string = "string";
+        x3::rule<class bool_, expr_ptr> const boolean = "boolean";
 		x3::rule<class nil_, expr_ptr> const nil = "nil";
 
         auto const expr = expression_();
@@ -36,14 +37,16 @@ namespace tess {
 		auto const number_def = x3::int32[make_<number_expr>];
         auto const quoted_string_def = lexeme['"' >> +(char_ - '"') >> '"'];
         auto const string_def = quoted_string[make_<string_expr>];
+        auto const boolean_def = kw_<kw::true_>()[make_<bool_lit_expr>] | kw_<kw::false_>()[make_<bool_lit_expr>];
 		auto const nil_def = kw_lit<kw::nil>()[make_nil];
 
-		auto const basic_expr_def =  nil | lay_expr | object_expr | special_expr | number | string | function | if_expr | cluster_expr | ('(' >> expr >> ')') ;
+		auto const basic_expr_def =  nil | lay_expr | object_expr | special_expr | number | boolean | string | function | if_expr | cluster_expr | ('(' >> expr >> ')') ;
 
         BOOST_SPIRIT_DEFINE(
             number,
             quoted_string,
             string,
+            boolean,
 			nil,
             basic_expr
         )

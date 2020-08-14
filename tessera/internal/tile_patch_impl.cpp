@@ -19,6 +19,26 @@ namespace {
 		}
 		return neighbors;
 	}
+
+	bool has_broken_tile(const std::vector<tess::tile>& tiles) {
+		return std::find_if(tiles.begin(), tiles.end(), 
+			[](const tess::tile& tile) {
+				const auto& edges = tile.edges();
+				return std::find_if(edges.begin(), edges.end(),
+					[](const tess::edge& e) {
+						const auto* edge = tess::get_impl(e);
+						return edge->has_property("broken");
+					}
+				) != edges.end();
+			}
+		) != tiles.end();
+	}
+
+	std::vector<tess::tile> join_broken_tiles(tess::allocator& a, const std::vector<tess::tile>& tiles) {
+		if (!has_broken_tile(tiles))
+			return tiles;
+		return tiles;
+	}
 }
 
 const std::vector<tess::tile>& tess::tile_patch::impl_type::tiles() const
@@ -312,6 +332,7 @@ tess::tile_patch tess::flatten(tess::allocator& a, const std::vector<tess::expr_
 			tile_or_patch
 		);
 	}
+	tiles = join_broken_tiles(a, tiles);
 	auto patch_impl = a.create_impl<tess::tile_patch>();
 	for (const auto& tile : tiles) {
 		auto copy = tess::clone(a, tile);
