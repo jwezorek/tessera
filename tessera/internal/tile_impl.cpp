@@ -386,6 +386,10 @@ void  tess::edge::impl_type::clone_to(tess::allocator& allocator, std::unordered
 	clone->u_ = u_;
 	clone->v_ = v_;
 	clone->parent_ = perform_clone<tile>(allocator, orginal_to_clone, parent_);
+
+	for (const auto& [var, val] : fields_) {
+		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
+	}
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -489,6 +493,28 @@ void tess::vertex::impl_type::apply(const tess::matrix& mat) {
 tess::tile::impl_type* tess::vertex::impl_type::parent() const
 {
 	return parent_;
+}
+
+tess::edge::impl_type* tess::vertex::impl_type::in_edge() const
+{
+	auto& edges = parent_->edges();
+	auto iter = std::find_if(edges.begin(), edges.end(),
+		[this](const tess::edge& e) {
+			return tess::get_impl(e.v()) == this;
+		}
+	);
+	return get_impl(*iter);
+}
+
+tess::edge::impl_type* tess::vertex::impl_type::out_edge() const
+{
+	auto& edges = parent_->edges();
+	auto iter = std::find_if(edges.begin(), edges.end(),
+		[this](const tess::edge& e) {
+			return tess::get_impl(e.u()) == this;
+		}
+	);
+	return get_impl(*iter);
 }
 
 

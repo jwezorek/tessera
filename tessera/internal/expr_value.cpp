@@ -18,8 +18,7 @@ namespace {
 
 		if (orginal_to_clone.find(key) != orginal_to_clone.end()) {
 			clone_impl = reinterpret_cast<typename T::impl_type*>(orginal_to_clone[key]);
-		}
-		else {
+		} else {
 			clone_impl = allocator.create_impl<T>();
 			orginal_to_clone[key] = clone_impl;
 			original_impl->clone_to(allocator, orginal_to_clone, clone_impl);

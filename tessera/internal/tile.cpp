@@ -44,6 +44,16 @@ tess::property_value tess::vertex::get_property_variant(const std::string& prop)
     return property_value();
 }
 
+tess::edge tess::vertex::out_edge() const
+{
+	return tess::make_tess_obj<tess::edge>(impl_->out_edge());
+}
+
+tess::edge tess::vertex::in_edge() const
+{
+	return tess::make_tess_obj<tess::edge>(impl_->in_edge());
+}
+
 /*--------------------------------------------------------------------------------*/
 
 

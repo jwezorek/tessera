@@ -142,15 +142,27 @@ namespace {
 		return joined_so_far;
 	}
 
-	bg_polygon tile_to_polygon(const tess::tile::impl_type* tile) {
+	bg_polygon vertices_to_polygon(const std::vector<tess::vertex>& vertices) {
 		bg_polygon poly;
-		for (const auto& vertex : tile->vertices()) {
+		for (const auto& vertex : vertices) {
 			const auto [x, y] = tess::get_impl(vertex)->pos();
 			bg::append(poly, bg::make<bg_point>(x, y));
 		}
-		auto [x_1, y_1] = tess::get_impl(tile->vertices()[0])->pos();
+		auto [x_1, y_1] = tess::get_impl(vertices[0])->pos();
 		bg::append(poly, bg::make<bg_point>(x_1, y_1));
 		return poly;
+	}
+
+	bg_polygon tile_to_polygon(const tess::tile::impl_type* tile) {
+		std::vector<tess::vertex> ordered_vertices;
+		auto first = tile->vertices()[0];
+		auto v = first;
+		do {
+			ordered_vertices.push_back(v);
+			v = v.out_edge().v();
+		} while (tess::get_impl(v) != tess::get_impl(first));
+
+		return vertices_to_polygon(ordered_vertices);
 	}
 
 	bg_polygon tile_to_polygon(const tess::tile& tile) {

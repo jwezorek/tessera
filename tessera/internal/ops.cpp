@@ -388,7 +388,7 @@ tess::stack_machine::item tess::lay_op::execute(const std::vector<stack_machine:
     auto result = apply_mapping(operands);
     return  {
         expr_value {
-            tess::flatten(ctxt.allocator(), layees.values())
+            tess::flatten(ctxt.allocator(), layees.values(), true)
         }
     };
 }

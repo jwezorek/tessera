@@ -30,11 +30,15 @@ namespace tess {
 		};
 	}
 
+	class edge;
+
 	class vertex : public detail::property_container<vertex> {
 		friend class tessera_impl;
 	public:
 		std::tuple<double, double> pos() const;
 		property_value get_property_variant(const std::string& prop) const;
+		edge out_edge() const;
+		edge in_edge() const;
 		class impl_type;
 	private:
 		impl_type* impl_;

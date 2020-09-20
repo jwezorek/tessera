@@ -3,6 +3,7 @@
 #include <vector>
 #include <variant>
 #include <stdexcept>
+#include <iterator>
 #include <algorithm>
 
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };

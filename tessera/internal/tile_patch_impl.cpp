@@ -5,7 +5,10 @@
 #include "stack_machine.h"
 #include "ops.h"
 #include "geometry.h"
+#include "boost/pending/disjoint_sets.hpp"
+#include "boost/property_map/property_map.hpp"
 #include <variant>
+#include <unordered_map>
 
 namespace {
 
@@ -34,10 +37,133 @@ namespace {
 		) != tiles.end();
 	}
 
+	std::vector<const tess::edge::impl_type*> get_broken_edges(const std::vector<tess::tile>& tiles) {
+		std::vector<const tess::edge::impl_type*> edges;
+		for (const tess::tile& t : tiles) {
+			for (const tess::edge& e : t.edges()) {
+				const auto* edge = tess::get_impl(e);
+				if (edge->has_property("broken")) {
+					edges.push_back(edge);
+				}
+			}
+		}
+		return edges;
+	}
+
+	std::string pt_to_string(std::tuple<tess::number, tess::number> pt) {
+		std::stringstream ss;
+		auto [x, y] = pt;
+		ss << "( " << x << " , " << y << " )";
+		return ss.str();
+	}
+
+	void debugTile(const tess::tile& tile) {
+		for (const auto& v : tile.vertices()) {
+			auto [x, y] = v.pos();
+			std::cout << "( " << x << " , " << y << " ) ";
+		}
+	}
+
+	using tile_ptr = const tess::tile::impl_type*;
+	std::vector<std::tuple<tile_ptr, tile_ptr>> get_broken_tiles(const std::vector<tess::tile>& tiles) {
+		auto broken_edges = get_broken_edges(tiles);
+		tess::vertex_location_table vert_tbl;
+		tess::edge_table<tile_ptr> edge_tbl;
+		std::vector<std::tuple<tile_ptr, tile_ptr>> output;
+		for (const auto& e : broken_edges) {
+			auto u = vert_tbl.insert(e->u().pos());
+			auto v = vert_tbl.insert(e->v().pos());
+			if (edge_tbl.find({ u,v }) != edge_tbl.end())
+				throw tess::error("invalid tile patch while flattening (unable to auto join broekn tiles)");
+			edge_tbl[{ u, v }] = e->parent();
+			auto adj_edge = edge_tbl.find({ v,u });
+			if (adj_edge != edge_tbl.end()) {
+				output.emplace_back( tile_ptr(e->parent()), adj_edge->second  );
+			} 
+		}
+		return output;
+	}
+
+	
+	template<typename T>
+	using assoc_map = boost::associative_property_map<T>;
+	using rank_map = std::unordered_map<tile_ptr, int>;
+	using parent_map = std::unordered_map<tile_ptr, tile_ptr>;
+	using disjoint_sets = boost::disjoint_sets<assoc_map<rank_map>, assoc_map<parent_map>>;
+
+	std::vector<std::vector<tess::tile>> get_broken_tile_groups( const std::vector<tess::tile>& tiles) {
+
+		rank_map rank;
+		parent_map parent;
+		disjoint_sets ds(boost::make_assoc_property_map(rank), boost::make_assoc_property_map(parent));
+
+		// insert all the vertices as single sets
+		for (const auto& t : tiles) {
+			ds.make_set( tess::get_impl(t) );
+		}
+
+		// add each graph edge to the data structure
+		auto broken_tiles = get_broken_tiles(tiles);
+		for (const auto [u, v] : broken_tiles) {
+			ds.link(u, v);
+		}
+
+		// build a map mapping representatives to a elements...
+		std::unordered_map<tile_ptr, std::vector<tile_ptr>> sets;
+		for (const auto& tile : tiles) {
+			auto v = tess::get_impl(tile);
+			auto parent = ds.find_set(v);
+			sets[parent].push_back(v);
+		}
+
+		// return the values of the above, with the tile impelemntation wrapped in real tiles.
+		std::vector<std::vector<tess::tile>> output(sets.size());
+		std::transform(sets.begin(), sets.end(), output.begin(),
+			[](const std::unordered_map<tile_ptr, std::vector<tile_ptr>>::value_type& key_val) {
+				const auto& tile_impls = key_val.second;
+				std::vector<tess::tile> group(tile_impls.size());
+				std::transform(tile_impls.begin(), tile_impls.end(), group.begin(),
+					[](tile_ptr tile_impl) -> tess::tile {
+						return tess::make_tess_obj<tess::tile>(tile_impl);
+					}
+				);
+				return group;
+			}
+		);
+
+		return output;
+	}
+
+	void debugTileGroup(const std::vector<tess::tile>& g) {
+		std::cout << "[\n";
+		for (auto t : g) {
+			std::cout << "  ";
+			debugTile(t);
+			std::cout << "\n";
+		}
+		std::cout << "]\n";
+	}
+
 	std::vector<tess::tile> join_broken_tiles(tess::allocator& a, const std::vector<tess::tile>& tiles) {
 		if (!has_broken_tile(tiles))
 			return tiles;
-		return tiles;
+
+		auto grouped_tiles = get_broken_tile_groups(tiles);
+		if (grouped_tiles.size() == tiles.size())
+			return tiles;
+
+		std::vector<tess::tile> output(grouped_tiles.size());
+		std::transform(grouped_tiles.begin(), grouped_tiles.end(), output.begin(),
+			[&a](const std::vector<tess::tile>& tile_group)->tess::tile {
+				if (tile_group.size() == 1) {
+					return tile_group.front();
+				} else {
+					return tess::join(a, tile_group);
+				}
+			}
+		);
+
+		return output;
 	}
 }
 
@@ -55,8 +181,8 @@ void tess::tile_patch::impl_type::build_edge_table() const
 			auto key = get_impl(e)->get_edge_location_indices();
 			if (edge_tbl_.find(key) == edge_tbl_.end())
 				edge_tbl_[key] = e; 
-			else
-				throw tess::error("invalid tile patch");
+			//else
+			//	throw tess::error("invalid tile patch");
 		}
 	}
 }
@@ -313,7 +439,7 @@ int count_tiles(const std::vector<tess::expr_value>& tiles_and_patches) {
 	return count;
 }
 
-tess::tile_patch tess::flatten(tess::allocator& a, const std::vector<tess::expr_value>& tiles_and_patches) {
+tess::tile_patch tess::flatten(tess::allocator& a, const std::vector<tess::expr_value>& tiles_and_patches, bool should_join_broken_tiles) {
 	int n = count_tiles(tiles_and_patches);
 	std::vector<tess::tile> tiles;
 	tiles.reserve(n);
@@ -332,11 +458,30 @@ tess::tile_patch tess::flatten(tess::allocator& a, const std::vector<tess::expr_
 			tile_or_patch
 		);
 	}
-	tiles = join_broken_tiles(a, tiles);
+
+	if (should_join_broken_tiles)
+		tiles = join_broken_tiles(a, tiles);
+
 	auto patch_impl = a.create_impl<tess::tile_patch>();
 	for (const auto& tile : tiles) {
 		auto copy = tess::clone(a, tile);
 		patch_impl->insert_tile(copy);
 	}
+
 	return tess::make_tess_obj<tess::tile_patch>(patch_impl);
+}
+
+tess::tile tess::join(tess::allocator& a, const std::vector<tess::expr_value>& tiles_and_patches, bool should_join_broken_tiles) {
+	auto patch = flatten(a, tiles_and_patches, should_join_broken_tiles);
+	return tess::get_impl(patch)->join(a);
+}
+
+tess::tile tess::join(tess::allocator& a, const std::vector<tess::tile>& tiles) {
+	std::vector<tess::expr_value> tiles_as_vals(tiles.size());
+	std::transform(tiles.begin(), tiles.end(), tiles_as_vals.begin(),
+		[](const tess::tile& t) -> tess::expr_value {
+			return { t };
+		}
+	);
+	return join(a, tiles_as_vals, false);
 }

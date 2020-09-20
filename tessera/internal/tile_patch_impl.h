@@ -69,5 +69,7 @@ namespace tess {
         std::vector<expr_value>::const_iterator end() const;
     };
 
-    tile_patch flatten(allocator& a, const std::vector<expr_value>& tiles_and_patches);
+    tile_patch flatten(allocator& a, const std::vector<expr_value>& tiles_and_patches, bool should_join_broken_tiles);
+    tile join(allocator& a, const std::vector<expr_value>& tiles_and_patches, bool should_join_broken_tiles);
+    tile join(allocator& a, const std::vector<tile>& tiles);
 }

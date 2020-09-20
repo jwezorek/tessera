@@ -31,6 +31,8 @@ namespace tess {
 		expr_value get_field(allocator& allocator, const std::string& field) const;
 		void apply(const matrix& mat);
 		tile::impl_type* parent() const;
+        edge::impl_type* in_edge() const;
+        edge::impl_type* out_edge() const;
         void insert_field(const std::string& var, const expr_value& val) {}
         void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
         void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, vertex::impl_type* clone) const;
