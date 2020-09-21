@@ -1,6 +1,7 @@
 #include "../variant_util.h"
 #include "../expression.h"
 #include "../object_expr.h"
+#include "../with_expr.h"
 #include "with_parser.h"
 #include "keywords.h"
 #include "expr_parser.h"
@@ -18,6 +19,7 @@ namespace tess {
 			std::string head;
 			std::vector<op_t> tail;
 		};
+
 	}
 }
 
@@ -38,6 +40,7 @@ namespace tess {
 		x3::rule<class def_ref_expr_, tess::field_def> def_ref_expr = "def_ref_expr";
 		x3::rule<class def_ref_exprs_, std::vector<tess::field_def> > def_ref_exprs = "def_ref_exprs";
 		x3::rule<class field_defs_, tess::field_definitions> field_defs = "field_defs";
+		x3::rule<class with_expression_, tess::expr_ptr> with_expr = "with_expr";
 
 		expr_ptr unpack_obj_list(const obj_ref_list_t& ol);
 		auto make_lhs = [&](auto& ctx) { _val(ctx) = unpack_obj_list(_attr(ctx)); };
@@ -46,6 +49,9 @@ namespace tess {
 			vec.push_back(_attr(ctx));
 			_val(ctx) = vec; 
 		};
+
+		template<typename T>
+		auto make_ = [&](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
 
 		const auto expr = expression_();
 		const auto identifier = indentifier_str_();
@@ -65,6 +71,7 @@ namespace tess {
 
 		auto const field_defs_def = def_ref_exprs;
 		auto const trailing_with_def = kw_lit<kw::with>() > x3::lit('{') > field_defs > x3::lit('}');
+		auto const with_expr_def = as<with_expr_params>[x3::lit('{') >> expr >> x3::lit('}') >> trailing_with][make_<tess::with_expr>];
 
 		BOOST_SPIRIT_DEFINE(
 			trailing_with,
@@ -76,7 +83,8 @@ namespace tess {
 			multi_ref_expr,
 			def_ref_expr,
 			def_ref_exprs,
-			field_defs
+			field_defs,
+			with_expr
 		)
 		
 	}
@@ -122,4 +130,15 @@ std::tuple<tess::field_definitions, std::string::const_iterator> tess::parser::t
 		return { field_definitions(output), iter };
 	else
 		return { field_definitions(), iter };
+}
+
+std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::with_expr_::parse_aux(const text_range& input) const
+{
+	tess::expr_ptr output;
+	auto iter = input.begin();
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::with_expr, x3::space, output);
+	if (success)
+		return { output, iter };
+	else
+		return { tess::expr_ptr(), iter };
 }

@@ -20,6 +20,12 @@ tess::with_expr::with_expr(const field_definitions& field_defs, expr_ptr body) :
 {
 }
 
+tess::with_expr::with_expr(with_expr_params params) :
+    field_defs_(std::get<1>(params)),
+    body_(std::get<0>(params))
+{
+}
+
 void tess::with_expr::compile(stack_machine::stack& stack) const
 {
     stack.push(std::make_shared<pop_frame_op>());

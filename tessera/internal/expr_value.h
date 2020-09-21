@@ -63,6 +63,7 @@ namespace tess {
 	};
 
 	bool operator==(const expr_value& lhs, const expr_value& rhs);
+	bool operator!=(const expr_value& lhs, const expr_value& rhs);
 
 	template<typename T> T* from_void_star(void* ptr) {
 		return reinterpret_cast<T*>(ptr);

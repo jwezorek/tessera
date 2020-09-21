@@ -42,6 +42,32 @@ let inflate_fat_rhombus = patch( n ) {
     base on left.base;
 };
 
+let decagon = patch( n ) {
+    lay ary[0], ary[1], ary[2], ary[3], ary[4], ary[5], ary[6], ary[7], ary[8], ary[9] such_that
+        $1.a <-> $2.a, 
+        $2.b <-> $3.b, 
+        $3.a <-> $4.a, 
+        $4.b <-> $5.b, 
+        $5.a <-> $6.a, 
+        $6.b <-> $7.b, 
+        $7.a <-> $8.a, 
+        $8.b <-> $9.b, 
+        $9.a <-> $10.a
+} where {
+    let ary = [
+        inflate_thin_rhombus(n),
+        flip(inflate_thin_rhombus(n)),
+        inflate_thin_rhombus(n),
+        flip(inflate_thin_rhombus(n)),
+        inflate_thin_rhombus(n),
+        flip(inflate_thin_rhombus(n)),
+        inflate_thin_rhombus(n),
+        flip(inflate_thin_rhombus(n)),
+        inflate_thin_rhombus(n),
+        flip(inflate_thin_rhombus(n))
+    ];
+};
+
 tableau (n) {
-    lay inflate_fat_rhombus(n)
+    lay decagon(n)
 }

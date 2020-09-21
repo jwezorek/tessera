@@ -85,6 +85,7 @@ namespace tess {
             void set(std::vector<tess::vertex>&& vertices, std::vector<tess::edge>&& edges );
             expr_value get_field(const std::string& field) const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;
+            const std::map<std::string, expr_value>& fields() const;
 			void apply(const matrix& mat);
             tile flip(allocator& a) const;
             void flip();

@@ -238,6 +238,11 @@ tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const st
 		return { error(std::string("refrenced undefined tile edge, vertex, or field: ") + field ) };
 }
 
+const std::map<std::string, tess::expr_value>& tess::tile::impl_type::fields() const
+{
+	return fields_;
+}
+
 void tess::tile::impl_type::apply(const matrix& mat)
 {
 	for (auto& vertex : vertices_) {

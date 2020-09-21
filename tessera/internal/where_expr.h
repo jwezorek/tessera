@@ -27,6 +27,8 @@ namespace tess {
 			std::shared_ptr<std::vector<var_assignment>> impl_;
 	};
 
+	using where_expr_params = std::tuple<expr_ptr, assignment_block>;
+
 	class where_expr : public expression
 	{
 	private:
@@ -34,6 +36,7 @@ namespace tess {
 		expr_ptr body_;
 	public:
 		where_expr(const assignment_block& assignments, expr_ptr body);
+		where_expr(where_expr_params params);
 		void compile(stack_machine::stack& stack) const override;
 		std::string to_string() const override;
 		expr_ptr simplify() const override;

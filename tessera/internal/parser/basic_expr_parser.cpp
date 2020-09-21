@@ -3,6 +3,8 @@
 #include "../expression.h"
 #include "special_parser.h"
 #include "function_parser.h"
+#include "with_parser.h"
+#include "where_parser.h"
 #include "expr_parser.h"
 #include "object_expr_parser.h"
 #include "lay_expr_parser.h"
@@ -34,13 +36,15 @@ namespace tess {
         auto const cluster_expr = cluster_expr_();
 		auto const special_expr = special_expr_();
         auto const function = function_def_();
+        auto const with_expr = with_expr_();
+        auto const where_expr = where_expr_();
 		auto const number_def = x3::int32[make_<number_expr>];
         auto const quoted_string_def = lexeme['"' >> +(char_ - '"') >> '"'];
         auto const string_def = quoted_string[make_<string_expr>];
         auto const boolean_def = kw_<kw::true_>()[make_<bool_lit_expr>] | kw_<kw::false_>()[make_<bool_lit_expr>];
 		auto const nil_def = kw_lit<kw::nil>()[make_nil];
 
-		auto const basic_expr_def =  nil | lay_expr | object_expr | special_expr | number | boolean | string | function | if_expr | cluster_expr | ('(' >> expr >> ')') ;
+		auto const basic_expr_def =  nil | lay_expr | object_expr | special_expr | number | boolean | string | function | if_expr | cluster_expr | with_expr | where_expr | ('(' >> expr >> ')') ;
 
         BOOST_SPIRIT_DEFINE(
             number,

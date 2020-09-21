@@ -221,3 +221,8 @@ bool tess::operator==(const expr_value& lhs, const expr_value& rhs)
 	);
 
 }
+
+bool tess::operator!=(const expr_value& lhs, const expr_value& rhs)
+{
+	return !(lhs == rhs);
+}

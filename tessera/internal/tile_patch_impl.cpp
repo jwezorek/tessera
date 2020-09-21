@@ -165,6 +165,26 @@ namespace {
 
 		return output;
 	}
+
+	void apply_fields(tess::tile tile, const tess::tile_patch::impl_type* patch)
+	{
+		std::unordered_map<std::string, tess::expr_value> fields;
+		for (const auto& t : patch->tiles()) {
+			for (const auto& [var, val] : tess::get_impl(t)->fields()) {
+				if (val.is_simple_value()) {
+					if (fields.find(var) == fields.end()) {
+						fields[var] = val;
+					} else {
+						if (fields[var] != val)
+							fields.erase(var);
+					}
+				}
+			}
+		}
+		for (const auto& [var, val] : fields) {
+			tess::get_impl(tile)->insert_field(var, val);
+		}
+	}
 }
 
 const std::vector<tess::tile>& tess::tile_patch::impl_type::tiles() const
@@ -337,7 +357,9 @@ tess::point tess::tile_patch::impl_type::get_vertex_location(int index) const {
 tess::tile tess::tile_patch::impl_type::join(tess::allocator& a) const
 {
 	auto points = tess::join(this);
-	return a.create<tess::tile>(&a, points);
+	auto joined_patch = a.create<tess::tile>(&a, points);
+	apply_fields(joined_patch, this);
+	return joined_patch;
 }
 
 void tess::tile_patch::impl_type::dfs(tile_visitor visit) const

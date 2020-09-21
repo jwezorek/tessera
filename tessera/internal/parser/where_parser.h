@@ -21,5 +21,9 @@ namespace tess {
 		struct trailing_where_ : public tess_parser<trailing_where_, assignment_block> {
 			std::tuple<assignment_block, std::string::const_iterator> parse_aux(const text_range& input) const;
 		};
+
+		struct where_expr_ : public tess_expr<where_expr_> {
+			std::tuple<tess::expr_ptr, std::string::const_iterator> parse_aux(const text_range& input) const;
+		};
 	}
 }

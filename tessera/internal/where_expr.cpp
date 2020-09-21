@@ -110,6 +110,11 @@ tess::where_expr::where_expr(const assignment_block& assignments, expr_ptr body)
 {
 }
 
+tess::where_expr::where_expr(where_expr_params params) :
+	assignments_(std::get<1>(params)), body_(std::get<0>(params))
+{
+}
+
 void tess::where_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(std::make_shared<pop_frame_op>());
