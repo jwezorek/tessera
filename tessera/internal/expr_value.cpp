@@ -49,6 +49,10 @@ tess::nil_val::nil_val()
 {
 }
 
+bool tess::operator==(nil_val lhs, nil_val rhs) {
+	return true;
+}
+
 bool tess::expr_value::is_simple_value() const
 { 
 	return std::holds_alternative<nil_val>(*this) ||
@@ -199,4 +203,21 @@ std::string tess::expr_value::to_string() const
 	return "#(some expr value)";
 }
 
+bool tess::operator==(tess::field_ref lhs, tess::field_ref rhs)
+{
+	return lhs.impl_ == rhs.impl_;
+}
 
+bool tess::operator==(const expr_value& lhs, const expr_value& rhs)
+{
+	return std::visit(
+		[&]( auto left_val) -> bool {
+			using left_type_t = decltype(left_val);
+			if (!std::holds_alternative<left_type_t>(rhs))
+				return false;
+			return left_val == std::get<left_type_t>(rhs);
+		},
+		lhs
+	);
+
+}

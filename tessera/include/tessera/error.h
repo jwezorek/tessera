@@ -20,4 +20,5 @@ namespace tess
 	};
 
 	std::ostream& operator<<(std::ostream& os, const  error& e);
+	bool operator==(tess::error l, tess::error r);
 }

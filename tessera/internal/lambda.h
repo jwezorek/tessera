@@ -35,4 +35,5 @@ namespace tess{
             impl_type* impl_;
     };
 
+    bool operator==(lambda l, lambda r);
 }

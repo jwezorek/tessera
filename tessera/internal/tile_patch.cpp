@@ -20,3 +20,8 @@ tess::property_value tess::tile_patch::get_property_variant(const std::string& p
 {
     return property_value();
 }
+
+bool tess::operator==(tile_patch l, tile_patch r)
+{
+	return get_impl(l) == get_impl(r);
+}

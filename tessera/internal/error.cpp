@@ -35,3 +35,8 @@ std::ostream& tess::operator<<(std::ostream& os, const  tess::error& e)
 		 os << ", line #" << maybe_line.value();
 	return os;
 }
+
+bool tess::operator==(tess::error l, tess::error r)
+{
+	return l.to_string() == r.to_string();
+}

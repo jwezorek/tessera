@@ -20,4 +20,5 @@ namespace tess {
 		impl_type* impl_;
 	};
 
+	bool operator==(tile_patch l, tile_patch r);
 }

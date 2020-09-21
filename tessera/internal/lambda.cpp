@@ -83,3 +83,8 @@ void tess::lambda::impl_type::clone_to(tess::allocator& allocator, std::unordere
         clone->closure.set(var, val.clone(allocator, orginal_to_clone));
     }
 }
+
+bool tess::operator==(lambda l, lambda r)
+{
+    return tess::get_impl(l) == tess::get_impl(r);
+}

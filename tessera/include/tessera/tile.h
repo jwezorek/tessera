@@ -66,4 +66,8 @@ namespace tess {
 		impl_type* impl_;
 	};
 
+	bool operator==(tile, tile);
+	bool operator==(edge, edge);
+	bool operator==(vertex, vertex);
+
 }

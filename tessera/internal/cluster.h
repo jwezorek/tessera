@@ -17,4 +17,6 @@ namespace tess {
             impl_type*  impl_;
     };
 
+    bool operator==(cluster l, cluster r);
+
 }

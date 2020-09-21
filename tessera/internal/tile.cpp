@@ -56,7 +56,6 @@ tess::edge tess::vertex::in_edge() const
 
 /*--------------------------------------------------------------------------------*/
 
-
 const tess::vertex& tess::edge::u() const
 {
 	return impl_->u();
@@ -70,4 +69,19 @@ const tess::vertex& tess::edge::v() const
 tess::property_value tess::edge::get_property_variant(const std::string& prop) const
 {
     return property_value();
+}
+
+bool tess::operator==(tess::tile l, tess::tile r)
+{
+	return tess::get_impl(l) == tess::get_impl(r);
+}
+
+bool tess::operator==(tess::edge l, tess::edge r)
+{
+	return tess::get_impl(l) == tess::get_impl(r);
+}
+
+bool tess::operator==(tess::vertex l, tess::vertex r)
+{
+	return tess::get_impl(l) == tess::get_impl(r);
 }
