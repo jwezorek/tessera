@@ -1,71 +1,56 @@
-let half_thin_rhombus = tile {
-    isosceles_triangle( pi/5 )
-} with {
-    color is "palegoldenrod";
-    base, b, a is this.edges;
-    base.broken is true;
+let half_thin_rhombus = patch( n ) {
+	if (n == 1)
+		{ isosceles_triangle( pi/5 ) } with { 
+			color is "palegoldenrod"; 
+			base, b, a is this.edges; 
+			base.broken is true;
+		}
+	else
+		{{ lay top, bottom such_that top.a <-> bottom.b } with { 
+			a on top.base; 
+			b on top.b; 
+			base on bottom.a; }
+		} where { 
+			let top, bottom = [flip( half_fat_rhombus(n-1) ), half_thin_rhombus(n-1) ]; 
+		} 
 };
 
-let half_fat_rhombus = tile {
-    isosceles_triangle( 3*pi/5 )
-} with {
-    color is "skyblue";
-    base, b, a is this.edges;
-    base.broken is true;
+let half_fat_rhombus = patch( n ) {
+	if (n==1)
+		{ isosceles_triangle( 3*pi/5 )} with { 
+			color is "skyblue"; 
+			base, b, a is this.edges; 
+			base.broken is true; 
+		}
+	else
+		{{ lay left, middle, right such_that  middle.b  <-> left.a, middle.a <-> right.b } with {
+			a on left.b; 
+			b on right.base; 
+			base on left.base;}
+		} where { 
+			let left, middle, right = [ 
+				flip(half_fat_rhombus(n-1) ), 
+				half_thin_rhombus(n-1), half_fat_rhombus(n-1) 
+			]; 
+		}
 };
 
-let inflate_thin_rhombus = patch( n ) {
-    lay top, bottom such_that top.a <-> bottom.b
+let decagon = patch( n) {
+	lay kites[0], kites[1], kites[2], kites[3], kites[4] such_that 
+		$1.rhs <-> $2.lhs,  $2.rhs <-> $3.lhs,  $3.rhs <-> $4.lhs, $4.rhs <-> $5.lhs
 } where {
-    let top, bottom = 
-        if (n == 1)
-            [flip( half_fat_rhombus ), half_thin_rhombus]
-        else
-            [flip( inflate_fat_rhombus(n-1) ), inflate_thin_rhombus(n-1) ];
-} with {
-    a on top.base;
-    b on top.b;
-    base on bottom.a;
-};
-
-let inflate_fat_rhombus = patch( n ) {
-    lay left, middle, right such_that  middle.b  <-> left.a, middle.a <-> right.b
-} where {
-    let left, middle, right = 
-        if (n == 1)
-            [ flip(half_fat_rhombus) , half_thin_rhombus, half_fat_rhombus]
-        else
-            [ flip(inflate_fat_rhombus(n-1) ), inflate_thin_rhombus(n-1), inflate_fat_rhombus(n-1) ];
-} with {
-    a on left.b;
-    b on right.base;
-    base on left.base;
-};
-
-let decagon = patch( n ) {
-    lay ary[0], ary[1], ary[2], ary[3], ary[4], ary[5], ary[6], ary[7], ary[8], ary[9] such_that
-        $1.a <-> $2.a, 
-        $2.b <-> $3.b, 
-        $3.a <-> $4.a, 
-        $4.b <-> $5.b, 
-        $5.a <-> $6.a, 
-        $6.b <-> $7.b, 
-        $7.a <-> $8.a, 
-        $8.b <-> $9.b, 
-        $9.a <-> $10.a
-} where {
-    let ary = [
-        inflate_thin_rhombus(n),
-        flip(inflate_thin_rhombus(n)),
-        inflate_thin_rhombus(n),
-        flip(inflate_thin_rhombus(n)),
-        inflate_thin_rhombus(n),
-        flip(inflate_thin_rhombus(n)),
-        inflate_thin_rhombus(n),
-        flip(inflate_thin_rhombus(n)),
-        inflate_thin_rhombus(n),
-        flip(inflate_thin_rhombus(n))
-    ];
+	let kite = patch(n) {
+			lay left, right such_that left.a <-> right.a
+		} where { 
+			let left, right = [ 
+					half_thin_rhombus(n),  
+					flip( half_thin_rhombus(n)) 
+				];
+		} with { 
+			lhs on left.b; 
+			rhs on right.b; 
+		};
+	let kites = [kite(n) for i in [1 ... 5]];
 };
 
 tableau (n) {
