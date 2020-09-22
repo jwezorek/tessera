@@ -201,8 +201,8 @@ void tess::tile_patch::impl_type::build_edge_table() const
 			auto key = get_impl(e)->get_edge_location_indices();
 			if (edge_tbl_.find(key) == edge_tbl_.end())
 				edge_tbl_[key] = e; 
-			//else
-			//	throw tess::error("invalid tile patch");
+			else
+				throw tess::error("invalid tile patch");
 		}
 	}
 }

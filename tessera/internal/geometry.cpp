@@ -188,6 +188,10 @@ namespace {
 		);
 		return polygons;
 	}
+
+	bool is_closed_poly(const std::vector<tess::point>& poly) {
+		return tess::equals(poly.front(), poly.back());
+	}
 }
 
 class tess::vertex_location_table::impl_type {
@@ -257,6 +261,10 @@ std::vector<tess::point> tess::join(const tess::tile_patch::impl_type* tiles)
 			return { pt.x(),pt.y() };
 		}
 	);
+
+	// if the last point and the first point are the same, pop the last point
+	if (is_closed_poly(points))
+		points.pop_back();
 
 	return points;
 }
