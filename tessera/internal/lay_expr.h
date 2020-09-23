@@ -27,20 +27,17 @@ namespace tess {
 		field_definitions with;
 	};
 
-    class lay_expr : public expression, public tessera_impl {
-		private:
-			std::vector<expr_ptr> tiles_;
-			std::vector<std::tuple<expr_ptr, expr_ptr>> edge_mappings_;
-			field_definitions with_;
+	class lay_expr : public tess::expression {
 		public:
-			lay_expr(const lay_params& params);
-			lay_expr(const full_lay_params& params);
-			lay_expr(const std::vector<expr_ptr>& tiles, const std::vector<std::tuple<expr_ptr, expr_ptr>>& edge_mappings);
-			lay_expr(const std::vector<expr_ptr>& tiles, const std::vector<std::tuple<expr_ptr, expr_ptr>>& edge_mappings, const field_definitions& with);
-			void compile(stack_machine::stack& stack) const override;
-			void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
-			expr_ptr simplify() const override;
+			lay_expr(const std::vector<std::tuple<tess::expr_ptr, tess::expr_ptr>>& edge_mappings);
+			void compile(tess::stack_machine::stack& stack) const override;
 			std::string to_string() const override;
-    };
+			tess::expr_ptr simplify() const override;
+			void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
+
+		private:
+			std::vector<std::tuple<tess::expr_ptr, tess::expr_ptr>> edge_mappings_;
+
+	};
 
 }

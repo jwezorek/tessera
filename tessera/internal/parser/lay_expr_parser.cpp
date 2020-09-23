@@ -4,6 +4,8 @@
 #include "expr_parser.h"
 #include "../lay_expr.h"
 #include "../expression.h"
+#include "../where_expr.h"
+#include "../with_expr.h"
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -29,24 +31,33 @@ namespace tess {
             _val(ctx) = p; 
         };
 
+        tess::assignment_block get_placeholder_assignments(const std::vector<tess::expr_ptr> vals) {
+            std::vector<tess::var_assignment> assignments(vals.size());
+            for (int i = 0; i < vals.size(); i++) {
+                auto var = std::to_string(i + 1);
+                assignments[i] = { std::vector<std::string>{var}, vals[i] };
+            }
+            return tess::assignment_block(assignments);
+        }
+
+        tess::expr_ptr make_lay_or_join(bool is_lay, const std::vector<expr_ptr>& args, const std::vector<std::tuple<expr_ptr, expr_ptr>>& edge_mappings, const field_definitions& with)
+        {
+            expr_ptr body = std::make_shared<tess::lay_expr>(edge_mappings);
+            if ( ! is_lay )
+                body = std::make_shared<special_function_expr>(special_func::join, body);
+            if ( ! with.empty() )
+                body = std::make_shared<with_expr>(with, body);
+            return std::make_shared<where_expr>(get_placeholder_assignments(args), body);
+        }
+
         auto make_lay_expr = [&](auto& ctx) { 
             lay_params lp = _attr(ctx);
-            expr_ptr lay = std::make_shared<tess::lay_expr>(lp);
-
-            if (lp.kw == keyword(kw::lay))
-                _val(ctx) = lay;
-            else
-                _val(ctx) = std::make_shared<special_function_expr>(special_func::join, lay);
+            _val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, lp.edge_mappings, {});
         };
 
         auto make_full_lay_expr = [&](auto& ctx) {
             full_lay_params lp = _attr(ctx);
-            expr_ptr lay = std::make_shared<tess::lay_expr>(lp);
-
-            if (lp.kw == keyword(kw::lay))
-                _val(ctx) = lay;
-            else
-                _val(ctx) = std::make_shared<special_function_expr>(special_func::join, lay);
+            _val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, lp.edge_mappings, lp.with);
         };
 
         x3::rule<class obj_ref_pair_, std::tuple<expr_ptr, expr_ptr> > obj_ref_pair = "obj_ref_pair";
@@ -61,7 +72,7 @@ namespace tess {
         auto const obj_ref_pair_def = expr >> "<->" >> expr;
         auto const lay_or_join = kw_<kw::lay>() | kw_<kw::join>();
         auto const basic_lay_expr_aux_def = lay_or_join >> (expr % x3::lit(",")) >> kw_lit<kw::such_that>() >> (obj_ref_pair % x3::lit(','));
-        auto const full_lay_expr_aux_def = kw_<kw::lay>() >> (expr % x3::lit(",")) >> kw_lit<kw::such_that>() >> (obj_ref_pair % x3::lit(',')) >> trailing_with;
+        auto const full_lay_expr_aux_def = lay_or_join >> (expr % x3::lit(",")) >> kw_lit<kw::such_that>() >> (obj_ref_pair % x3::lit(',')) >> trailing_with;
         auto const partial_lay_expr_aux_def = lay_or_join >> (expr % x3::lit(","));
         auto const partial_lay_expr_def = partial_lay_expr_aux [make_lay_params];
         auto const lay_expr_def = (full_lay_expr_aux[make_full_lay_expr]) | (basic_lay_expr_aux[make_lay_expr]) | (partial_lay_expr[make_lay_expr]);
