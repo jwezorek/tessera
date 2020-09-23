@@ -6,13 +6,12 @@ let half_thin_rhombus = patch( n ) {
 			base.broken is true;
 		}
 	else
-		{{ lay top, bottom such_that top.a <-> bottom.b } with { 
-			a on top.base; 
-			b on top.b; 
-			base on bottom.a; }
-		} where { 
-			let top, bottom = [flip( half_fat_rhombus(n-1) ), half_thin_rhombus(n-1) ]; 
-		} 
+		lay flip( half_fat_rhombus(n-1) ), half_thin_rhombus(n-1) 
+			such_that $1.a <-> $2.b with { 
+				a on $1.base; 
+				b on $1.b; 
+				base on $2.a; 
+			}
 };
 
 let half_fat_rhombus = patch( n ) {
@@ -23,32 +22,23 @@ let half_fat_rhombus = patch( n ) {
 			base.broken is true; 
 		}
 	else
-		{{ lay left, middle, right such_that  middle.b  <-> left.a, middle.a <-> right.b } with {
-			a on left.b; 
-			b on right.base; 
-			base on left.base;}
-		} where { 
-			let left, middle, right = [ 
-				flip(half_fat_rhombus(n-1) ), 
-				half_thin_rhombus(n-1), half_fat_rhombus(n-1) 
-			]; 
-		}
+		lay flip(half_fat_rhombus(n-1) ), half_thin_rhombus(n-1), half_fat_rhombus(n-1) 
+			such_that  $2.b <-> $1.a, $2.a <-> $3.b with {
+				a on $1.b; 
+				b on $3.base; 
+				base on $1.base;
+			}
 };
 
-let decagon = patch( n) {
+let decagon = patch(n) {
 	lay kites[0], kites[1], kites[2], kites[3], kites[4] such_that 
 		$1.rhs <-> $2.lhs,  $2.rhs <-> $3.lhs,  $3.rhs <-> $4.lhs, $4.rhs <-> $5.lhs
 } where {
 	let kite = patch(n) {
-			lay left, right such_that left.a <-> right.a
-		} where { 
-			let left, right = [ 
-					half_thin_rhombus(n),  
-					flip( half_thin_rhombus(n)) 
-				];
-		} with { 
-			lhs on left.b; 
-			rhs on right.b; 
+			lay half_thin_rhombus(n), flip( half_thin_rhombus(n) ) such_that $1.a <-> $2.a with { 
+				lhs on $1.b; 
+				rhs on $2.b; 
+			}
 		};
 	let kites = [kite(n) for i in [1 ... 5]];
 };

@@ -1,0 +1,9 @@
+let rhomb = patch {
+    lay regular_polygon(4) , regular_polygon(4) such_that $1.edges[0] <-> $2.edges[0] with {
+        a on $1.edges[1];
+    }
+};
+
+tableau(n) {
+    lay rhomb
+}

@@ -19,7 +19,7 @@ namespace tess {
 		std::string to_string() const;
 		bool operator!=(const field_definitions& block) { return impl_.get() != block.impl_.get(); }
 		field_definitions simplify() const;
-		void get_dependencies(std::unordered_set<std::string>& dependencies);
+		void get_dependencies(std::unordered_set<std::string>& dependencies) const;
 		bool empty() const;
 	private:
 		std::shared_ptr<std::vector<field_def_pair>> impl_;

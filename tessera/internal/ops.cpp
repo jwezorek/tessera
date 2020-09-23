@@ -177,7 +177,7 @@ std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::get_var:
     auto& ctxt = contexts.top();
     try {
         auto ident = std::get<stack_machine::variable>(operands[0]);
-        auto value = ctxt.get(ident.identifier());
+        auto value = ctxt.get(ident.name());
 
         if (eval_parameterless_funcs_ && std::holds_alternative<lambda>(value)) {
             auto lambda_val = std::get<lambda>(value);
@@ -331,11 +331,11 @@ std::optional<tess::error> tess::assign_op::execute(const std::vector<tess::stac
 
     auto& current_scope = contexts.top().peek();
     if (num_vars == 1) {
-        current_scope.set(vars[0].identifier(), value);
+        current_scope.set(vars[0].name(), value);
     } else {
         int i = 0;
         for (const auto& var : vars) 
-            current_scope.set(var.identifier(), value.get_ary_item(i++));
+            current_scope.set(var.name(), value.get_ary_item(i++));
     }
 
     return std::nullopt;
@@ -381,14 +381,22 @@ tess::lay_op::lay_op(int num_mappings) : stack_machine::op_1(2*num_mappings)
 {
 }
 
+std::vector<tess::expr_value> get_layees(const tess::evaluation_context& ctxt) {
+    std::vector<tess::expr_value> values;
+    for (int i = 1; ctxt.has(std::to_string(i)); ++i) {
+        values.push_back(ctxt.get(std::to_string(i)));
+    }
+    return values;
+}
+
 tess::stack_machine::item tess::lay_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 { 
     auto& ctxt = contexts.top();
-    auto layees = ctxt.pop_scope();
+    auto layees = get_layees(ctxt);
     auto result = apply_mapping(operands);
     return  {
         expr_value {
-            tess::flatten(ctxt.allocator(), layees.values(), true)
+            tess::flatten(ctxt.allocator(), layees, true)
         }
     };
 }

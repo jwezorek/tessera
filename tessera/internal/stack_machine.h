@@ -24,21 +24,17 @@ namespace tess {
         struct variable {
         private:
             std::string name_;
-            int index_;
         public:
-            variable(int i) : index_(i) {}
-            variable(std::string str = "") : index_(-1), name_(str) {}
+            variable(std::string str = "") : name_(str) {}
+
+            variable(int i) : name_(std::to_string(i)) {}
+
             std::string to_string() const {
-                return  std::string("$(") + ((index_ > -1) ? std::to_string(index_) : name_) + ")";
+                return  std::string("$(") + name_ + ")";
             };
+
             std::string name() const {
                 return name_;
-            }
-            int index() const {
-                return index_;
-            }
-            std::string identifier() const {
-                return (index_ > -1) ? std::string("$") + std::to_string(index_) : name_;
             }
         };
 

@@ -24,5 +24,6 @@
     <None Include="sierpinski.tess" />
     <None Include="pyramid.tess" />
     <None Include="join.tess" />
+    <None Include="amman-A5.tess" />
   </ItemGroup>
 </Project>

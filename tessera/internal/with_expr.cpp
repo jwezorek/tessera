@@ -102,6 +102,8 @@ std::string tess::field_definitions::to_string() const
 
 tess::field_definitions tess::field_definitions::simplify() const
 {
+    if (empty())
+        return {};
     std::vector<field_def_pair> simplified(impl_->size());
     std::transform(impl_->begin(), impl_->end(), simplified.begin(),
         [](const field_def_pair& fd) ->field_def_pair {
@@ -118,8 +120,11 @@ tess::field_definitions tess::field_definitions::simplify() const
     return tess::field_definitions(simplified);
 }
 
-void tess::field_definitions::get_dependencies(std::unordered_set<std::string>& dependencies)
+void tess::field_definitions::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
+    if (empty())
+        return;
+
     std::unordered_set<std::string> deps;
     for (const auto& [lhs, rhs] : *impl_) {
         for (const auto& v : lhs)
