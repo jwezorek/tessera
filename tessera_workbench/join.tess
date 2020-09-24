@@ -1,10 +1,10 @@
-let square = tile {
+let square = func {
 	regular_polygon(4)
 } with {
    N, W, S, E is this.edges;
 };
 
-let plus_sign = tile {
+let plus_sign = func {
 	join north, west, south, east, center such_that 
 		center.N <-> north.S, 
 		center.W <-> west.E, 
@@ -19,7 +19,7 @@ let plus_sign = tile {
     color is "red";
 };
 
-let plus_sign_fractal = patch(n) {
+let plus_sign_fractal = func(n) {
 	lay north, west, south, east, center such_that 
 		center.N <-> north.SW, 
 		center.W <-> west.SE, 

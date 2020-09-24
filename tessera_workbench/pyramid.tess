@@ -1,22 +1,22 @@
-let triangle = tile {
+let triangle = func {
     regular_polygon(3)
 } with {
     left, bottom, right is this.edges;
     color is "yellow";
 };
 
-let tri_pair = patch {
+let tri_pair = func {
     lay triangle , triangle such_that $1.right <-> $2.right
 };
 
-let tri_strip = patch( n ) {
+let tri_strip = func( n ) {
     if (n == 1)
         lay triangle
     else
         lay tri_pair , tri_strip(n-1) such_that $1[1].left <-> $2[0].left
 };
 
-let pyramid = patch( n ) {
+let pyramid = func( n ) {
     if (n == 1)
         lay triangle
     else

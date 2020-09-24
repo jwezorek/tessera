@@ -1,4 +1,4 @@
-let half_thin_rhombus = patch( n ) {
+let half_thin_rhombus = func( n ) {
 	if (n == 1)
 		{ isosceles_triangle( pi/5 ) } with { 
 			color is "palegoldenrod"; 
@@ -14,7 +14,7 @@ let half_thin_rhombus = patch( n ) {
 			}
 };
 
-let half_fat_rhombus = patch( n ) {
+let half_fat_rhombus = func( n ) {
 	if (n==1)
 		{ isosceles_triangle( 3*pi/5 )} with { 
 			color is "skyblue"; 
@@ -30,11 +30,11 @@ let half_fat_rhombus = patch( n ) {
 			}
 };
 
-let decagon = patch(n) {
+let decagon = func(n) {
 	lay kites[0], kites[1], kites[2], kites[3], kites[4] such_that 
 		$1.rhs <-> $2.lhs,  $2.rhs <-> $3.lhs,  $3.rhs <-> $4.lhs, $4.rhs <-> $5.lhs
 } where {
-	let kite = patch(n) {
+	let kite = func(n) {
 			lay half_thin_rhombus(n), flip( half_thin_rhombus(n) ) such_that $1.a <-> $2.a with { 
 				lhs on $1.b; 
 				rhs on $2.b; 

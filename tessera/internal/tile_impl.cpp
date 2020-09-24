@@ -227,7 +227,7 @@ tess::expr_value tess::tile::impl_type::get_field(const std::string& field) cons
 
 tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
-	if (field == parser::keyword(parser::kw::edge) || field == "edges") {
+	if (field == parser::keyword(parser::kw::edges)) {
 		return { edges_as_cluster(allocator, edges_) };
 	}
 

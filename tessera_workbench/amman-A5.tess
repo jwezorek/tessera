@@ -1,4 +1,4 @@
-let ace = patch(n) {
+let ace = func(n) {
     lay rhombus(n), triangle(n), flip( triangle(n) ) such_that 
         $1.bottom_left <-> $2.from, $1.bottom_right <-> $3.from 
     with {
@@ -9,7 +9,7 @@ let ace = patch(n) {
     } 
 };
 
-let triangle = patch(n) {
+let triangle = func(n) {
     if (n == 1)
         {isosceles_triangle( pi/2 )} with {
             color is "yellow";
@@ -25,7 +25,7 @@ let triangle = patch(n) {
         }
 };
 
-let rhombus = patch(n) {
+let rhombus = func(n) {
     if (n == 1)
         join isosceles_triangle( pi /4 ) , isosceles_triangle( pi /4 ) such_that 
             $1.edges[0] <-> $2.edges[0] 
@@ -47,11 +47,11 @@ let rhombus = patch(n) {
         }
 };
 
-let star = patch(n) {
+let star = func(n) {
     lay quadrant(n), quadrant(n), quadrant(n), quadrant(n) such_that 
         $1.a <-> $2.b, $2.a <-> $3.b, $3.a <-> $4.b
 } where {
-    let quadrant = patch(n) {
+    let quadrant = func(n) {
         lay ace(n), flip(ace(n)) such_that 
             $1.top_right <-> $2.top_right 
         with {
