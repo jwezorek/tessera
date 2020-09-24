@@ -80,16 +80,16 @@ namespace tess {
                 int number_of_args_;
             public:
                 op(int n) : number_of_args_(n) {}
-                virtual std::optional<error> execute(stack& main_stack, stack& operand_stack, context_stack& contexts) = 0;
+                virtual void execute(stack& main_stack, stack& operand_stack, context_stack& contexts) = 0;
                 virtual std::string to_string() const = 0;
         };
 
         class op_0 : public op {
         protected:
-            virtual std::optional<error> execute(const std::vector<item>& operands, context_stack& contexts) const = 0;
+            virtual void execute(const std::vector<item>& operands, context_stack& contexts) const = 0;
         public:
             op_0(int n) : op(n) {}
-            std::optional<error> execute(stack& main_stack, stack& operand_stack, context_stack& contexts);
+            void execute(stack& main_stack, stack& operand_stack, context_stack& contexts);
         };
 
         class op_1 : public op{
@@ -97,15 +97,15 @@ namespace tess {
             virtual item execute(const std::vector<item>& operands, context_stack& contexts) const = 0;
         public:
             op_1(int n) : op(n) {}
-            std::optional<error> execute(stack& main_stack, stack& operand_stack, context_stack& contexts);
+            void execute(stack& main_stack, stack& operand_stack, context_stack& contexts);
         };
 
         class op_multi : public op {
         protected:
-            virtual std::variant<std::vector<item>, tess::error> execute(const std::vector<item>& operands, context_stack& contexts) const = 0;
+            virtual std::vector<item> execute(const std::vector<item>& operands, context_stack& contexts) const = 0;
         public:
             op_multi(int n) : op(n) {}
-            std::optional<error> execute(stack& main_stack, stack& operand_stack, context_stack& contexts);
+            void execute(stack& main_stack, stack& operand_stack, context_stack& contexts);
         };
 
         class machine

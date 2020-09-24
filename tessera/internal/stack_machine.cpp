@@ -58,33 +58,25 @@ namespace {
 
 }
 
-std::optional<tess::error> tess::stack_machine::op_0::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
+void tess::stack_machine::op_0::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
 {
     if (number_of_args_ > operand_stack.count())
-        return tess::error("operand stack underflow.");
-    return execute(operand_stack.pop(number_of_args_), contexts);
+        throw tess::error("operand stack underflow.");
+    execute(operand_stack.pop(number_of_args_), contexts);
 }
 
-std::optional<tess::error> tess::stack_machine::op_1::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
+void tess::stack_machine::op_1::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
 {
     if (number_of_args_ > operand_stack.count())
-        return tess::error("operand stack underflow.");
-    auto op_result = execute(operand_stack.pop(number_of_args_), contexts);
-    if (std::holds_alternative<tess::error>(op_result))
-        return std::get<tess::error>(op_result);
-    main_stack.push(op_result);
-    return std::nullopt;
+        throw tess::error("operand stack underflow.");
+    main_stack.push(execute(operand_stack.pop(number_of_args_), contexts));
 }
 
-std::optional<tess::error> tess::stack_machine::op_multi::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
+void tess::stack_machine::op_multi::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
 {
     if (number_of_args_ > operand_stack.count())
-        return tess::error("operand stack underflow.");
-    auto op_result = execute(operand_stack.pop(number_of_args_), contexts);
-    if (std::holds_alternative<tess::error>(op_result))
-        return std::get<tess::error>(op_result);
-    main_stack.push(std::get<std::vector<stack_machine::item>>(op_result));
-    return std::nullopt;
+        throw tess::error("operand stack underflow.");
+    main_stack.push(execute(operand_stack.pop(number_of_args_), contexts));
 }
 
 
@@ -178,32 +170,23 @@ tess::expr_value tess::stack_machine::machine::run(execution_state& state)
 
     contexts.push(state.create_eval_context());
 
-    try {
-
-        while (!main_stack.empty()) {
-            auto stack_item = main_stack.pop();
-            std::visit(
-                overloaded{
-                    [&](op_ptr op) {
-                        auto maybe_error = op->execute(main_stack, operands, contexts);
-                        if (maybe_error.has_value())
-                            throw maybe_error.value();
-                    },
-                    [&](auto val) {
-                        operands.push(stack_machine::item{ val });
-                    }
+    while (!main_stack.empty()) {
+        auto stack_item = main_stack.pop();
+        std::visit(
+            overloaded{
+                [&](op_ptr op) {
+                    op->execute(main_stack, operands, contexts);
                 },
-                stack_item
-            );
-        }
-
-        output = std::get<expr_value>(operands.pop());
-
-    } catch (tess::error error) {
-        return { error };
-    } catch (...) {
-        return { tess::error("Unknown error.") };
+                [&](auto val) {
+                    operands.push(stack_machine::item{ val });
+                }
+            },
+            stack_item
+        );
     }
+
+    output = std::get<expr_value>(operands.pop());
+
     return output;
 }
 

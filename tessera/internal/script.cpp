@@ -29,8 +29,7 @@ namespace {
 	}
 
 	tess::result extract_tiles(const tess::expr_value& output) {
-		if (std::holds_alternative<tess::error>(output))
-			return { std::get<tess::error>(output) };
+
 		if (std::holds_alternative<tess::tile>(output))
 			return std::vector<tess::tile>{ std::get<tess::tile>(output) };
 		if (!std::holds_alternative<tess::tile_patch>(output))
@@ -54,25 +53,30 @@ const std::vector<std::string>& tess::script::parameters() const
 
 tess::result tess::script::execute(const std::vector<std::string>& arg_strings) const
 {
-	auto maybe_args = parse_arguments(arg_strings);
-	if (std::holds_alternative<tess::error>(maybe_args))
-		return std::get<tess::error>(maybe_args);
-	auto args = std::get<std::vector<expr_ptr>>(maybe_args);
+	try {
+		auto maybe_args = parse_arguments(arg_strings);
+		if (std::holds_alternative<tess::error>(maybe_args))
+			return std::get<tess::error>(maybe_args);
+		auto args = std::get<std::vector<expr_ptr>>(maybe_args);
 
-	expr_ptr eval_script_expr = std::make_shared<where_expr>(
-		impl_->globals(), 
-		std::make_shared<func_call_expr>(impl_->tableau(), args)
-	);
+		expr_ptr eval_script_expr = std::make_shared<where_expr>(
+			impl_->globals(),
+			std::make_shared<func_call_expr>(impl_->tableau(), args)
+			);
 
-	auto& state = impl_->state();
-	std::string expr_str = eval_script_expr->to_string();
-	eval_script_expr->compile(state.main_stack());
-	std::string stack_str = state.main_stack().to_formatted_string();
-	stack_machine::machine sm;
-	auto output = sm.run(state);
+		auto& state = impl_->state();
+		std::string expr_str = eval_script_expr->to_string();
+		eval_script_expr->compile(state.main_stack());
+		std::string stack_str = state.main_stack().to_formatted_string();
+		stack_machine::machine sm;
+		auto output = sm.run(state);
 
-	return extract_tiles(output);
-
+		return extract_tiles(output);
+	} catch (tess::error e) {
+		return e;
+	} catch(...) {
+		return tess::error("Unknown error");
+	}
 }
 
 tess::script::script(std::shared_ptr<impl_type> impl) : impl_(impl)

@@ -58,8 +58,7 @@ bool tess::expr_value::is_simple_value() const
 	return std::holds_alternative<nil_val>(*this) ||
 		std::holds_alternative<number>(*this) ||
 		std::holds_alternative<std::string>(*this) ||
-		std::holds_alternative<bool>(*this) ||
-		std::holds_alternative<error>(*this);
+		std::holds_alternative<bool>(*this);
 }
 
 bool tess::expr_value::is_object_like() const
@@ -80,16 +79,6 @@ bool tess::expr_value::is_array_like() const
 		std::holds_alternative<cluster>(*this);
 }
 
-bool tess::expr_value::is_valid() const
-{
-    return ! is_error();
-}
-
-bool tess::expr_value::is_error() const
-{
-	return std::holds_alternative<tess::error>(*this);
-}
-
 bool tess::expr_value::is_nil() const
 {
 	return std::holds_alternative<tess::nil_val>(*this);
@@ -101,7 +90,7 @@ tess::expr_value tess::expr_value::clone( allocator& allocator ) const
 		return *this;
 
 	if (std::holds_alternative<field_ref>(*this))
-		return { tess::error("attempted clone a field ref") };
+		throw tess::error("attempted clone a field ref");
 	
 	std::unordered_map<obj_id, void*> original_to_clone;
 	return clone(allocator, original_to_clone);
@@ -124,7 +113,8 @@ tess::expr_value tess::expr_value::get_ary_item(int index) const
 {
 	// patches and clusters can be referenced like an array.
 	if (!is_array_like())
-		return { error("attempted reference to a sub-tile of a value that is not a tile patch.") };
+		throw tess::error("attempted reference to a sub-tile of a value that is not a tile patch.");
+
 	auto value = static_cast<expr_val_var>(*this);
 	std::variant<tile_patch, cluster> ary_variant = variant_cast(value);
 
@@ -151,8 +141,9 @@ int tess::expr_value::get_ary_count() const
 tess::expr_value tess::expr_value::get_field(allocator& allocator, const std::string& field) const
 {
 	if (!is_object_like()) {
-		return { error("attempted reference to field of a non-object.") };
+		throw tess::error("attempted reference to field of a non-object.");
 	}
+
 	auto value = static_cast<expr_val_var>(*this);
 	std::variant<tile, tile_patch, vertex, edge, cluster, lambda> obj_variant = variant_cast(value);
 	

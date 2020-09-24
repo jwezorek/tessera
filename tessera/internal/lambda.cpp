@@ -59,7 +59,7 @@ tess::expr_value tess::lambda::impl_type::get_field(allocator& allocator, const 
     if (maybe_value.has_value())
         return { maybe_value.value() };
     else
-        return { tess::error("referenced unknown lambda closure item") };
+        throw tess::error("referenced unknown lambda closure item");
 }
 
 void tess::lambda::impl_type::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const

@@ -1,14 +1,12 @@
 #include "tessera/error.h"
 
-tess::error::error(const std::string& msg, int line) :
+tess::error::error(std::string msg, int line) :
 	msg_(msg), line_(line)
 {
 }
 
-tess::error::error(const std::string& msg)
+tess::error::error(std::string msg) : msg_(msg)
 {
-	line_ = 0;
-	msg_ = msg;
 }
 
 const std::string& tess::error::msg() const
@@ -34,9 +32,4 @@ std::ostream& tess::operator<<(std::ostream& os, const  tess::error& e)
 	if (maybe_line.has_value())
 		 os << ", line #" << maybe_line.value();
 	return os;
-}
-
-bool tess::operator==(tess::error l, tess::error r)
-{
-	return l.to_string() == r.to_string();
 }

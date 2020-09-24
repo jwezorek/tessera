@@ -144,9 +144,10 @@ tess::expr_value tess::evaluation_context::get(const std::string& var) const
 {
     auto maybe_value = get_maybe(var);
 
-    return (maybe_value.has_value()) ?
-        expr_value{ maybe_value.value() } :
-        expr_value{ error("Unknown variable: " + var) };
+    if (!maybe_value.has_value())
+        throw tess::error("Unknown variable: " + var);
+
+    return maybe_value.value();
 }
 
 tess::expr_value tess::evaluation_context::get(int i) const

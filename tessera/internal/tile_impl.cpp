@@ -235,7 +235,7 @@ tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const st
 	if (!std::holds_alternative< nil_val>(val))
 		return val;
 	else
-		return { error(std::string("refrenced undefined tile edge, vertex, or field: ") + field ) };
+		throw tess::error(std::string("refrenced undefined tile edge, vertex, or field: ") + field );
 }
 
 const std::map<std::string, tess::expr_value>& tess::tile::impl_type::fields() const

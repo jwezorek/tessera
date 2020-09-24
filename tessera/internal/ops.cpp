@@ -172,32 +172,25 @@ tess::get_var::get_var(bool eval) : op_multi(1), eval_parameterless_funcs_(eval)
 {
 }
 
-std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::get_var::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+std::vector<tess::stack_machine::item> tess::get_var::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     auto& ctxt = contexts.top();
-    try {
-        auto ident = std::get<stack_machine::variable>(operands[0]);
-        auto value = ctxt.get(ident.name());
+    auto ident = std::get<stack_machine::variable>(operands[0]);
+    auto value = ctxt.get(ident.name());
 
-        if (eval_parameterless_funcs_ && std::holds_alternative<lambda>(value)) {
-            auto lambda_val = std::get<lambda>(value);
-            if (lambda_val.parameters().empty()) {
-                return std::vector<tess::stack_machine::item>{
-                    { std::make_shared<push_eval_context>() },
-                    { value },
-                    { std::make_shared<call_func>(0) },
-                    { std::make_shared<pop_eval_context>() }
-                };
-            }
+    if (eval_parameterless_funcs_ && std::holds_alternative<lambda>(value)) {
+        auto lambda_val = std::get<lambda>(value);
+        if (lambda_val.parameters().empty()) {
+            return std::vector<tess::stack_machine::item>{
+                { std::make_shared<push_eval_context>() },
+                { value },
+                { std::make_shared<call_func>(0) },
+                { std::make_shared<pop_eval_context>() }
+            };
         }
-
-        return std::vector<tess::stack_machine::item>{ {value} };
-
-    } catch (tess::error e) {
-        return { e };
-    } catch (...) {
-        return { tess::error("bad get_var op") };
     }
+
+    return std::vector<tess::stack_machine::item>{ {value} };
 }
 
 /*---------------------------------------------------------------------------------------------*/
@@ -232,37 +225,27 @@ tess::pop_eval_context::pop_eval_context() : op_0(0)
 {
 }
 
-std::optional<tess::error> tess::pop_eval_context::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+void tess::pop_eval_context::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     contexts.pop();
-    return std::nullopt;
 }
 
 /*---------------------------------------------------------------------------------------------*/
 
-std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::call_func::execute(const std::vector<tess::stack_machine::item>& operands, tess::stack_machine::context_stack& contexts) const
+std::vector<tess::stack_machine::item> tess::call_func::execute(const std::vector<tess::stack_machine::item>& operands, tess::stack_machine::context_stack& contexts) const
 {
-    try {
-        lambda func = std::get<lambda>(std::get<expr_value>(operands[0]));
-        std::vector<expr_value> args = get_vector<expr_value>(operands.begin() + 1, operands.end());
+    lambda func = std::get<lambda>(std::get<expr_value>(operands[0]));
+    std::vector<expr_value> args = get_vector<expr_value>(operands.begin() + 1, operands.end());
 
-        if (func.parameters().size() != args.size())
-            return tess::error("func call arg count mismatch.");
+    if (func.parameters().size() != args.size())
+        throw tess::error("func call arg count mismatch.");
 
-        scope_frame frame(func.parameters(), args);
-        for (const auto& [var, val] : func.closure()) 
-            frame.set(var, val);
-        contexts.top().push_scope(frame);
+    scope_frame frame(func.parameters(), args);
+    for (const auto& [var, val] : func.closure()) 
+        frame.set(var, val);
+    contexts.top().push_scope(frame);
 
-        return func.body();
-
-    }  catch (tess::error e) {
-        return e;
-    } catch (...) {
-        return tess::error("bad function call op");
-    }
-
-    return std::vector<tess::stack_machine::item>();
+    return func.body();
 }
 
 tess::call_func::call_func(int num_args) : op_multi(num_args+1)
@@ -275,11 +258,10 @@ tess::push_eval_context::push_eval_context() : stack_machine::op_0(0)
 {
 }
 
-std::optional<tess::error> tess::push_eval_context::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const 
+void tess::push_eval_context::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const 
 {
     auto& ctxt = contexts.top();
     contexts.push(ctxt.execution_state().create_eval_context());
-    return std::nullopt;
 }
 
 /*---------------------------------------------------------------------------------------------*/
@@ -288,16 +270,15 @@ tess::pop_frame_op::pop_frame_op() : tess::stack_machine::op_0(0)
 {
 }
 
-std::optional<tess::error> tess::pop_frame_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+void tess::pop_frame_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     if (contexts.empty())
-        return tess::error("context stack underflow");
+        throw tess::error("context stack underflow");
 
     if (contexts.top().empty())
-        return tess::error("eval context underflow");
+        throw tess::error("eval context underflow");
 
     auto scope = contexts.top().pop_scope();
-    return std::nullopt;
 }
 
 /*---------------------------------------------------------------------------------------------*/
@@ -306,12 +287,11 @@ tess::push_frame_op::push_frame_op() : tess::stack_machine::op_0(0)
 {
 }
 
-std::optional<tess::error> tess::push_frame_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+void tess::push_frame_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     if (contexts.empty())
-        return tess::error("context stack underflow");
+        throw tess::error("context stack underflow");
     contexts.top().push_scope(scope_frame());
-    return std::nullopt;
 }
 
 /*---------------------------------------------------------------------------------------------*/
@@ -320,7 +300,7 @@ tess::assign_op::assign_op(int num_vars) : stack_machine::op_0(num_vars+1)
 {
 }
 
-std::optional<tess::error> tess::assign_op::execute(const std::vector<tess::stack_machine::item>& operands, tess::stack_machine::context_stack& contexts) const
+void tess::assign_op::execute(const std::vector<tess::stack_machine::item>& operands, tess::stack_machine::context_stack& contexts) const
 {
     int num_vars = static_cast<int>(operands.size() - 1);
     auto value = std::get<expr_value>(operands.back());
@@ -337,8 +317,6 @@ std::optional<tess::error> tess::assign_op::execute(const std::vector<tess::stac
         for (const auto& var : vars) 
             current_scope.set(var.name(), value.get_ary_item(i++));
     }
-
-    return std::nullopt;
 }
 
 tess::one_param_op::one_param_op(std::function<expr_value(tess::allocator&, const expr_value&)> func, std::string name) :
@@ -436,7 +414,7 @@ tess::if_op::if_op(const std::vector<stack_machine::item>& if_clause, const std:
 {
 }
 
-std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::if_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+std::vector<tess::stack_machine::item> tess::if_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     bool cond = std::get<bool>(std::get<expr_value>(operands[0]));
     return (cond) ?
@@ -514,7 +492,7 @@ tess::iterate_op::iterate_op(std::string index_var, int index_val, const std::ve
 {
 }
 
-std::variant<std::vector<tess::stack_machine::item>, tess::error> tess::iterate_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     auto& alloc = contexts.top().allocator();
     auto src = std::get<tess::cluster>(std::get<expr_value>( operands[0] ));
@@ -565,7 +543,7 @@ tess::set_dependencies_op::set_dependencies_op() : stack_machine::op_0(0)
 {
 }
 
-std::optional<tess::error> tess::set_dependencies_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+void tess::set_dependencies_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     auto& ctxt = contexts.top();
     auto& frame = ctxt.peek();
@@ -577,14 +555,13 @@ std::optional<tess::error> tess::set_dependencies_op::execute(const std::vector<
                 func.insert_field(var, ctxt.get(var));
         }
     }
-    return std::nullopt;
 }
 
 tess::set_field_op::set_field_op(int num_fields) : stack_machine::op_0(num_fields + 1)
 {
 }
 
-std::optional<tess::error> tess::set_field_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+void tess::set_field_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     int num_fields = static_cast<int>(operands.size() - 1);
     auto value = std::get<expr_value>(operands.back());
@@ -603,6 +580,4 @@ std::optional<tess::error> tess::set_field_op::execute(const std::vector<stack_m
             field_ref.set(value.get_ary_item(i++));
         }
     }
-
-    return std::nullopt;
 }

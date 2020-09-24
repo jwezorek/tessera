@@ -48,7 +48,7 @@ namespace {
 	tess::expr_value flip(tess::allocator& a, const tess::expr_value& arg)
 	{
 		if (!std::holds_alternative<tess::tile>(arg) && !std::holds_alternative<tess::tile_patch>(arg))
-			return { tess::error("attempted to flip a value that is not a tile or patch") };
+			throw tess::error("attempted to flip a value that is not a tile or patch");
 
 		std::variant<tess::tile, tess::tile_patch> flippable_val = variant_cast(arg);
 		auto flipped = std::visit(

@@ -40,7 +40,7 @@ namespace tess {
 
 	bool operator==(field_ref lhs, field_ref rhs);
 
-	using expr_val_var = std::variant<nil_val, tile, tile_patch, number, std::string, bool, edge, vertex, lambda, cluster, field_ref, error>;
+	using expr_val_var = std::variant<nil_val, tile, tile_patch, number, std::string, bool, edge, vertex, lambda, cluster, field_ref>;
 
 	class expr_value : public expr_val_var, public tessera_impl
 	{
@@ -48,8 +48,6 @@ namespace tess {
 		bool is_simple_value() const;
 		bool is_object_like() const;
 		bool is_array_like() const;
-		bool is_valid() const;
-		bool is_error() const;
 		bool is_nil() const;
 		expr_value clone( allocator& allocator ) const;
 		expr_value clone( allocator& allocator, std::unordered_map<obj_id,void*>& original_to_clone) const;

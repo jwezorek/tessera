@@ -235,9 +235,11 @@ void tess::tile_patch::impl_type::insert_field(const std::string& var, const exp
 tess::expr_value tess::tile_patch::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
 	auto iter = fields_.find(field);
-	return (iter != fields_.end()) ?
-		tess::expr_value{iter->second} :
-		tess::expr_value{tess::error(std::string("referenced undefined tile patch field: ") + field)};
+
+	if (iter == fields_.end())
+		throw tess::error(std::string("referenced undefined tile patch field: ") + field);
+
+	return iter->second;
 }
 
 tess::expr_value tess::tile_patch::impl_type::get_ary_item(int i) const
@@ -401,6 +403,8 @@ void  tess::cluster::impl_type::insert_field(const std::string& var, const expr_
 
 tess::expr_value tess::cluster::impl_type::get_ary_item(int i) const
 {
+	if (i < 0 || i >= values_.size())
+		throw tess::error("array ref out of bounds");
 	return values_.at(i);
 }
 
