@@ -25,5 +25,6 @@
     <None Include="pyramid.tess" />
     <None Include="join.tess" />
     <None Include="amman-A5.tess" />
+    <None Include="hex.tess" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,23 @@
+let blue1 = func {
+    { isosceles_trapezoid( pi/3, 1/phi) } with {
+        bottom, v, top, u is this.edges;
+        color is "dodgerblue";
+        base.broken is true;
+    }
+};
+
+let purple = func {
+    { isosceles_trapezoid( pi/3, 1/(phi*phi)) } with {
+        bottom, v, top, u is this.edges;
+        color is "purple";
+        base.broken is true;
+    }
+};
+
+let yellow = func {
+    {}
+}
+
+tableau (n) {
+    lay half_thin_hex
+}

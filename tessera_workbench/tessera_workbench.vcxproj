@@ -165,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="amman-A5.tess" />
+    <None Include="hex.tess" />
     <None Include="join.tess" />
     <None Include="sierpinski.tess" />
     <None Include="penrose.tess" />
