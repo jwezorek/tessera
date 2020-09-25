@@ -1,6 +1,4 @@
-let triangle = func {
-    regular_polygon(3)
-} with {
+let triangle = {regular_polygon(3)} with {
     left, bottom, right is this.edges;
     color is "yellow";
 };

@@ -937,3 +937,35 @@ std::string tess::bool_lit_expr::to_string() const
 	using namespace std::string_literals;
 	return "#("s + ( (val_) ? "true"s : "false"s) + ")"s;
 }
+
+tess::clone_expr::clone_expr(expr_ptr clonee) : clonee_(clonee)
+{
+}
+
+void tess::clone_expr::compile(stack_machine::stack& stack) const
+{
+	stack.push(
+		std::make_shared<one_param_op>(
+			[](allocator& a, const expr_value& v)->expr_value {
+				return v.clone(a);
+			},
+			"clone"
+		)
+	);
+	clonee_->compile(stack);
+}
+
+void tess::clone_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
+{
+	clonee_->get_dependencies(dependencies);
+}
+
+tess::expr_ptr tess::clone_expr::simplify() const
+{
+	return std::make_shared<clone_expr>(clonee_->simplify());
+}
+
+std::string tess::clone_expr::to_string() const
+{
+	return "( clone " + clonee_->to_string() + " )";
+}

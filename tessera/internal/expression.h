@@ -241,4 +241,16 @@ namespace tess {
         expr_ptr simplify() const override;
         std::string to_string() const override;
     };
+
+    class clone_expr : public expression
+    {
+    private:
+        expr_ptr clonee_;
+    public:
+        clone_expr(expr_ptr clonee);
+        void compile(stack_machine::stack& stack) const override;
+        void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
+        expr_ptr simplify() const override;
+        std::string to_string() const override;
+    };
 }

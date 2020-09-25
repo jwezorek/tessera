@@ -15,9 +15,18 @@ let purple = func {
 };
 
 let yellow = func {
-    {}
+    { regular_polygon(3) } with {
+        base, to, from is this.edges;
+        from.broken is true;
+        to.broken is true;
+        color is "yellow";
+    }
+};
+
+let half_hex =  lay yellow, yellow, yellow such_that $1.to <-> $2.from, $2.to <-> $3.from with {
+    base is this.on()
 }
 
 tableau (n) {
-    lay half_thin_hex
+    lay half_hex
 }

@@ -35,7 +35,7 @@ namespace tess {
             std::vector<tess::var_assignment> assignments(vals.size());
             for (int i = 0; i < vals.size(); i++) {
                 auto var = std::to_string(i + 1);
-                assignments[i] = { std::vector<std::string>{var}, vals[i] };
+                assignments[i] = { std::vector<std::string>{var}, std::make_shared<tess::clone_expr>(vals[i]) };
             }
             return tess::assignment_block(assignments);
         }
