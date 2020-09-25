@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stack_machine.h"
+#include "parser/keywords.h"
 #include <memory>
 #include <vector>
 #include <tuple>
@@ -73,33 +74,15 @@ namespace tess {
         std::string to_string() const override { return "<TODO>"; }
     };
 
-    enum class special_func {
-        sqrt,
-        sin,
-        cos,
-        tan,
-        arcsin,
-        arccos,
-        arctan,
-        regular_polygon,
-        polygon,
-        isosceles_triangle,
-        isosceles_trapezoid,
-        rhombus,
-        flip,
-        join
-    };
-
     class special_function_expr : public expression
     {
     private:
-        special_func func_;
+        parser::kw func_;
         std::vector<expr_ptr> args_;
     public:
-        //special_function_expr(std::tuple<std::string, expr_ptr> param);
-        special_function_expr(std::tuple<std::string, std::vector<expr_ptr>> param);
-        special_function_expr(special_func func, expr_ptr arg);
-        special_function_expr(special_func func, const std::vector<expr_ptr>& args);
+        special_function_expr(std::tuple<parser::kw, std::vector<expr_ptr>> param);
+        special_function_expr(parser::kw, expr_ptr args);
+        special_function_expr(parser::kw, const std::vector<expr_ptr>& args);
         void compile(stack_machine::stack& stack) const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
         expr_ptr simplify() const override;

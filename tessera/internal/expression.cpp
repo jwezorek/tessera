@@ -17,40 +17,6 @@ namespace {
 		return (tess::number(2) * tess::pi()) / tess::number(n);
 	}
 
-	std::optional<tess::special_func> keyword_to_func(const std::string& func_keyword) {
-
-		if (func_keyword == tess::parser::keyword(tess::parser::kw::sqrt))
-			return tess::special_func::sqrt;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::sin))
-			return tess::special_func::sin;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::cos))
-			return tess::special_func::cos;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::tan))
-			return tess::special_func::tan;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::arcsin))
-			return  tess::special_func::arcsin;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::arccos))
-			return tess::special_func::arccos;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::arctan))
-			return tess::special_func::arctan;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::regular_polygon))
-			return tess::special_func::regular_polygon;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::isosceles_triangle))
-			return tess::special_func::isosceles_triangle;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::isosceles_trapezoid))
-			return tess::special_func::isosceles_trapezoid;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::rhombus))
-			return tess::special_func::rhombus;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::flip))
-			return tess::special_func::flip;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::polygon))
-			return tess::special_func::polygon;
-		else if (func_keyword == tess::parser::keyword(tess::parser::kw::join))
-			return tess::special_func::join;
-		else
-			return std::nullopt;
-	}
-
 	std::vector<std::tuple<tess::number, tess::number>> regular_polygon_vertices(tess::number num_sides)
 	{
 		int n = tess::to_int(num_sides);
@@ -445,77 +411,74 @@ void tess::special_number_expr::get_dependencies(std::unordered_set<std::string>
 
 /*----------------------------------------------------------------------*/
 
-tess::special_function_expr::special_function_expr(std::tuple<std::string, std::vector<expr_ptr>> param)
+tess::special_function_expr::special_function_expr(std::tuple<parser::kw, std::vector<expr_ptr>> param)
 {
 	auto [func_keyword, args] = param;
-	auto maybe_func = keyword_to_func(func_keyword);
-	if (!maybe_func.has_value())
-		throw tess::error("Unknown special function.");
-	func_ = maybe_func.value();
+	func_ = func_keyword;
 	args_ = args;
 }
 
-tess::special_function_expr::special_function_expr(special_func func, expr_ptr arg) :
-	func_(func), args_({ arg })
+tess::special_function_expr::special_function_expr(parser::kw func, expr_ptr arg) :
+	func_(func), args_({arg})
 {
 }
 
-tess::special_function_expr::special_function_expr(special_func func, const std::vector<expr_ptr>& args) :
+tess::special_function_expr::special_function_expr(parser::kw func, const std::vector<expr_ptr>& args) :
 	func_(func), args_(args)
 {
 }
 
-std::function<tess::expr_value(tess::allocator & a, const std::vector<tess::expr_value> & v)> get_special_function(tess::special_func code) {
+std::function<tess::expr_value(tess::allocator & a, const std::vector<tess::expr_value> & v)> get_special_function(tess::parser::kw code) {
 	return [](tess::allocator& a, const std::vector<tess::expr_value>& v)->tess::expr_value { return { tess::nil_val() }; };
 }
 
-std::function<tess::expr_value(tess::allocator&, tess::expr_value)> get_special_one_param_function(tess::special_func code) {
+std::function<tess::expr_value(tess::allocator&, tess::expr_value)> get_special_one_param_function(tess::parser::kw code) {
 	switch (code)
 	{
-	case tess::special_func::arccos:
+	case tess::parser::kw::arccos:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::acos(std::get<tess::number>(arg)) }; };
-	case tess::special_func::arcsin:
+	case tess::parser::kw::arcsin:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::asin(std::get<tess::number>(arg)) }; };
-	case tess::special_func::arctan:
+	case tess::parser::kw::arctan:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::atan(std::get<tess::number>(arg)) }; };
-	case tess::special_func::cos:
+	case tess::parser::kw::cos:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::cos(std::get<tess::number>(arg)) }; };
-	case tess::special_func::sin:
+	case tess::parser::kw::sin:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::sin(std::get<tess::number>(arg)) }; };
-	case tess::special_func::sqrt:
+	case tess::parser::kw::sqrt:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::sqrt(std::get<tess::number>(arg)) }; };
-	case tess::special_func::tan:
+	case tess::parser::kw::tan:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { return { tess::tan(std::get<tess::number>(arg)) }; };
-	case tess::special_func::regular_polygon:
+	case tess::parser::kw::regular_polygon:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
 			auto locs = regular_polygon_vertices(std::get<tess::number>(arg));
 			return { a.create<tess::tile>(&a, locs) };
 		};
-	case tess::special_func::flip:
+	case tess::parser::kw::flip:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
 			return flip(a, arg);
 		};
-	case tess::special_func::isosceles_triangle:
+	case tess::parser::kw::isosceles_triangle:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
 			auto locs = isosceles_triangle(std::get<tess::number>(arg));
 			return { a.create<tess::tile>(&a, locs) };
 		};
-	case tess::special_func::isosceles_trapezoid:
+	case tess::parser::kw::isosceles_trapezoid:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
 			auto locs = isosceles_trapezoid(std::get<tess::number>(arg));
 			return { a.create<tess::tile>(&a, locs) };
 		};
-	case tess::special_func::rhombus:
+	case tess::parser::kw::rhombus:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
 			auto locs = rhombus(std::get<tess::number>(arg));
 			return { a.create<tess::tile>(&a, locs) };
 		};
-	case tess::special_func::polygon:
+	case tess::parser::kw::polygon:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
 			auto locs = polygon( arg );
 			return { a.create<tess::tile>(&a, locs) };
 		};
-	case tess::special_func::join:
+	case tess::parser::kw::join:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value { 
 			auto patch = std::get<tess::tile_patch>(arg);
 			return { tess::get_impl(patch)->join(a) };
@@ -525,39 +488,7 @@ std::function<tess::expr_value(tess::allocator&, tess::expr_value)> get_special_
 	}
 }
 
-std::string get_special_function_name(tess::special_func code) {
-	switch (code)
-	{
-	case tess::special_func::arccos:
-		return "arcos";
-	case tess::special_func::arcsin:
-		return "arcsin";
-	case tess::special_func::arctan:
-		return "arctan";
-	case tess::special_func::cos:
-		return "cosine";
-	case tess::special_func::sin:
-		return "sine";
-	case tess::special_func::sqrt:
-		return "sqrt";
-	case tess::special_func::tan:
-		return "tan";
-	case tess::special_func::regular_polygon:
-		return "regular_poly";
-	case tess::special_func::polygon:
-		return "polygon";
-	case tess::special_func::isosceles_triangle:
-		return "isosceles_triangle";
-	case tess::special_func::flip:
-		return "flip";
-	case tess::special_func::join:
-		return "join";
-	default:
-		throw tess::error("Unknown special function");
-	}
-}
-
-int get_num_params(tess::special_func code)
+int get_num_params(tess::parser::kw code)
 {
 	return 1;
 }
@@ -568,7 +499,7 @@ void tess::special_function_expr::compile(stack_machine::stack& stack) const
 		stack.push(
 			std::make_shared<one_param_op>(
 				get_special_one_param_function(func_),
-				get_special_function_name(func_)
+				parser::keyword(func_)
 				)
 		);
 		args_[0]->compile(stack);
@@ -577,7 +508,7 @@ void tess::special_function_expr::compile(stack_machine::stack& stack) const
 			std::make_shared<val_func_op>(
 				get_num_params(func_),
 				get_special_function(func_),
-				get_special_function_name(func_)
+				parser::keyword(func_)
 			)
 		);
 		for (auto arg : args_)
@@ -605,7 +536,7 @@ tess::expr_ptr tess::special_function_expr::simplify() const
 std::string tess::special_function_expr::to_string() const
 {
 	std::stringstream ss;
-	ss << "( " << get_special_function_name(func_) << " ";
+	ss << "( " << parser::keyword(func_) << " ";
 	for (auto e : args_)
 		ss << e->to_string() << " ";
 	ss << ")";

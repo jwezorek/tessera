@@ -62,6 +62,7 @@ namespace tess {
 
         kw& operator++(kw& val);
         const std::string& keyword(kw tok);
+        kw token(std::string keyword);
 
         template<kw e>
         auto kw_() {

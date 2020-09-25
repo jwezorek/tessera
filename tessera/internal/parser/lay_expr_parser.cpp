@@ -44,7 +44,7 @@ namespace tess {
         {
             expr_ptr body = std::make_shared<tess::lay_expr>(edge_mappings);
             if ( ! is_lay )
-                body = std::make_shared<special_function_expr>(special_func::join, body);
+                body = std::make_shared<special_function_expr>(parser::kw::join, body);
             if ( ! with.empty() )
                 body = std::make_shared<with_expr>(with, body);
             return std::make_shared<where_expr>(get_placeholder_assignments(args), body);

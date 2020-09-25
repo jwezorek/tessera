@@ -1,6 +1,57 @@
 #include "keywords.h"
 #include <unordered_map>
+#include <tuple>
 #include <cassert>
+
+namespace {
+
+    const std::vector<std::tuple<tess::parser::kw, std::string>>& keyword_list() {
+        static std::vector<std::tuple<tess::parser::kw, std::string>> keywords = {
+            {tess::parser::kw::if_, "if"},
+            { tess::parser::kw::then,               "then" },
+            { tess::parser::kw::else_,              "else" },
+            { tess::parser::kw::lay,                "lay" },
+            { tess::parser::kw::func,               "func" },
+            { tess::parser::kw::edges,              "edges" },
+            { tess::parser::kw::class_,             "class" },
+            { tess::parser::kw::such_that,          "such_that" },
+            { tess::parser::kw::tableau,            "tableau" },
+            { tess::parser::kw::where,              "where" },
+            { tess::parser::kw::with,               "with" },
+            { tess::parser::kw::length,             "length" },
+            { tess::parser::kw::sqrt,               "sqrt" },
+            { tess::parser::kw::sin,                "sin" },
+            { tess::parser::kw::cos,                "cos" },
+            { tess::parser::kw::tan,                "tan" },
+            { tess::parser::kw::arcsin,             "arcsin" },
+            { tess::parser::kw::arccos,             "arccos" },
+            { tess::parser::kw::arctan,             "arctan" },
+            { tess::parser::kw::pi,                 "pi" },
+            { tess::parser::kw::is,                 "is" },
+            { tess::parser::kw::this_,              "this" },
+            { tess::parser::kw::phi,                "phi" },
+            { tess::parser::kw::root_2,             "root_2" },
+            { tess::parser::kw::and_,		       "and" },
+            { tess::parser::kw::or_,		           "or" },
+            { tess::parser::kw::not_,		       "not" },
+            { tess::parser::kw::nil,                "nil" },
+            { tess::parser::kw::let,                "let" },
+            { tess::parser::kw::regular_polygon,    "regular_polygon" },
+            { tess::parser::kw::isosceles_triangle, "isosceles_triangle" },
+            { tess::parser::kw::isosceles_trapezoid,"isosceles_trapezoid" },
+            { tess::parser::kw::rhombus,            "rhombus" },
+            { tess::parser::kw::polygon,            "polygon" },
+            { tess::parser::kw::flip,               "flip" },
+            { tess::parser::kw::for_,               "for" },
+            { tess::parser::kw::in,                 "in" },
+            { tess::parser::kw::on,                 "on" },
+            { tess::parser::kw::join,               "join" },
+            { tess::parser::kw::true_,              "true" },
+            { tess::parser::kw::false_,             "false" }
+        };
+        return keywords;
+    }
+}
 
 #define assertm(exp, msg) assert(((void)msg, exp))
 
@@ -12,51 +63,28 @@ tess::parser::kw& tess::parser::operator++(tess::parser::kw& val)
 
 const std::string& tess::parser::keyword(tess::parser::kw tok)
 {
-    using namespace tess::parser;
-    static std::unordered_map<kw, std::string> keyword_tbl = {
-            {kw::if_,                "if"},
-            {kw::then,               "then"},
-            {kw::else_,              "else"},
-            {kw::lay,                "lay"},
-            {kw::func,               "func"},
-            {kw::edges,              "edges"},
-            {kw::class_,             "class"},
-            {kw::such_that,          "such_that"},
-            {kw::tableau,            "tableau"},
-            {kw::where,              "where"},
-            {kw::with,               "with"},
-            {kw::length,             "length"},
-            {kw::sqrt,               "sqrt"},
-            {kw::sin,                "sin"},
-            {kw::cos,                "cos"},
-            {kw::tan,                "tan"},
-            {kw::arcsin,             "arcsin"},
-            {kw::arccos,             "arccos"},
-            {kw::arctan,             "arctan"},
-            {kw::pi,                 "pi"},
-            {kw::is,                 "is"},
-            {kw::this_,              "this"},
-            {kw::phi,                "phi"},
-            {kw::root_2,             "root_2"},
-			{kw::and_,		         "and"},
-			{kw::or_,		         "or"},
-			{kw::not_,		         "not"},
-            {kw::nil,                "nil"},
-			{kw::let,                "let"},
-            {kw::regular_polygon,    "regular_polygon"},
-            {kw::isosceles_triangle, "isosceles_triangle"},
-            {kw::isosceles_trapezoid,"isosceles_trapezoid"},
-            {kw::rhombus,            "rhombus"},
-            {kw::polygon,            "polygon"},
-            {kw::flip,               "flip"},
-            {kw::for_,               "for"},
-            {kw::in,                 "in"},
-            {kw::on,                 "on"},
-            {kw::join,               "join"},
-            {kw::true_,              "true"},
-            {kw::false_,             "false"}
-    };
-
-    assertm( (keyword_tbl.size() == static_cast<int>(kw::none) - static_cast<int>(kw::if_)), "keyword table is messed up!");
+    static std::unordered_map<tess::parser::kw, std::string> keyword_tbl;
+    if (keyword_tbl.empty()) {
+        const auto keywords = keyword_list();
+        std::transform(keywords.begin(), keywords.end(), std::inserter(keyword_tbl, keyword_tbl.end()),
+            [](const auto& tup) -> std::unordered_map<tess::parser::kw, std::string>::value_type {
+                return { std::get<0>(tup), std::get<1>(tup) };
+            }
+        );
+    }
     return keyword_tbl.at(tok);
+}
+
+tess::parser::kw tess::parser::token(std::string keyword)
+{
+    static std::unordered_map<std::string, tess::parser::kw> token_tbl;
+    if (token_tbl.empty()) {
+        const auto keywords = keyword_list();
+        std::transform(keywords.begin(), keywords.end(), std::inserter(token_tbl, token_tbl.end()),
+            [](const auto& tup) -> std::unordered_map<std::string, tess::parser::kw>::value_type {
+                return { std::get<1>(tup), std::get<0>(tup) };
+            }
+        );
+    }
+    return token_tbl.at(keyword);
 }
