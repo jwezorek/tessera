@@ -27,14 +27,9 @@ let triangle = func(n) {
 
 let rhomb = func(n) {
     if (n == 1)
-        join isosceles_triangle( pi /4 ) , isosceles_triangle( pi /4 ) such_that 
-            $1.edges[0] <-> $2.edges[0] 
-        with {
+       { rhombus( pi /4 ) } with {
             color is "red";
-            top_left on $1.edges[2];
-            top_right on $1.edges[1];
-            bottom_left on $2.edges[1];
-            bottom_right on $2.edges[2];
+            bottom_right, top_right, top_left, bottom_left is this.edges;
         }
     else
         lay ace(n-1), rhomb(n-1), ace(n-1) such_that 

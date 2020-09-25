@@ -31,6 +31,16 @@ namespace {
 		return points;
 	}
 
+	std::vector<std::tuple<tess::number, tess::number>> quadrilateral(tess::number d1, tess::number theta1, tess::number theta2, tess::number d2) {
+		using num = tess::number;
+		return std::vector<std::tuple<tess::number, tess::number>> {
+			{ num(0), num(0) },
+			{ num(1), num(0) },
+			{ num(1) + d2 * tess::cos(tess::pi() - theta2), d2 * tess::sin(tess::pi() - theta2)},
+			{ d1 * tess::cos(theta1), d1 * tess::sin(theta1)}
+		};
+	}
+
 	std::vector<std::tuple<tess::number, tess::number>> isosceles_triangle(tess::number theta)
 	{
 		using num = tess::number;
@@ -47,12 +57,18 @@ namespace {
 
 	std::vector<std::tuple<tess::number, tess::number>> isosceles_trapezoid(tess::number theta, tess::number len)
 	{
-		return {};
+		using num = tess::number;
+		return quadrilateral(
+			len, theta, theta, len
+		);
 	}
 
 	std::vector<std::tuple<tess::number, tess::number>> rhombus(tess::number theta)
 	{
-		return {};
+		using num = tess::number;
+		return quadrilateral(
+			num(1), theta, tess::pi() - theta, num(1)
+		);
 	}
 
 	tess::expr_value flip(tess::allocator& a, const tess::expr_value& arg)
