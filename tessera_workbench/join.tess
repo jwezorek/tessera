@@ -1,39 +1,39 @@
-let square = func {
+let square = {
 	regular_polygon(4)
 } with {
    N, W, S, E is this.edges;
 };
 
 let plus_sign = func {
-	join north, west, south, east, center such_that 
-		center.N <-> north.S, 
-		center.W <-> west.E, 
-		center.S <-> south.N, 
-		center.E <-> east.W
-} where {
-	let center = square;
-	let north, west, south, east = [square, square, square, square];
-} with {
-	N, W, S, E on [ north.N , west.W, south.S, east.E];
-	NW, SW, SE, NE on [north.W, west.S, south.E, east.N];
-    color is "red";
+	join 
+		square as north, square as west, square as south, square as east, square as center 
+	such_that 
+		center.N <-> north.S,  center.W <-> west.E, 
+		center.S <-> south.N,  center.E <-> east.W
+	with {
+		N, W, S, E on [ north.N , west.W, south.S, east.E];
+		NW, SW, SE, NE on [north.W, west.S, south.E, east.N];
+		color is "green";
+	}
 };
 
 let plus_sign_fractal = func(n) {
-	lay north, west, south, east, center such_that 
+	lay 
+		p[0] as north, p[1] as west, p[2] as south, p[3] as east, p[4] as center 
+	such_that 
 		center.N <-> north.SW, 
 		center.W <-> west.SE, 
 		center.S <-> south.NE, 
 		center.E <-> east.NW
+	with {
+		N, W, S, E on [ north.N, west.W, south.S, east.E ];
+		NW, SW, SE, NE on [ west.NW, south.SW, east.SE, north.NE ];
+	}
 } where {
-	 let north, west, south, east, center = 
-		 if (n == 1)
+	 let p = if (n == 1)
 			[ plus_sign, plus_sign, plus_sign, plus_sign, plus_sign ]
 		 else
 			[ plus_sign_fractal(n-1), plus_sign_fractal(n-1), plus_sign_fractal(n-1), plus_sign_fractal(n-1), plus_sign_fractal(n-1) ];
-} with {
-	N, W, S, E on [ north.N, west.W, south.S, east.E ];
-	NW, SW, SE, NE on [ west.NW, south.SW, east.SE, north.NE ];
 };
 
 tableau( n ) {

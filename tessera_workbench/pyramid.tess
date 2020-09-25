@@ -1,11 +1,11 @@
-let triangle = {regular_polygon(3)} with {
+let triangle = {
+    regular_polygon(3)
+} with {
     left, bottom, right is this.edges;
-    color is "yellow";
+    color is "pink";
 };
 
-let tri_pair = func {
-    lay triangle , triangle such_that $1.right <-> $2.right
-};
+let tri_pair = lay triangle , triangle such_that $1.right <-> $2.right;
 
 let tri_strip = func( n ) {
     if (n == 1)

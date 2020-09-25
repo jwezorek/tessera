@@ -14,19 +14,6 @@ namespace tess {
 	class evaluation_context;
 	class tile;
 
-	struct lay_params {
-		std::string kw;
-		std::vector<expr_ptr> tiles;
-		std::vector<std::tuple<expr_ptr, expr_ptr>> edge_mappings;
-	};
-
-	struct full_lay_params {
-		std::string kw;
-		std::vector<expr_ptr> tiles;
-		std::vector<std::tuple<expr_ptr, expr_ptr>> edge_mappings;
-		field_definitions with;
-	};
-
 	class lay_expr : public tess::expression {
 		public:
 			lay_expr(const std::vector<std::tuple<tess::expr_ptr, tess::expr_ptr>>& edge_mappings);
