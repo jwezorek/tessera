@@ -47,6 +47,8 @@ namespace tess {
 			not_,
             regular_polygon,
             isosceles_triangle,
+            rhombus,
+            isosceles_trapezoid,
             polygon,
             flip,
             for_,

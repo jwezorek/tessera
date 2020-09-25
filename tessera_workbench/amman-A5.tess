@@ -1,5 +1,5 @@
 let ace = func(n) {
-    lay rhombus(n), triangle(n), flip( triangle(n) ) such_that 
+    lay rhomb(n), triangle(n), flip( triangle(n) ) such_that 
         $1.bottom_left <-> $2.from, $1.bottom_right <-> $3.from 
     with {
         left on $2.to;
@@ -11,13 +11,13 @@ let ace = func(n) {
 
 let triangle = func(n) {
     if (n == 1)
-        {isosceles_triangle( pi/2 )} with {
+        {isosceles_triangle( pi/2)} with {
             color is "yellow";
             base, to, from on this.edges;
             base.broken is true;
         }
     else
-        lay triangle(n-1), rhombus(n-1), ace(n-1) such_that  
+        lay triangle(n-1), rhomb(n-1), ace(n-1) such_that  
             $1.from <-> $2.bottom_left,  $2.top_right <-> $3.left 
         with {
             from on $2.top_left;
@@ -25,7 +25,7 @@ let triangle = func(n) {
         }
 };
 
-let rhombus = func(n) {
+let rhomb = func(n) {
     if (n == 1)
         join isosceles_triangle( pi /4 ) , isosceles_triangle( pi /4 ) such_that 
             $1.edges[0] <-> $2.edges[0] 
@@ -37,7 +37,7 @@ let rhombus = func(n) {
             bottom_right on $2.edges[2];
         }
     else
-        lay ace(n-1), rhombus(n-1), ace(n-1) such_that 
+        lay ace(n-1), rhomb(n-1), ace(n-1) such_that 
             $1.left <-> $2.bottom_left, $3.left <-> $2.top_right 
         with {
             top_left on $1.top_left;

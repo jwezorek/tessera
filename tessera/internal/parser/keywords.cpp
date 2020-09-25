@@ -45,6 +45,8 @@ const std::string& tess::parser::keyword(tess::parser::kw tok)
 			{kw::let,                "let"},
             {kw::regular_polygon,    "regular_polygon"},
             {kw::isosceles_triangle, "isosceles_triangle"},
+            {kw::isosceles_trapezoid,"isosceles_trapezoid"},
+            {kw::rhombus,            "rhombus"},
             {kw::polygon,            "polygon"},
             {kw::flip,               "flip"},
             {kw::for_,               "for"},

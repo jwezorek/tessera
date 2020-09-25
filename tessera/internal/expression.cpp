@@ -17,6 +17,40 @@ namespace {
 		return (tess::number(2) * tess::pi()) / tess::number(n);
 	}
 
+	std::optional<tess::special_func> keyword_to_func(const std::string& func_keyword) {
+
+		if (func_keyword == tess::parser::keyword(tess::parser::kw::sqrt))
+			return tess::special_func::sqrt;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::sin))
+			return tess::special_func::sin;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::cos))
+			return tess::special_func::cos;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::tan))
+			return tess::special_func::tan;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::arcsin))
+			return  tess::special_func::arcsin;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::arccos))
+			return tess::special_func::arccos;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::arctan))
+			return tess::special_func::arctan;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::regular_polygon))
+			return tess::special_func::regular_polygon;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::isosceles_triangle))
+			return tess::special_func::isosceles_triangle;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::isosceles_trapezoid))
+			return tess::special_func::isosceles_trapezoid;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::rhombus))
+			return tess::special_func::rhombus;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::flip))
+			return tess::special_func::flip;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::polygon))
+			return tess::special_func::polygon;
+		else if (func_keyword == tess::parser::keyword(tess::parser::kw::join))
+			return tess::special_func::join;
+		else
+			return std::nullopt;
+	}
+
 	std::vector<std::tuple<tess::number, tess::number>> regular_polygon_vertices(tess::number num_sides)
 	{
 		int n = tess::to_int(num_sides);
@@ -43,6 +77,16 @@ namespace {
 			{ num(2) * half_base, num(0) },
 			{ half_base, height }
 		};
+	}
+
+	std::vector<std::tuple<tess::number, tess::number>> isosceles_trapezoid(tess::number theta)
+	{
+		return {};
+	}
+
+	std::vector<std::tuple<tess::number, tess::number>> rhombus(tess::number theta)
+	{
+		return {};
 	}
 
 	tess::expr_value flip(tess::allocator& a, const tess::expr_value& arg)
@@ -401,37 +445,14 @@ void tess::special_number_expr::get_dependencies(std::unordered_set<std::string>
 
 /*----------------------------------------------------------------------*/
 
-tess::special_function_expr::special_function_expr(std::tuple<std::string, expr_ptr> param)
+tess::special_function_expr::special_function_expr(std::tuple<std::string, std::vector<expr_ptr>> param)
 {
-    auto [func_keyword, arg] = param;
-	if (func_keyword == parser::keyword(parser::kw::sqrt))
-		func_ = special_func::sqrt;
-	else if (func_keyword == parser::keyword(parser::kw::sin))
-		func_ = special_func::sin;
-	else if (func_keyword == parser::keyword(parser::kw::cos))
-		func_ = special_func::cos;
-	else if (func_keyword == parser::keyword(parser::kw::tan))
-		func_ = special_func::tan;
-	else if (func_keyword == parser::keyword(parser::kw::arcsin))
-		func_ = special_func::arcsin;
-	else if (func_keyword == parser::keyword(parser::kw::arccos))
-		func_ = special_func::arccos;
-	else if (func_keyword == parser::keyword(parser::kw::arctan))
-		func_ = special_func::arctan;
-	else if (func_keyword == parser::keyword(parser::kw::regular_polygon))
-		func_ = special_func::regular_polygon;
-	else if (func_keyword == parser::keyword(parser::kw::isosceles_triangle))
-		func_ = special_func::isosceles_triangle;
-	else if (func_keyword == parser::keyword(parser::kw::flip))
-		func_ = special_func::flip;
-	else if (func_keyword == parser::keyword(parser::kw::polygon))
-		func_ = special_func::polygon;
-	else if (func_keyword == parser::keyword(parser::kw::join))
-		func_ = special_func::join;
-	else
-        throw tess::error("attempted to parse invalid special function");
-
-	args_ = { arg };
+	auto [func_keyword, args] = param;
+	auto maybe_func = keyword_to_func(func_keyword);
+	if (!maybe_func.has_value())
+		throw tess::error("Unknown special function.");
+	func_ = maybe_func.value();
+	args_ = args;
 }
 
 tess::special_function_expr::special_function_expr(special_func func, expr_ptr arg) :
@@ -477,6 +498,16 @@ std::function<tess::expr_value(tess::allocator&, tess::expr_value)> get_special_
 	case tess::special_func::isosceles_triangle:
 		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
 			auto locs = isosceles_triangle(std::get<tess::number>(arg));
+			return { a.create<tess::tile>(&a, locs) };
+		};
+	case tess::special_func::isosceles_trapezoid:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
+			auto locs = isosceles_trapezoid(std::get<tess::number>(arg));
+			return { a.create<tess::tile>(&a, locs) };
+		};
+	case tess::special_func::rhombus:
+		return [](tess::allocator& a, tess::expr_value arg)->tess::expr_value {
+			auto locs = rhombus(std::get<tess::number>(arg));
 			return { a.create<tess::tile>(&a, locs) };
 		};
 	case tess::special_func::polygon:
