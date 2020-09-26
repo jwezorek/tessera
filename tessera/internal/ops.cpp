@@ -389,6 +389,11 @@ std::optional<tess::error> tess::lay_op::apply_mapping(const std::vector<stack_m
     auto values = get_vector<expr_value>(operands.begin(), operands.end());
     std::vector<std::tuple<edge::impl_type*, edge::impl_type*>> edge_to_edge;
 
+    for (const auto& e : values) {
+        if (!std::holds_alternative<tess::edge>(e))
+            throw tess::error("mapping argument in a lay or join expression does not evaluate to an edge.");
+    }
+
     for (int i = 0; i < values.size(); i += 2) {
         auto edge1 = get_impl(std::get<edge>(values[i]));
         auto edge2 = get_impl(std::get<edge>(values[i+1]));

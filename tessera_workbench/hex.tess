@@ -14,19 +14,20 @@ let purple = func {
     }
 };
 
-let yellow = func {
-    { regular_polygon(3) } with {
+let yellow = { regular_polygon(3) } with {
         base, to, from is this.edges;
         from.broken is true;
         to.broken is true;
         color is "yellow";
+    };
+
+let hexes = func {
+    lay yellow, yellow, yellow, yellow such_that $1.to <-> $2.from, $2.to <-> $3.from , $3.to <-> $4.from with {
+        to on $4.to;
+        from on $1.from;
     }
 };
 
-let half_hex =  lay yellow, yellow, yellow such_that $1.to <-> $2.from, $2.to <-> $3.from with {
-    base is this.on()
-}
-
 tableau (n) {
-    lay half_hex
+    lay hexes, yellow, yellow such_that $1.to <-> $2.from, $2.to <-> $3.from
 }
