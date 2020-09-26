@@ -3,11 +3,24 @@
 #include "tessera/tile.h"
 #include "tessera/tile_patch.h"
 #include "number.h"
+#include <boost/geometry.hpp>
+#include <boost/geometry/index/rtree.hpp>
 #include <unordered_map>
 #include <tuple>
 #include <memory>
 
 namespace tess {
+
+    namespace geometry {
+        namespace bg = boost::geometry;
+        namespace bgi = boost::geometry::index;
+        using rtree_point = bg::model::point<double, 2, bg::cs::cartesian>;
+        using rtree_box = bg::model::box<rtree_point>;
+        using rtree_value = std::pair< rtree_point, int>;
+        using rtree = bgi::rtree<rtree_value, bgi::rstar<8>>; //bgi::rtree<rtree_value, bgi::quadratic<16>>;
+        using point = bg::model::d2::point_xy<double>;
+        using polygon = bg::model::polygon<point, false>;
+    };
 
     class vertex_location_table {
     public:
