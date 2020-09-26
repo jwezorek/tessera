@@ -20,6 +20,20 @@ namespace tess {
         using rtree = bgi::rtree<rtree_value, bgi::rstar<8>>; //bgi::rtree<rtree_value, bgi::quadratic<16>>;
         using point = bg::model::d2::point_xy<double>;
         using polygon = bg::model::polygon<point, false>;
+
+        class rtree_tbl
+        {
+        public:
+            rtree_tbl(tess::number eps);
+            std::optional<int> get(const tess::point& pt) const;
+            int insert(const tess::point& pt);
+            void clear();
+
+        private:
+            tess::number eps_;
+            rtree tree_;
+        };
+
     };
 
     class vertex_location_table {
@@ -30,8 +44,8 @@ namespace tess {
         int insert(const tess::point& pt);
         void apply_transformation(const matrix& mat);
     private:
-        class impl_type;
-        std::shared_ptr<impl_type> impl_;
+        geometry::rtree_tbl pt_to_index_;
+        std::vector<tess::point> index_to_pt_;
     };
 
     using edge_indices = std::tuple<int, int>;

@@ -12,7 +12,7 @@ let ace = func(n) {
 let triangle = func(n) {
     if (n == 1)
         {isosceles_triangle( pi/2)} with {
-            color is "yellow";
+            color is "white";
             base, to, from on this.edges;
             base.broken is true;
         }
@@ -28,7 +28,7 @@ let triangle = func(n) {
 let rhomb = func(n) {
     if (n == 1)
        { rhombus( pi /4 ) } with {
-            color is "red";
+            color is "black";
             bottom_right, top_right, top_left, bottom_left is this.edges;
         }
     else
@@ -43,17 +43,15 @@ let rhomb = func(n) {
 };
 
 let star = func(n) {
-    lay quadrant(n), quadrant(n), quadrant(n), quadrant(n) such_that 
+    lay quadrant, quadrant, quadrant, quadrant such_that 
         $1.a <-> $2.b, $2.a <-> $3.b, $3.a <-> $4.b
 } where {
-    let quadrant = func(n) {
-        lay ace(n), flip(ace(n)) such_that 
+    let quadrant = lay ace(n), flip(ace(n)) such_that 
             $1.top_right <-> $2.top_right 
         with {
             a on $1.top_left;
             b on $2.top_left;
-        }
-    };
+        };
 };
 
 tableau(n) {

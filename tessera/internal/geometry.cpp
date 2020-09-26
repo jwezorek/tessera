@@ -36,41 +36,6 @@ namespace {
 		return box_from_points(x1, y1, x2, y2);
 	}
 
-	class rtree_tbl 
-	{
-	public:
-		rtree_tbl(tess::number eps) : eps_(eps) {}
-
-		std::optional<int> get(const tess::point& pt) const  {
-			std::vector<geom::rtree_value> items;
-			tree_.query(geom::bgi::within(pad_point(pt, eps_)), std::back_inserter(items));
-			if (items.empty())
-				return std::nullopt;
-			if (items.size() == 1)
-				return items[0].second;
-			throw tess::error("invalid vertex table");
-		}
-
-		int insert(const tess::point& pt)  {
-			auto maybe_index = get(pt);
-			if (maybe_index.has_value())
-				return maybe_index.value();
-			int new_index = static_cast<int>(tree_.size());
-			auto [x, y] = pt;
-			tree_.insert(
-				geom::rtree_value(make_rtree_point(x, y), new_index)
-			);
-			return new_index;
-		}
-		void clear()  {
-			tree_.clear();
-		}
-
-	private:
-		tess::number eps_;
-		geom::rtree tree_;
-	};
-
 	std::optional<geom::polygon> join_polygons(const std::vector<geom::polygon>& polygons) {
 
 		if (polygons.empty())
@@ -144,22 +109,43 @@ namespace {
 	}
 }
 
-class tess::vertex_location_table::impl_type {
-public:
-	rtree_tbl pt_to_index;
-	std::vector<tess::point> index_to_pt;
+geom::rtree_tbl::rtree_tbl(tess::number eps) : eps_(eps) {}
 
-	impl_type(tess::number eps) : pt_to_index(eps)
-	{}
-};
+std::optional<int> geom::rtree_tbl::get(const tess::point& pt) const {
+	std::vector<geom::rtree_value> items;
+	tree_.query(geom::bgi::within(pad_point(pt, eps_)), std::back_inserter(items));
+	if (items.empty())
+		return std::nullopt;
+	if (items.size() == 1)
+		return items[0].second;
+	throw tess::error("invalid vertex table");
+}
+
+int geom::rtree_tbl::insert(const tess::point& pt) {
+	auto maybe_index = get(pt);
+	if (maybe_index.has_value())
+		return maybe_index.value();
+	int new_index = static_cast<int>(tree_.size());
+	auto [x, y] = pt;
+	tree_.insert(
+		geom::rtree_value(make_rtree_point(x, y), new_index)
+	);
+	return new_index;
+}
+
+void geom::rtree_tbl::clear() {
+	tree_.clear();
+}
+
+
 
 tess::vertex_location_table::vertex_location_table() :
-	impl_(std::make_shared<impl_type>(std::numeric_limits<float>::epsilon()))
+	pt_to_index_(std::numeric_limits<float>::epsilon())
 {}
 
 int tess::vertex_location_table::get_index(const tess::point& pt) const
 {
-	auto maybe_index = impl_->pt_to_index.get(pt);
+	auto maybe_index = pt_to_index_.get(pt);
 	if (!maybe_index.has_value())
 		throw tess::error("Bad vertex table look up");
 	return maybe_index.value();
@@ -167,28 +153,32 @@ int tess::vertex_location_table::get_index(const tess::point& pt) const
 
 tess::point tess::vertex_location_table::get_location(int index) const
 {
-	return impl_->index_to_pt.at(index);
+	return index_to_pt_.at(index);
 }
 
 int tess::vertex_location_table::insert(const tess::point& pt)
 {
-	int index = impl_->pt_to_index.insert(pt);
-	int n = static_cast<int>(impl_->index_to_pt.size());
+	int index = pt_to_index_.insert(pt);
+	int n = static_cast<int>(index_to_pt_.size());
 	if (index < n)
 		return index; // TODO: possibly make the point in the table the average of pt and what was already there
 	if (index > n)
 		throw error("Corrupt vertex table.");
-	impl_->index_to_pt.push_back(pt);
+	index_to_pt_.push_back(pt);
 	return n;
 }
 
 void tess::vertex_location_table::apply_transformation(const matrix& mat)
 {
-	impl_->pt_to_index.clear();
-	for (auto& pt : impl_->index_to_pt) {
-		pt = tess::apply_matrix(mat, pt);
-		impl_->pt_to_index.insert(pt);
-	}
+	std::vector<tess::point> new_index_to_pt_(index_to_pt_.size());
+	std::transform(index_to_pt_.begin(), index_to_pt_.end(), new_index_to_pt_.begin(),
+		[&mat](const auto& p) { return tess::apply_matrix(mat, p);  }
+	);
+	index_to_pt_ = new_index_to_pt_;
+
+	pt_to_index_.clear();
+	for (const auto& p : index_to_pt_)
+		pt_to_index_.insert(p);
 }
 
 std::size_t tess::edge_hash::operator()(const edge_indices& key) const

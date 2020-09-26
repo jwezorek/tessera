@@ -253,7 +253,7 @@ int tess::tile_patch::impl_type::get_ary_count() const
 }
 
 void tess::tile_patch::impl_type::apply(const matrix& mat)
-{
+{ 
 	vert_tbl_.apply_transformation(mat);
 }
 
@@ -269,9 +269,8 @@ std::string tess::tile_patch::impl_type::debug() const
 }
 
 tess::tile_patch tess::tile_patch::impl_type::flip(allocator& a) const {
-	tess::tile_patch clone = a.create<tess::tile_patch>();
-	std::unordered_map<obj_id, void*> tbl;
-	clone_to(a, tbl, get_impl(clone));
+	expr_value self = { tess::make_tess_obj<tile_patch>(this) };
+	auto clone = std::get<tess::tile_patch>(self.clone(a));
 	get_impl(clone)->flip();
 	return clone;
 }
@@ -381,7 +380,6 @@ void tess::tile_patch::impl_type::dfs(tile_visitor visit) const
 	};
 	dfs_aux(tiles_[0]);
 }
-
 
 /*---------------------------------------------------------------------------------------------*/
 
