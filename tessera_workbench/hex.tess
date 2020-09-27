@@ -1,33 +1,169 @@
-let blue1 = func {
-    { isosceles_trapezoid( pi/3, 1/phi) } with {
-        bottom, v, top, u is this.edges;
-        color is "dodgerblue";
-        base.broken is true;
+let blue1 = func(n) {
+    if (n == 1)
+        { isosceles_trapezoid( pi/3, 1/phi) } with {
+            bottom, v, top, u is this.edges;
+            color is "dodgerblue";
+            bottom.broken is true;
+        }
+    else
+        lay
+            half_hex(n-1) as hh, full_purple(n-1) as p, flip(yellow(n-1)) as y1,
+            blue1(n-1) as b1, full_blue1(n-1) as b2, yellow(n-1) as y2, red(n-1) as r
+        such_that
+            hh.u <-> p.top,
+            p.bottom <-> y1.v,
+            p.u_top <-> b1.top,
+            b1.v <-> b2.v_bottom, 
+            y2.v <-> b2.u_bottom,
+            r.v <-> b2.top
+        with {
+            u on p.v_top;
+            top on p.v_bottom;
+            v on b2.u_top;
+            bottom on b1.bottom;
+        }
+            
+};
+
+let blue2 = func(n) {
+    if (n == 1)
+        { isosceles_trapezoid( pi/3, 1/phi) } with {
+            bottom, v, top, u is this.edges;
+            color is "lightskyblue";
+            bottom.broken is true;
+        }
+    else
+        lay 
+            flip(half_hex(n-1)) as y1, flip(purple_triad(n-1)) as pt, 
+            flip(half_hex(n-1)) as y2, blue2(n-1) as b1, flip(blue2(n-1)) as b2
+        such_that
+            y1.v <-> b2.u,
+            y1.u <-> pt.top,
+            pt.u2 <-> y2.v,
+            y2.top <-> b1.u
+        with {
+            v on b1.bottom;
+            u on pt.v;
+            top on b2.bottom;
+            bottom on pt.bottom;
+        }
+};
+
+let purple = func(n) {
+    if (n == 1)
+        { isosceles_trapezoid( pi/3, 1/(phi*phi)) } with {
+            bottom, v, top, u is this.edges;
+            color is "purple";
+            bottom.broken is true;
+        }
+    else
+        lay 
+            yellow(n-1) as y, purple_triad(n-1) as pt, flip(half_hex(n-1)) as hh, flip(blue2(n-1)) as b
+        such_that
+            y.v <-> pt.u2,
+            pt.top <-> hh.top,
+            pt.v <-> b.top 
+        with {
+            top on pt.top2;
+            u on pt.u1;
+            v on b.bottom;
+            bottom on b.v;
+        }
+};
+
+let yellow = func(n) {
+        if (n==1) 
+            { regular_polygon(3) } with {
+                bottom, v, u is this.edges;
+                bottom.broken is true;
+                u.broken is true;
+                color is "yellow";
+            }
+        else 
+            lay 
+                half_hex(n-1) as hh, purple(n-1) as p, blue1(n-1) as b 
+            such_that 
+                hh.u <-> p.top, b.top <-> p.u 
+            with {
+                bottom on p.bottom;
+                u on b.bottom;
+                v on p.v;
+            }
+};
+
+let red = func(n) {
+    if (n == 1)
+        { regular_polygon(3) } with {
+            bottom, v, u is this.edges;
+            bottom.broken is true;
+            u.broken is true;
+            color is "red";
+        }
+    else
+        lay 
+            yellow(n-1) as y, purple(n-1) as p
+        such_that
+            y.v <-> p.top
+        with {
+            bottom on p.bottom;
+            u on p.u;
+            v on p.v;
+        }
+};
+
+let half_hex = func(n) {
+    lay 
+        yellow(n), flip(yellow(n)), yellow(n)
+    such_that 
+        $1.u <-> $2.u, $2.bottom <-> $3.bottom 
+    with {
+        v on $1.v;
+        u on $3.v;
+        top on $2.v;
     }
 };
 
-let purple = func {
-    { isosceles_trapezoid( pi/3, 1/(phi*phi)) } with {
-        bottom, v, top, u is this.edges;
-        color is "purple";
-        base.broken is true;
+let full_purple = func(n) {
+    lay
+        purple(n), flip(purple(n)) such_that $1.bottom <-> $2.bottom
+    with {
+        top on $1.top;
+        u_top on $1.u;
+        v_top on $1.v;
+        bottom on $2.top;
+        u_bottom on $2.u;
+        v_bottom on $2.v;
     }
 };
 
-let yellow = { regular_polygon(3) } with {
-        base, to, from is this.edges;
-        from.broken is true;
-        to.broken is true;
-        color is "yellow";
-    };
-
-let hexes = func {
-    lay yellow, yellow, yellow, yellow such_that $1.to <-> $2.from, $2.to <-> $3.from , $3.to <-> $4.from with {
-        to on $4.to;
-        from on $1.from;
+let full_blue1 = func(n) {
+    lay
+        blue1(n), flip(blue1(n)) such_that $1.bottom <-> $2.bottom
+    with {
+        top on $1.top;
+        u_top on $1.u;
+        v_top on $1.v;
+        bottom on $2.top;
+        u_bottom on $2.u;
+        v_bottom on $2.v;
     }
 };
+
+let purple_triad = func(n) {
+    lay
+        full_purple(n), purple(n) such_that $1.u_bottom <-> $2.u
+    with {
+        u1 on $1.v_top;
+        u2 on $1.top;
+        top on $2.top;
+        bottom on $2.bottom;
+        v on $2.v;
+        top2 on $1.v_bottom;
+    }
+};
+
+
 
 tableau (n) {
-    lay hexes, yellow, yellow such_that $1.to <-> $2.from, $2.to <-> $3.from
+    lay full_blue1(n)
 }

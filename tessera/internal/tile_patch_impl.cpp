@@ -483,6 +483,9 @@ int count_tiles(const std::vector<tess::expr_value>& tiles_and_patches) {
 }
 
 tess::tile_patch tess::flatten(tess::allocator& a, const std::vector<tess::expr_value>& tiles_and_patches, bool should_join_broken_tiles) {
+	for (const auto& v : tiles_and_patches)
+		if (!std::holds_alternative<tess::tile>(v) && !std::holds_alternative<tess::tile_patch>(v))
+			throw tess::error("attempted to flatten a value that is not a tile or tile patch");
 	int n = count_tiles(tiles_and_patches);
 	std::vector<tess::tile> tiles;
 	tiles.reserve(n);
