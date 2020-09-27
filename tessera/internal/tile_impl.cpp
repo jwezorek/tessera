@@ -334,6 +334,11 @@ void tess::edge::impl_type::insert_field(const std::string& var, const expr_valu
 	fields_[var] = val;
 }
 
+const std::map<std::string, tess::expr_value>& tess::edge::impl_type::fields() const
+{
+	return fields_;
+}
+
 bool tess::edge::impl_type::has_property(const std::string& prop) const
 {
 	return std::visit(

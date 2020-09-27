@@ -166,6 +166,19 @@ namespace {
 		return output;
 	}
 
+	void apply_edge_fields(tess::tile tile, const tess::tile_patch::impl_type* patch)
+	{
+		for (auto& e : tess::get_impl(tile)->edges()) {
+			auto maybe_on_edge = patch->get_edge_on(tess::get_impl(e.u())->pos(), tess::get_impl(e.v())->pos());
+			if (maybe_on_edge.has_value()) {
+				auto on_edge = maybe_on_edge.value();
+				for (const auto& [var, val] : tess::get_impl(on_edge)->fields())
+					if (val.is_simple_value())
+						tess::get_impl(e)->insert_field(var, val);
+			}
+		}
+	}
+
 	void apply_fields(tess::tile tile, const tess::tile_patch::impl_type* patch)
 	{
 		std::unordered_map<std::string, tess::expr_value> fields;
@@ -184,6 +197,8 @@ namespace {
 		for (const auto& [var, val] : fields) {
 			tess::get_impl(tile)->insert_field(var, val);
 		}
+
+		apply_edge_fields(tile, patch);
 	}
 }
 
@@ -295,15 +310,19 @@ std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(int u, int v)
 		return std::nullopt;
 }
 
+
+std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(tess::point u, tess::point v) const {
+	auto u_index = vert_tbl_.get_index(u);
+	auto v_index = vert_tbl_.get_index(v);
+	return get_edge_on(u_index, v_index);
+}
+
 tess::expr_value tess::tile_patch::impl_type::get_on(allocator& a, const std::variant<tess::edge, tess::cluster>& var) const
 {
 	return std::visit(
 		overloaded{
 			[&](const tess::edge& e) -> expr_value {
-				auto maybe_edge = get_edge_on(
-					vert_tbl_.get_index(e.u().pos()),
-					vert_tbl_.get_index(e.v().pos())
-				);
+				auto maybe_edge = get_edge_on(get_impl(e.u())->pos(), get_impl(e.v())->pos());
 				if (maybe_edge.has_value()) {
 					return { maybe_edge.value() };
 				} else {

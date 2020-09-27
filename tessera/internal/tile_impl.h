@@ -59,6 +59,7 @@ namespace tess {
             bool has_property(const std::string& prop) const;
 			tile::impl_type* parent() const;
             void insert_field(const std::string& var, const expr_value& val);
+            const std::map<std::string, expr_value>& fields() const;
             void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, edge::impl_type* clone) const;
             void flip();
