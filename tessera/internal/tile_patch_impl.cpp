@@ -166,7 +166,8 @@ namespace {
 		return output;
 	}
 
-	void apply_edge_fields(tess::tile tile, const tess::tile_patch::impl_type* patch)
+	/*
+	void propagate_edge_fields(tess::tile tile, const tess::tile_patch::impl_type* patch)
 	{
 		for (auto& e : tess::get_impl(tile)->edges()) {
 			auto maybe_on_edge = patch->get_edge_on(tess::get_impl(e.u())->pos(), tess::get_impl(e.v())->pos());
@@ -178,8 +179,38 @@ namespace {
 			}
 		}
 	}
+	*/
 
-	void apply_fields(tess::tile tile, const tess::tile_patch::impl_type* patch)
+	void propagate_edge_fields(tess::tile tile, const tess::tile_patch::impl_type* patch)
+	{
+		tess::edge_location_table edges;
+		for (const auto& t : patch->tiles())
+			for (const auto& e : t.edges())
+				edges.insert(e);
+		for (auto& edge : tess::get_impl(tile)->edges()) {
+			auto joined_edges = edges.get(edge);
+
+			std::unordered_map<std::string, tess::expr_value> fields;
+			for (const auto& e : joined_edges) {
+				for (const auto& [var, val] : tess::get_impl(e)->fields()) {
+					if (val.is_simple_value()) {
+						if (fields.find(var) == fields.end()) {
+							fields[var] = val;
+						}
+						else {
+							if (fields[var] != val)
+								fields.erase(var);
+						}
+					}
+				}
+			}
+			for (const auto& [var, val] : fields) {
+				tess::get_impl(edge)->insert_field(var, val);
+			}
+		}
+	}
+
+	void propagate_fields(tess::tile tile, const tess::tile_patch::impl_type* patch)
 	{
 		std::unordered_map<std::string, tess::expr_value> fields;
 		for (const auto& t : patch->tiles()) {
@@ -198,7 +229,7 @@ namespace {
 			tess::get_impl(tile)->insert_field(var, val);
 		}
 
-		apply_edge_fields(tile, patch);
+		propagate_edge_fields(tile, patch);
 	}
 }
 
@@ -378,7 +409,7 @@ tess::tile tess::tile_patch::impl_type::join(tess::allocator& a) const
 {
 	auto points = tess::join(this);
 	auto joined_patch = a.create<tess::tile>(&a, points);
-	apply_fields(joined_patch, this);
+	propagate_fields(joined_patch, this);
 	return joined_patch;
 }
 

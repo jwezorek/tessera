@@ -2,7 +2,7 @@ let blue1 = func(n) {
     if (n == 1)
         { isosceles_trapezoid( pi/3, 1/phi) } with {
             bottom, v, top, u is this.edges;
-            color is "dodgerblue";
+            color is "purple";
             bottom.broken is true;
         }
     else
@@ -29,7 +29,7 @@ let blue2 = func(n) {
     if (n == 1)
         { isosceles_trapezoid( pi/3, 1/phi) } with {
             bottom, v, top, u is this.edges;
-            color is "lightskyblue";
+            color is "yellow";
             bottom.broken is true;
         }
     else
@@ -162,8 +162,10 @@ let purple_triad = func(n) {
     }
 };
 
-
-
 tableau (n) {
-    lay full_blue1(n)
+    lay 
+        yellow(n), flip(yellow(n)), yellow(n),  flip(yellow(n)), yellow(n),  flip(yellow(n))
+    such_that 
+        $1.u <-> $2.u, $2.bottom <-> $3.bottom, $3.u <-> $4.u, $4.bottom <-> $5.bottom, $5.u <-> $6.u
+
 }

@@ -237,3 +237,8 @@ tess::number tess::root_2()
 	return boost::math::constants::root_two<tess::number>();
 }
 
+tess::number tess::abs(number arg)
+{
+	return bm::abs(arg);
+}
+

@@ -1,5 +1,6 @@
 #include "boost/functional/hash.hpp"
 #include "geometry.h"
+#include "number.h"
 #include "tessera/error.h"
 #include "tessera/tile_patch.h"
 #include "tessera_impl.h"
@@ -10,11 +11,107 @@ namespace geom = tess::geometry;
 
 namespace {
 
+	std::tuple<double, double> to_doubles(tess::point p) {
+		auto [x, y] = p;
+		return { static_cast<double>(x) , static_cast<double>(y) };
+	}
+
 	geom::rtree_point make_rtree_point(tess::number x, tess::number y) {
 		return geom::rtree_point(
 			static_cast<double>(x),
 			static_cast<double>(y)
 		);
+	}
+
+	tess::point slope_vector(tess::point pt1, tess::point pt2)
+	{
+		if (pt1 >= pt2)
+			std::swap(pt1, pt2);
+
+		auto [x1, y1] = pt1;
+		auto [x2, y2] = pt2;
+		auto length = tess::distance(pt1, pt2);
+		auto x_diff = (x2 - x1) / length;
+		auto y_diff = (y2 - y1) / length;
+
+		return { x_diff,y_diff };
+	}
+
+	geom::rtree_point make_rtree_point(tess::point p) {
+		auto [x, y] = p;
+		return make_rtree_point(x, y);
+	}
+
+	geom::segment edge_to_seg(const tess::edge e) {
+		auto [x1,y1] = tess::get_impl(e.u())->pos();
+		auto [x2, y2] =tess::get_impl(e.v())->pos();
+		return geom::segment{
+			{static_cast<double>(x1),static_cast<double>(y1) },
+			{static_cast<double>(x2),static_cast<double>(y2) }
+		};
+	}
+
+	std::tuple<double, double> rotate(const std::tuple<double, double>& pt, double theta) {
+		auto [x, y] = pt;
+		auto length = std::sqrtf(x * x + y * y);
+		auto new_angle = std::atan2f(y, x) + theta;
+		return { length * std::cos(new_angle) , length * std::sin(new_angle) };
+	}
+
+	std::tuple<double, double> translate(const std::tuple<double, double>& pt, const std::tuple<double, double>& offset) {
+		auto [x, y] = pt;
+		auto [dx, dy] = offset;
+		return { x + dx , y + dy };
+	}
+
+	std::tuple<double, double> center_of_line_segment(const std::tuple<double, double>& pt1, const std::tuple<double, double>& pt2) {
+		auto [x1, y1] = pt1;
+		auto [x2, y2] = pt2;
+		return {
+			(x1 + x2) / 2.0f,
+			(y1 + y2) / 2.0f
+		};
+	}
+
+	double distance(const std::tuple<double, double>& pt1, const std::tuple<double, double>& pt2)
+	{
+		auto [x1, y1] = pt1;
+		auto [x2, y2] = pt2;
+		auto x_diff = x2 - x1;
+		auto y_diff = y2 - y1;
+		return std::sqrt(x_diff * x_diff + y_diff * y_diff);
+	}
+
+	double slope_angle(const std::tuple<double, double>& pt1, const std::tuple<double, double>& pt2)
+	{
+		auto [x1, y1] = pt1;
+		auto [x2, y2] = pt2;
+		auto x_diff = x2 - x1;
+		auto y_diff = y2 - y1;
+		return std::atan2(y_diff, x_diff);
+	}
+
+	geom::polygon fat_line_segment(const std::tuple<double, double>& pt1, const std::tuple<double, double>& pt2, float padding) {
+		auto half_length = distance(pt1, pt2) / 2.0f;
+
+		using pt = std::tuple<double, double>;
+		std::array<pt, 5> vertices = {
+			pt{ half_length + padding, -padding},
+			pt{ half_length + padding, padding},
+			pt{ -half_length - padding, padding},
+			pt{ -half_length - padding, -padding},
+			pt{ half_length + padding, -padding},
+		};
+
+		auto theta = slope_angle(pt1, pt2);
+		auto location = center_of_line_segment(pt1, pt2);
+		geom::polygon poly;
+		for (const auto& v : vertices) {
+			auto [x, y] = translate(rotate(v, theta), location);
+			geom::bg::append(poly, geom::bg::make<geom::point>(x, y));
+		}
+
+		return poly;
 	}
 
 	geom::rtree_box box_from_points(tess::number x1, tess::number y1, tess::number x2, tess::number y2) {
@@ -106,6 +203,37 @@ namespace {
 
 	bool is_closed_poly(const std::vector<tess::point>& poly) {
 		return tess::equals(poly.front(), poly.back());
+	}
+
+	std::vector<tess::point> shrink_wrap(const std::vector<tess::point>& points) {
+		const int n = static_cast<int>(points.size());
+		auto prev = [&points,n](int i) { return (i > 0) ? i - 1 : n-1; };
+		auto next = [&points,n](int i) { return (i != n-1) ? i + 1 : 0; };
+
+		int first_corner = -1;
+		for (int i = 0; i < n; ++i) {
+			if (!tess::are_collinear(points[prev(i)], points[i], points[next(i)])) {
+				first_corner = i;
+				break;
+			}
+		}
+		if (first_corner == -1)
+			return {};
+
+		std::vector<tess::point> shrink_wrapped_points = { points[first_corner] };
+		auto corner = first_corner;
+		int i = next(corner);
+		while (i != first_corner) {
+			if (tess::are_collinear(points[prev(i)], points[i], points[next(i)])) {
+				i = next(i);
+				continue;
+			}
+			shrink_wrapped_points.push_back(points[i]);
+			corner = i;
+			i = next(i);
+		}
+
+		return shrink_wrapped_points;
 	}
 }
 
@@ -206,6 +334,52 @@ std::vector<tess::point> tess::join(const tess::tile_patch::impl_type* tiles)
 	if (is_closed_poly(points))
 		points.pop_back();
 
-	return points;
+	return shrink_wrap(points);
 }
 
+bool tess::are_collinear(const tess::point& a, const tess::point& b, const tess::point& c, tess::number eps)
+{
+	auto [a_x, a_y] = a;
+	auto [b_x, b_y] = b;
+	auto [c_x, c_y] = c;
+
+	auto area = tess::abs(a_x * (b_y - c_y) + b_x * (c_y - a_y) + c_x * (a_y - b_y));
+	return area < eps;
+}
+
+bool tess::are_parallel(const tess::point& a1, const tess::point& a2, const tess::point& b1, const tess::point& b2, tess::number eps)
+{
+	auto slope1 = slope_vector(a1, a2);
+	auto slope2 = slope_vector(b1, b2);
+	return tess::distance(slope1, slope2) < eps;
+}
+
+tess::edge_location_table::edge_location_table(number eps) :
+	eps_(eps)
+{
+}
+
+void tess::edge_location_table::insert(const tess::edge& edge)
+{
+	geometry::segment_rtree_value pair(edge_to_seg(edge), edge);
+	impl_.insert(pair);
+};
+
+std::vector<tess::edge> tess::edge_location_table::get(tess::point a, tess::point b)
+{
+	std::vector<geom::segment_rtree_value> edges;
+	impl_.query(geom::bgi::intersects(fat_line_segment(to_doubles(a), to_doubles(b), tess::eps)), std::back_inserter(edges));
+
+	std::vector<tess::edge> output;
+	for (auto [key, val] : edges) {
+		if (tess::are_parallel(a, b, tess::get_impl(val.u())->pos(), tess::get_impl(val.v())->pos(), tess::eps))
+			output.push_back(val);
+	}
+
+	return output;
+}
+
+std::vector<tess::edge> tess::edge_location_table::get(const tess::edge& edge)
+{
+	return get(tess::get_impl(edge.u())->pos(), tess::get_impl(edge.v())->pos());
+}

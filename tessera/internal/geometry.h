@@ -20,6 +20,9 @@ namespace tess {
         using rtree = bgi::rtree<rtree_value, bgi::rstar<8>>; //bgi::rtree<rtree_value, bgi::quadratic<16>>;
         using point = bg::model::d2::point_xy<double>;
         using polygon = bg::model::polygon<point, false>;
+        using segment = bg::model::segment<point>;
+        using segment_rtree_value = std::pair<segment, tess::edge>;
+        using segment_rtree = bgi::rtree<segment_rtree_value, bgi::quadratic<16>>;
 
         class rtree_tbl
         {
@@ -48,6 +51,17 @@ namespace tess {
         std::vector<tess::point> index_to_pt_;
     };
 
+    class edge_location_table {
+    public:
+        edge_location_table(number eps = tess::eps);
+        void insert(const tess::edge& edge);
+        std::vector<tess::edge> get(tess::point a, tess::point b);
+        std::vector<tess::edge> get(const tess::edge& edge);
+    private:
+        number eps_;
+        geometry::segment_rtree impl_;
+    };
+
     using edge_indices = std::tuple<int, int>;
     struct edge_hash {
         std::size_t operator()(const edge_indices& key) const;
@@ -57,4 +71,7 @@ namespace tess {
     using edge_table = std::unordered_map<edge_indices, T, edge_hash>;
 
     std::vector<point> join(const tess::tile_patch::impl_type* tiles);
+
+    bool are_collinear(const tess::point& a, const tess::point& b, const tess::point& c, tess::number eps = tess::eps);
+    bool are_parallel(const tess::point& a1, const tess::point& a2, const tess::point& b1, const tess::point& b2, tess::number eps = tess::eps);
 }

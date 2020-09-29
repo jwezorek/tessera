@@ -12,6 +12,8 @@ namespace tess {
 	using point = std::tuple<number,number>;
 	using line_segment = std::tuple<point, point>;
 
+	constexpr auto eps = std::numeric_limits<float>::epsilon() ;
+
 	number pow(number base, number ex);
 	number acos(number arg);
 	number asin(number arg);
@@ -23,6 +25,7 @@ namespace tess {
 	number pi();
 	number phi();
 	number root_2();
+	number abs(number arg);
 
 	bool equals(const number& a, number& b);
 	bool equals(const point& a, const point& b);
