@@ -5,6 +5,7 @@
 #include "expr_parser.h"
 #include "util.h"
 #include "keywords.h"
+#include "skipper.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <optional>
@@ -48,7 +49,7 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::function_d
 {
 	tess::expr_ptr output;
 	auto iter = input.begin();
-	bool success = x3::phrase_parse(iter, input.end(), tess::parser::func, x3::space, output);
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::func, skipper(), output);
 
 	if (success)
 		return { output, iter };

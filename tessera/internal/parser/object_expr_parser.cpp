@@ -4,6 +4,7 @@
 #include "util.h"
 #include "../variant_util.h"
 #include "keywords.h"
+#include "skipper.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -125,7 +126,7 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::object_exp
 {
 	tess::parser::obj_list_t output;
 	auto iter = input.begin();
-	bool success = x3::phrase_parse(iter, input.end(), tess::parser::obj_list, x3::space, output);
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::obj_list, skipper(), output);
 	if (success)
 		return { unpack_object_list(output) , iter };
 	else

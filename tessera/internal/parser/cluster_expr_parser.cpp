@@ -4,6 +4,7 @@
 #include "../cluster_expr.h"
 #include "util.h"
 #include "keywords.h"
+#include "skipper.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -51,7 +52,7 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::cluster_ex
 {
 	expr_ptr output;
 	auto iter = input.begin();
-	bool success = x3::phrase_parse(iter, input.end(), tess::parser::various_cluster_exprs, x3::space, output);
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::various_cluster_exprs, skipper(), output);
 	if (success)
 		return {  output, iter };
 	else

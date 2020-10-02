@@ -6,6 +6,7 @@
 #include "keywords.h"
 #include "expr_parser.h"
 #include "util.h"
+#include "skipper.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
 
@@ -52,7 +53,7 @@ std::tuple<tess::assignment_block, std::string::const_iterator> tess::parser::as
 {
 	std::vector<tess::var_assignment> output;
 	auto iter = input.begin();
-	bool success = x3::phrase_parse(iter, input.end(), tess::parser::assignments, x3::space, output);
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::assignments, skipper(), output);
 	if (success)
 		return { assignment_block(output), iter };
 	else
@@ -63,7 +64,7 @@ std::tuple<tess::assignment_block, std::string::const_iterator> tess::parser::tr
 {
 	assignment_block output;
 	auto iter = input.begin();
-	bool success = x3::phrase_parse(iter, input.end(), tess::parser::trailing_where, x3::space, output);
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::trailing_where, skipper(), output);
 
 	if (success)
 		return { assignment_block(output), iter };
@@ -75,7 +76,7 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::where_expr
 {
 	tess::expr_ptr output;
 	auto iter = input.begin();
-	bool success = x3::phrase_parse(iter, input.end(), tess::parser::where_expr, x3::space, output);
+	bool success = x3::phrase_parse(iter, input.end(), tess::parser::where_expr, skipper(), output);
 	if (success)
 		return { output, iter };
 	else

@@ -1,3 +1,10 @@
+/* 
+   ---------------------
+	  Penrose rhombs
+   ---------------------
+*/
+
+
 let half_thin_rhombus = func( n ) {
 	if (n == 1)
 		{ isosceles_triangle( pi/5 ) } with { 

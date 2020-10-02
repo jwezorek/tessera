@@ -124,6 +124,9 @@
     <ClCompile Include="internal\geometry.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
+    <ClCompile Include="internal\parser\skipper.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="internal\expression.h">
@@ -248,6 +251,9 @@
     </ClInclude>
     <ClInclude Include="internal\geometry.h">
       <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\parser\skipper.h">
+      <Filter>Source Files\parser</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

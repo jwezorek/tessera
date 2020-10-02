@@ -5,6 +5,7 @@
 #include "expr_parser.h"
 #include "keywords.h"
 #include "util.h"
+#include "skipper.h"
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <sstream>
@@ -60,7 +61,7 @@ std::variant<tess::script, tess::error> tess::parser::parse(const text_range& in
     bool success = false;
 
     try {
-        success = x3::phrase_parse(iter, input.end(), script_parser, x3::space, output);
+        success = x3::phrase_parse(iter, input.end(), script_parser, skipper(), output);
     } catch (const x3_expect_error& e) {
         return expectation_failure_to_tess_error(e, whole_script);
     } catch ( ... ) {

@@ -7,6 +7,7 @@
 #include "../where_expr.h"
 #include "../with_expr.h"
 #include "../object_expr.h"
+#include "skipper.h"
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -126,7 +127,7 @@ std::tuple<tess::expr_ptr, std::string::const_iterator> tess::parser::lay_expr_:
 {
     tess::expr_ptr output;
     auto iter = input.begin();
-    bool success = x3::phrase_parse(iter, input.end(), tess::parser::lay_expr, x3::space, output);
+    bool success = x3::phrase_parse(iter, input.end(), tess::parser::lay_expr, skipper(), output);
     if (success)
         return { output, iter };
     else

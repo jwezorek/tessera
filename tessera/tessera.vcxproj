@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="internal\geometry.cpp" />
+    <ClCompile Include="internal\parser\skipper.cpp" />
     <ClCompile Include="internal\parser\with_parser.cpp" />
     <ClCompile Include="internal\where_expr.cpp" />
     <ClCompile Include="internal\cluster.cpp" />
@@ -63,6 +64,7 @@
     <ClInclude Include="include\tessera\tile.h" />
     <ClInclude Include="include\tessera\tile_patch.h" />
     <ClInclude Include="internal\geometry.h" />
+    <ClInclude Include="internal\parser\skipper.h" />
     <ClInclude Include="internal\parser\with_parser.h" />
     <ClInclude Include="internal\where_expr.h" />
     <ClInclude Include="internal\cluster.h" />
