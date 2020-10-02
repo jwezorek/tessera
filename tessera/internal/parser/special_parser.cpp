@@ -24,7 +24,7 @@ namespace tess {
 		auto const special_num_aux_def = kw_<kw::pi>() | kw_<kw::phi>() | kw_<kw::root_2>();
 		auto const special_num_def = special_num_aux[make_<special_number_expr>];
 		auto const special_func_def = as<std::string>[kw_<kw::sqrt>() | kw_<kw::sin>() | kw_<kw::cos>() | kw_<kw::tan>() |
-			kw_<kw::arcsin>() | kw_<kw::arccos>() | kw_<kw::arctan>() | kw_<kw::regular_polygon>() | 
+			kw_<kw::arcsin>() | kw_<kw::arccos>() | kw_<kw::arctan>() | kw_<kw::regular_polygon>() | kw_<kw::triangle_by_sides>() |
 			kw_<kw::isosceles_triangle>() | kw_<kw::isosceles_trapezoid>() | kw_<kw::rhombus>() | kw_<kw::flip>() | kw_<kw::polygon>() | kw_<kw::join>()] [make_token];
 		auto const special_func_expr_aux_def = special_func > '(' > (expr % x3::lit(',')) > ')';
 		auto const special_func_expr_def = special_func_expr_aux[make_<special_function_expr>];

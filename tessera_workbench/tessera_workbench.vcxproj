@@ -167,6 +167,7 @@
     <None Include="amman-A5.tess" />
     <None Include="hex.tess" />
     <None Include="join.tess" />
+    <None Include="plastic.tess" />
     <None Include="sierpinski.tess" />
     <None Include="penrose.tess" />
     <None Include="pyramid.tess" />

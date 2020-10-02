@@ -234,6 +234,10 @@ void tess::pop_eval_context::execute(const std::vector<stack_machine::item>& ope
 
 std::vector<tess::stack_machine::item> tess::call_func::execute(const std::vector<tess::stack_machine::item>& operands, tess::stack_machine::context_stack& contexts) const
 {
+    //TODO: make a function that tests a stackitem for an expr_val containing type and throws if not there
+    if (!std::holds_alternative<expr_value>(operands[0]) || !std::holds_alternative<lambda>(std::get<expr_value>(operands[0])))
+        throw tess::error("Attempted to evaluate non-lambda");
+
     lambda func = std::get<lambda>(std::get<expr_value>(operands[0]));
     std::vector<expr_value> args = get_vector<expr_value>(operands.begin() + 1, operands.end());
 

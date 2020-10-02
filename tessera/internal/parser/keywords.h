@@ -57,6 +57,7 @@ namespace tess {
             join,
             true_,
             false_,
+            triangle_by_sides,
             none
         };
 

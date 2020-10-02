@@ -141,7 +141,7 @@ int tess::expr_value::get_ary_count() const
 tess::expr_value tess::expr_value::get_field(allocator& allocator, const std::string& field) const
 {
 	if (!is_object_like()) {
-		throw tess::error("attempted reference to field of a non-object.");
+		throw tess::error("attempted reference to field of a non-object: " + field);
 	}
 
 	auto value = static_cast<expr_val_var>(*this);

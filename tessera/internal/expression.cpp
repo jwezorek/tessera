@@ -71,6 +71,21 @@ namespace {
 		);
 	}
 
+	std::vector<std::tuple<tess::number, tess::number>> triangle_by_sides(tess::number s1, tess::number s2, tess::number s3)
+	{
+		using num = tess::number;
+
+		auto c = s1;
+		auto a = s2;
+		auto b = s3;
+
+		auto cos_BAC = (b * b + c * c - a * a) / (2 * b * c);
+		auto C_x = b * cos_BAC;
+		auto C_y = tess::sqrt(b * b - C_x * C_x);
+
+		return { {0,0}, {c,0}, {C_x,C_y} };
+	}
+
 	tess::expr_value flip(tess::allocator& a, const tess::expr_value& arg)
 	{
 		if (!std::holds_alternative<tess::tile>(arg) && !std::holds_alternative<tess::tile_patch>(arg))
@@ -175,6 +190,12 @@ namespace {
 			[](tess::allocator& a,const std::vector<tess::expr_value>& args)->tess::expr_value {
 				auto patch = std::get<tess::tile_patch>(args[0]);
 				return { tess::get_impl(patch)->join(a) };
+			}
+		} , {
+			tess::parser::kw::triangle_by_sides, 3,
+			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
+				auto locs = triangle_by_sides(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]), std::get<tess::number>(args[2]));
+				return { a.create<tess::tile>(&a, locs) };
 			}
 		}
 	};

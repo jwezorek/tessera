@@ -47,7 +47,8 @@ namespace {
             { tess::parser::kw::on,                 "on" },
             { tess::parser::kw::join,               "join" },
             { tess::parser::kw::true_,              "true" },
-            { tess::parser::kw::false_,             "false" }
+            { tess::parser::kw::false_,             "false" },
+            { tess::parser::kw::triangle_by_sides,  "triangle_by_sides" }
         };
         return keywords;
     }

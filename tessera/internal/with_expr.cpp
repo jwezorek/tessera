@@ -50,6 +50,8 @@ tess::expr_ptr tess::with_expr::simplify() const
 
 void tess::with_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
 {
+    field_defs_.get_dependencies(dependencies);
+    body_->get_dependencies(dependencies);
 }
 
 tess::field_definitions::field_definitions(const std::vector<field_def_pair>& defs_with_verbs) :
