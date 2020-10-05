@@ -6,7 +6,7 @@
 
 std::vector<tess::vertex> tess::tile::vertices() const
 {
-	auto vertices = impl_->vertices();
+	const auto& vertices = impl_->vertices();
 	std::vector<tess::vertex> wrapped_vertices(vertices.size());
 	std::transform(vertices.begin(), vertices.end(), wrapped_vertices.begin(),
 		[](auto v) -> tess::vertex { return tess::make_tess_obj<tess::vertex>(v); }
@@ -16,7 +16,7 @@ std::vector<tess::vertex> tess::tile::vertices() const
 
 std::vector<tess::edge> tess::tile::edges() const
 {
-	auto edges = impl_->edges();
+	const auto& edges = impl_->edges();
 	std::vector<tess::edge> wrapped_edges(edges.size());
 	std::transform(edges.begin(), edges.end(), wrapped_edges.begin(),
 		[](auto v) -> tess::edge { return tess::make_tess_obj<tess::edge>(v); }

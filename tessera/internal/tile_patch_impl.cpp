@@ -184,15 +184,15 @@ namespace {
 	void propagate_edge_fields(tess::tile tile, const tess::tile_patch::impl_type* patch)
 	{
 		tess::edge_location_table edges;
-		for (const auto& t : patch->tiles())
-			for (const auto& e : t.edges())
+		for (const auto* t : patch->tiles())
+			for (const auto* e : t->edges())
 				edges.insert(e);
 		for (auto& edge : tess::get_impl(tile)->edges()) {
 			auto joined_edges = edges.get(edge);
 
 			std::unordered_map<std::string, tess::expr_value> fields;
-			for (const auto& e : joined_edges) {
-				for (const auto& [var, val] : tess::get_impl(e)->fields()) {
+			for (const auto* e : joined_edges) {
+				for (const auto& [var, val] : e->fields()) {
 					if (val.is_simple_value()) {
 						if (fields.find(var) == fields.end()) {
 							fields[var] = val;
@@ -214,7 +214,7 @@ namespace {
 	{
 		std::unordered_map<std::string, tess::expr_value> fields;
 		for (const auto& t : patch->tiles()) {
-			for (const auto& [var, val] : tess::get_impl(t)->fields()) {
+			for (const auto& [var, val] : t->fields()) {
 				if (val.is_simple_value()) {
 					if (fields.find(var) == fields.end()) {
 						fields[var] = val;
@@ -233,7 +233,7 @@ namespace {
 	}
 }
 
-const std::vector<tess::tile>& tess::tile_patch::impl_type::tiles() const
+const std::vector<tess::tile::impl_type*>& tess::tile_patch::impl_type::tiles() const
 {
     return tiles_;
 }
@@ -241,10 +241,10 @@ const std::vector<tess::tile>& tess::tile_patch::impl_type::tiles() const
 void tess::tile_patch::impl_type::build_edge_table() const
 {
 	edge_tbl_.clear();
-	for (const auto& tile : tiles_) {
-		for (const auto& e : tile.edges()) {
+	for (const auto* tile : tiles_) {
+		for (const auto* e : tile->edges()) {
 
-			auto key = get_impl(e)->get_edge_location_indices();
+			auto key = e->get_edge_location_indices();
 			if (edge_tbl_.find(key) == edge_tbl_.end())
 				edge_tbl_[key] = e; 
 			else
@@ -253,14 +253,13 @@ void tess::tile_patch::impl_type::build_edge_table() const
 	}
 }
 
-tess::tile_patch::impl_type::impl_type(obj_id id, std::vector<tess::tile>& tiles) : tessera_impl(id) {
+tess::tile_patch::impl_type::impl_type(obj_id id, const std::vector<tess::tile::impl_type*>& tiles) : tessera_impl(id) {
 	for ( auto& t : tiles)
 		insert_tile(t);
 }
 
-void tess::tile_patch::impl_type::insert_tile( tess::tile& t )
+void tess::tile_patch::impl_type::insert_tile( tess::tile::impl_type* tile )
 {
-	auto* tile = get_impl(t);
 	tile->set_parent(this, static_cast<int>(tiles_.size()) );
 
 	for (auto& v : tile->vertices()) {
@@ -269,7 +268,7 @@ void tess::tile_patch::impl_type::insert_tile( tess::tile& t )
 		vert->set_location( new_vert_index );
 	}
 
-	tiles_.push_back(t);
+	tiles_.push_back(tile);
 }
 
 
@@ -308,7 +307,7 @@ std::string tess::tile_patch::impl_type::debug() const
 	std::stringstream ss;
 	ss << "{\n";
 	for (const auto& t : tiles_) {
-		ss << "  " << get_impl(t)->debug() << "\n";
+		ss << "  " << t->debug() << "\n";
 	}
 	ss << "}\n\n";
 	return ss.str();
@@ -324,12 +323,12 @@ tess::tile_patch tess::tile_patch::impl_type::flip(allocator& a) const {
 void  tess::tile_patch::impl_type::flip()  {
 	apply(flip_matrix());
 	for (auto& tile : tiles_)
-		for (auto* e : get_impl(tile)->edges())
+		for (auto* e : tile->edges())
 			e->flip();
 	edge_tbl_.clear();
 }
 
-std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(int u, int v) const
+const tess::edge::impl_type* tess::tile_patch::impl_type::get_edge_on(int u, int v) const
 {
 	if (edge_tbl_.empty())
 		build_edge_table();
@@ -338,11 +337,11 @@ std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(int u, int v)
 	if (iter != edge_tbl_.end())
 		return iter->second;
 	else
-		return std::nullopt;
+		return nullptr;
 }
 
 
-std::optional<tess::edge> tess::tile_patch::impl_type::get_edge_on(tess::point u, tess::point v) const {
+const tess::edge::impl_type* tess::tile_patch::impl_type::get_edge_on(tess::point u, tess::point v) const {
 	auto u_index = vert_tbl_.get_index(u);
 	auto v_index = vert_tbl_.get_index(v);
 	return get_edge_on(u_index, v_index);
@@ -354,8 +353,8 @@ tess::expr_value tess::tile_patch::impl_type::get_on(allocator& a, const std::va
 		overloaded{
 			[&](const tess::edge& e) -> expr_value {
 				auto maybe_edge = get_edge_on(get_impl(e.u())->pos(), get_impl(e.v())->pos());
-				if (maybe_edge.has_value()) {
-					return { maybe_edge.value() };
+				if (maybe_edge) {
+					return { tess::make_tess_obj<edge>(maybe_edge) };
 				} else {
 					return {};
 				}
@@ -393,7 +392,8 @@ void tess::tile_patch::impl_type::get_all_referenced_allocations(std::unordered_
 void tess::tile_patch::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_patch::impl_type* clone) const
 {
 	for (const auto& t : tiles_) {
-		clone->tiles_.push_back(std::get<tile>(expr_value{ t }.clone(allocator, orginal_to_clone)));
+		auto t_clone = std::get<tile>(expr_value{ tess::make_tess_obj<tile>(t) }.clone(allocator, orginal_to_clone));
+		clone->tiles_.push_back( tess::get_impl(t_clone) );
 	}
 	for (const auto& [var, val] : fields_) {
 		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
@@ -417,15 +417,14 @@ void tess::tile_patch::impl_type::dfs(tile_visitor visit) const
 {
 	std::unordered_set<const tile::impl_type*> visited;
 
-	std::function<void(const tile& tile)> dfs_aux;
-	dfs_aux = [&](const tile& tile) {
-		const auto* t = get_impl(tile);
+	std::function<void(const tile::impl_type* tile)> dfs_aux;
+	dfs_aux = [&](const tile::impl_type* t) {
 		if (visited.find(t) != visited.end())
 			return;
 		visited.insert(t);
-		visit(tile);
+		visit(t);
 		for (const auto* neighbor : get_neighbors(t)) {
-			dfs_aux(make_tess_obj<tess::tile>(neighbor));
+			dfs_aux(neighbor);
 		}
 	};
 	dfs_aux(tiles_[0]);
@@ -542,7 +541,7 @@ tess::tile_patch tess::flatten(tess::allocator& a, const std::vector<tess::expr_
 	auto patch_impl = a.create_impl<tess::tile_patch>();
 	for (const auto& tile : tiles) {
 		auto copy = tess::clone(a, tile);
-		patch_impl->insert_tile(copy);
+		patch_impl->insert_tile( tess::get_impl(copy) );
 	}
 
 	return tess::make_tess_obj<tess::tile_patch>(patch_impl);

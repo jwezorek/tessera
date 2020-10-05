@@ -21,7 +21,7 @@ namespace tess {
         using point = bg::model::d2::point_xy<double>;
         using polygon = bg::model::polygon<point, false>;
         using segment = bg::model::segment<point>;
-        using segment_rtree_value = std::pair<segment, tess::edge>;
+        using segment_rtree_value = std::pair<segment, const tess::edge::impl_type*>;
         using segment_rtree = bgi::rtree<segment_rtree_value, bgi::quadratic<16>>;
 
         class rtree_tbl
@@ -55,9 +55,10 @@ namespace tess {
     public:
         edge_location_table(number eps = tess::eps);
         void insert(const tess::edge& edge);
-        std::vector<tess::edge> get(tess::point a, tess::point b);
-        std::vector<tess::edge> get(const tess::edge& edge);
-        std::vector<tess::edge> get(const tess::edge::impl_type* edge);
+        void insert(const tess::edge::impl_type* edge);
+        std::vector<const tess::edge::impl_type*> get(tess::point a, tess::point b);
+        std::vector<const tess::edge::impl_type*> get(const tess::edge& edge);
+        std::vector<const tess::edge::impl_type*> get(const tess::edge::impl_type* edge);
     private:
         number eps_;
         geometry::segment_rtree impl_;

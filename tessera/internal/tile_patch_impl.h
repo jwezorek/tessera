@@ -15,31 +15,31 @@ namespace tess {
 
     class allocator;
 
-    using tile_visitor = std::function<void(const tess::tile&)>;
+    using tile_visitor = std::function<void(const tess::tile::impl_type*)>;
 
     class tile_patch::impl_type : public tessera_impl
     {
     private:
-        std::vector<tess::tile> tiles_;
+        std::vector<tess::tile::impl_type*> tiles_;
         std::map<std::string, expr_value> fields_;
         vertex_location_table vert_tbl_;
-        mutable edge_table<edge> edge_tbl_;
+        mutable edge_table<const edge::impl_type*> edge_tbl_;
 
         void build_edge_table() const;
 
     public:
         impl_type(obj_id id) : tessera_impl(id) {};
-        impl_type(obj_id id, std::vector<tess::tile>& tiles);
-        void insert_tile( tess::tile& t);
-        const std::vector<tess::tile>& tiles() const;
+        impl_type(obj_id id, const std::vector<tess::tile::impl_type*>& tiles);
+        void insert_tile( tess::tile::impl_type* t);
+        const std::vector<tess::tile::impl_type*>& tiles() const;
 		expr_value get_field(allocator& allocator, const std::string& field) const;
         expr_value get_ary_item(int i) const;
         int get_ary_count() const;
 		void apply(const matrix& mat);
         tile_patch flip(allocator& allocator) const;
         void flip();
-        std::optional<edge> get_edge_on(int u, int v) const;
-        std::optional<edge> get_edge_on(tess::point u, tess::point v) const;
+        const tess::edge::impl_type* get_edge_on(int u, int v) const;
+        const tess::edge::impl_type* get_edge_on(tess::point u, tess::point v) const;
         expr_value get_on(allocator& a, const std::variant<tess::edge, tess::cluster>& e) const;
         void insert_field(const std::string& var, const expr_value& val);
         void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;

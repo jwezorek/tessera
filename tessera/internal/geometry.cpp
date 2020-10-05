@@ -42,9 +42,9 @@ namespace {
 		return make_rtree_point(x, y);
 	}
 
-	geom::segment edge_to_seg(const tess::edge e) {
-		auto [x1,y1] = tess::get_impl(e.u())->pos();
-		auto [x2, y2] =tess::get_impl(e.v())->pos();
+	geom::segment edge_to_seg(const tess::edge::impl_type* e) {
+		auto [x1,y1] = e->u()->pos();
+		auto [x2, y2] = e->v()->pos();
 		return geom::segment{
 			{static_cast<double>(x1),static_cast<double>(y1) },
 			{static_cast<double>(x2),static_cast<double>(y2) }
@@ -184,8 +184,8 @@ namespace {
 	std::vector<const tess::tile::impl_type*> topological_sort_tiles(const tess::tile_patch::impl_type* patch) {
 		std::vector<const tess::tile::impl_type*> tiles;
 		patch->dfs(
-			[&tiles](const tess::tile& t) {
-				tiles.push_back(get_impl(t));
+			[&tiles](const tess::tile::impl_type* t) {
+				tiles.push_back(t);
 			}
 		);
 		return tiles;
@@ -361,31 +361,36 @@ tess::edge_location_table::edge_location_table(number eps) :
 
 void tess::edge_location_table::insert(const tess::edge& edge)
 {
-	geometry::segment_rtree_value pair(edge_to_seg(edge), edge);
+	geometry::segment_rtree_value pair{ edge_to_seg(tess::get_impl(edge)), tess::get_impl(edge) };
 	impl_.insert(pair);
 };
 
-std::vector<tess::edge> tess::edge_location_table::get(tess::point a, tess::point b)
+void tess::edge_location_table::insert(const tess::edge::impl_type* edge)
+{
+	geometry::segment_rtree_value pair{ edge_to_seg(edge), edge };
+	impl_.insert(pair);
+};
+
+std::vector<const tess::edge::impl_type*> tess::edge_location_table::get(tess::point a, tess::point b)
 {
 	std::vector<geom::segment_rtree_value> edges;
 	impl_.query(geom::bgi::intersects(fat_line_segment(to_doubles(a), to_doubles(b), tess::eps)), std::back_inserter(edges));
 
-	std::vector<tess::edge> output;
+	std::vector<const tess::edge::impl_type*> output;
 	for (auto [key, val] : edges) {
-		if (tess::are_parallel(a, b, tess::get_impl(val.u())->pos(), tess::get_impl(val.v())->pos(), tess::eps))
+		if (tess::are_parallel(a, b, val->u()->pos(), val->v()->pos(), tess::eps))
 			output.push_back(val);
 	}
 
 	return output;
 }
 
-std::vector<tess::edge> tess::edge_location_table::get(const tess::edge& edge)
+std::vector<const tess::edge::impl_type*> tess::edge_location_table::get(const tess::edge& edge)
 {
 	return get(tess::get_impl(edge.u())->pos(), tess::get_impl(edge.v())->pos());
 }
 
-
-std::vector<tess::edge> tess::edge_location_table::get(const tess::edge::impl_type* edge)
+std::vector<const tess::edge::impl_type*>  tess::edge_location_table::get(const tess::edge::impl_type* edge)
 {
 	return get(edge->u()->pos(), edge->v()->pos());
 }

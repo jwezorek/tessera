@@ -1,14 +1,14 @@
 #include "..\include\tessera\tile_patch.h"
 #include "tile_patch_impl.h"
 
-std::string tess::tile_patch::name() const
+std::vector<tess::tile> tess::tile_patch::tiles() const
 {
-	return std::string();
-}
-
-const std::vector<tess::tile>& tess::tile_patch::tiles() const
-{
-	return impl_->tiles();
+	const auto& tiles = impl_->tiles();
+	std::vector<tess::tile> wrapped_tiles(tiles.size());
+	std::transform(tiles.begin(), tiles.end(), wrapped_tiles.begin(),
+		[](auto v) -> tess::tile { return tess::make_tess_obj<tess::tile>(v); }
+	);
+	return wrapped_tiles;
 }
 
 int tess::tile_patch::count() const 
