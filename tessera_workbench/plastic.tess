@@ -25,6 +25,7 @@ let q1 = func(n) {
                 left on $1.right;
                 bottom on $2.base;
                 right on $2.right;
+                color is "blue";
             }
         } where {
             let i = 
@@ -39,7 +40,7 @@ let q1 = func(n) {
         such_that
             $1.top <-> $4.short, $5.base <-> $4.base, $3.right <-> $4.long, $3.bottom <-> $2.top 
         with {
-            left on $3.left;
+            left on $2.left;
             bottom on $1.bottom;
             right on $1.right;
         }
@@ -56,13 +57,12 @@ let q2 = func(n) {
             with {
                 top on $4.short;
                 bottom on $1.long;
+                left is this.top.next;
+                right is this.bottom.next;
+                color is "red";
             }
         } where {
-            let i = 
-                {triangle_by_sides( 1/sqrt(rho), rho, rho)} with {
-                    base, right, left is this.edges;
-                    color is "blue";
-                };
+
             let t = s2(1);
         }
 } ;
@@ -126,6 +126,5 @@ let quad = {
 */
 
 tableau(n) {
-    lay s3(3)
-    //q2(1)
+    lay s2(4) 
 }

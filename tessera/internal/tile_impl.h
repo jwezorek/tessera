@@ -54,6 +54,8 @@ namespace tess {
 			impl_type(obj_id id, tile::impl_type* parent, int index, int u, int v);
 			const tess::vertex& u() const;
 			const tess::vertex& v() const;
+            tess::edge next_edge() const;
+            tess::edge prev_edge() const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;
             expr_value get_field(const std::string& field) const;
             bool has_property(const std::string& prop) const;

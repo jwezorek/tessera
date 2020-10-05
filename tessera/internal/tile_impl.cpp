@@ -316,8 +316,37 @@ const tess::vertex& tess::edge::impl_type::v() const
     return parent_->vertices().at(v_);
 }
 
+tess::edge tess::edge::impl_type::next_edge() const
+{
+	auto next = tess::get_impl(v())->out_edge();
+	return tess::make_tess_obj<edge>(next);
+}
+
+tess::edge tess::edge::impl_type::prev_edge() const
+{
+	auto prev = tess::get_impl(u())->in_edge();
+	return tess::make_tess_obj<edge>(prev);
+}
+
 tess::expr_value tess::edge::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
+	//TODO: do something about the raw strings here
+	if (field == "next") {
+		return { next_edge() };
+	}
+
+	if (field == "prev") {
+		return { next_edge() };
+	}
+
+	if (field == "u") {
+		return { u() };
+	}
+
+	if (field == "v") {
+		return { v() };
+	}
+
 	return get_field(field);
 }
 
