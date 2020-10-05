@@ -47,8 +47,8 @@ namespace tess {
 	class edge : public detail::property_container<edge>  {
 		friend class tessera_impl;
 	public:
-		const vertex& u() const;
-		const vertex& v() const; 
+		vertex u() const;
+		vertex v() const; 
 		property_value get_property_variant(const std::string& prop) const;
 		class impl_type;
 	private:
@@ -58,7 +58,7 @@ namespace tess {
 	class tile : public detail::property_container<tile> {
 		friend class tessera_impl;
 	public:
-		const std::vector<vertex>& vertices() const;
+		std::vector<vertex> vertices() const;
 		const std::vector<edge>& edges() const;
 		property_value get_property_variant(const std::string& prop) const;
 		class impl_type;

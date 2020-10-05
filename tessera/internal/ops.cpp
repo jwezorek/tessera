@@ -43,10 +43,10 @@ namespace {
 
     tess::matrix edge_to_edge_matrix(const tess::edge::impl_type& e1, const tess::edge::impl_type& e2)
     {
-        auto* u1 = tess::get_impl<tess::vertex>(e1.u());
-        auto* v1 = tess::get_impl<tess::vertex>(e1.v());
-        auto* u2 = tess::get_impl<tess::vertex>(e2.u());
-        auto* v2 = tess::get_impl<tess::vertex>(e2.v());
+        auto* u1 = e1.u();
+        auto* v1 = e1.v();
+        auto* u2 = e2.u();
+        auto* v2 = e2.v();
 
         return tess::line_seg_to_line_seg({ u1->pos() , v1->pos() }, { v2->pos() , u2->pos() });
     }

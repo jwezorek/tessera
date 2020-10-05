@@ -4,9 +4,14 @@
 
 /*--------------------------------------------------------------------------------*/
 
-const std::vector<tess::vertex>& tess::tile::vertices() const
+std::vector<tess::vertex> tess::tile::vertices() const
 {
-	return impl_->vertices();
+	auto vertices = impl_->vertices();
+	std::vector<tess::vertex> wrapped_vertices(vertices.size());
+	std::transform(vertices.begin(), vertices.end(), wrapped_vertices.begin(),
+		[](auto v) -> tess::vertex { return tess::make_tess_obj<tess::vertex>(v); }
+	);
+	return wrapped_vertices;
 }
 
 const std::vector<tess::edge>& tess::tile::edges() const
@@ -56,14 +61,14 @@ tess::edge tess::vertex::in_edge() const
 
 /*--------------------------------------------------------------------------------*/
 
-const tess::vertex& tess::edge::u() const
+tess::vertex tess::edge::u() const
 {
-	return impl_->u();
+	return tess::make_tess_obj<vertex>(impl_->u());
 }
 
-const tess::vertex& tess::edge::v() const
+tess::vertex tess::edge::v() const
 {
-	return impl_->v();
+	return tess::make_tess_obj<vertex>(impl_->v());
 }
 
 tess::property_value tess::edge::get_property_variant(const std::string& prop) const

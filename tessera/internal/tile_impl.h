@@ -52,8 +52,10 @@ namespace tess {
         public:
             impl_type(obj_id id) : tessera_impl(id), parent_(nullptr), index_(-1), u_(-1), v_(-1) {};
 			impl_type(obj_id id, tile::impl_type* parent, int index, int u, int v);
-			const tess::vertex& u() const;
-			const tess::vertex& v() const;
+			const tess::vertex::impl_type* u() const;
+			const tess::vertex::impl_type* v() const;
+            tess::vertex::impl_type* u();
+            tess::vertex::impl_type* v();
             tess::edge next_edge() const;
             tess::edge prev_edge() const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;
@@ -72,7 +74,7 @@ namespace tess {
     class tile::impl_type : public tessera_impl {
         private:
             std::map<std::string, expr_value> fields_;
-            std::vector<tess::vertex> vertices_;
+            std::vector<tess::vertex::impl_type*> vertices_;
             std::vector<tess::edge> edges_;
             tile_patch::impl_type* parent_;
             int index_;
@@ -81,11 +83,11 @@ namespace tess {
             impl_type(obj_id id): tessera_impl(id), parent_(nullptr), index_(-1) {};
             impl_type(obj_id id, tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
 
-            const std::vector<tess::vertex>& vertices() const;
-            std::vector<tess::vertex>& vertices();
+            const std::vector<tess::vertex::impl_type*>& vertices() const;
+            std::vector<tess::vertex::impl_type*>& vertices();
             const std::vector<tess::edge>& edges() const;
             std::vector<tess::edge>& edges();
-            void set(std::vector<tess::vertex>&& vertices, std::vector<tess::edge>&& edges );
+            void set(std::vector<tess::vertex::impl_type*>&& vertices, std::vector<tess::edge>&& edges );
             expr_value get_field(const std::string& field) const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;
             const std::map<std::string, expr_value>& fields() const;

@@ -40,20 +40,20 @@ tess::tile::impl_type::impl_type(obj_id id, tess::allocator* allocator, const st
 	edges_.resize(n);
 
 	for (int i = 0; i < n; ++i) {
-		vertices_[i] = allocator->create<tess::vertex>(this, i, vertex_locations[i]);
+		vertices_[i] = allocator->create_impl<tess::vertex>(this, i, vertex_locations[i]);
 		edges_[i] = allocator->create<tess::edge>(this, i, i, (i + 1) % n);
 	}
 }
 
-const std::vector<tess::vertex>& tess::tile::impl_type::vertices() const
+const std::vector<tess::vertex::impl_type*>& tess::tile::impl_type::vertices() const
 {
     return vertices_;
 }
 
-std::vector<tess::vertex>& tess::tile::impl_type::vertices()
+std::vector<tess::vertex::vertex::impl_type*>& tess::tile::impl_type::vertices()
 {
 	const auto* ct = this;
-	return const_cast<std::vector<tess::vertex>&>(ct->vertices());
+	return const_cast<std::vector<tess::vertex::impl_type*>&>(ct->vertices());
 }
 
 const std::vector<tess::edge>& tess::tile::impl_type::edges() const
@@ -67,7 +67,7 @@ std::vector<tess::edge>& tess::tile::impl_type::edges()
 	return const_cast<std::vector<tess::edge>&>(ct->edges());
 }
 
-void tess::tile::impl_type::set( std::vector<tess::vertex>&& vertices, std::vector<tess::edge>&& edges )
+void tess::tile::impl_type::set( std::vector<tess::vertex::impl_type*>&& vertices, std::vector<tess::edge>&& edges )
 {
 	vertices_ = std::move(vertices);
     edges_ = std::move(edges);
@@ -96,7 +96,8 @@ void tess::tile::impl_type::get_all_referenced_allocations(std::unordered_set<ob
 void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile::impl_type* clone) const
 {
 	for (const auto& v : vertices_) {
-		clone->vertices_.push_back(std::get<vertex>(expr_value{ v }.clone(allocator, orginal_to_clone)));
+		auto v_clone = std::get<vertex>(expr_value{ make_tess_obj<vertex>(v) }.clone(allocator, orginal_to_clone));
+		clone->vertices_.push_back(tess::get_impl(v_clone));
 	}
 	for (const auto& e : edges_) {
 		clone->edges_.push_back(std::get<edge>(expr_value{ e }.clone(allocator, orginal_to_clone)));
@@ -154,8 +155,8 @@ tess::tile::impl_type* tess::tile::impl_type::get_adjacent_tile(int edge_index) 
 		return nullptr;
 
 	auto* e = get_impl(edges_[edge_index]);
-	int u = get_impl(e->u())->location_index();
-	int v = get_impl(e->v())->location_index();
+	int u = e->u()->location_index();
+	int v = e->v()->location_index();
 
 	auto maybe_adj_edge = parent_->get_edge_on(v, u);
 	if (!maybe_adj_edge.has_value())
@@ -245,8 +246,8 @@ const std::map<std::string, tess::expr_value>& tess::tile::impl_type::fields() c
 
 void tess::tile::impl_type::apply(const matrix& mat)
 {
-	for (auto& vertex : vertices_) {
-		get_impl(vertex)->apply(mat);
+	for (auto* vertex : vertices_) {
+		vertex->apply(mat);
 	}
 }
 
@@ -281,8 +282,8 @@ void tess::tile::impl_type::set_parent(tess::tile_patch::impl_type* parent, int 
 
 void tess::tile::impl_type::detach()
 {
-	for (auto& v : vertices_)
-		get_impl(v)->set_location(v.pos());
+	for (auto* v : vertices_)
+		v->set_location(v->pos());
 	parent_ = nullptr;
 	index_ = -1;
 }
@@ -306,25 +307,35 @@ tess::edge::impl_type::impl_type( obj_id id, tile::impl_type* parent, int index,
 	v_(v)
 {}
 
-const tess::vertex& tess::edge::impl_type::u() const
+const tess::vertex::impl_type* tess::edge::impl_type::u() const
 {
     return parent_->vertices().at(u_);
 }
 
-const tess::vertex& tess::edge::impl_type::v() const
+const tess::vertex::impl_type* tess::edge::impl_type::v() const
 {
     return parent_->vertices().at(v_);
 }
 
+tess::vertex::impl_type* tess::edge::impl_type::u() 
+{
+	return parent_->vertices().at(u_);
+}
+
+tess::vertex::impl_type* tess::edge::impl_type::v() 
+{
+	return parent_->vertices().at(v_);
+}
+
 tess::edge tess::edge::impl_type::next_edge() const
 {
-	auto next = tess::get_impl(v())->out_edge();
+	auto next = v()->out_edge();
 	return tess::make_tess_obj<edge>(next);
 }
 
 tess::edge tess::edge::impl_type::prev_edge() const
 {
-	auto prev = tess::get_impl(u())->in_edge();
+	auto prev = u()->in_edge();
 	return tess::make_tess_obj<edge>(prev);
 }
 
@@ -395,8 +406,8 @@ void  tess::edge::impl_type::flip()
 
 tess::edge_indices tess::edge::impl_type::get_edge_location_indices() const {
 	return edge_indices(
-		get_impl(u())->location_index(),
-		get_impl(v())->location_index()
+		u()->location_index(),
+		v()->location_index()
 	);
 }
 
@@ -404,8 +415,8 @@ tess::edge_indices tess::edge::impl_type::get_edge_location_indices() const {
 std::string tess::edge::impl_type::debug() const
 {
 	std::stringstream ss;
-	ss << "[ " << u_ << ":" << get_impl(u())->debug()
-		<< " -> " << v_ << ":" << get_impl(v())->debug() << " ]";
+	ss << "[ " << u_ << ":" << u()->debug()
+		<< " -> " << v_ << ":" << v()->debug() << " ]";
 	return ss.str();
 }
 

@@ -154,25 +154,25 @@ namespace {
 		return joined_so_far;
 	}
 
-	geom::polygon vertices_to_polygon(const std::vector<tess::vertex>& vertices) {
+	geom::polygon vertices_to_polygon(const std::vector<tess::vertex::impl_type*>& vertices) {
 		geom::polygon poly;
-		for (const auto& vertex : vertices) {
-			const auto [x, y] = tess::get_impl(vertex)->pos();
+		for (const auto* vertex : vertices) {
+			const auto [x, y] = vertex->pos();
 			geom::bg::append(poly, geom::bg::make<geom::point>(x, y));
 		}
-		auto [x_1, y_1] = tess::get_impl(vertices[0])->pos();
+		auto [x_1, y_1] = vertices[0]->pos();
 		geom::bg::append(poly, geom::bg::make<geom::point>(x_1, y_1));
 		return poly;
 	}
 
 	geom::polygon tile_to_polygon(const tess::tile::impl_type* tile) {
-		std::vector<tess::vertex> ordered_vertices;
-		auto first = tile->vertices()[0];
-		auto v = first;
+		std::vector<tess::vertex::impl_type*> ordered_vertices;
+		auto* first = tile->vertices()[0];
+		auto* v = first;
 		do {
 			ordered_vertices.push_back(v);
-			v = v.out_edge().v();
-		} while (tess::get_impl(v) != tess::get_impl(first));
+			v = v->out_edge()->v();
+		} while (v != first);
 
 		return vertices_to_polygon(ordered_vertices);
 	}

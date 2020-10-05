@@ -71,8 +71,8 @@ namespace {
 		tess::edge_table<tile_ptr> edge_tbl;
 		std::vector<std::tuple<tile_ptr, tile_ptr>> output;
 		for (const auto& e : broken_edges) {
-			auto u = vert_tbl.insert(e->u().pos());
-			auto v = vert_tbl.insert(e->v().pos());
+			auto u = vert_tbl.insert(e->u()->pos());
+			auto v = vert_tbl.insert(e->v()->pos());
 			if (edge_tbl.find({ u,v }) != edge_tbl.end())
 				throw tess::error("invalid tile patch while flattening (unable to auto join broekn tiles)");
 			edge_tbl[{ u, v }] = e->parent();
@@ -264,7 +264,7 @@ void tess::tile_patch::impl_type::insert_tile( tess::tile& t )
 	tile->set_parent(this, static_cast<int>(tiles_.size()) );
 
 	for (auto& v : tile->vertices()) {
-		auto* vert = get_impl(v);
+		auto* vert = v;
 		int new_vert_index = vert_tbl_.insert(vert->pos());
 		vert->set_location( new_vert_index );
 	}
