@@ -59,7 +59,7 @@ namespace tess {
 		friend class tessera_impl;
 	public:
 		std::vector<vertex> vertices() const;
-		const std::vector<edge>& edges() const;
+		std::vector<edge> edges() const;
 		property_value get_property_variant(const std::string& prop) const;
 		class impl_type;
 	private:

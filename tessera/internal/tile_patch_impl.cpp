@@ -205,7 +205,7 @@ namespace {
 				}
 			}
 			for (const auto& [var, val] : fields) {
-				tess::get_impl(edge)->insert_field(var, val);
+				edge->insert_field(var, val);
 			}
 		}
 	}
@@ -324,8 +324,8 @@ tess::tile_patch tess::tile_patch::impl_type::flip(allocator& a) const {
 void  tess::tile_patch::impl_type::flip()  {
 	apply(flip_matrix());
 	for (auto& tile : tiles_)
-		for (edge& e : get_impl(tile)->edges())
-			get_impl(e)->flip();
+		for (auto* e : get_impl(tile)->edges())
+			e->flip();
 	edge_tbl_.clear();
 }
 

@@ -75,7 +75,7 @@ namespace tess {
         private:
             std::map<std::string, expr_value> fields_;
             std::vector<tess::vertex::impl_type*> vertices_;
-            std::vector<tess::edge> edges_;
+            std::vector<tess::edge::impl_type*> edges_;
             tile_patch::impl_type* parent_;
             int index_;
 
@@ -85,9 +85,9 @@ namespace tess {
 
             const std::vector<tess::vertex::impl_type*>& vertices() const;
             std::vector<tess::vertex::impl_type*>& vertices();
-            const std::vector<tess::edge>& edges() const;
-            std::vector<tess::edge>& edges();
-            void set(std::vector<tess::vertex::impl_type*>&& vertices, std::vector<tess::edge>&& edges );
+            const std::vector<tess::edge::impl_type*>& edges() const;
+            std::vector<tess::edge::impl_type*>& edges();
+            void set(std::vector<tess::vertex::impl_type*>&& vertices, std::vector<tess::edge::impl_type*>&& edges );
             expr_value get_field(const std::string& field) const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;
             const std::map<std::string, expr_value>& fields() const;
@@ -105,7 +105,7 @@ namespace tess {
             tess::tile clone_detached(tess::allocator& a) const;
             std::string debug() const;
             tile::impl_type* get_adjacent_tile(int edge_index) const;
-            std::optional<edge> get_edge_on(allocator& a, const edge& e) const;
+            const edge::impl_type* get_edge_on(allocator& a, const edge& e) const;
             expr_value get_on(allocator& a, const std::variant<tess::edge, tess::cluster>& e) const;
     };
 }

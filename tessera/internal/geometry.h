@@ -57,6 +57,7 @@ namespace tess {
         void insert(const tess::edge& edge);
         std::vector<tess::edge> get(tess::point a, tess::point b);
         std::vector<tess::edge> get(const tess::edge& edge);
+        std::vector<tess::edge> get(const tess::edge::impl_type* edge);
     private:
         number eps_;
         geometry::segment_rtree impl_;

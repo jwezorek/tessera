@@ -14,9 +14,14 @@ std::vector<tess::vertex> tess::tile::vertices() const
 	return wrapped_vertices;
 }
 
-const std::vector<tess::edge>& tess::tile::edges() const
+std::vector<tess::edge> tess::tile::edges() const
 {
-	return impl_->edges();
+	auto edges = impl_->edges();
+	std::vector<tess::edge> wrapped_edges(edges.size());
+	std::transform(edges.begin(), edges.end(), wrapped_edges.begin(),
+		[](auto v) -> tess::edge { return tess::make_tess_obj<tess::edge>(v); }
+	);
+	return wrapped_edges;
 }
 
 tess::property_value tess::tile::get_property_variant(const std::string& prop) const

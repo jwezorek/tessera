@@ -383,3 +383,9 @@ std::vector<tess::edge> tess::edge_location_table::get(const tess::edge& edge)
 {
 	return get(tess::get_impl(edge.u())->pos(), tess::get_impl(edge.v())->pos());
 }
+
+
+std::vector<tess::edge> tess::edge_location_table::get(const tess::edge::impl_type* edge)
+{
+	return get(edge->u()->pos(), edge->v()->pos());
+}
