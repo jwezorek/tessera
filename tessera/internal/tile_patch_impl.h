@@ -15,37 +15,37 @@ namespace tess {
 
     class allocator;
 
-    using tile_visitor = std::function<void(const tess::tile::impl_type*)>;
+    using tile_visitor = std::function<void(const_tile_handle)>;
 
     class tile_patch::impl_type : public tessera_impl
     {
     private:
-        std::vector<tess::tile::impl_type*> tiles_;
+        std::vector<tess::tile_handle> tiles_;
         std::map<std::string, expr_value> fields_;
         vertex_location_table vert_tbl_;
-        mutable edge_table<const edge::impl_type*> edge_tbl_;
+        mutable edge_table<const_edge_handle> edge_tbl_;
 
         void build_edge_table() const;
 
     public:
         impl_type(obj_id id) : tessera_impl(id) {};
-        impl_type(obj_id id, const std::vector<tess::tile::impl_type*>& tiles);
-        void insert_tile( tess::tile::impl_type* t);
-        const std::vector<tess::tile::impl_type*>& tiles() const;
+        impl_type(obj_id id, const std::vector<tess::tile_handle>& tiles);
+        void insert_tile( tess::tile_handle t);
+        const std::vector<tess::tile_handle>& tiles() const;
 		expr_value get_field(allocator& allocator, const std::string& field) const;
         expr_value get_ary_item(int i) const;
         int get_ary_count() const;
 		void apply(const matrix& mat);
-        tile_patch::impl_type* flip(allocator& allocator) const;
+        patch_handle flip(allocator& allocator) const;
         void flip();
-        const tess::edge::impl_type* get_edge_on(int u, int v) const;
-        const tess::edge::impl_type* get_edge_on(tess::point u, tess::point v) const;
-        expr_value get_on(allocator& a, const std::variant<tess::edge::impl_type*, tess::cluster::impl_type*>& e) const;
+        tess::const_edge_handle get_edge_on(int u, int v) const;
+        tess::const_edge_handle get_edge_on(tess::point u, tess::point v) const;
+        expr_value get_on(allocator& a, const std::variant<tess::edge_handle, tess::cluster::impl_type*>& e) const;
         void insert_field(const std::string& var, const expr_value& val);
         void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
-        void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_patch::impl_type* clone) const;
+        void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, patch_handle clone) const;
         point get_vertex_location(int index) const;
-        tile::impl_type* join(allocator& allocator) const;
+        tile_handle join(allocator& allocator) const;
         void dfs(tile_visitor visit) const;
         
         std::string debug() const;
@@ -71,7 +71,8 @@ namespace tess {
         const std::vector<expr_value>& items() const;
     };
 
-    tile_patch::impl_type* flatten(allocator& a, const std::vector<expr_value>& tiles_and_patches, bool should_join_broken_tiles);
-    tile::impl_type* join(allocator& a, const std::vector<expr_value>& tiles_and_patches, bool should_join_broken_tiles);
-    tile::impl_type* join(allocator& a, const std::vector<const tile::impl_type*>& tiles);
+    patch_handle flatten(allocator& a, const std::vector<expr_value>& tiles_and_patches, bool should_join_broken_tiles);
+    tile_handle join(allocator& a, const std::vector<expr_value>& tiles_and_patches, bool should_join_broken_tiles);
+    tile_handle join(allocator& a, const std::vector<const_tile_handle>& tiles);
+
 }

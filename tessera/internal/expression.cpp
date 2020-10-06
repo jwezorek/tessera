@@ -88,10 +88,10 @@ namespace {
 
 	tess::expr_value flip(tess::allocator& a, const tess::expr_value& arg)
 	{
-		if (!std::holds_alternative<tess::tile::impl_type*>(arg) && !std::holds_alternative<tess::tile_patch::impl_type*>(arg))
+		if (!std::holds_alternative<tess::tile_handle>(arg) && !std::holds_alternative<tess::patch_handle>(arg))
 			throw tess::error("attempted to flip a value that is not a tile or patch");
 
-		std::variant<tess::tile::impl_type*, tess::tile_patch::impl_type*> flippable_val = variant_cast(arg);
+		std::variant<tess::tile_handle, tess::patch_handle> flippable_val = variant_cast(arg);
 		auto flipped = std::visit(
 			[&a](auto&& flippee)->tess::expr_value {
 				return tess::expr_value( flippee->flip(a) );
@@ -104,15 +104,15 @@ namespace {
 
 	std::vector<std::tuple<tess::number, tess::number>> polygon(const tess::expr_value& arg)
 	{
-		if (! std::holds_alternative<tess::cluster::impl_type*>(arg))
+		if (! std::holds_alternative<tess::cluster_handle>(arg))
 			return {};
 
-		auto* vertices = std::get<tess::cluster::impl_type*>(arg);
+		auto* vertices = std::get<tess::cluster_handle>(arg);
 		std::vector<std::tuple<tess::number, tess::number>> tuples(vertices->get_ary_count());
 		try {
 			std::transform(vertices->begin(), vertices->end(), tuples.begin(),
 				[&](const auto& ev)->std::tuple<tess::number, tess::number> {
-					auto* pt = std::get<tess::cluster::impl_type*>(ev);
+					auto* pt = std::get<tess::cluster_handle>(ev);
 					return { std::get<tess::number>(pt->get_ary_item(0)),  std::get<tess::number>(pt->get_ary_item(1)) };
 				}
 			);
@@ -154,7 +154,7 @@ namespace {
 			tess::parser::kw::regular_polygon, 1,
 			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
 				auto locs = regular_polygon_vertices(std::get<tess::number>(args[0]));
-				return tess::expr_value(a.create_implementation<tess::tile::impl_type*>(&a, locs) );
+				return tess::expr_value(a.create<tess::tile_handle>(&a, locs) );
 			}
 		} , {
 			tess::parser::kw::flip, 1,
@@ -165,37 +165,37 @@ namespace {
 			tess::parser::kw::isosceles_triangle, 1,
 			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
 				auto locs = isosceles_triangle(std::get<tess::number>(args[0]));
-				return tess::expr_value(a.create_implementation<tess::tile::impl_type*>(&a, locs) );
+				return tess::expr_value(a.create<tess::tile_handle>(&a, locs) );
 			}
 		} , {
 			tess::parser::kw::isosceles_trapezoid, 2,
 			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
 				auto locs = isosceles_trapezoid(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]));
-				return tess::expr_value(a.create_implementation<tess::tile::impl_type*>(&a, locs));
+				return tess::expr_value(a.create<tess::tile_handle>(&a, locs));
 			}
 		} , {
 			tess::parser::kw::rhombus, 1,
 			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
 				auto locs = rhombus(std::get<tess::number>(args[0]));
-				return tess::expr_value(a.create_implementation<tess::tile::impl_type*>(&a, locs) );
+				return tess::expr_value(a.create<tess::tile_handle>(&a, locs) );
 			}
 		} , {
 			tess::parser::kw::polygon, 1,
 			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
 				auto locs = polygon(args[0]);
-				return tess::expr_value(a.create_implementation<tess::tile::impl_type*>(&a, locs) );
+				return tess::expr_value(a.create<tess::tile_handle>(&a, locs) );
 			}
 		} , {
 			tess::parser::kw::join, 1,
 			[](tess::allocator& a,const std::vector<tess::expr_value>& args)->tess::expr_value {
-				auto patch = std::get<tess::tile_patch::impl_type*>(args[0]);
+				auto patch = std::get<tess::patch_handle>(args[0]);
 				return tess::expr_value(patch->join(a) );
 			}
 		} , {
 			tess::parser::kw::triangle_by_sides, 3,
 			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
 				auto locs = triangle_by_sides(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]), std::get<tess::number>(args[2]));
-				return tess::expr_value(a.create_implementation<tess::tile::impl_type*>(&a, locs) );
+				return tess::expr_value(a.create<tess::tile_handle>(&a, locs) );
 			}
 		}
 	};
@@ -897,8 +897,8 @@ void tess::on_expr::compile(stack_machine::stack& stack) const
 		std::make_shared<val_func_op>(
 			2,
 			[](allocator& a, const std::vector<expr_value>& args) -> expr_value {
-				std::variant<tess::tile::impl_type*, tess::tile_patch::impl_type*> tile_or_patch = variant_cast(args[0]);
-				std::variant<tess::edge::impl_type*, tess::cluster::impl_type*> arg = variant_cast(args[1]);
+				std::variant<tess::tile_handle, tess::patch_handle> tile_or_patch = variant_cast(args[0]);
+				std::variant<tess::edge_handle, tess::cluster_handle> arg = variant_cast(args[1]);
 				return std::visit(
 					[&](const auto& t)->expr_value {
 						return t->get_on(a, arg);

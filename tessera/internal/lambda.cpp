@@ -63,7 +63,7 @@ void tess::lambda::impl_type::get_all_referenced_allocations(std::unordered_set<
         val.get_all_referenced_allocations(alloc_set);
 }
 
-void tess::lambda::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, lambda::impl_type* clone) const
+void tess::lambda::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, lambda_handle clone) const
 {
     clone->parameters = parameters;
     clone->dependencies = dependencies;
