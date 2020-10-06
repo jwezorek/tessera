@@ -42,7 +42,7 @@ namespace {
 		return make_rtree_point(x, y);
 	}
 
-	geom::segment edge_to_seg(tess::const_edge_handle e) {
+	geom::segment edge_to_seg(tess::const_edge_ptr e) {
 		auto [x1,y1] = e->u()->pos();
 		auto [x2, y2] = e->v()->pos();
 		return geom::segment{
@@ -154,7 +154,7 @@ namespace {
 		return joined_so_far;
 	}
 
-	geom::polygon vertices_to_polygon(const std::vector<tess::vertex_handle>& vertices) {
+	geom::polygon vertices_to_polygon(const std::vector<tess::vertex_ptr>& vertices) {
 		geom::polygon poly;
 		for (const auto* vertex : vertices) {
 			const auto [x, y] = vertex->pos();
@@ -165,8 +165,8 @@ namespace {
 		return poly;
 	}
 
-	geom::polygon tile_to_polygon(tess::const_tile_handle tile) {
-		std::vector<tess::vertex_handle> ordered_vertices;
+	geom::polygon tile_to_polygon(tess::const_tile_ptr tile) {
+		std::vector<tess::vertex_ptr> ordered_vertices;
 		auto* first = tile->vertices()[0];
 		auto* v = first;
 		do {
@@ -181,17 +181,17 @@ namespace {
 		return tile_to_polygon(get_impl(tile));
 	}
 
-	std::vector<tess::const_tile_handle> topological_sort_tiles(tess::const_patch_handle patch) {
-		std::vector<tess::const_tile_handle> tiles;
+	std::vector<tess::const_tile_ptr> topological_sort_tiles(tess::const_patch_ptr patch) {
+		std::vector<tess::const_tile_ptr> tiles;
 		patch->dfs(
-			[&tiles](tess::const_tile_handle t) {
+			[&tiles](tess::const_tile_ptr t) {
 				tiles.push_back(t);
 			}
 		);
 		return tiles;
 	}
 
-	std::vector<geom::polygon> tile_patch_to_polygons(std::vector<tess::const_tile_handle> tiles) {
+	std::vector<geom::polygon> tile_patch_to_polygons(std::vector<tess::const_tile_ptr> tiles) {
 		std::vector<geom::polygon> polygons(tiles.size());
 		std::transform(tiles.begin(), tiles.end(), polygons.begin(),
 			[](const auto& tile)->geom::polygon {
@@ -314,7 +314,7 @@ std::size_t tess::edge_hash::operator()(const edge_indices& key) const
     return boost::hash_value(key);
 }
 
-std::vector<tess::point> tess::join(tess::const_patch_handle tiles)
+std::vector<tess::point> tess::join(tess::const_patch_ptr tiles)
 {
 	auto ordered_tiles = topological_sort_tiles(tiles);
 	auto maybe_polygon = join_polygons(tile_patch_to_polygons(ordered_tiles));
@@ -365,18 +365,18 @@ void tess::edge_location_table::insert(const tess::edge& edge)
 	impl_.insert(pair);
 };
 
-void tess::edge_location_table::insert(tess::const_edge_handle edge)
+void tess::edge_location_table::insert(tess::const_edge_ptr edge)
 {
 	geometry::segment_rtree_value pair{ edge_to_seg(edge), edge };
 	impl_.insert(pair);
 };
 
-std::vector<tess::const_edge_handle> tess::edge_location_table::get(tess::point a, tess::point b)
+std::vector<tess::const_edge_ptr> tess::edge_location_table::get(tess::point a, tess::point b)
 {
 	std::vector<geom::segment_rtree_value> edges;
 	impl_.query(geom::bgi::intersects(fat_line_segment(to_doubles(a), to_doubles(b), tess::eps)), std::back_inserter(edges));
 
-	std::vector<tess::const_edge_handle> output;
+	std::vector<tess::const_edge_ptr> output;
 	for (auto [key, val] : edges) {
 		if (tess::are_parallel(a, b, val->u()->pos(), val->v()->pos(), tess::eps))
 			output.push_back(val);
@@ -385,12 +385,12 @@ std::vector<tess::const_edge_handle> tess::edge_location_table::get(tess::point 
 	return output;
 }
 
-std::vector<tess::const_edge_handle> tess::edge_location_table::get(const tess::edge& edge)
+std::vector<tess::const_edge_ptr> tess::edge_location_table::get(const tess::edge& edge)
 {
 	return get(tess::get_impl(edge.u())->pos(), tess::get_impl(edge.v())->pos());
 }
 
-std::vector<tess::const_edge_handle>  tess::edge_location_table::get(tess::const_edge_handle edge)
+std::vector<tess::const_edge_ptr>  tess::edge_location_table::get(tess::const_edge_ptr edge)
 {
 	return get(edge->u()->pos(), edge->v()->pos());
 }

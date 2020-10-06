@@ -19,24 +19,24 @@ namespace tess {
 
     class vertex::impl_type : public tessera_impl {
     private:
-        tile_handle parent_;
+        tile_ptr parent_;
         int index_;
         std::variant<int, point> location_;
 
     public:
         impl_type(obj_id id) : tessera_impl(id) {};
-        impl_type(obj_id id, tile_handle parent, int index, point loc);
+        impl_type(obj_id id, tile_ptr parent, int index, point loc);
         std::tuple<double, double> to_floats() const;
         point pos() const;
 		expr_value get_field(allocator& allocator, const std::string& field) const;
 		void apply(const matrix& mat);
-		tile_handle parent() const;
-        edge_handle in_edge() const;
-        edge_handle out_edge() const;
+		tile_ptr parent() const;
+        edge_ptr in_edge() const;
+        edge_ptr out_edge() const;
         void insert_field(const std::string& var, const expr_value& val) {}
         void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
-        void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, vertex_handle clone) const;
-        patch_handle grandparent() const;
+        void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, vertex_ptr clone) const;
+        patch_ptr grandparent() const;
         void set_location(int vert_index);
         void set_location(point pt);
         int location_index() const;
@@ -45,27 +45,27 @@ namespace tess {
 
     class edge::impl_type : public tessera_impl {
         private:
-            tile_handle parent_;
+            tile_ptr parent_;
             int index_;
             int u_, v_;
             std::map<std::string, expr_value> fields_;
         public:
             impl_type(obj_id id) : tessera_impl(id), parent_(nullptr), index_(-1), u_(-1), v_(-1) {};
-			impl_type(obj_id id, tile_handle parent, int index, int u, int v);
-			const_vertex_handle u() const;
-            const_vertex_handle v() const;
-            tess::vertex_handle u();
-            tess::vertex_handle v();
-            tess::edge_handle next_edge() const;
-            tess::edge_handle prev_edge() const;
+			impl_type(obj_id id, tile_ptr parent, int index, int u, int v);
+			const_vertex_ptr u() const;
+            const_vertex_ptr v() const;
+            tess::vertex_ptr u();
+            tess::vertex_ptr v();
+            tess::edge_ptr next_edge() const;
+            tess::edge_ptr prev_edge() const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;
             expr_value get_field(const std::string& field) const;
             bool has_property(const std::string& prop) const;
-			tile_handle parent() const;
+			tile_ptr parent() const;
             void insert_field(const std::string& var, const expr_value& val);
             const std::map<std::string, expr_value>& fields() const;
             void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
-            void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, edge_handle clone) const;
+            void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, edge_ptr clone) const;
             void flip();
             edge_indices get_edge_location_indices() const;
             std::string debug() const;
@@ -74,39 +74,39 @@ namespace tess {
     class tile::impl_type : public tessera_impl {
         private:
             std::map<std::string, expr_value> fields_;
-            std::vector<tess::vertex_handle> vertices_;
-            std::vector<tess::edge_handle> edges_;
-            patch_handle parent_;
+            std::vector<tess::vertex_ptr> vertices_;
+            std::vector<tess::edge_ptr> edges_;
+            patch_ptr parent_;
             int index_;
 
         public:
             impl_type(obj_id id): tessera_impl(id), parent_(nullptr), index_(-1) {};
             impl_type(obj_id id, tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
 
-            const std::vector<tess::vertex_handle>& vertices() const;
-            std::vector<tess::vertex_handle>& vertices();
-            const std::vector<tess::edge_handle>& edges() const;
-            std::vector<tess::edge_handle>& edges();
-            void set(std::vector<tess::vertex_handle>&& vertices, std::vector<tess::edge_handle>&& edges );
+            const std::vector<tess::vertex_ptr>& vertices() const;
+            std::vector<tess::vertex_ptr>& vertices();
+            const std::vector<tess::edge_ptr>& edges() const;
+            std::vector<tess::edge_ptr>& edges();
+            void set(std::vector<tess::vertex_ptr>&& vertices, std::vector<tess::edge_ptr>&& edges );
             expr_value get_field(const std::string& field) const;
 			expr_value get_field(allocator& allocator, const std::string& field) const;
             const std::map<std::string, expr_value>& fields() const;
 			void apply(const matrix& mat);
-            tess::tile_handle flip(allocator& a) const;
+            tess::tile_ptr flip(allocator& a) const;
             void flip();
             bool has_parent() const;
-            patch_handle parent() const;
-            void set_parent(patch_handle parent, int index);
+            patch_ptr parent() const;
+            void set_parent(patch_ptr parent, int index);
             void detach();
             void insert_field(const std::string& var, const expr_value& val);
             void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
-            void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_handle clone) const;
+            void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_ptr clone) const;
             bool is_detached() const;
-            tess::tile_handle clone_detached(tess::allocator& a) const;
+            tess::tile_ptr clone_detached(tess::allocator& a) const;
             std::string debug() const;
-            const tile_handle get_adjacent_tile(int edge_index) const;
-            const_edge_handle get_edge_on(allocator& a,  edge_handle e) const;
-            expr_value get_on(allocator& a,  std::variant<tess::edge_handle, tess::cluster_handle>& e) const;
+            const tile_ptr get_adjacent_tile(int edge_index) const;
+            const_edge_ptr get_edge_on(allocator& a,  edge_ptr e) const;
+            expr_value get_on(allocator& a,  std::variant<tess::edge_ptr, tess::cluster_ptr>& e) const;
     };
 
     

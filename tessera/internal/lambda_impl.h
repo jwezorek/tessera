@@ -18,7 +18,7 @@ namespace tess {
             void insert_field(const std::string& var, const expr_value& val);
             expr_value get_field(allocator& allocator, const std::string& field) const; 
             void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const; 
-            void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, lambda_handle clone) const;
+            void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, lambda_ptr clone) const;
             std::vector<std::string> unfulfilled_dependencies() const;
     };
 }

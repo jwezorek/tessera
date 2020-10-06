@@ -40,37 +40,37 @@ namespace tess {
 
 	bool operator==(field_ref lhs, field_ref rhs);
 
-	using vertex_handle = vertex::impl_type*;
-	using const_vertex_handle = const vertex::impl_type*;
-	using edge_handle = edge::impl_type*;
-	using const_edge_handle = const edge::impl_type*;
-	using cluster_handle = cluster::impl_type*;
-	using const_cluster_handle = const cluster::impl_type*;
-	using tile_handle = tile::impl_type*;
-	using const_tile_handle = const tile::impl_type*;
-	using patch_handle = tile_patch::impl_type*;
-	using const_patch_handle = const tile_patch::impl_type*;
-	using lambda_handle = lambda::impl_type*;
-	using const_lambda_handle = const lambda::impl_type*;
+	using vertex_ptr = vertex::impl_type*;
+	using const_vertex_ptr = const vertex::impl_type*;
+	using edge_ptr = edge::impl_type*;
+	using const_edge_ptr = const edge::impl_type*;
+	using cluster_ptr = cluster::impl_type*;
+	using const_cluster_ptr = const cluster::impl_type*;
+	using tile_ptr = tile::impl_type*;
+	using const_tile_ptr = const tile::impl_type*;
+	using patch_ptr = tile_patch::impl_type*;
+	using const_patch_ptr = const tile_patch::impl_type*;
+	using lambda_ptr = lambda::impl_type*;
+	using const_lambda_ptr = const lambda::impl_type*;
 
-	using expr_val_var = std::variant<tile_handle, patch_handle, edge_handle, vertex_handle, lambda_handle, cluster_handle, field_ref, nil_val, number, std::string, bool>;
+	using expr_val_var = std::variant<tile_ptr, patch_ptr, edge_ptr, vertex_ptr, lambda_ptr, cluster_ptr, field_ref, nil_val, number, std::string, bool>;
 
-	class expr_value : public expr_val_var, public tessera_impl
+	class expr_value : public expr_val_var
 	{
 	public:
 		expr_value();
-		explicit expr_value(tile_handle v);
-		explicit expr_value(const_tile_handle v);
-		explicit expr_value(patch_handle v);
-		explicit expr_value(const_patch_handle v);
-		explicit expr_value(edge_handle v);
-		explicit expr_value(const_edge_handle v);
-		explicit expr_value(vertex_handle);
-		explicit expr_value(const_vertex_handle);
-		explicit expr_value(lambda_handle);
-		explicit expr_value(const_lambda_handle);
-		explicit expr_value(cluster_handle);
-		explicit expr_value(const_cluster_handle);
+		explicit expr_value(tile_ptr v);
+		explicit expr_value(const_tile_ptr v);
+		explicit expr_value(patch_ptr v);
+		explicit expr_value(const_patch_ptr v);
+		explicit expr_value(edge_ptr v);
+		explicit expr_value(const_edge_ptr v);
+		explicit expr_value(vertex_ptr);
+		explicit expr_value(const_vertex_ptr);
+		explicit expr_value(lambda_ptr);
+		explicit expr_value(const_lambda_ptr);
+		explicit expr_value(cluster_ptr);
+		explicit expr_value(const_cluster_ptr);
 		explicit expr_value(field_ref);
 		explicit expr_value(nil_val);
 		explicit expr_value(number);

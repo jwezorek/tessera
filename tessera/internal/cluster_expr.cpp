@@ -24,7 +24,7 @@ void tess::cluster_expr::compile(stack_machine::stack& stack) const
                 //    get_impl(t)->debug();
                // }
 
-                return expr_value(a.create<cluster_handle>(values));
+                return expr_value(a.create<cluster_ptr>(values));
             },
             "<make_cluster " + std::to_string(n) + ">"
         )
@@ -82,13 +82,13 @@ void tess::num_range_expr::compile(stack_machine::stack& stack) const
 
                 std::vector<expr_value> range;
                 if (n == 0)
-                    return expr_value(a.create<cluster_handle>(range));
+                    return expr_value(a.create<cluster_ptr>(range));
                 range.reserve(n);
 
                 for (int i = from; i <= to; i++)
                     range.push_back(expr_value( tess::number(i) ));
 
-                return expr_value(a.create<cluster_handle>(range) );
+                return expr_value(a.create<cluster_ptr>(range) );
             },
             "<make_range>"
         )
