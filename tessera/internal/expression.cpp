@@ -968,7 +968,7 @@ void tess::clone_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<one_param_op>(
 			[](allocator& a, const expr_value& v)->expr_value {
-				return v.clone(a);
+				return tess::clone_value(a, v);
 			},
 			"clone"
 		)

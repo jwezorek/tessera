@@ -198,6 +198,9 @@ std::string tess::stack_machine::item::to_string() const
             [&](op_ptr op) {
                 ss << op->to_string();
             },
+            [&](const expr_value& val) {
+                ss << tess::to_string(val);
+            },
             [&](const auto& val) {
                 ss << val.to_string();
             }

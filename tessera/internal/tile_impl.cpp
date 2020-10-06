@@ -20,7 +20,7 @@ namespace {
 	T* perform_clone(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, T* impl)
 	{
 		tess::expr_value wrapper = tess::expr_value(impl);
-		auto unwrapped_clone = std::get<T*>(wrapper.clone(allocator, orginal_to_clone));
+		auto unwrapped_clone = std::get<T*>(tess::clone_value(allocator, orginal_to_clone, wrapper));
 		return unwrapped_clone;
 	}
 }
@@ -84,21 +84,21 @@ void tess::tile::impl_type::get_all_referenced_allocations(std::unordered_set<ob
 	alloc_set.insert(key);
 
 	for (const auto& edge : edges_) 
-		 expr_value{edge}.get_all_referenced_allocations(alloc_set);
+		 tess::get_all_referenced_allocations(expr_value{ edge }, alloc_set);
 	for (const auto& vertex : vertices_) 
-		expr_value{vertex}.get_all_referenced_allocations(alloc_set);
+		tess::get_all_referenced_allocations(expr_value{ vertex }, alloc_set);
 	for (const auto& [var, val] : fields_)
-		val.get_all_referenced_allocations(alloc_set);
+		tess::get_all_referenced_allocations(val, alloc_set);
 }
 
 void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_handle clone) const
 {
 	for (const auto* v : vertices_) {
-		auto v_clone = std::get<vertex_handle>(expr_value( v ).clone(allocator, orginal_to_clone));
+		auto v_clone = std::get<vertex_handle>(tess::clone_value(allocator, orginal_to_clone, expr_value(v)));
 		clone->vertices_.push_back(v_clone);
 	}
 	for (const auto& e : edges_) {
-		auto e_clone = std::get<edge_handle>(expr_value( e ).clone(allocator, orginal_to_clone));
+		auto e_clone = std::get<edge_handle>( tess::clone_value(allocator, orginal_to_clone, expr_value(e)));
 		clone->edges_.push_back(e_clone);
 	}
 
@@ -109,7 +109,7 @@ void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_
 	}
 
 	for (const auto& [var, val] : fields_) {
-		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
+		clone->fields_[var] = tess::clone_value(allocator, orginal_to_clone, val);
 	}
 }
 
@@ -128,7 +128,7 @@ tess::tile_handle tess::tile::impl_type::clone_detached(tess::allocator& a) cons
 	std::unordered_map<obj_id, void*> original_to_clone;
 	auto this_patch_key =  parent_->get_id();
 	original_to_clone[this_patch_key] = parent_;
-	expr_value clone_expr_value = tile_value.clone(a, original_to_clone);
+	expr_value clone_expr_value = tess::clone_value(a, original_to_clone, tile_value);
 
 	//now return the clone with the parent detached.
 	auto clone_tile = std::get<tess::tile_handle>(clone_expr_value);
@@ -433,7 +433,7 @@ void  tess::edge::impl_type::clone_to(tess::allocator& allocator, std::unordered
 	clone->parent_ = perform_clone<tile::impl_type>(allocator, orginal_to_clone, parent_);
 
 	for (const auto& [var, val] : fields_) {
-		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
+		clone->fields_[var] = tess::clone_value(allocator, orginal_to_clone, val);
 	}
 }
 

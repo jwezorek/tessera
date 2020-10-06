@@ -76,21 +76,21 @@ namespace tess {
 		explicit expr_value(number);
 		explicit expr_value(std::string);
 		explicit expr_value(bool);
-
-		bool is_simple_value() const;
-		bool is_object_like() const;
-		bool is_array_like() const;
-		bool is_nil() const;
-		expr_value clone( allocator& allocator ) const;
-		expr_value clone( allocator& allocator, std::unordered_map<obj_id,void*>& original_to_clone) const;
-		expr_value get_ary_item(int index) const;
-		int get_ary_count() const;
-		expr_value get_field(allocator& allocator, const std::string& field) const;
-		void insert_field(const std::string& var, expr_value val) const;
-		std::unordered_set<obj_id> get_all_referenced_allocations() const;
-		void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
-		std::string to_string() const;
 	};
+
+	bool is_simple_value(expr_value);
+	bool is_object_like(expr_value);
+	bool is_array_like(expr_value);
+	bool is_nil(expr_value);
+	expr_value clone_value(allocator& allocator, expr_value v);
+	expr_value clone_value(allocator& allocator, std::unordered_map<obj_id, void*>& original_to_clone, expr_value v);
+	expr_value get_ary_item(expr_value v, int index);
+	int get_ary_count(expr_value v);
+	expr_value get_field(expr_value v, allocator& allocator, const std::string& field) ;
+	void insert_field(expr_value v, const std::string& var, expr_value val);
+	std::unordered_set<obj_id> get_all_referenced_allocations(expr_value v);
+	void get_all_referenced_allocations(expr_value v, std::unordered_set<obj_id>& alloc_set);
+	std::string to_string(expr_value v);
 
 	bool operator==(const expr_value& lhs, const expr_value& rhs);
 	bool operator!=(const expr_value& lhs, const expr_value& rhs);
@@ -102,13 +102,13 @@ namespace tess {
 	template<typename T>
 	T* clone(allocator& a, const T* tess_impl) {
 		tess::expr_value val{ const_cast<T*>(tess_impl) };
-		return std::get<T*>(val.clone(a));
+		return std::get<T*>(tess::clone_value(a, val));
 	}
 
 	template<typename T>
 	T* clone(allocator& a, T* tess_impl) {
 		tess::expr_value val{ tess_impl };
-		return std::get<T*>(val.clone(a));
+		return std::get<T*>(tess::clone_value(a, val));
 	}
 	
 }

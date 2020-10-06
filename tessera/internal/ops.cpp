@@ -154,6 +154,9 @@ std::string tess::make_lambda::to_string() const
                 [&](stack_machine::op_ptr op) {
                     ss << op->to_string();
                 },
+                [&](expr_value v) {
+                    ss << tess::to_string(v);
+                },
                 [&](const auto& val) {
                     ss << val.to_string();
                 }
@@ -319,7 +322,7 @@ void tess::assign_op::execute(const std::vector<tess::stack_machine::item>& oper
     } else {
         int i = 0;
         for (const auto& var : vars) 
-            current_scope.set(var.name(), value.get_ary_item(i++));
+            current_scope.set(var.name(), tess::get_ary_item(value, i++));
     }
 }
 
@@ -344,7 +347,7 @@ tess::stack_machine::item tess::get_field_op::execute(const std::vector<stack_ma
 {
     expr_value val = std::get<expr_value>(operands[0]);
     if (!get_ref_) {
-        return { val.get_field(contexts.top().allocator(), field_) };
+        return { tess::get_field(val, contexts.top().allocator(), field_) };
     }
     else {
         return { expr_value{field_ref(val, field_)} };
@@ -441,6 +444,11 @@ std::string tess::if_op::to_string() const
                 [&](stack_machine::op_ptr op) {
                     ss << op->to_string();
                 },
+
+                [&](const expr_value& val) {
+                    ss << tess::to_string(val);
+                },
+
                 [&](const auto& val) {
                     ss << val.to_string();
                 }
@@ -456,6 +464,11 @@ std::string tess::if_op::to_string() const
                 [&](stack_machine::op_ptr op) {
                     ss << op->to_string();
                 },
+
+                [&](const expr_value& val) {
+                    ss << tess::to_string(val);
+                },
+
                 [&](const auto& val) {
                     ss << val.to_string();
                 }
@@ -476,7 +489,7 @@ tess::stack_machine::item tess::get_ary_item_op::execute(const std::vector<stack
 {
     auto ary = std::get<expr_value>(operands[0]);
     auto index = std::get<tess::number>(std::get<expr_value>(operands[1]));
-    return { ary.get_ary_item(tess::to_int(index)) };
+    return { tess::get_ary_item(ary, tess::to_int(index)) };
 }
 
 
@@ -586,7 +599,7 @@ void tess::set_field_op::execute(const std::vector<stack_machine::item>& operand
     } else {
         int i = 0;
         for (auto& field_ref : field_refs) {
-            field_ref.set(value.get_ary_item(i++));
+            field_ref.set(tess::get_ary_item(value, i++));
         }
     }
 }

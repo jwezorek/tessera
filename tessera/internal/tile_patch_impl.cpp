@@ -184,7 +184,7 @@ namespace {
 			std::unordered_map<std::string, tess::expr_value> fields;
 			for (const auto* e : joined_edges) {
 				for (const auto& [var, val] : e->fields()) {
-					if (val.is_simple_value()) {
+					if (tess::is_simple_value(val)) {
 						if (fields.find(var) == fields.end()) {
 							fields[var] = val;
 						}
@@ -206,7 +206,7 @@ namespace {
 		std::unordered_map<std::string, tess::expr_value> fields;
 		for (const auto& t : patch->tiles()) {
 			for (const auto& [var, val] : t->fields()) {
-				if (val.is_simple_value()) {
+				if (tess::is_simple_value(val)) {
 					if (fields.find(var) == fields.end()) {
 						fields[var] = val;
 					} else {
@@ -306,7 +306,7 @@ std::string tess::tile_patch::impl_type::debug() const
 
 tess::patch_handle tess::tile_patch::impl_type::flip(allocator& a) const {
 	expr_value self = expr_value( this );
-	auto* clone = std::get<tess::patch_handle>(self.clone(a));
+	auto* clone = std::get<tess::patch_handle>(tess::clone_value(a, self));
 	clone->flip();
 	return clone;
 }
@@ -374,20 +374,20 @@ void tess::tile_patch::impl_type::get_all_referenced_allocations(std::unordered_
 	alloc_set.insert(key);
 
 	for (const auto& tile : tiles_)
-		expr_value{ tile }.get_all_referenced_allocations(alloc_set);
+		tess::get_all_referenced_allocations(expr_value{ tile }, alloc_set );
 
 	for (const auto& [var, val] : fields_)
-		val.get_all_referenced_allocations(alloc_set);
+		tess::get_all_referenced_allocations(val, alloc_set);
 }
 
 void tess::tile_patch::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, patch_handle clone) const
 {
 	for (const auto& t : tiles_) {
-		auto t_clone = std::get<tile_handle>(expr_value{ t }.clone(allocator, orginal_to_clone));
+		auto t_clone = std::get<tile_handle>(tess::clone_value(allocator, orginal_to_clone, expr_value{ t }));
 		clone->tiles_.push_back( t_clone );
 	}
 	for (const auto& [var, val] : fields_) {
-		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
+		clone->fields_[var] = tess::clone_value(allocator, orginal_to_clone, val);
 	}
 	clone->vert_tbl_ = vert_tbl_;
 }
@@ -469,13 +469,13 @@ void tess::cluster::impl_type::get_all_referenced_allocations(std::unordered_set
 	alloc_set.insert(key);
 
 	for (const auto& val : values_)
-		val.get_all_referenced_allocations(alloc_set);
+		tess::get_all_referenced_allocations(val, alloc_set);
 }
 
 void tess::cluster::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, cluster_handle clone) const
 {
 	for (const auto& value : values_) {
-		clone->values_.push_back(value.clone(allocator, orginal_to_clone));
+		clone->values_.push_back(tess::clone_value(allocator, orginal_to_clone, value));
 	}
 }
 

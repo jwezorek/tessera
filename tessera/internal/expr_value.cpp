@@ -40,7 +40,7 @@ tess::field_ref::field_ref(const expr_value& obj, std::string field) : impl_(std
 
 void tess::field_ref::set(const expr_value& val)
 {
-	impl_->obj.insert_field(impl_->field, val);
+	tess::insert_field(impl_->obj, impl_->field, val);
 }
 
 tess::nil_val::nil_val()
@@ -51,71 +51,68 @@ bool tess::operator==(nil_val lhs, nil_val rhs) {
 	return true;
 }
 
-
-bool tess::expr_value::is_simple_value() const
+bool tess::is_simple_value(expr_value v) 
 { 
-	return std::holds_alternative<nil_val>(*this) ||
-		std::holds_alternative<number>(*this) ||
-		std::holds_alternative<std::string>(*this) ||
-		std::holds_alternative<bool>(*this);
+	return std::holds_alternative<nil_val>(v) ||
+		std::holds_alternative<number>(v) ||
+		std::holds_alternative<std::string>(v) ||
+		std::holds_alternative<bool>(v);
 }
 
-bool tess::expr_value::is_object_like() const
+bool tess::is_object_like(expr_value v)
 {
 	// by "object-like" we mean epression values that may have fields.
-	return std::holds_alternative<tile_handle>(*this) ||
-		std::holds_alternative<patch_handle>(*this) ||
-		std::holds_alternative<vertex_handle>(*this) ||
-		std::holds_alternative<edge_handle>(*this) ||
-		std::holds_alternative<cluster_handle>(*this) ||
-		std::holds_alternative<lambda_handle>(*this);
+	return std::holds_alternative<tile_handle>(v) ||
+		std::holds_alternative<patch_handle>(v) ||
+		std::holds_alternative<vertex_handle>(v) ||
+		std::holds_alternative<edge_handle>(v) ||
+		std::holds_alternative<cluster_handle>(v) ||
+		std::holds_alternative<lambda_handle>(v);
 }
 
-bool tess::expr_value::is_array_like() const
+bool tess::is_array_like(expr_value v)
 {
 	// by "array-like" we mean epression values that may be dereferenced via the [] operator.
-	return  std::holds_alternative<patch_handle>(*this) ||
-		std::holds_alternative<cluster_handle>(*this);
+	return  std::holds_alternative<patch_handle>(v) ||
+		std::holds_alternative<cluster_handle>(v);
 }
 
-bool tess::expr_value::is_nil() const
+bool tess::is_nil(expr_value v)
 {
-	return std::holds_alternative<tess::nil_val>(*this);
+	return std::holds_alternative<tess::nil_val>(v);
 }
 
-tess::expr_value tess::expr_value::clone( allocator& allocator ) const
+tess::expr_value tess::clone_value( allocator& allocator, expr_value v) 
 {
-	if (is_simple_value())
-		return *this;
+	if (is_simple_value(v))
+		return v;
 
-	if (std::holds_alternative<field_ref>(*this))
+	if (std::holds_alternative<field_ref>(v))
 		throw tess::error("attempted clone a field ref");
 	
 	std::unordered_map<obj_id, void*> original_to_clone;
-	return clone(allocator, original_to_clone);
-	 
+	return clone_value(allocator, original_to_clone, v);
 }
 
-tess::expr_value tess::expr_value::clone(allocator& allocator, std::unordered_map<obj_id, void*>& original_to_clone) const
+tess::expr_value tess::clone_value(allocator& allocator, std::unordered_map<obj_id, void*>& original_to_clone, expr_value v) 
 {
-	if (is_simple_value())
-		return *this;
+	if (is_simple_value(v))
+		return v;
 
-	std::variant<tile_handle, patch_handle, vertex_handle, edge_handle, cluster_handle, lambda_handle> obj_variant = variant_cast(*this);
+	std::variant<tile_handle, patch_handle, vertex_handle, edge_handle, cluster_handle, lambda_handle> obj_variant = variant_cast(v);
 	return std::visit(
 		[&](auto&& obj)->expr_value { return expr_value{ clone_aux(allocator, original_to_clone, obj) }; },
 		obj_variant
 	);
 }
 
-tess::expr_value tess::expr_value::get_ary_item(int index) const
+tess::expr_value tess::get_ary_item(expr_value v, int index)
 {
 	// patches and clusters can be referenced like an array.
-	if (!is_array_like())
+	if (!is_array_like(v))
 		throw tess::error("attempted reference to a sub-tile of a value that is not a tile patch.");
 
-	auto value = static_cast<expr_val_var>(*this);
-	std::variant<patch_handle, cluster_handle> ary_variant = variant_cast(value);
+	std::variant<patch_handle, cluster_handle> ary_variant = variant_cast(v);
 
 	return std::visit(
 		[&](auto&& obj)->expr_value { return obj->get_ary_item(index); },
@@ -123,13 +120,13 @@ tess::expr_value tess::expr_value::get_ary_item(int index) const
 	);
 }
 
-int tess::expr_value::get_ary_count() const
+int tess::get_ary_count(expr_value v) 
 {
 	// patches and clusters can be referenced like an array.
-	if (!is_array_like())
+	if (!is_array_like(v))
 		return -1;
-	auto value = static_cast<expr_val_var>(*this);
-	std::variant<patch_handle, cluster_handle> ary_variant = variant_cast(value);
+
+	std::variant<patch_handle, cluster_handle> ary_variant = variant_cast(v);
 
 	return std::visit(
 		[&](auto&& obj)->int { return obj->get_ary_count(); },
@@ -137,14 +134,13 @@ int tess::expr_value::get_ary_count() const
 	);
 }
 
-tess::expr_value tess::expr_value::get_field(allocator& allocator, const std::string& field) const
+tess::expr_value tess::get_field(expr_value v, allocator& allocator, const std::string& field)
 {
-	if (!is_object_like()) {
+	if (!is_object_like(v)) {
 		throw tess::error("attempted reference to field of a non-object: " + field);
 	}
 
-	auto value = static_cast<expr_val_var>(*this);
-	std::variant<tile_handle, patch_handle, vertex_handle, edge_handle, cluster_handle, lambda_handle> obj_variant = variant_cast(value);
+	std::variant<tile_handle, patch_handle, vertex_handle, edge_handle, cluster_handle, lambda_handle> obj_variant = variant_cast(v);
 	
 	return std::visit(
 		[&](auto&& obj)->expr_value { return obj->get_field(allocator, field); },
@@ -152,42 +148,42 @@ tess::expr_value tess::expr_value::get_field(allocator& allocator, const std::st
 	);
 }
 
-void tess::expr_value::insert_field(const std::string& var, expr_value val) const
+void tess::insert_field(expr_value v, const std::string& var, expr_value val)
 {
-	if (!is_object_like())
+	if (!is_object_like(v))
 		return;
-	std::variant<tile_handle, patch_handle, vertex_handle, edge_handle, cluster_handle, lambda_handle> obj_variant = variant_cast(static_cast<expr_val_var>(*this));
+	std::variant<tile_handle, patch_handle, vertex_handle, edge_handle, cluster_handle, lambda_handle> obj_variant = variant_cast(v);
 	std::visit(
 		[&](auto&& obj) { obj->insert_field(var,val); },
 		obj_variant
 	);
 }
 
-std::unordered_set<tess::obj_id> tess::expr_value::get_all_referenced_allocations() const
+std::unordered_set<tess::obj_id> tess::get_all_referenced_allocations(expr_value v)
 {
 	std::unordered_set<obj_id> references;
-	get_all_referenced_allocations(references);
+	get_all_referenced_allocations(v, references);
 	return references;
 }
 
-void tess::expr_value::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
+void tess::get_all_referenced_allocations(expr_value v, std::unordered_set<obj_id>& alloc_set)
 {
-	if (!is_object_like())
+	if (!is_object_like(v))
 		return;
-	std::variant<tile_handle, patch_handle, vertex_handle, edge_handle, cluster_handle, lambda_handle> obj_variant = variant_cast(static_cast<expr_val_var>(*this));
+	std::variant<tile_handle, patch_handle, vertex_handle, edge_handle, cluster_handle, lambda_handle> obj_variant = variant_cast(v);
 	std::visit(
 		[&](auto&& obj) { obj->get_all_referenced_allocations(alloc_set); },
 		obj_variant
 	);
 }
 
-std::string tess::expr_value::to_string() const
+std::string tess::to_string(expr_value v)
 {
-	if (std::holds_alternative<tess::number>(*this)) {
+	if (std::holds_alternative<tess::number>(v)) {
 		std::stringstream ss;
-		ss << "#(" << std::get<tess::number>(*this) << ")";
+		ss << "#(" << std::get<tess::number>(v) << ")";
 		return ss.str();
-	} else if (std::holds_alternative<tess::nil_val>(*this)) {
+	} else if (std::holds_alternative<tess::nil_val>(v)) {
 		return "#(nil)";
 	}
 	return "#(some expr value)";
