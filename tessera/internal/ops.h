@@ -164,7 +164,7 @@ namespace tess {
         int index_val_;
         std::vector<stack_machine::item> body_;
 
-        std::vector<stack_machine::item> start_next_item(int index, tess::cluster& ary) const;
+        std::vector<stack_machine::item> start_next_item(int index, tess::cluster::impl_type* ary) const;
 
     public:
         iterate_op(std::string index_var, int index_val, const std::vector<stack_machine::item>& body);

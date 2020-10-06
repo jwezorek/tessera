@@ -11,20 +11,18 @@ namespace {
 
 	template<typename T>
 	T clone_aux(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, T original) {
-
-		typename T::impl_type* original_impl = get_impl(original);
-		auto key = original_impl->get_id();
-		typename T::impl_type* clone_impl = nullptr;
+		auto key = original->get_id();
+		T clone_impl = nullptr;
 
 		if (orginal_to_clone.find(key) != orginal_to_clone.end()) {
-			clone_impl = reinterpret_cast<typename T::impl_type*>(orginal_to_clone[key]);
+			clone_impl = reinterpret_cast<T>(orginal_to_clone[key]);
 		} else {
-			clone_impl = allocator.create_impl<T>();
+			clone_impl = allocator.create_implementation<T>();
 			orginal_to_clone[key] = clone_impl;
-			original_impl->clone_to(allocator, orginal_to_clone, clone_impl);
+			original->clone_to(allocator, orginal_to_clone, clone_impl);
 		}
 
-		return tess::make_tess_obj<T>(clone_impl);
+		return clone_impl;
 	}
 
 }
@@ -53,6 +51,7 @@ bool tess::operator==(nil_val lhs, nil_val rhs) {
 	return true;
 }
 
+
 bool tess::expr_value::is_simple_value() const
 { 
 	return std::holds_alternative<nil_val>(*this) ||
@@ -64,19 +63,19 @@ bool tess::expr_value::is_simple_value() const
 bool tess::expr_value::is_object_like() const
 {
 	// by "object-like" we mean epression values that may have fields.
-	return std::holds_alternative<tile>(*this) ||
-		std::holds_alternative<tile_patch>(*this) ||
-		std::holds_alternative<vertex>(*this) ||
-		std::holds_alternative<edge>(*this) ||
-		std::holds_alternative<cluster>(*this) ||
-		std::holds_alternative<lambda>(*this);
+	return std::holds_alternative<tile::impl_type*>(*this) ||
+		std::holds_alternative<tile_patch::impl_type*>(*this) ||
+		std::holds_alternative<vertex::impl_type*>(*this) ||
+		std::holds_alternative<edge::impl_type*>(*this) ||
+		std::holds_alternative<cluster::impl_type*>(*this) ||
+		std::holds_alternative<lambda::impl_type*>(*this);
 }
 
 bool tess::expr_value::is_array_like() const
 {
 	// by "array-like" we mean epression values that may be dereferenced via the [] operator.
-	return  std::holds_alternative<tile_patch>(*this) ||
-		std::holds_alternative<cluster>(*this);
+	return  std::holds_alternative<tile_patch::impl_type*>(*this) ||
+		std::holds_alternative<cluster::impl_type*>(*this);
 }
 
 bool tess::expr_value::is_nil() const
@@ -102,7 +101,7 @@ tess::expr_value tess::expr_value::clone(allocator& allocator, std::unordered_ma
 	if (is_simple_value())
 		return *this;
 
-	std::variant<tile, tile_patch, vertex, edge, cluster, lambda> obj_variant = variant_cast(*this);
+	std::variant<tile::impl_type*, tile_patch::impl_type*, vertex::impl_type*, edge::impl_type*, cluster::impl_type*, lambda::impl_type*> obj_variant = variant_cast(*this);
 	return std::visit(
 		[&](auto&& obj)->expr_value { return expr_value{ clone_aux(allocator, original_to_clone, obj) }; },
 		obj_variant
@@ -116,10 +115,10 @@ tess::expr_value tess::expr_value::get_ary_item(int index) const
 		throw tess::error("attempted reference to a sub-tile of a value that is not a tile patch.");
 
 	auto value = static_cast<expr_val_var>(*this);
-	std::variant<tile_patch, cluster> ary_variant = variant_cast(value);
+	std::variant<tile_patch::impl_type*, cluster::impl_type*> ary_variant = variant_cast(value);
 
 	return std::visit(
-		[&](auto&& obj)->expr_value { return get_impl(obj)->get_ary_item(index); },
+		[&](auto&& obj)->expr_value { return obj->get_ary_item(index); },
 		ary_variant
 	);
 }
@@ -130,10 +129,10 @@ int tess::expr_value::get_ary_count() const
 	if (!is_array_like())
 		return -1;
 	auto value = static_cast<expr_val_var>(*this);
-	std::variant<tile_patch, cluster> ary_variant = variant_cast(value);
+	std::variant<tile_patch::impl_type*, cluster::impl_type*> ary_variant = variant_cast(value);
 
 	return std::visit(
-		[&](auto&& obj)->int { return get_impl(obj)->get_ary_count(); },
+		[&](auto&& obj)->int { return obj->get_ary_count(); },
 		ary_variant
 	);
 }
@@ -145,10 +144,10 @@ tess::expr_value tess::expr_value::get_field(allocator& allocator, const std::st
 	}
 
 	auto value = static_cast<expr_val_var>(*this);
-	std::variant<tile, tile_patch, vertex, edge, cluster, lambda> obj_variant = variant_cast(value);
+	std::variant<tile::impl_type*, tile_patch::impl_type*, vertex::impl_type*, edge::impl_type*, cluster::impl_type*, lambda::impl_type*> obj_variant = variant_cast(value);
 	
 	return std::visit(
-		[&](auto&& obj)->expr_value { return get_impl(obj)->get_field(allocator, field); },
+		[&](auto&& obj)->expr_value { return obj->get_field(allocator, field); },
 		obj_variant
 	);
 }
@@ -157,9 +156,9 @@ void tess::expr_value::insert_field(const std::string& var, expr_value val) cons
 {
 	if (!is_object_like())
 		return;
-	std::variant<tile, tile_patch, vertex, edge, cluster, lambda> obj_variant = variant_cast(static_cast<expr_val_var>(*this));
+	std::variant<tile::impl_type*, tile_patch::impl_type*, vertex::impl_type*, edge::impl_type*, cluster::impl_type*, lambda::impl_type*> obj_variant = variant_cast(static_cast<expr_val_var>(*this));
 	std::visit(
-		[&](auto&& obj) { get_impl(obj)->insert_field(var,val); },
+		[&](auto&& obj) { obj->insert_field(var,val); },
 		obj_variant
 	);
 }
@@ -175,9 +174,9 @@ void tess::expr_value::get_all_referenced_allocations(std::unordered_set<obj_id>
 {
 	if (!is_object_like())
 		return;
-	std::variant<tile, tile_patch, vertex, edge, cluster, lambda> obj_variant = variant_cast(static_cast<expr_val_var>(*this));
+	std::variant<tile::impl_type*, tile_patch::impl_type*, vertex::impl_type*, edge::impl_type*, cluster::impl_type*, lambda::impl_type*> obj_variant = variant_cast(static_cast<expr_val_var>(*this));
 	std::visit(
-		[&](auto&& obj) { get_impl(obj)->get_all_referenced_allocations(alloc_set); },
+		[&](auto&& obj) { obj->get_all_referenced_allocations(alloc_set); },
 		obj_variant
 	);
 }
@@ -217,3 +216,78 @@ bool tess::operator!=(const expr_value& lhs, const expr_value& rhs)
 {
 	return !(lhs == rhs);
 }
+
+tess::expr_value::expr_value() : expr_val_var(tess::nil_val())
+{
+}
+
+tess::expr_value::expr_value(tile::impl_type* v) : expr_val_var(v)
+{
+}
+
+tess::expr_value::expr_value(const tile::impl_type* v) : expr_val_var(const_cast<tile::impl_type*>(v))
+{
+}
+
+tess::expr_value::expr_value(tile_patch::impl_type* v) : expr_val_var(v)
+{
+}
+
+tess::expr_value::expr_value(const tile_patch::impl_type* v) : expr_val_var(const_cast<tile_patch::impl_type*>(v))
+{
+}
+
+tess::expr_value::expr_value(vertex::impl_type* v) : expr_val_var(v)
+{
+}
+
+tess::expr_value::expr_value(const vertex::impl_type* v) : expr_val_var(const_cast<vertex::impl_type*>(v))
+{
+}
+
+
+tess::expr_value::expr_value(edge::impl_type* v) : expr_val_var(v)
+{
+}
+
+tess::expr_value::expr_value(const edge::impl_type* v) : expr_val_var(const_cast<edge::impl_type*>(v))
+{
+}
+
+tess::expr_value::expr_value(tess::lambda::impl_type* v) : expr_val_var(v)
+{
+}
+
+tess::expr_value::expr_value(const lambda::impl_type* v) : expr_val_var(const_cast<lambda::impl_type*>(v))
+{
+}
+
+tess::expr_value::expr_value(cluster::impl_type* v) : expr_val_var(v)
+{
+}
+
+tess::expr_value::expr_value(const cluster::impl_type* v) : expr_val_var(const_cast<cluster::impl_type*>(v))
+{
+}
+
+tess::expr_value::expr_value(field_ref v) : expr_val_var(v)
+{
+}
+
+tess::expr_value::expr_value(nil_val v) : expr_val_var(v)
+{
+}
+
+tess::expr_value::expr_value(number v) : expr_val_var(v)
+{
+}
+
+tess::expr_value::expr_value(std::string v) : expr_val_var(v)
+{
+}
+
+tess::expr_value::expr_value(bool v) : expr_val_var(v)
+{
+}
+
+

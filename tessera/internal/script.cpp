@@ -28,14 +28,22 @@ namespace {
 		return output;
 	}
 
+
 	tess::result extract_tiles(const tess::expr_value& output) {
 
-		if (std::holds_alternative<tess::tile>(output))
-			return std::vector<tess::tile>{ std::get<tess::tile>(output) };
-		if (!std::holds_alternative<tess::tile_patch>(output))
+		if (std::holds_alternative<tess::tile::impl_type*>(output))
+			return std::vector<tess::tile>{ tess::make_tess_obj<tess::tile>(std::get<tess::tile::impl_type*>(output)) };
+		if (!std::holds_alternative<tess::tile_patch::impl_type*>(output))
 			return { tess::error("tableau does not evaulate to a tile patch.") };
 
-		const auto& tiles = std::get<tess::tile_patch>(output).tiles();
+		const auto& tile_impls = std::get<tess::tile_patch::impl_type*>(output)->tiles();
+		std::vector<tess::tile> tiles( tile_impls.size() );
+		std::transform(tile_impls.begin(), tile_impls.end(), tiles.begin(),
+			[](tess::tile::impl_type* i) {
+				return tess::make_tess_obj<tess::tile>(i);
+			}
+		);
+
 		return { tiles };
 	}
 }

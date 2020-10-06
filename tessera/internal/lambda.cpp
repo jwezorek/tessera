@@ -31,17 +31,7 @@ std::vector<std::string> tess::lambda::dependencies() const
     return impl_->dependencies;
 }
 
-std::vector<std::string> tess::lambda::unfulfilled_dependencies() const
-{
-    std::vector<std::string> depends;
-    const auto& closure = impl_->closure;
-    std::copy_if(impl_->dependencies.begin(), impl_->dependencies.end(), std::back_inserter(depends),
-        [&closure](std::string var) {
-            return !closure.has(var);
-        }
-    );
-    return depends;
-}
+
 
 tess::lambda::impl_type::impl_type(obj_id id, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
     tessera_impl(id), parameters(params), body(bod), dependencies(deps)
@@ -82,6 +72,17 @@ void tess::lambda::impl_type::clone_to(tess::allocator& allocator, std::unordere
     for (const auto& [var, val] : closure) {
         clone->closure.set(var, val.clone(allocator, orginal_to_clone));
     }
+}
+
+std::vector<std::string> tess::lambda::impl_type::unfulfilled_dependencies() const
+{
+    std::vector<std::string> depends;
+    std::copy_if(dependencies.begin(), dependencies.end(), std::back_inserter(depends),
+        [&](std::string var) {
+            return !closure.has(var);
+        }
+    );
+    return depends;
 }
 
 bool tess::operator==(lambda l, lambda r)

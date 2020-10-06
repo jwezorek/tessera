@@ -8,20 +8,20 @@
 
 namespace {
 
-	tess::cluster edges_as_cluster(tess::allocator& allocator,  const std::vector<tess::edge::impl_type*>& edges) {
+	tess::cluster::impl_type* edges_as_cluster(tess::allocator& allocator,  const std::vector<tess::edge::impl_type*>& edges) {
 		std::vector<tess::expr_value> cluster_contents(edges.size());
 		std::transform(edges.begin(), edges.end(), cluster_contents.begin(),
-			[](tess::edge::impl_type* e)->tess::expr_value { return { tess::make_tess_obj<tess::edge>(e) }; }
+			[](tess::edge::impl_type* e)->tess::expr_value { return tess::expr_value(e); }
 		);
-		return allocator.create<tess::cluster>( cluster_contents ); 
+		return allocator.create_implementation<tess::cluster::impl_type*>( cluster_contents );
 	}
 
 	template<typename T>
-	typename T::impl_type* perform_clone(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, typename T::impl_type* impl)
+	T* perform_clone(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, T* impl)
 	{
-		tess::expr_value wrapper = { tess::make_tess_obj<T>(impl) };
-		auto wrapper_clone = std::get<T>(wrapper.clone(allocator, orginal_to_clone));
-		return  tess::get_impl(wrapper_clone);
+		tess::expr_value wrapper = tess::expr_value(impl);
+		auto unwrapped_clone = std::get<T*>(wrapper.clone(allocator, orginal_to_clone));
+		return unwrapped_clone;
 	}
 }
 
@@ -40,8 +40,8 @@ tess::tile::impl_type::impl_type(obj_id id, tess::allocator* allocator, const st
 	edges_.resize(n);
 
 	for (int i = 0; i < n; ++i) {
-		vertices_[i] = allocator->create_impl<tess::vertex>(this, i, vertex_locations[i]);
-		edges_[i] = allocator->create_impl<tess::edge>(this, i, i, (i + 1) % n);
+		vertices_[i] = allocator->create_implementation<vertex::impl_type*>(this, i, vertex_locations[i]);
+		edges_[i] = allocator->create_implementation<edge::impl_type*>(this, i, i, (i + 1) % n);
 	}
 }
 
@@ -93,17 +93,17 @@ void tess::tile::impl_type::get_all_referenced_allocations(std::unordered_set<ob
 
 void tess::tile::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile::impl_type* clone) const
 {
-	for (const auto& v : vertices_) {
-		auto v_clone = std::get<vertex>(expr_value{ make_tess_obj<vertex>(v) }.clone(allocator, orginal_to_clone));
-		clone->vertices_.push_back(tess::get_impl(v_clone));
+	for (const auto* v : vertices_) {
+		auto v_clone = std::get<vertex::impl_type*>(expr_value( v ).clone(allocator, orginal_to_clone));
+		clone->vertices_.push_back(v_clone);
 	}
 	for (const auto& e : edges_) {
-		auto e_clone = std::get<edge>(expr_value{ make_tess_obj<edge>(e) }.clone(allocator, orginal_to_clone));
-		clone->edges_.push_back(tess::get_impl(e_clone));
+		auto e_clone = std::get<edge::impl_type*>(expr_value( e ).clone(allocator, orginal_to_clone));
+		clone->edges_.push_back(e_clone);
 	}
 
 	if (parent_ != nullptr) {
-		clone->parent_ = perform_clone<tile_patch>(allocator, orginal_to_clone, parent_);
+		clone->parent_ = perform_clone<tile_patch::impl_type>(allocator, orginal_to_clone, parent_);
 	} else {
 		clone->parent_ = nullptr;
 	}
@@ -118,22 +118,22 @@ bool tess::tile::impl_type::is_detached() const
 	return parent_ == nullptr;
 }
 
-tess::tile tess::tile::impl_type::clone_detached(tess::allocator& a) const
+tess::tile::impl_type* tess::tile::impl_type::clone_detached(tess::allocator& a) const
 {
-	auto this_tile = tess::make_tess_obj<tess::tile>(this);
 	if (is_detached())
-		return tess::clone(a, this_tile);
+		return tess::clone(a, this);
 	
 	// clone this tile such that its parent is only shallow copied.
-	auto tile_value = expr_value{ this_tile };
+	auto tile_value = expr_value( this );
 	std::unordered_map<obj_id, void*> original_to_clone;
 	auto this_patch_key =  parent_->get_id();
 	original_to_clone[this_patch_key] = parent_;
 	expr_value clone_expr_value = tile_value.clone(a, original_to_clone);
 
 	//now return the clone with the parent detached.
-	auto clone_tile = std::get<tess::tile>(clone_expr_value);
-	get_impl(clone_tile)->detach();
+	auto clone_tile = std::get<tess::tile::impl_type*>(clone_expr_value);
+	clone_tile->detach();
+
 	return clone_tile;
 }
 
@@ -165,15 +165,15 @@ const tess::tile::impl_type* tess::tile::impl_type::get_adjacent_tile(int edge_i
 }
 
 
-const tess::edge::impl_type* tess::tile::impl_type::get_edge_on(tess::allocator& a, const edge& edge) const
+const tess::edge::impl_type* tess::tile::impl_type::get_edge_on(tess::allocator& a,  edge::impl_type* edge) const
 {
 	if (!is_detached()) {
-		return tess::get_impl<tess::edge>(std::get<tess::edge>(parent_->get_on(a, edge)));
+		return std::get<tess::edge::impl_type*>(parent_->get_on(a, edge));
 	}
 
 	//TODO: use an rtree here.
-	tess::point u = get_impl(edge.u())->pos();
-	tess::point v = get_impl(edge.v())->pos();
+	tess::point u = edge->u()->pos();
+	tess::point v = edge->v()->pos();
 
 	static auto eps = static_cast<tess::number>(std::numeric_limits<float>::epsilon());
 
@@ -188,28 +188,28 @@ const tess::edge::impl_type* tess::tile::impl_type::get_edge_on(tess::allocator&
 	return nullptr;;
 }
 
-tess::expr_value tess::tile::impl_type::get_on(tess::allocator& a, const std::variant<tess::edge, tess::cluster>& var) const
+tess::expr_value tess::tile::impl_type::get_on(tess::allocator& a,  std::variant<tess::edge::impl_type*, tess::cluster::impl_type*>& var) const
 {
 	return std::visit(
 		overloaded{
-			[&](const tess::edge& e) -> expr_value {
+			[&]( tess::edge::impl_type* e) -> expr_value {
 				auto maybe_edge = get_edge_on(a,e);
 				if (maybe_edge) {
-					return { tess::make_tess_obj<edge>(maybe_edge) };
+					return expr_value( maybe_edge );
 				} else {
 					return {};
 				}
 			},
-			[&](const tess::cluster& c) -> expr_value {
-				const auto& items = c.items();
-				std::vector<tess::expr_value> on_edges(c.count());
+			[&]( tess::cluster::impl_type* c) -> expr_value {
+				const auto& items = c->items();
+				std::vector<tess::expr_value> on_edges( items.size() );
 				std::transform(items.begin(), items.end(), on_edges.begin(),
 					[&](const expr_value& v) -> expr_value {
-						std::variant<tess::edge, tess::cluster> var = variant_cast(v);
+						std::variant<tess::edge::impl_type*, tess::cluster::impl_type*> var = variant_cast(v);
 						return this->get_on(a, var);
 					}
 				);
-				return { a.create<tess::cluster>(on_edges) };
+				return expr_value(a.create_implementation<tess::cluster::impl_type*>(on_edges) );
 			}
 		},
 		var
@@ -221,13 +221,13 @@ tess::expr_value tess::tile::impl_type::get_field(const std::string& field) cons
 	if (fields_.find(field) != fields_.end())
 		return fields_.at(field);
 
-	return { nil_val() };
+	return expr_value(nil_val());
 }
 
 tess::expr_value tess::tile::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
 	if (field == parser::keyword(parser::kw::edges)) {
-		return { edges_as_cluster(allocator, edges_) };
+		return expr_value(edges_as_cluster(allocator, edges_) );
 	}
 
 	auto val = get_field(field);
@@ -249,16 +249,15 @@ void tess::tile::impl_type::apply(const matrix& mat)
 	}
 }
 
-tess::tile tess::tile::impl_type::flip(allocator& a) const
+tess::tile::impl_type* tess::tile::impl_type::flip(allocator& a) const
 {
-	tess::tile flippee;
+	tess::tile::impl_type* flippee;
 	if (is_detached()) {
-		auto this_tile = tess::make_tess_obj<tess::tile>(this);
-		flippee = tess::clone(a, this_tile);
+		flippee = tess::clone(a, this);
 	} else {
 		flippee = clone_detached(a);
 	}
-	get_impl(flippee)->flip();
+	flippee->flip();
 	return flippee;
 }
 
@@ -325,35 +324,33 @@ tess::vertex::impl_type* tess::edge::impl_type::v()
 	return parent_->vertices().at(v_);
 }
 
-tess::edge tess::edge::impl_type::next_edge() const
+tess::edge::impl_type* tess::edge::impl_type::next_edge() const
 {
-	auto next = v()->out_edge();
-	return tess::make_tess_obj<edge>(next);
+	return v()->out_edge();
 }
 
-tess::edge tess::edge::impl_type::prev_edge() const
+tess::edge::impl_type* tess::edge::impl_type::prev_edge() const
 {
-	auto prev = u()->in_edge();
-	return tess::make_tess_obj<edge>(prev);
+	return u()->in_edge();
 }
 
 tess::expr_value tess::edge::impl_type::get_field(allocator& allocator, const std::string& field) const
 {
 	//TODO: do something about the raw strings here
 	if (field == "next") {
-		return { next_edge() };
+		return expr_value(next_edge());
 	}
 
 	if (field == "prev") {
-		return { next_edge() };
+		return expr_value(prev_edge() );
 	}
 
 	if (field == "u") {
-		return { u() };
+		return expr_value( u() );
 	}
 
 	if (field == "v") {
-		return { v() };
+		return expr_value( v() );
 	}
 
 	return get_field(field);
@@ -364,7 +361,7 @@ tess::expr_value tess::edge::impl_type::get_field(const std::string& field) cons
 	if (fields_.find(field) != fields_.end())
 		return fields_.at(field);
 
-	return { nil_val() };
+	return expr_value(nil_val());
 }
 
 void tess::edge::impl_type::insert_field(const std::string& var, const expr_value& val)
@@ -433,7 +430,7 @@ void  tess::edge::impl_type::clone_to(tess::allocator& allocator, std::unordered
 	clone->index_ = index_;
 	clone->u_ = u_;
 	clone->v_ = v_;
-	clone->parent_ = perform_clone<tile>(allocator, orginal_to_clone, parent_);
+	clone->parent_ = perform_clone<tile::impl_type>(allocator, orginal_to_clone, parent_);
 
 	for (const auto& [var, val] : fields_) {
 		clone->fields_[var] = val.clone(allocator, orginal_to_clone);
@@ -494,7 +491,7 @@ void tess::vertex::impl_type::clone_to(tess::allocator& allocator, std::unordere
 {
 	clone->index_ = index_;
 	clone->location_ = location_;
-	clone->parent_ = perform_clone<tile>(allocator, orginal_to_clone, parent_);
+	clone->parent_ = perform_clone<tile::impl_type>(allocator, orginal_to_clone, parent_);
 };
 
 tess::tile_patch::impl_type* tess::vertex::impl_type::grandparent() const

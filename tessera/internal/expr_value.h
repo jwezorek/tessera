@@ -40,11 +40,30 @@ namespace tess {
 
 	bool operator==(field_ref lhs, field_ref rhs);
 
-	using expr_val_var = std::variant<nil_val, tile, tile_patch, number, std::string, bool, edge, vertex, lambda, cluster, field_ref>;
+	using expr_val_var = std::variant<tile::impl_type*, tile_patch::impl_type*, edge::impl_type*, vertex::impl_type*, lambda::impl_type*, cluster::impl_type*, field_ref, nil_val, number, std::string, bool>;
 
 	class expr_value : public expr_val_var, public tessera_impl
 	{
 	public:
+		expr_value();
+		explicit expr_value(tile::impl_type* v);
+		explicit expr_value(const tile::impl_type* v);
+		explicit expr_value(tile_patch::impl_type* v);
+		explicit expr_value(const tile_patch::impl_type* v);
+		explicit expr_value(edge::impl_type* v);
+		explicit expr_value(const edge::impl_type* v);
+		explicit expr_value(vertex::impl_type*);
+		explicit expr_value(const vertex::impl_type*);
+		explicit expr_value(lambda::impl_type*);
+		explicit expr_value(const lambda::impl_type*);
+		explicit expr_value(cluster::impl_type*);
+		explicit expr_value(const cluster::impl_type*);
+		explicit expr_value(field_ref);
+		explicit expr_value(nil_val);
+		explicit expr_value(number);
+		explicit expr_value(std::string);
+		explicit expr_value(bool);
+
 		bool is_simple_value() const;
 		bool is_object_like() const;
 		bool is_array_like() const;
@@ -68,9 +87,15 @@ namespace tess {
 	}
 
 	template<typename T>
-	T clone(allocator& a, const T& tess_obj) {
-		tess::expr_value val{ tess_obj };
-		return std::get<T>(val.clone(a));
+	T* clone(allocator& a, const T* tess_impl) {
+		tess::expr_value val{ const_cast<T*>(tess_impl) };
+		return std::get<T*>(val.clone(a));
+	}
+
+	template<typename T>
+	T* clone(allocator& a, T* tess_impl) {
+		tess::expr_value val{ tess_impl };
+		return std::get<T*>(val.clone(a));
 	}
 	
 }
