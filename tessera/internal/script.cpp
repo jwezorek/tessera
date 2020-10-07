@@ -1,4 +1,6 @@
-#include "../include/tessera/script.h"
+#include "tessera/script.h"
+#include "tessera/tile_patch.h"
+#include "tile_patch_impl.h"
 #include "script_impl.h"
 #include "function_def.h"
 #include "lambda.h"

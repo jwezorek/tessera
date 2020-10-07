@@ -2,6 +2,7 @@
 
 #include "tessera_impl.h"
 #include "tessera/tile.h"
+#include "cluster.h"
 #include "tessera/tile_patch.h"
 #include "geometry.h"
 #include "expr_value.h"

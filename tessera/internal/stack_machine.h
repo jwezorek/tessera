@@ -1,6 +1,7 @@
 #pragma once
 
 #include "expr_value.h"
+#include "tessera/error.h"
 #include "evaluation_context.h"
 #include "tessera_impl.h"
 #include <vector>

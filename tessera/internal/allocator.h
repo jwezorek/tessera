@@ -4,14 +4,6 @@
 #include <memory>
 #include <tuple>
 #include "expr_value.h"
-#include "../include/tessera/tile.h"
-#include "../include/tessera/tile_patch.h"
-#include "tile_impl.h"
-#include "tile_patch_impl.h"
-#include "lambda.h"
-#include "lambda_impl.h"
-#include "cluster.h"
-#include "tessera_impl.h"
 
 namespace tess {
 

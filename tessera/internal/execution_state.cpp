@@ -1,4 +1,7 @@
 #include "execution_state.h"
+#include "tile_impl.h"
+#include "tile_patch_impl.h"
+#include "lambda_impl.h"
 #include "tessera/error.h"
 #include "expr_value.h"
 #include "allocator.h"

@@ -1,10 +1,6 @@
 #pragma once
-#include "../include/tessera/tile.h"
-#include "../include/tessera/tile_patch.h"
-#include "../include/tessera/error.h"
-#include "cluster.h"
+
 #include "tessera_impl.h"
-#include "lambda.h"
 #include "number.h"
 #include <variant>
 #include <memory>
@@ -12,6 +8,15 @@
 #include <unordered_map>
 
 namespace tess {
+
+	namespace detail {
+		class vertex_impl;
+		class edge_impl;
+		class cluster_impl;
+		class tile_impl;
+		class patch_impl;
+		class lambda_impl;
+	}
 
 	class allocator;
 	class execution_state;
@@ -43,7 +48,7 @@ namespace tess {
 	using vertex_ptr = detail::vertex_impl*;
 	using const_vertex_ptr = const detail::vertex_impl*;
 	using edge_ptr = detail::edge_impl*;
-	using const_edge_ptr = const  detail::edge_impl*;
+	using const_edge_ptr = const detail::edge_impl*;
 	using cluster_ptr = detail::cluster_impl*;
 	using const_cluster_ptr = const detail::cluster_impl*;;
 	using tile_ptr = detail::tile_impl*;

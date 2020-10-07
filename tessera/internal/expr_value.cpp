@@ -2,6 +2,7 @@
 #include "expr_value.h"
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
+#include "lambda_impl.h"
 #include "allocator.h"
 #include "execution_state.h"
 #include "tessera_impl.h"
