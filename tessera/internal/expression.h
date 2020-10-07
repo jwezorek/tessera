@@ -2,6 +2,7 @@
 
 #include "stack_machine.h"
 #include "parser/keywords.h"
+#include "expr_value.h"
 #include <memory>
 #include <vector>
 #include <tuple>
@@ -17,7 +18,6 @@ namespace tess {
     using const_expr_ptr = std::shared_ptr<const expression>;
 
     class evaluation_context;
-    class expr_value;
 
     using expr_visit_func = std::function<void(const_expr_ptr)>;
 

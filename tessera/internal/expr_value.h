@@ -28,22 +28,8 @@ namespace tess {
 
 	bool operator==(nil_val lhs, nil_val rhs);
 
-	class expr_value;
-	class field_ref
-	{
-		friend class tessera_impl;
-		friend bool operator==(field_ref lhs, field_ref rhs);
-	public:
-		class impl_type;
-		field_ref() {}
-		field_ref(const expr_value& obj, std::string field);
-		void set(const expr_value& val);
-
-	protected:
-		std::shared_ptr<impl_type> impl_;
-	};
-
-	bool operator==(field_ref lhs, field_ref rhs);
+	class field_ref_impl;
+	using field_ref_ptr = std::shared_ptr<field_ref_impl>;
 
 	using vertex_ptr = detail::vertex_impl*;
 	using const_vertex_ptr = const detail::vertex_impl*;
@@ -58,7 +44,7 @@ namespace tess {
 	using lambda_ptr = detail::lambda_impl*;
 	using const_lambda_ptr = const detail::lambda_impl*;
 
-	using expr_val_var = std::variant<tile_ptr, patch_ptr, edge_ptr, vertex_ptr, lambda_ptr, cluster_ptr, field_ref, nil_val, number, std::string, bool>;
+	using expr_val_var = std::variant<tile_ptr, patch_ptr, edge_ptr, vertex_ptr, lambda_ptr, cluster_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
 
 	class expr_value : public expr_val_var
 	{
@@ -76,7 +62,7 @@ namespace tess {
 		explicit expr_value(const_lambda_ptr);
 		explicit expr_value(cluster_ptr);
 		explicit expr_value(const_cluster_ptr);
-		explicit expr_value(field_ref);
+		explicit expr_value(field_ref_ptr);
 		explicit expr_value(nil_val);
 		explicit expr_value(number);
 		explicit expr_value(std::string);

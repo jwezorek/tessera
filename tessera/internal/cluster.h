@@ -1,11 +1,10 @@
 #pragma once
 
+#include "expr_value.h"
 #include <vector>
 #include <memory>
 
 namespace tess {
-
-    class expr_value;
 
     namespace detail {
         class cluster_impl;

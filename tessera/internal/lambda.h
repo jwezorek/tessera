@@ -1,22 +1,19 @@
 #pragma once
 
+#include "expr_value.h"
 #include <string>
 #include <variant>
 #include <vector>
 #include <memory>
+#include "stack_machine.h"
 
 namespace tess{
     
     class scope_frame;
-    class expr_value;
     class function_def;
     class expression;
     class execution_state;
     class scope_frame;
-
-    namespace stack_machine {
-        class item;
-    }
 
     namespace detail {
         class lambda_impl;

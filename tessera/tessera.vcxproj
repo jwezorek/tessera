@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="internal\field_ref.cpp" />
     <ClCompile Include="internal\geometry.cpp" />
     <ClCompile Include="internal\parser\skipper.cpp" />
     <ClCompile Include="internal\parser\with_parser.cpp" />
@@ -63,6 +64,7 @@
     <ClInclude Include="include\tessera\script.h" />
     <ClInclude Include="include\tessera\tile.h" />
     <ClInclude Include="include\tessera\tile_patch.h" />
+    <ClInclude Include="internal\field_ref.h" />
     <ClInclude Include="internal\geometry.h" />
     <ClInclude Include="internal\parser\skipper.h" />
     <ClInclude Include="internal\parser\with_parser.h" />

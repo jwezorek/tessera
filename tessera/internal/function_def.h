@@ -1,5 +1,6 @@
 #pragma once
 
+#include "expr_value.h"
 #include "expression.h"
 #include <string>
 #include <vector>
@@ -8,7 +9,6 @@
 
 namespace tess {
 
-    class expr_value;
     class evaluation_context;
     class tile_def;
     class patch_def;

@@ -8,6 +8,7 @@
 #include "lay_expr.h"
 #include "tile_impl.h"
 #include "cluster.h"
+#include "field_ref.h"
 #include "tile_patch_impl.h"
 #include "tessera/tile_patch.h"
 #include <sstream>
@@ -350,7 +351,7 @@ tess::stack_machine::item tess::get_field_op::execute(const std::vector<stack_ma
         return { tess::get_field(val, contexts.top().allocator(), field_) };
     }
     else {
-        return { expr_value{field_ref(val, field_)} };
+        return { expr_value{ std::make_shared<field_ref_impl>(val, field_)} };
     }
 }
 
@@ -587,19 +588,19 @@ void tess::set_field_op::execute(const std::vector<stack_machine::item>& operand
 {
     int num_fields = static_cast<int>(operands.size() - 1);
     auto value = std::get<expr_value>(operands.back());
-    std::vector<tess::field_ref> field_refs(num_fields);
+    std::vector<tess::field_ref_ptr> field_refs(num_fields);
     std::transform(operands.begin(), operands.begin() + num_fields, field_refs.begin(),
         [](const auto& item) { 
-            return std::get<field_ref>(std::get<expr_value>(item));
+            return std::get<field_ref_ptr>(std::get<expr_value>(item));
         }
     );
 
     if (num_fields == 1) {
-        field_refs[0].set(value);
+        field_refs[0]->set(value);
     } else {
         int i = 0;
         for (auto& field_ref : field_refs) {
-            field_ref.set(tess::get_ary_item(value, i++));
+            field_ref->set(tess::get_ary_item(value, i++));
         }
     }
 }

@@ -127,6 +127,9 @@
     <ClCompile Include="internal\parser\skipper.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="internal\field_ref.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="internal\expression.h">
@@ -254,6 +257,9 @@
     </ClInclude>
     <ClInclude Include="internal\parser\skipper.h">
       <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\field_ref.h">
+      <Filter>Source Files\impl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

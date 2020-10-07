@@ -6,6 +6,7 @@
 #include "allocator.h"
 #include "execution_state.h"
 #include "tessera_impl.h"
+#include "field_ref.h"
 #include <sstream>
 
 namespace {
@@ -26,22 +27,6 @@ namespace {
 		return clone_impl;
 	}
 
-}
-
-class tess::field_ref::impl_type {
-public:
-	expr_value obj;
-	std::string field;
-	impl_type(const expr_value& o, std::string f) : obj(o), field(f)
-	{}
-};
-
-tess::field_ref::field_ref(const expr_value& obj, std::string field) : impl_(std::make_shared< field_ref::impl_type>(obj, field))
-{}
-
-void tess::field_ref::set(const expr_value& val)
-{
-	tess::insert_field(impl_->obj, impl_->field, val);
 }
 
 tess::nil_val::nil_val()
@@ -88,7 +73,7 @@ tess::expr_value tess::clone_value( allocator& allocator, expr_value v)
 	if (is_simple_value(v))
 		return v;
 
-	if (std::holds_alternative<field_ref>(v))
+	if (std::holds_alternative<field_ref_ptr>(v))
 		throw tess::error("attempted clone a field ref");
 	
 	std::unordered_map<obj_id, void*> original_to_clone;
@@ -190,11 +175,6 @@ std::string tess::to_string(expr_value v)
 	return "#(some expr value)";
 }
 
-bool tess::operator==(tess::field_ref lhs, tess::field_ref rhs)
-{
-	return lhs.impl_ == rhs.impl_;
-}
-
 bool tess::operator==(const expr_value& lhs, const expr_value& rhs)
 {
 	return std::visit(
@@ -267,7 +247,7 @@ tess::expr_value::expr_value(const_cluster_ptr v) : expr_val_var(const_cast<clus
 {
 }
 
-tess::expr_value::expr_value(field_ref v) : expr_val_var(v)
+tess::expr_value::expr_value(field_ref_ptr v) : expr_val_var(v)
 {
 }
 
