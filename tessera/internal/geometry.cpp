@@ -177,9 +177,6 @@ namespace {
 		return vertices_to_polygon(ordered_vertices);
 	}
 
-	geom::polygon tile_to_polygon(const tess::tile& tile) {
-		return tile_to_polygon(get_impl(tile));
-	}
 
 	std::vector<tess::const_tile_ptr> topological_sort_tiles(tess::const_patch_ptr patch) {
 		std::vector<tess::const_tile_ptr> tiles;
@@ -359,12 +356,6 @@ tess::edge_location_table::edge_location_table(number eps) :
 {
 }
 
-void tess::edge_location_table::insert(const tess::edge& edge)
-{
-	geometry::segment_rtree_value pair{ edge_to_seg(tess::get_impl(edge)), tess::get_impl(edge) };
-	impl_.insert(pair);
-};
-
 void tess::edge_location_table::insert(tess::const_edge_ptr edge)
 {
 	geometry::segment_rtree_value pair{ edge_to_seg(edge), edge };
@@ -383,11 +374,6 @@ std::vector<tess::const_edge_ptr> tess::edge_location_table::get(tess::point a, 
 	}
 
 	return output;
-}
-
-std::vector<tess::const_edge_ptr> tess::edge_location_table::get(const tess::edge& edge)
-{
-	return get(tess::get_impl(edge.u())->pos(), tess::get_impl(edge.v())->pos());
 }
 
 std::vector<tess::const_edge_ptr>  tess::edge_location_table::get(tess::const_edge_ptr edge)

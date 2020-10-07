@@ -85,7 +85,4 @@ std::vector<std::string> tess::lambda::impl_type::unfulfilled_dependencies() con
     return depends;
 }
 
-bool tess::operator==(lambda l, lambda r)
-{
-    return tess::get_impl(l) == tess::get_impl(r);
-}
+

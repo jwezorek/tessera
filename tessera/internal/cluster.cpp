@@ -12,7 +12,3 @@ int tess::cluster::count() const
     return impl_->get_ary_count();
 }
 
-bool tess::operator==(cluster l, cluster r)
-{
-    return tess::get_impl(l) == tess::get_impl(r);
-}
