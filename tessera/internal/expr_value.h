@@ -40,18 +40,18 @@ namespace tess {
 
 	bool operator==(field_ref lhs, field_ref rhs);
 
-	using vertex_ptr = vertex::impl_type*;
-	using const_vertex_ptr = const vertex::impl_type*;
-	using edge_ptr = edge::impl_type*;
-	using const_edge_ptr = const edge::impl_type*;
-	using cluster_ptr = cluster::impl_type*;
-	using const_cluster_ptr = const cluster::impl_type*;
-	using tile_ptr = tile::impl_type*;
-	using const_tile_ptr = const tile::impl_type*;
-	using patch_ptr = tile_patch::impl_type*;
-	using const_patch_ptr = const tile_patch::impl_type*;
-	using lambda_ptr = lambda::impl_type*;
-	using const_lambda_ptr = const lambda::impl_type*;
+	using vertex_ptr = detail::vertex_impl*;
+	using const_vertex_ptr = const detail::vertex_impl*;
+	using edge_ptr = detail::edge_impl*;
+	using const_edge_ptr = const  detail::edge_impl*;
+	using cluster_ptr = detail::cluster_impl*;
+	using const_cluster_ptr = const detail::cluster_impl*;;
+	using tile_ptr = detail::tile_impl*;
+	using const_tile_ptr = const detail::tile_impl*;
+	using patch_ptr = detail::patch_impl*;
+	using const_patch_ptr = const detail::patch_impl*;
+	using lambda_ptr = detail::lambda_impl*;
+	using const_lambda_ptr = const detail::lambda_impl*;
 
 	using expr_val_var = std::variant<tile_ptr, patch_ptr, edge_ptr, vertex_ptr, lambda_ptr, cluster_ptr, field_ref, nil_val, number, std::string, bool>;
 

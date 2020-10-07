@@ -18,6 +18,10 @@ namespace tess{
         class item;
     }
 
+    namespace detail {
+        class lambda_impl;
+    }
+
     class lambda {
             friend class tessera_impl;
         public: 
@@ -27,12 +31,11 @@ namespace tess{
             const scope_frame& closure() const;
             std::vector<stack_machine::item> body() const;
             std::vector<std::string> dependencies() const;
-            class impl_type;
+            using impl_type = detail::lambda_impl;
 
         private:
 
             impl_type* impl_;
     };
 
-    bool operator==(lambda l, lambda r);
 }

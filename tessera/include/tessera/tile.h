@@ -28,6 +28,10 @@ namespace tess {
 					return std::nullopt;
 			}
 		};
+
+		class vertex_impl;
+		class edge_impl;
+		class tile_impl;
 	}
 
 	class edge;
@@ -39,7 +43,7 @@ namespace tess {
 		property_value get_property_variant(const std::string& prop) const;
 		edge out_edge() const;
 		edge in_edge() const;
-		class impl_type;
+		using impl_type = detail::vertex_impl;
 	private:
 		impl_type* impl_;
 	};
@@ -50,7 +54,7 @@ namespace tess {
 		vertex u() const;
 		vertex v() const; 
 		property_value get_property_variant(const std::string& prop) const;
-		class impl_type;
+		using impl_type = detail::edge_impl;
 	private:
 		impl_type* impl_;
 	};
@@ -61,13 +65,9 @@ namespace tess {
 		std::vector<vertex> vertices() const;
 		std::vector<edge> edges() const;
 		property_value get_property_variant(const std::string& prop) const;
-		class impl_type;
+		using impl_type = detail::tile_impl;
 	private:
 		impl_type* impl_;
 	};
-
-	bool operator==(tile, tile);
-	bool operator==(edge, edge);
-	bool operator==(vertex, vertex);
 
 }

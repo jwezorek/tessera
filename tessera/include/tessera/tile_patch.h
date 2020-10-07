@@ -7,6 +7,10 @@
 
 namespace tess {
 
+	namespace detail {
+		class patch_impl;
+	}
+
 	class tile_patch : public detail::property_container<tile_patch>
 	{
 		friend class tessera_impl;
@@ -14,10 +18,8 @@ namespace tess {
 		std::vector<tile> tiles() const;
 		int count() const;
 		property_value get_property_variant(const std::string& prop) const;
-		class impl_type;
+		using impl_type = detail::patch_impl;
 	private:
 		impl_type* impl_;
 	};
-
-	bool operator==(tile_patch l, tile_patch r);
 }

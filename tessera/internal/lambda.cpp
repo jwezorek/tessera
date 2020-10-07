@@ -33,17 +33,17 @@ std::vector<std::string> tess::lambda::dependencies() const
 
 
 
-tess::lambda::impl_type::impl_type(obj_id id, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
+tess::detail::lambda_impl::lambda_impl(obj_id id, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
     tessera_impl(id), parameters(params), body(bod), dependencies(deps)
 {
 }
 
-    void tess::lambda::impl_type::insert_field(const std::string& var, const expr_value& val)
+void tess::detail::lambda_impl::insert_field(const std::string& var, const expr_value& val)
 {
     closure.set(var, val);
 }
 
-tess::expr_value tess::lambda::impl_type::get_field(allocator& allocator, const std::string& field) const
+tess::expr_value tess::detail::lambda_impl::get_field(allocator& allocator, const std::string& field) const
 {
     auto maybe_value = closure.get(field);
     if (maybe_value.has_value())
@@ -52,7 +52,7 @@ tess::expr_value tess::lambda::impl_type::get_field(allocator& allocator, const 
         throw tess::error("referenced unknown lambda closure item: " + field);
 }
 
-void tess::lambda::impl_type::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
+void tess::detail::lambda_impl::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
 {
     auto key = this->get_id();
     if (alloc_set.find(key) != alloc_set.end())
@@ -63,7 +63,7 @@ void tess::lambda::impl_type::get_all_referenced_allocations(std::unordered_set<
         tess::get_all_referenced_allocations(val, alloc_set);
 }
 
-void tess::lambda::impl_type::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, lambda_ptr clone) const
+void tess::detail::lambda_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, lambda_ptr clone) const
 {
     clone->parameters = parameters;
     clone->dependencies = dependencies;
@@ -74,7 +74,7 @@ void tess::lambda::impl_type::clone_to(tess::allocator& allocator, std::unordere
     }
 }
 
-std::vector<std::string> tess::lambda::impl_type::unfulfilled_dependencies() const
+std::vector<std::string> tess::detail::lambda_impl::unfulfilled_dependencies() const
 {
     std::vector<std::string> depends;
     std::copy_if(dependencies.begin(), dependencies.end(), std::back_inserter(depends),
