@@ -1,6 +1,6 @@
 #include "cluster.h"
 #include "tile_patch_impl.h"
-#include "expr_value.h"
+#include "value.h"
 
 const std::vector<tess::expr_value>& tess::cluster::items() const
 {

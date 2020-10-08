@@ -3,7 +3,7 @@
 #include "tile_patch_impl.h"
 #include "lambda_impl.h"
 #include "tessera/error.h"
-#include "expr_value.h"
+#include "value.h"
 #include "allocator.h"
 #include "stack_machine.h"
 #include <algorithm>

@@ -34,9 +34,6 @@
     <ClCompile Include="internal\parser\basic_expr_parser.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
-    <ClCompile Include="internal\expr_value.cpp">
-      <Filter>Source Files\impl</Filter>
-    </ClCompile>
     <ClCompile Include="internal\tile.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
@@ -130,6 +127,9 @@
     <ClCompile Include="internal\field_ref.cpp">
       <Filter>Source Files\impl</Filter>
     </ClCompile>
+    <ClCompile Include="internal\value.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="internal\expression.h">
@@ -155,9 +155,6 @@
     </ClInclude>
     <ClInclude Include="internal\parser\basic_expr_parser.h">
       <Filter>Source Files\parser</Filter>
-    </ClInclude>
-    <ClInclude Include="internal\expr_value.h">
-      <Filter>Source Files\impl</Filter>
     </ClInclude>
     <ClInclude Include="include\tessera\tile.h">
       <Filter>Source Files\impl</Filter>
@@ -259,6 +256,9 @@
       <Filter>Source Files\parser</Filter>
     </ClInclude>
     <ClInclude Include="internal\field_ref.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\value.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
   </ItemGroup>

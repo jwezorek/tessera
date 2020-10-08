@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stack_machine.h"
-#include "expr_value.h"
+#include "value.h"
 #include "tile_patch_impl.h"
 
 namespace tess {

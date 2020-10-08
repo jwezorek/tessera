@@ -3,7 +3,7 @@
 #include "tessera/tile.h"
 #include "tessera_impl.h"
 #include "tile_patch_impl.h"
-#include "expr_value.h"
+#include "value.h"
 #include "number.h"
 #include "geometry.h"
 #include <string>
