@@ -28,16 +28,19 @@ namespace {
         return frame;
     }
 
-    using edge_parent_type = std::variant<tess::tile_ptr, tess::patch_ptr>;
+    //TODO
+    using edge_parent_type = std::variant<tess::tile::impl_type*, tess::tile_patch::impl_type*>;
 
+    //TODO
     edge_parent_type parent_of_edge(const tess::edge::impl_type& e) {
         auto tile = e.parent();
         if (!tile->has_parent())
-            return tile;
+            return const_cast<tess::tile::impl_type*>(tile);
         else
-            return tile->parent();
+            return const_cast<tess::tile_patch::impl_type*>(tile->parent());
     }
 
+    //TODO
     void apply_edge_matrix(const edge_parent_type& ep, const tess::matrix& mat) {
         return std::visit([&mat](auto ptr) { ptr->apply(mat); }, ep);
     }
@@ -122,6 +125,7 @@ tess::make_lambda::make_lambda(const std::vector<std::string>& parameters, const
 {
 }
 
+//TODO
 tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     auto& ctxt = contexts.top();
@@ -131,7 +135,7 @@ tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_mac
 
         for (auto dependency : dependencies_)
             if (ctxt.has(dependency))
-                lambda->insert_field(dependency, ctxt.get(dependency));
+                const_cast<lambda::impl_type*>(lambda)->insert_field(dependency, ctxt.get(dependency));
 
         return  make_expr_val_item(lambda) ;
     }  catch (tess::error e) {
@@ -515,6 +519,7 @@ tess::iterate_op::iterate_op(std::string index_var, int index_val, const std::ve
 {
 }
 
+//TODO: ???
 std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     auto& alloc = contexts.top().allocator();
@@ -530,7 +535,7 @@ std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vect
     // this is the only place where operands const-ness is an issue.
 
     if (dst) 
-        const_cast<cluster_ptr>(dst)->push_value(curr_item);
+        const_cast<cluster::impl_type*>(dst)->push_value(curr_item);
     auto i = index_val_ + 1;
     
     if (i >= n)
@@ -566,6 +571,7 @@ tess::set_dependencies_op::set_dependencies_op() : stack_machine::op_0(0)
 {
 }
 
+//TODO
 void tess::set_dependencies_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     auto& ctxt = contexts.top();
@@ -575,7 +581,7 @@ void tess::set_dependencies_op::execute(const std::vector<stack_machine::item>& 
             std::vector<std::string> vars;
             auto* func = std::get<tess::lambda_ptr>(val);
             for (const auto& var : func->unfulfilled_dependencies())   
-                func->insert_field(var, ctxt.get(var));
+                const_cast<tess::lambda::impl_type*>(func)->insert_field(var, ctxt.get(var));
         }
     }
 }

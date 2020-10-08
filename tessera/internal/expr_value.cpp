@@ -11,6 +11,12 @@
 
 namespace {
 
+	template <typename T>
+	void* const_obj_ptr_to_void_star(const T* obj_ptr) {
+		T* non_const_ptr = const_cast<T*>(obj_ptr);
+		return reinterpret_cast<void*>(non_const_ptr);
+	}
+
 	template<typename T>
 	T clone_aux(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, T original) {
 		auto key = original->get_id();
@@ -20,7 +26,7 @@ namespace {
 			clone_impl = reinterpret_cast<T>(orginal_to_clone[key]);
 		} else {
 			clone_impl = allocator.create<T>();
-			orginal_to_clone[key] = clone_impl;
+			orginal_to_clone[key] = const_obj_ptr_to_void_star(clone_impl);
 			original->clone_to(allocator, orginal_to_clone, clone_impl);
 		}
 
@@ -140,7 +146,10 @@ void tess::insert_field(expr_value v, const std::string& var, expr_value val)
 		return;
 	std::variant<tile_ptr, patch_ptr, vertex_ptr, edge_ptr, cluster_ptr, lambda_ptr> obj_variant = variant_cast(v);
 	std::visit(
-		[&](auto&& obj) { obj->insert_field(var,val); },
+		[&](const auto* obj) { 
+			using T = std::remove_const<std::remove_pointer<decltype(obj)>::type>::type;
+			const_cast<T*>(obj)->insert_field(var,val); 
+		},
 		obj_variant
 	);
 }
@@ -202,23 +211,11 @@ tess::expr_value::expr_value(tile_ptr v) : expr_val_var(v)
 {
 }
 
-tess::expr_value::expr_value(const_tile_ptr v) : expr_val_var(const_cast<tile_ptr>(v))
-{
-}
-
 tess::expr_value::expr_value(patch_ptr v) : expr_val_var(v)
 {
 }
 
-tess::expr_value::expr_value(const_patch_ptr v) : expr_val_var(const_cast<patch_ptr>(v))
-{
-}
-
 tess::expr_value::expr_value(vertex_ptr v) : expr_val_var(v)
-{
-}
-
-tess::expr_value::expr_value(const_vertex_ptr v) : expr_val_var(const_cast<vertex_ptr>(v))
 {
 }
 
@@ -227,23 +224,11 @@ tess::expr_value::expr_value(edge_ptr v) : expr_val_var(v)
 {
 }
 
-tess::expr_value::expr_value(const_edge_ptr v) : expr_val_var(const_cast<edge_ptr>(v))
-{
-}
-
 tess::expr_value::expr_value(tess::lambda_ptr v) : expr_val_var(v)
 {
 }
 
-tess::expr_value::expr_value(const_lambda_ptr v) : expr_val_var(const_cast<lambda_ptr>(v))
-{
-}
-
 tess::expr_value::expr_value(cluster_ptr v) : expr_val_var(v)
-{
-}
-
-tess::expr_value::expr_value(const_cluster_ptr v) : expr_val_var(const_cast<cluster_ptr>(v))
 {
 }
 

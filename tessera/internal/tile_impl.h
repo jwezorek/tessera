@@ -53,8 +53,8 @@ namespace tess {
             public:
                 edge_impl(obj_id id) : tessera_impl(id), parent_(nullptr), index_(-1), u_(-1), v_(-1) {};
                 edge_impl(obj_id id, tile_ptr parent, int index, int u, int v);
-                const_vertex_ptr u() const;
-                const_vertex_ptr v() const;
+                vertex_ptr u() const;
+                vertex_ptr v() const;
                 tess::vertex_ptr u();
                 tess::vertex_ptr v();
                 tess::edge_ptr next_edge() const;
@@ -106,7 +106,7 @@ namespace tess {
                 tess::tile_ptr clone_detached(tess::allocator& a) const;
                 std::string debug() const;
                 const tile_ptr get_adjacent_tile(int edge_index) const;
-                const_edge_ptr get_edge_on(allocator& a, edge_ptr e) const;
+                edge_ptr get_edge_on(allocator& a, edge_ptr e) const;
                 expr_value get_on(allocator& a, std::variant<tess::edge_ptr, tess::cluster_ptr>& e) const;
         };
 
