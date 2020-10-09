@@ -23,7 +23,7 @@ namespace {
 		return neighbors;
 	}
 
-	bool has_broken_tile(const std::vector<tess::const_tile_ptr>& tiles) {
+	bool has_broken_tile(const std::vector<tess::tile_ptr>& tiles) {
 		return std::find_if(tiles.begin(), tiles.end(), 
 			[](tess::const_tile_ptr tile) {
 				const auto& edges = tile->edges();
@@ -36,10 +36,10 @@ namespace {
 		) != tiles.end();
 	}
 
-	std::vector<tess::const_edge_ptr> get_broken_edges(const std::vector<tess::const_tile_ptr>& tiles) {
-		std::vector<tess::const_edge_ptr> edges;
-		for (tess::const_tile_ptr t : tiles) {
-			for (tess::const_edge_ptr e : t->edges()) {
+	std::vector<tess::edge_ptr> get_broken_edges(const std::vector<tess::tile_ptr>& tiles) {
+		std::vector<tess::edge_ptr> edges;
+		for (tess::tile_ptr t : tiles) {
+			for (tess::edge_ptr e : t->edges()) {
 				if (e->has_property("broken")) {
 					edges.push_back(e);
 				}
@@ -62,12 +62,12 @@ namespace {
 		}
 	}
 
-	std::vector<std::tuple<tess::const_tile_ptr, tess::const_tile_ptr>> get_broken_tiles(const std::vector<tess::const_tile_ptr>& tiles) {
+	std::vector<std::tuple<tess::tile_ptr, tess::tile_ptr>> get_broken_tiles(const std::vector<tess::tile_ptr>& tiles) {
 		auto broken_edges = get_broken_edges(tiles);
 		tess::vertex_location_table vert_tbl;
-		tess::edge_table<tess::const_tile_ptr> edge_tbl;
-		std::vector<std::tuple<tess::const_tile_ptr, tess::const_tile_ptr>> output;
-		for (const auto& e : broken_edges) {
+		tess::edge_table<tess::tile_ptr> edge_tbl;
+		std::vector<std::tuple<tess::tile_ptr, tess::tile_ptr>> output;
+		for ( auto& e : broken_edges) {
 			auto u = vert_tbl.insert(e->u()->pos());
 			auto v = vert_tbl.insert(e->v()->pos());
 			if (edge_tbl.find({ u,v }) != edge_tbl.end())
@@ -75,7 +75,7 @@ namespace {
 			edge_tbl[{ u, v }] = e->parent();
 			auto adj_edge = edge_tbl.find({ v,u });
 			if (adj_edge != edge_tbl.end()) {
-				output.emplace_back(tess::const_tile_ptr(e->parent()), adj_edge->second  );
+				output.emplace_back(tess::tile_ptr(e->parent()), adj_edge->second  );
 			} 
 		}
 		return output;
@@ -84,40 +84,40 @@ namespace {
 	
 	template<typename T>
 	using assoc_map = boost::associative_property_map<T>;
-	using rank_map = std::unordered_map<tess::const_tile_ptr, int>;
-	using parent_map = std::unordered_map<tess::const_tile_ptr, tess::const_tile_ptr>;
+	using rank_map = std::unordered_map<tess::tile_ptr, int>;
+	using parent_map = std::unordered_map<tess::tile_ptr, tess::tile_ptr>;
 	using disjoint_sets = boost::disjoint_sets<assoc_map<rank_map>, assoc_map<parent_map>>;
 
-	std::vector<std::vector<tess::const_tile_ptr>> get_broken_tile_groups( const std::vector<tess::const_tile_ptr>& tiles) {
+	std::vector<std::vector<tess::tile_ptr>> get_broken_tile_groups( const std::vector<tess::tile_ptr>& tiles) {
 
 		rank_map rank;
 		parent_map parent;
 		disjoint_sets ds(boost::make_assoc_property_map(rank), boost::make_assoc_property_map(parent));
 
 		// insert all the vertices as single sets
-		for (const auto* t : tiles) {
+		for ( auto* t : tiles) {
 			ds.make_set( t );
 		}
 
 		// add each graph edge to the data structure
 		auto broken_tiles = get_broken_tiles(tiles);
-		for (const auto [u, v] : broken_tiles) {
+		for ( auto [u, v] : broken_tiles) {
 			ds.link(u, v);
 		}
 
 		// build a map mapping representatives to a elements...
-		std::unordered_map<tess::const_tile_ptr, std::vector<tess::const_tile_ptr>> sets;
-		for (const auto* tile : tiles) {
+		std::unordered_map<tess::tile_ptr, std::vector<tess::tile_ptr>> sets;
+		for ( auto* tile : tiles) {
 			auto v = tile;
 			auto parent = ds.find_set(v);
 			sets[parent].push_back(v);
 		}
 
 		// return the values of the above, with the tile impelemntation wrapped in real tiles.
-		std::vector<std::vector<tess::const_tile_ptr>> output(sets.size());
+		std::vector<std::vector<tess::tile_ptr>> output(sets.size());
 		std::transform(sets.begin(), sets.end(), output.begin(),
-			[](const std::unordered_map<tess::const_tile_ptr, std::vector<tess::const_tile_ptr>>::value_type& key_val) {
-				const std::vector<tess::const_tile_ptr>& val = key_val.second;
+			[](const std::unordered_map<tess::tile_ptr, std::vector<tess::tile_ptr>>::value_type& key_val) {
+				const std::vector<tess::tile_ptr>& val = key_val.second;
 				return val;
 			}
 		);
@@ -135,8 +135,7 @@ namespace {
 		std::cout << "]\n";
 	}
 
-	//TODO
-	std::vector<tess::const_tile_ptr> join_broken_tiles(tess::allocator& a, const std::vector<tess::const_tile_ptr>& tiles) {
+	std::vector<tess::tile_ptr> join_broken_tiles(tess::allocator& a, const std::vector<tess::tile_ptr>& tiles) {
 		if (!has_broken_tile(tiles))
 			return tiles;
 
@@ -144,11 +143,11 @@ namespace {
 		if (grouped_tiles.size() == tiles.size())
 			return tiles;
 
-		std::vector<tess::const_tile_ptr> output(grouped_tiles.size());
+		std::vector<tess::tile_ptr> output(grouped_tiles.size());
 		std::transform(grouped_tiles.begin(), grouped_tiles.end(), output.begin(),
-			[&a](const auto& tile_group)->tess::const_tile_ptr {
+			[&a]( auto& tile_group)->tess::tile_ptr {
 				if (tile_group.size() == 1) {
-					return const_cast<tess::const_tile_ptr>( tile_group.front() );
+					return tess::clone(a, tile_group.front() );
 				} else {
 					return tess::join(a, tile_group);
 				}
@@ -510,22 +509,22 @@ int count_tiles(const std::vector<tess::value_>& tiles_and_patches) {
 	return count;
 }
 
-//TODO:this is a bug I think
-tess::const_patch_ptr tess::flatten(tess::allocator& a, const std::vector<tess::value_>& tiles_and_patches, bool should_join_broken_tiles) {
+tess::patch_ptr tess::flatten(tess::allocator& a, const std::vector<tess::value_>& tiles_and_patches, bool should_join_broken_tiles) {
 	for (const auto& v : tiles_and_patches)
 		if (!std::holds_alternative<tess::const_tile_ptr>(v) && !std::holds_alternative<tess::const_patch_ptr>(v))
 			throw tess::error("attempted to flatten a value that is not a tile or tile patch");
 	int n = count_tiles(tiles_and_patches);
-	std::vector<tess::const_tile_ptr> tiles;
+	std::vector<tess::tile_ptr> tiles;
 	tiles.reserve(n);
 	for (const auto& tile_or_patch : tiles_and_patches) {
 		std::visit(
 			overloaded{
-				[&tiles](tess::const_tile_ptr t) { tiles.push_back(t); },
-				[&tiles](tess::const_patch_ptr patch) {
+				[&](tess::const_tile_ptr t) { tiles.push_back( tess::clone(a, t) ); },
+				[&](tess::const_patch_ptr patch) {
 					for (auto* t : patch->tiles()) {
-						const_cast<tile::impl_type*>(t)->detach();
-						tiles.push_back(t);
+						auto clone = tess::clone(a, t);
+						clone->detach();
+						tiles.push_back(clone);
 					}
 				},
 				[](auto) { throw tess::error("unknown error"); }
@@ -539,22 +538,21 @@ tess::const_patch_ptr tess::flatten(tess::allocator& a, const std::vector<tess::
 
 	auto patch_impl = a.create<tess::const_patch_ptr>();
 	for (const auto& tile : tiles) {
-		auto* copy = tess::clone(a, tile);
-		const_cast<tile_patch::impl_type*>(patch_impl)->insert_tile( copy );
+		patch_impl->insert_tile( tile );
 	}
 
 	return patch_impl;
 }
 
-tess::const_tile_ptr tess::join(tess::allocator& a, const std::vector<tess::value_>& tiles_and_patches, bool should_join_broken_tiles) {
+tess::tile_ptr tess::join(tess::allocator& a, const std::vector<tess::value_>& tiles_and_patches, bool should_join_broken_tiles) {
 	auto patch = flatten(a, tiles_and_patches, should_join_broken_tiles);
 	return patch->join(a);
 }
 
-tess::const_tile_ptr tess::join(tess::allocator& a, const std::vector<const_tile_ptr>& tiles) {
+tess::tile_ptr tess::join(tess::allocator& a, const std::vector<tile_ptr>& tiles) {
 	std::vector<tess::value_> tiles_as_vals(tiles.size());
 	std::transform(tiles.begin(), tiles.end(), tiles_as_vals.begin(),
-		[](const_tile_ptr t) -> tess::value_ {
+		[](tile_ptr t) -> tess::value_ {
 			return value_(t);
 		}
 	);

@@ -77,8 +77,8 @@ namespace tess {
 
     }
 
-    const_patch_ptr flatten(allocator& a, const std::vector<value_>& tiles_and_patches, bool should_join_broken_tiles);
-    const_tile_ptr join(allocator& a, const std::vector<value_>& tiles_and_patches, bool should_join_broken_tiles);
-    const_tile_ptr join(allocator& a, const std::vector<const_tile_ptr>& tiles);
+    patch_ptr flatten(allocator& a, const std::vector<value_>& tiles_and_patches, bool should_join_broken_tiles);
+    tile_ptr join(allocator& a, const std::vector<value_>& tiles_and_patches, bool should_join_broken_tiles);
+    tile_ptr join(allocator& a, const std::vector<tile_ptr>& tiles);
 
 }
