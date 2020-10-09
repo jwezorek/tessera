@@ -45,7 +45,7 @@ namespace tess {
 		edge in_edge() const;
 		using impl_type = detail::vertex_impl;
 	private:
-		impl_type* impl_;
+		const impl_type* impl_;
 	};
 
 	class edge : public detail::property_container<edge>  {
@@ -56,7 +56,7 @@ namespace tess {
 		property_value get_property_variant(const std::string& prop) const;
 		using impl_type = detail::edge_impl;
 	private:
-		impl_type* impl_;
+		const impl_type* impl_;
 	};
 
 	class tile : public detail::property_container<tile> {
@@ -67,7 +67,7 @@ namespace tess {
 		property_value get_property_variant(const std::string& prop) const;
 		using impl_type = detail::tile_impl;
 	private:
-		impl_type* impl_;
+		const impl_type* impl_;
 	};
 
 }

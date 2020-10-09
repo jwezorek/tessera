@@ -10,28 +10,10 @@ const std::vector<std::string>& tess::lambda::parameters() const
 {
     return impl_->parameters;
 }
-
-void tess::lambda::insert_field(const std::string& var, const value_& val)
-{
-    impl_->insert_field(var, val);
-}
-
 const tess::scope_frame& tess::lambda::closure() const
 {
     return impl_->closure;
 }
-
-std::vector<tess::stack_machine::item> tess::lambda::body() const
-{
-    return impl_->body;
-}
-
-std::vector<std::string> tess::lambda::dependencies() const
-{
-    return impl_->dependencies;
-}
-
-
 
 tess::detail::lambda_impl::lambda_impl(obj_id id, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
     tessera_impl(id), parameters(params), body(bod), dependencies(deps)

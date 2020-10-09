@@ -64,7 +64,7 @@ namespace tess {
             value_ get_ary_item(int i) const;
             void push_value(value_ val);
             int get_ary_count() const;
-            const std::vector<value_>& values();
+            const std::vector<value_>& values() const;
             void insert_field(const std::string& var, const value_& val);
             void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, const_cluster_ptr clone) const;

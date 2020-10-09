@@ -85,9 +85,7 @@ namespace tess {
                 tile_impl(obj_id id, tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
 
                 const std::vector<tess::const_vertex_ptr>& vertices() const;
-                std::vector<tess::const_vertex_ptr>& vertices();
                 const std::vector<tess::const_edge_ptr>& edges() const;
-                std::vector<tess::const_edge_ptr>& edges();
                 void set(std::vector<tess::const_vertex_ptr>&& vertices, std::vector<tess::const_edge_ptr>&& edges);
                 value_ get_field(const std::string& field) const;
                 value_ get_field(allocator& allocator, const std::string& field) const;

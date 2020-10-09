@@ -14,10 +14,10 @@ namespace tess {
             friend class tessera_impl;
         public:
             using impl_type = detail::cluster_impl;
-            const std::vector<value_>& items() const;
+            std::vector<value_> items() const;
             int count() const;
         private:
-            impl_type*  impl_;
+            const impl_type*  impl_;
     };
 
 }

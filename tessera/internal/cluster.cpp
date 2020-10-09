@@ -2,7 +2,7 @@
 #include "tile_patch_impl.h"
 #include "value.h"
 
-const std::vector<tess::value_>& tess::cluster::items() const
+std::vector<tess::value_> tess::cluster::items() const
 {
     return impl_->values();
 }

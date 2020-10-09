@@ -444,7 +444,7 @@ int tess::detail::cluster_impl::get_ary_count() const
 	return static_cast<int>(values_.size());
 }
 
-const std::vector<tess::value_>& tess::detail::cluster_impl::values()
+const std::vector<tess::value_>& tess::detail::cluster_impl::values() const
 {
 	return values_;
 }

@@ -24,15 +24,12 @@ namespace tess{
         public: 
 
             const std::vector<std::string>& parameters() const;
-            void insert_field(const std::string& var, const value_& val);
             const scope_frame& closure() const;
-            std::vector<stack_machine::item> body() const;
-            std::vector<std::string> dependencies() const;
             using impl_type = detail::lambda_impl;
 
         private:
 
-            impl_type* impl_;
+            const impl_type* impl_;
     };
 
 }

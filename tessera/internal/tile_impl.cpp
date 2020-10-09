@@ -50,19 +50,9 @@ const std::vector<tess::const_vertex_ptr>& tess::detail::tile_impl::vertices() c
     return vertices_;
 }
 
-std::vector<tess::const_vertex_ptr>& tess::detail::tile_impl::vertices()
-{
-	return vertices_;
-}
-
 const std::vector<tess::const_edge_ptr>& tess::detail::tile_impl::edges() const
 {
     return edges_;
-}
-
-std::vector<tess::const_edge_ptr>& tess::detail::tile_impl::edges()
-{
-	return edges_;
 }
 
 void tess::detail::tile_impl::set( std::vector<tess::const_vertex_ptr>&& vertices, std::vector<tess::const_edge_ptr>&& edges )

@@ -20,6 +20,6 @@ namespace tess {
 		property_value get_property_variant(const std::string& prop) const;
 		using impl_type = detail::patch_impl;
 	private:
-		impl_type* impl_;
+		const impl_type* impl_;
 	};
 }
