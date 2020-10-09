@@ -22,7 +22,7 @@ namespace tess {
         class patch_impl : public tessera_impl
         {
         private:
-            std::vector<tess::const_tile_ptr> tiles_;
+            std::vector<tess::tile_ptr> tiles_;
             std::map<std::string, value_> fields_;
             vertex_location_table vert_tbl_;
             mutable edge_table<const_edge_ptr> edge_tbl_;
@@ -31,14 +31,16 @@ namespace tess {
 
         public:
             patch_impl(obj_id id) : tessera_impl(id) {};
-            patch_impl(obj_id id, const std::vector<tess::const_tile_ptr>& tiles);
-            void insert_tile(tess::const_tile_ptr t);
-            const std::vector<tess::const_tile_ptr>& tiles() const;
+            patch_impl(obj_id id, const std::vector<tess::tile_ptr>& tiles);
+            void insert_tile(tess::tile_ptr t);
+            int count() const;
+            std::vector<tess::const_tile_ptr> tiles() const;
+            const std::vector< tess::tile_ptr>& tiles();
             value_ get_field(allocator& allocator, const std::string& field) const;
             value_ get_ary_item(int i) const;
             int get_ary_count() const;
             void apply(const matrix& mat);
-            const_patch_ptr flip(allocator& allocator) const;
+            patch_ptr flip(allocator& allocator) const;
             void flip();
             tess::const_edge_ptr get_edge_on(int u, int v) const;
             tess::const_edge_ptr get_edge_on(tess::point u, tess::point v) const;
@@ -47,7 +49,7 @@ namespace tess {
             void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, patch_ptr clone) const;
             point get_vertex_location(int index) const;
-            const_tile_ptr join(allocator& allocator) const;
+            tile_ptr join(allocator& allocator) const;
             void dfs(tile_visitor visit) const;
 
             std::string debug() const;

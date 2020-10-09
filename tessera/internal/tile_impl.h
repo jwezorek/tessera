@@ -46,23 +46,24 @@ namespace tess {
 
         class edge_impl : public tessera_impl {
             private:
-                const_tile_ptr parent_;
+                tile_ptr parent_;
                 int index_;
                 int u_, v_;
                 std::map<std::string, value_> fields_;
             public:
                 edge_impl(obj_id id) : tessera_impl(id), parent_(nullptr), index_(-1), u_(-1), v_(-1) {};
-                edge_impl(obj_id id, const_tile_ptr parent, int index, int u, int v);
+                edge_impl(obj_id id, tile_ptr parent, int index, int u, int v);
                 const_vertex_ptr u() const;
                 const_vertex_ptr v() const;
-                tess::const_vertex_ptr u();
-                tess::const_vertex_ptr v();
-                tess::const_edge_ptr next_edge() const;
-                tess::const_edge_ptr prev_edge() const;
+                vertex_ptr u();
+                vertex_ptr v();
+                const_edge_ptr next_edge() const;
+                const_edge_ptr prev_edge() const;
                 value_ get_field(allocator& allocator, const std::string& field) const;
                 value_ get_field(const std::string& field) const;
                 bool has_property(const std::string& prop) const;
                 const_tile_ptr parent() const;
+                tile_ptr parent();
                 void insert_field(const std::string& var, const value_& val);
                 const std::map<std::string, value_>& fields() const;
                 void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
@@ -75,18 +76,26 @@ namespace tess {
         class tile_impl : public tessera_impl {
             private:
                 std::map<std::string, value_> fields_;
-                std::vector<tess::const_vertex_ptr> vertices_;
-                std::vector<tess::const_edge_ptr> edges_;
-                const_patch_ptr parent_;
+                std::vector<tess::vertex_ptr> vertices_;
+                std::vector<tess::edge_ptr> edges_;
+                patch_ptr parent_;
                 int index_;
 
             public:
                 tile_impl(obj_id id) : tessera_impl(id), parent_(nullptr), index_(-1) {};
                 tile_impl(obj_id id, tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
 
-                const std::vector<tess::const_vertex_ptr>& vertices() const;
-                const std::vector<tess::const_edge_ptr>& edges() const;
-                void set(std::vector<tess::const_vertex_ptr>&& vertices, std::vector<tess::const_edge_ptr>&& edges);
+                std::vector<tess::const_vertex_ptr> vertices() const;
+                std::vector<tess::const_edge_ptr> edges() const;
+                const std::vector<tess::vertex_ptr>& vertices();
+                const std::vector<tess::edge_ptr>& edges();
+
+                const_vertex_ptr vertex(int index) const;
+                vertex_ptr vertex(int index);
+
+                const_edge_ptr edge(int index) const;
+                edge_ptr edge(int index);
+
                 value_ get_field(const std::string& field) const;
                 value_ get_field(allocator& allocator, const std::string& field) const;
                 const std::map<std::string, value_>& fields() const;
@@ -95,7 +104,8 @@ namespace tess {
                 void flip();
                 bool has_parent() const;
                 const_patch_ptr parent() const;
-                void set_parent(const_patch_ptr parent, int index);
+                patch_ptr parent();
+                void set_parent(patch_ptr parent, int index);
                 void detach();
                 void insert_field(const std::string& var, const value_& val);
                 void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;

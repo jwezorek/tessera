@@ -28,19 +28,16 @@ namespace {
         return frame;
     }
 
-    //TODO
-    using edge_parent_type = std::variant<tess::tile::impl_type*, tess::tile_patch::impl_type*>;
+    using edge_parent_type = std::variant<tess::tile_ptr, tess::patch_ptr>;
 
-    //TODO
-    edge_parent_type parent_of_edge(const tess::edge::impl_type& e) {
+    edge_parent_type parent_of_edge( tess::edge::impl_type& e) {
         auto tile = e.parent();
         if (!tile->has_parent())
-            return const_cast<tess::tile::impl_type*>(tile);
+            return tile;
         else
-            return const_cast<tess::tile_patch::impl_type*>(tile->parent());
+            return tile->parent();
     }
 
-    //TODO
     void apply_edge_matrix(const edge_parent_type& ep, const tess::matrix& mat) {
         return std::visit([&mat](auto ptr) { ptr->apply(mat); }, ep);
     }

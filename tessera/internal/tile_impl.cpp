@@ -8,7 +8,7 @@
 
 namespace {
 
-	tess::const_cluster_ptr edges_as_cluster(tess::allocator& allocator,  const std::vector<tess::const_edge_ptr>& edges) {
+	tess::const_cluster_ptr edges_as_cluster(tess::allocator& allocator,  const std::vector<tess::edge_ptr>& edges) {
 		std::vector<tess::value_> cluster_contents(edges.size());
 		std::transform(edges.begin(), edges.end(), cluster_contents.begin(),
 			[](tess::const_edge_ptr e)->tess::value_ { return tess::value_(e); }
@@ -17,7 +17,7 @@ namespace {
 	}
 
 	template<typename T>
-	T* perform_clone(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, T* impl)
+	T* clone_object(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, T* impl)
 	{
 		tess::value_ wrapper = tess::value_(impl);
 		return tess::get_mutable<const T*>(tess::clone_value(allocator, orginal_to_clone, wrapper));
@@ -44,20 +44,52 @@ tess::detail::tile_impl::tile_impl(obj_id id, tess::allocator* allocator, const 
 	}
 }
 
-const std::vector<tess::const_vertex_ptr>& tess::detail::tile_impl::vertices() const
+std::vector<tess::const_vertex_ptr> tess::detail::tile_impl::vertices() const
+{
+	std::vector<tess::const_vertex_ptr> const_vertices(vertices_.size());
+	std::transform(vertices_.begin(), vertices_.end(), const_vertices.begin(), 
+		[](auto v) { return v; }
+	);
+	return const_vertices;
+}
+
+std::vector<tess::const_edge_ptr> tess::detail::tile_impl::edges() const
+{
+	std::vector<tess::const_edge_ptr> const_edges(edges_.size());
+	std::transform(edges_.begin(), edges_.end(), const_edges.begin(),
+		[](auto v) { return v; }
+	);
+	return const_edges;
+}
+
+const std::vector<tess::vertex_ptr>& tess::detail::tile_impl::vertices() 
 {
     return vertices_;
 }
 
-const std::vector<tess::const_edge_ptr>& tess::detail::tile_impl::edges() const
+const std::vector<tess::edge_ptr>& tess::detail::tile_impl::edges() 
 {
     return edges_;
 }
 
-void tess::detail::tile_impl::set( std::vector<tess::const_vertex_ptr>&& vertices, std::vector<tess::const_edge_ptr>&& edges )
+tess::const_vertex_ptr tess::detail::tile_impl::vertex(int index) const
 {
-	vertices_ = std::move(vertices);
-    edges_ = std::move(edges);
+	return vertices_.at(index);
+}
+
+tess::vertex_ptr tess::detail::tile_impl::vertex(int index)
+{
+	return vertices_.at(index);
+}
+
+tess::const_edge_ptr tess::detail::tile_impl::edge(int index) const
+{
+	return edges_.at(index);
+}
+
+tess::edge_ptr tess::detail::tile_impl::edge(int index)
+{
+	return edges_.at(index);
 }
 
 void tess::detail::tile_impl::insert_field(const std::string& var, const value_& val)
@@ -82,17 +114,15 @@ void tess::detail::tile_impl::get_all_referenced_allocations(std::unordered_set<
 
 void tess::detail::tile_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_ptr mutable_clone) const
 {
-	for (const auto* v : vertices_) {
-		auto v_clone = std::get<const_vertex_ptr>(tess::clone_value(allocator, orginal_to_clone, value_(v)));
-		mutable_clone->vertices_.push_back(v_clone);
+	for (auto* v : vertices_) {
+		mutable_clone->vertices_.push_back( clone_object(allocator, orginal_to_clone, v) );
 	}
-	for (const auto& e : edges_) {
-		auto e_clone = std::get<const_edge_ptr>( tess::clone_value(allocator, orginal_to_clone, value_(e)));
-		mutable_clone->edges_.push_back(e_clone);
+	for (auto& e : edges_) {
+		mutable_clone->edges_.push_back( clone_object(allocator, orginal_to_clone, e) );
 	}
 
 	if (parent_ != nullptr) {
-		mutable_clone->parent_ = perform_clone<tile_patch::impl_type>(allocator, orginal_to_clone, const_cast<tile_patch::impl_type*>(parent_));
+		mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_);
 	} else {
 		mutable_clone->parent_ = nullptr;
 	}
@@ -237,11 +267,10 @@ const std::map<std::string, tess::value_>& tess::detail::tile_impl::fields() con
 	return fields_;
 }
 
-//TODO
 void tess::detail::tile_impl::apply(const matrix& mat)
 {
 	for (auto* vertex : vertices_) {
-		const_cast<vertex::impl_type*>(vertex)->apply(mat);
+		vertex->apply(mat);
 	}
 }
 
@@ -257,16 +286,15 @@ tess::const_tile_ptr tess::detail::tile_impl::flip(allocator& a) const
 	return flippee;
 }
 
-//TODO
 void tess::detail::tile_impl::flip()
 {
 	apply(flip_matrix());
 	for (auto& e : edges_) {
-		const_cast<edge::impl_type*>(e)->flip();
+		e->flip();
 	}
 }
 
-void tess::detail::tile_impl::set_parent(tess::const_patch_ptr parent, int index) {
+void tess::detail::tile_impl::set_parent(tess::patch_ptr parent, int index) {
 
 	if (parent == nullptr)
 		throw tess::error("invalid tile parent");
@@ -274,11 +302,10 @@ void tess::detail::tile_impl::set_parent(tess::const_patch_ptr parent, int index
 	index_ = index;
 }
 
-//TODO
 void tess::detail::tile_impl::detach()
 {
 	for (auto* v : vertices_)
-		const_cast<vertex::impl_type*>(v)->set_location(v->pos());
+		v->set_location(v->pos());
 	parent_ = nullptr;
 	index_ = -1;
 }
@@ -291,10 +318,13 @@ tess::const_patch_ptr tess::detail::tile_impl::parent() const {
 	return parent_;
 }
 
+tess::patch_ptr tess::detail::tile_impl::parent()  {
+	return parent_;
+}
 
 /*--------------------------------------------------------------------------------*/
 
-tess::detail::edge_impl::edge_impl( obj_id id, const_tile_ptr parent, int index, int u, int v) :
+tess::detail::edge_impl::edge_impl( obj_id id, tile_ptr parent, int index, int u, int v) :
 	tessera_impl(id),
 	parent_(parent),
 	index_(index),
@@ -304,22 +334,22 @@ tess::detail::edge_impl::edge_impl( obj_id id, const_tile_ptr parent, int index,
 
 tess::const_vertex_ptr tess::detail::edge_impl::u() const
 {
-    return parent_->vertices().at(u_);
+	return parent_->vertex(u_);
 }
 
 tess::const_vertex_ptr tess::detail::edge_impl::v() const
 {
-    return parent_->vertices().at(v_);
+	return parent_->vertex(v_);
 }
 
-tess::const_vertex_ptr tess::detail::edge_impl::u()
+tess::vertex_ptr tess::detail::edge_impl::u()
 {
-	return parent_->vertices().at(u_);
+	return parent_->vertex(u_);
 }
 
-tess::const_vertex_ptr tess::detail::edge_impl::v()
+tess::vertex_ptr tess::detail::edge_impl::v()
 {
-	return parent_->vertices().at(v_);
+	return parent_->vertex(v_);
 }
 
 tess::const_edge_ptr tess::detail::edge_impl::next_edge() const
@@ -331,6 +361,7 @@ tess::const_edge_ptr tess::detail::edge_impl::prev_edge() const
 {
 	return u()->in_edge();
 }
+
 
 tess::value_ tess::detail::edge_impl::get_field(allocator& allocator, const std::string& field) const
 {
@@ -392,6 +423,11 @@ tess::const_tile_ptr tess::detail::edge_impl::parent() const
 	return parent_;
 }
 
+tess::tile_ptr tess::detail::edge_impl::parent()
+{
+	return parent_;
+}
+
 void  tess::edge::impl_type::flip()
 {
 	std::swap(u_, v_);
@@ -429,7 +465,7 @@ void  tess::detail::edge_impl::clone_to(tess::allocator& allocator, std::unorder
 	mutable_clone->index_ = index_;
 	mutable_clone->u_ = u_;
 	mutable_clone->v_ = v_;
-	mutable_clone->parent_ = perform_clone<tile::impl_type>(allocator, orginal_to_clone, const_cast<tile::impl_type*>(parent_));
+	mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_);
 
 	for (const auto& [var, val] : fields_) {
 		mutable_clone->fields_[var] = tess::clone_value(allocator, orginal_to_clone, val);
@@ -490,7 +526,7 @@ void tess::detail::vertex_impl::clone_to(tess::allocator& allocator, std::unorde
 {
 	mutable_clone->index_ = index_;
 	mutable_clone->location_ = location_;
-	mutable_clone->parent_ = perform_clone<tile::impl_type>(allocator, orginal_to_clone, const_cast<tile::impl_type*>(parent_));
+	mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_);
 };
 
 tess::const_patch_ptr tess::detail::vertex_impl::grandparent() const
@@ -523,8 +559,6 @@ std::string  tess::detail::vertex_impl::debug() const
 	return ss.str();
 }
 
-
-
 void tess::detail::vertex_impl::apply(const tess::matrix& mat) {
 
 	if (std::holds_alternative<point>(location_)) {
@@ -542,7 +576,7 @@ tess::const_tile_ptr tess::detail::vertex_impl::parent() const
 //TODO: maybe make some lazy created table for doing this in sublinear time for tiles more than k sides?
 tess::const_edge_ptr tess::detail::vertex_impl::in_edge() const
 {
-	auto& edges = parent_->edges();
+	auto edges = parent_->edges();
 	auto iter = std::find_if(edges.begin(), edges.end(),
 		[this](const auto* e) {
 			return e->v() == this;
@@ -553,7 +587,7 @@ tess::const_edge_ptr tess::detail::vertex_impl::in_edge() const
 
 tess::const_edge_ptr tess::detail::vertex_impl::out_edge() const
 {
-	auto& edges = parent_->edges();
+	auto edges = parent_->edges();
 	auto iter = std::find_if(edges.begin(), edges.end(),
 		[this](const auto* e) {
 			return e->u() == this;

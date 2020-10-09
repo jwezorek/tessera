@@ -188,8 +188,7 @@ namespace {
 		}
 	}
 
-	//TODO
-	void propagate_fields(tess::const_tile_ptr tile, tess::const_patch_ptr patch)
+	void propagate_fields(tess::tile_ptr tile, tess::const_patch_ptr patch)
 	{
 		std::unordered_map<std::string, tess::value_> fields;
 		for (const auto& t : patch->tiles()) {
@@ -205,16 +204,25 @@ namespace {
 			}
 		}
 		for (const auto& [var, val] : fields) {
-			const_cast<tess::tile::impl_type*>(tile)->insert_field(var, val);
+			tile->insert_field(var, val);
 		}
 
 		propagate_edge_fields(tile, patch);
 	}
 }
 
-const std::vector<tess::const_tile_ptr>& tess::detail::patch_impl::tiles() const
+const std::vector<tess::tile_ptr>& tess::detail::patch_impl::tiles()
 {
-    return tiles_;
+	return tiles_;
+}
+
+std::vector<tess::const_tile_ptr> tess::detail::patch_impl::tiles() const
+{
+	std::vector<tess::const_tile_ptr> const_tiles(tiles_.size());
+	std::transform(tiles_.begin(), tiles_.end(), const_tiles.begin(),
+		[](auto t) { return t; }
+	);
+    return const_tiles;
 }
 
 void tess::detail::patch_impl::build_edge_table() const
@@ -232,23 +240,28 @@ void tess::detail::patch_impl::build_edge_table() const
 	}
 }
 
-tess::detail::patch_impl::patch_impl(obj_id id, const std::vector<tess::const_tile_ptr>& tiles) : tessera_impl(id) {
+tess::detail::patch_impl::patch_impl(obj_id id, const std::vector<tess::tile_ptr>& tiles) : tessera_impl(id) {
 	for ( auto& t : tiles)
 		insert_tile(t);
 }
 
-//TODO
-void tess::detail::patch_impl::insert_tile( tess::const_tile_ptr tile )
+
+void tess::detail::patch_impl::insert_tile( tess::tile_ptr tile )
 {
-	const_cast<tile::impl_type*>(tile)->set_parent(this, static_cast<int>(tiles_.size()) );
+	tile->set_parent(this, static_cast<int>( tiles_.size()) );
 
 	for (auto& v : tile->vertices()) {
 		auto* vert = v;
 		int new_vert_index = vert_tbl_.insert(vert->pos());
-		const_cast<vertex::impl_type*>(vert)->set_location( new_vert_index );
+		vert->set_location( new_vert_index );
 	}
 
 	tiles_.push_back(tile);
+}
+
+int tess::detail::patch_impl::count() const
+{
+	return static_cast<int>(tiles_.size());
 }
 
 
@@ -293,19 +306,18 @@ std::string tess::detail::patch_impl::debug() const
 	return ss.str();
 }
 
-tess::const_patch_ptr tess::detail::patch_impl::flip(allocator& a) const {
+tess::patch_ptr tess::detail::patch_impl::flip(allocator& a) const {
 	value_ self = value_( this );
 	auto* clone = get_mutable<tess::const_patch_ptr>(tess::clone_value(a, self));
 	clone->flip();
 	return clone;
 }
 
-//TODO
 void  tess::detail::patch_impl::flip()  {
 	apply(flip_matrix());
 	for (auto& tile : tiles_)
 		for (auto* e : tile->edges())
-			const_cast<tess::edge::impl_type*>(e)->flip();
+			e->flip();
 	edge_tbl_.clear();
 }
 
@@ -372,7 +384,7 @@ void tess::detail::patch_impl::get_all_referenced_allocations(std::unordered_set
 void tess::detail::patch_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, patch_ptr mutable_clone) const
 {
 	for (const auto& t : tiles_) {
-		auto t_clone = std::get<const_tile_ptr>(tess::clone_value(allocator, orginal_to_clone, value_{ t }));
+		auto t_clone = get_mutable<const_tile_ptr>(tess::clone_value(allocator, orginal_to_clone, value_{ t }));
 		mutable_clone->tiles_.push_back( t_clone );
 	}
 	for (const auto& [var, val] : fields_) {
@@ -385,7 +397,7 @@ tess::point tess::detail::patch_impl::get_vertex_location(int index) const {
 	return vert_tbl_.get_location(index);
 }
 
-tess::const_tile_ptr tess::detail::patch_impl::join(tess::allocator& a) const
+tess::tile_ptr tess::detail::patch_impl::join(tess::allocator& a) const
 {
 	auto points = tess::join(this);
 	auto joined_patch = a.create<tess::const_tile_ptr>(&a, points);
@@ -490,7 +502,7 @@ int count_tiles(const std::vector<tess::value_>& tiles_and_patches) {
 		std::visit(
 			overloaded{
 				[&count]( tess::const_tile_ptr) { ++count; },
-				[&count]( tess::const_patch_ptr patch) { count += patch->tiles().size(); },
+				[&count]( tess::const_patch_ptr patch) { count += patch->count(); },
 				[](auto) { throw tess::error("unknown error"); }
 			},
 			tile_or_patch
