@@ -135,6 +135,7 @@ namespace {
 		std::cout << "]\n";
 	}
 
+	//TODO
 	std::vector<tess::const_tile_ptr> join_broken_tiles(tess::allocator& a, const std::vector<tess::const_tile_ptr>& tiles) {
 		if (!has_broken_tile(tiles))
 			return tiles;
@@ -157,6 +158,7 @@ namespace {
 		return output;
 	}
 
+	//TODO
 	void propagate_edge_fields(tess::const_tile_ptr tile, tess::const_patch_ptr patch)
 	{
 		tess::edge_location_table edges;
@@ -186,6 +188,7 @@ namespace {
 		}
 	}
 
+	//TODO
 	void propagate_fields(tess::const_tile_ptr tile, tess::const_patch_ptr patch)
 	{
 		std::unordered_map<std::string, tess::value_> fields;

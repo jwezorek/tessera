@@ -20,8 +20,7 @@ namespace {
 	T* perform_clone(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, T* impl)
 	{
 		tess::value_ wrapper = tess::value_(impl);
-		auto unwrapped_clone = std::get<const T*>(tess::clone_value(allocator, orginal_to_clone, wrapper));
-		return const_cast<T*>(unwrapped_clone);
+		return tess::get_mutable<const T*>(tess::clone_value(allocator, orginal_to_clone, wrapper));
 	}
 }
 

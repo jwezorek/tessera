@@ -18,7 +18,7 @@ namespace tess {
 			template<typename T>
 			T make_tess_obj(const typename T::impl_type* impl) const {
 				T obj;
-				obj.impl_ = const_cast<typename T::impl_type*>(impl);
+				obj.impl_ = impl;
 				return obj;
 			}
 
