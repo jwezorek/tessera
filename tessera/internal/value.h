@@ -38,41 +38,41 @@ namespace tess {
 	using const_patch_ptr = const detail::patch_impl*;
 	using const_lambda_ptr = const detail::lambda_impl*;
 
-	using expr_val_var = std::variant<const_tile_ptr, const_patch_ptr, const_edge_ptr, const_vertex_ptr, const_lambda_ptr, const_cluster_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
+	using value_variant = std::variant<const_tile_ptr, const_patch_ptr, const_edge_ptr, const_vertex_ptr, const_lambda_ptr, const_cluster_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
 
-	class expr_value : public expr_val_var
+	class value_ : public value_variant
 	{
 	public:
-		expr_value();
-		explicit expr_value(const_tile_ptr v);
-		explicit expr_value(const_patch_ptr v);
-		explicit expr_value(const_edge_ptr v);
-		explicit expr_value(const_vertex_ptr);
-		explicit expr_value(const_lambda_ptr);
-		explicit expr_value(const_cluster_ptr);
-		explicit expr_value(field_ref_ptr);
-		explicit expr_value(nil_val);
-		explicit expr_value(number);
-		explicit expr_value(std::string);
-		explicit expr_value(bool);
+		value_();
+		explicit value_(const_tile_ptr v);
+		explicit value_(const_patch_ptr v);
+		explicit value_(const_edge_ptr v);
+		explicit value_(const_vertex_ptr);
+		explicit value_(const_lambda_ptr);
+		explicit value_(const_cluster_ptr);
+		explicit value_(field_ref_ptr);
+		explicit value_(nil_val);
+		explicit value_(number);
+		explicit value_(std::string);
+		explicit value_(bool);
 	};
 
-	bool is_simple_value(expr_value);
-	bool is_object_like(expr_value);
-	bool is_array_like(expr_value);
-	bool is_nil(expr_value);
-	expr_value clone_value(allocator& allocator, expr_value v);
-	expr_value clone_value(allocator& allocator, std::unordered_map<obj_id, void*>& original_to_clone, expr_value v);
-	expr_value get_ary_item(expr_value v, int index);
-	int get_ary_count(expr_value v);
-	expr_value get_field(expr_value v, allocator& allocator, const std::string& field) ;
-	void insert_field(expr_value v, const std::string& var, expr_value val);
-	std::unordered_set<obj_id> get_all_referenced_allocations(expr_value v);
-	void get_all_referenced_allocations(expr_value v, std::unordered_set<obj_id>& alloc_set);
-	std::string to_string(expr_value v);
+	bool is_simple_value(value_);
+	bool is_object_like(value_);
+	bool is_array_like(value_);
+	bool is_nil(value_);
+	value_ clone_value(allocator& allocator, value_ v);
+	value_ clone_value(allocator& allocator, std::unordered_map<obj_id, void*>& original_to_clone, value_ v);
+	value_ get_ary_item(value_ v, int index);
+	int get_ary_count(value_ v);
+	value_ get_field(value_ v, allocator& allocator, const std::string& field) ;
+	void insert_field(value_ v, const std::string& var, value_ val);
+	std::unordered_set<obj_id> get_all_referenced_allocations(value_ v);
+	void get_all_referenced_allocations(value_ v, std::unordered_set<obj_id>& alloc_set);
+	std::string to_string(value_ v);
 
-	bool operator==(const expr_value& lhs, const expr_value& rhs);
-	bool operator!=(const expr_value& lhs, const expr_value& rhs);
+	bool operator==(const value_& lhs, const value_& rhs);
+	bool operator!=(const value_& lhs, const value_& rhs);
 
 	template<typename T> T* from_void_star(void* ptr) {
 		return reinterpret_cast<T*>(ptr);
@@ -80,14 +80,14 @@ namespace tess {
 
 	template<typename T>
 	T* clone(allocator& a, const T* tess_impl) {
-		tess::expr_value val{ const_cast<T*>(tess_impl) };
+		tess::value_ val{ const_cast<T*>(tess_impl) };
 		auto const_ptr = std::get<const T*>(tess::clone_value(a, val));
 		return const_cast<T*>(const_ptr);
 	}
 
 	template<typename T>
 	T* clone(allocator& a, T* tess_impl) {
-		tess::expr_value val{ tess_impl };
+		tess::value_ val{ tess_impl };
 		return std::get<T*>(tess::clone_value(a, val));
 	}
 	

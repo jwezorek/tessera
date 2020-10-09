@@ -86,15 +86,15 @@ namespace {
 		return { {0,0}, {c,0}, {C_x,C_y} };
 	}
 
-	tess::expr_value flip(tess::allocator& a, const tess::expr_value& arg)
+	tess::value_ flip(tess::allocator& a, const tess::value_& arg)
 	{
 		if (!std::holds_alternative<tess::const_tile_ptr>(arg) && !std::holds_alternative<tess::const_patch_ptr>(arg))
 			throw tess::error("attempted to flip a value that is not a tile or patch");
 
 		std::variant<tess::const_tile_ptr, tess::const_patch_ptr> flippable_val = variant_cast(arg);
 		auto flipped = std::visit(
-			[&a](auto&& flippee)->tess::expr_value {
-				return tess::expr_value( flippee->flip(a) );
+			[&a](auto&& flippee)->tess::value_ {
+				return tess::value_( flippee->flip(a) );
 			},
 			flippable_val
 		);
@@ -102,7 +102,7 @@ namespace {
 		return flipped;
 	}
 
-	std::vector<std::tuple<tess::number, tess::number>> polygon(const tess::expr_value& arg)
+	std::vector<std::tuple<tess::number, tess::number>> polygon(const tess::value_& arg)
 	{
 		if (! std::holds_alternative<tess::const_cluster_ptr>(arg))
 			return {};
@@ -125,77 +125,77 @@ namespace {
 	struct special_func_def {
 		tess::parser::kw tok;
 		int num_parameters;
-		std::function<tess::expr_value(tess::allocator&, const std::vector<tess::expr_value>&)> func;
+		std::function<tess::value_(tess::allocator&, const std::vector<tess::value_>&)> func;
 	};
 
 	std::vector<special_func_def> g_special_function_definitions = {
 		{
 			tess::parser::kw::arccos, 1,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value { return tess::expr_value( tess::acos(std::get<tess::number>(args[0])) ); }
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_( tess::acos(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::arcsin, 1,
-			[](tess::allocator& a,  const std::vector<tess::expr_value>& args)->tess::expr_value { return tess::expr_value(tess::asin(std::get<tess::number>(args[0])) ); }
+			[](tess::allocator& a,  const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::asin(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::arctan, 1,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value { return tess::expr_value(tess::atan(std::get<tess::number>(args[0])) ); }
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::atan(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::cos, 1,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value { return tess::expr_value(tess::cos(std::get<tess::number>(args[0])) ); }
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::cos(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::sin, 1,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value { return tess::expr_value(tess::sin(std::get<tess::number>(args[0])) ); }
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::sin(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::sqrt, 1,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value { return tess::expr_value(tess::sqrt(std::get<tess::number>(args[0])) ); }
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::sqrt(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::tan, 1,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value { return tess::expr_value(tess::tan(std::get<tess::number>(args[0])) ); }
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::tan(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::regular_polygon, 1,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = regular_polygon_vertices(std::get<tess::number>(args[0]));
-				return tess::expr_value(a.create<tess::const_tile_ptr>(&a, locs) );
+				return tess::value_(a.create<tess::const_tile_ptr>(&a, locs) );
 			}
 		} , {
 			tess::parser::kw::flip, 1,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
 				return flip(a, args[0]);
 			}
 		} , {
 			tess::parser::kw::isosceles_triangle, 1,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = isosceles_triangle(std::get<tess::number>(args[0]));
-				return tess::expr_value(a.create<tess::const_tile_ptr>(&a, locs) );
+				return tess::value_(a.create<tess::const_tile_ptr>(&a, locs) );
 			}
 		} , {
 			tess::parser::kw::isosceles_trapezoid, 2,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = isosceles_trapezoid(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]));
-				return tess::expr_value(a.create<tess::const_tile_ptr>(&a, locs));
+				return tess::value_(a.create<tess::const_tile_ptr>(&a, locs));
 			}
 		} , {
 			tess::parser::kw::rhombus, 1,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = rhombus(std::get<tess::number>(args[0]));
-				return tess::expr_value(a.create<tess::const_tile_ptr>(&a, locs) );
+				return tess::value_(a.create<tess::const_tile_ptr>(&a, locs) );
 			}
 		} , {
 			tess::parser::kw::polygon, 1,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = polygon(args[0]);
-				return tess::expr_value(a.create<tess::const_tile_ptr>(&a, locs) );
+				return tess::value_(a.create<tess::const_tile_ptr>(&a, locs) );
 			}
 		} , {
 			tess::parser::kw::join, 1,
-			[](tess::allocator& a,const std::vector<tess::expr_value>& args)->tess::expr_value {
+			[](tess::allocator& a,const std::vector<tess::value_>& args)->tess::value_ {
 				auto patch = std::get<tess::const_patch_ptr>(args[0]);
-				return tess::expr_value(patch->join(a) );
+				return tess::value_(patch->join(a) );
 			}
 		} , {
 			tess::parser::kw::triangle_by_sides, 3,
-			[](tess::allocator& a, const std::vector<tess::expr_value>& args)->tess::expr_value {
+			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = triangle_by_sides(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]), std::get<tess::number>(args[2]));
-				return tess::expr_value(a.create<tess::const_tile_ptr>(&a, locs) );
+				return tess::value_(a.create<tess::const_tile_ptr>(&a, locs) );
 			}
 		}
 	};
@@ -228,7 +228,7 @@ tess::number_expr::number_expr(int v) : val_(v)
 
 void tess::number_expr::compile(stack_machine::stack& stack) const
 {
-	stack.push(tess::expr_value{ tess::number(val_) });
+	stack.push(tess::value_{ tess::number(val_) });
 }
 
 std::string tess::number_expr::to_string() const
@@ -264,12 +264,12 @@ void tess::addition_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(std::make_shared<val_func_op>( 
 		static_cast<int>(terms_.size()),
-		[](allocator& a, const std::vector<expr_value>& args)->expr_value {
+		[](allocator& a, const std::vector<value_>& args)->value_ {
 			number sum = 0;
 			for (const auto& term : args) {
 				sum += std::get<number>(term);
 			}
-			return tess::expr_value(sum );
+			return tess::value_(sum );
 		},
 		"<add " + std::to_string(terms_.size()) + ">"
 		)
@@ -279,8 +279,8 @@ void tess::addition_expr::compile(stack_machine::stack& stack) const
 			stack.push(
 				std::make_shared<val_func_op>(
 					1,
-					[](allocator& a, const std::vector<expr_value>& args)->expr_value {
-						return tess::expr_value(-std::get<number>(args[0]) );
+					[](allocator& a, const std::vector<value_>& args)->value_ {
+						return tess::value_(-std::get<number>(args[0]) );
 					},
 					"<neg>"
 				)
@@ -346,12 +346,12 @@ void tess::multiplication_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(std::make_shared<val_func_op>(
 			static_cast<int>(factors_.size()),
-			[](allocator& a, const std::vector<expr_value>& args)->expr_value {
+			[](allocator& a, const std::vector<value_>& args)->value_ {
 				number product = 1;
 				for (const auto& term : args) {
 					product *= std::get<number>(term);
 				}
-				return tess::expr_value(product );
+				return tess::value_(product );
 			},
 			"<multiply " + std::to_string(factors_.size()) + ">"
 		)
@@ -361,8 +361,8 @@ void tess::multiplication_expr::compile(stack_machine::stack& stack) const
 			stack.push(
 				std::make_shared<val_func_op>(
 					1,
-					[](allocator& a, const std::vector<expr_value>& args)->expr_value {
-						return tess::expr_value(number(1) / std::get<number>(args[0]) );
+					[](allocator& a, const std::vector<value_>& args)->value_ {
+						return tess::value_(number(1) / std::get<number>(args[0]) );
 					},
 					"<reciprocal>"
 				)
@@ -430,13 +430,13 @@ void tess::exponent_expr::compile(stack_machine::stack& stack) const
 	int n = static_cast<int>(exponents_.size() + 1);
 	stack.push(std::make_shared<val_func_op>(
 			n,
-			[](allocator& a, const std::vector<expr_value>& args)->expr_value {
+			[](allocator& a, const std::vector<value_>& args)->value_ {
 				number power = std::get<number>(args[0]);
 				if (args.size() > 1) {
 					for (auto e = std::next(args.begin()); e != args.end(); e++) 
 						power = tess::pow(power, std::get<number>(*e));
 				}
-				return tess::expr_value(power );
+				return tess::value_(power );
 			},
 			"<exp " + std::to_string(n) + ">"
 		)
@@ -489,13 +489,13 @@ void tess::special_number_expr::compile(stack_machine::stack& stack) const
 {
 	switch (num_) {
 		case special_num::pi:
-			stack.push({ tess::expr_value{ tess::pi() } });
+			stack.push({ tess::value_{ tess::pi() } });
 			break;
 		case special_num::phi:
-			stack.push({ tess::expr_value{ tess::phi() } });
+			stack.push({ tess::value_{ tess::phi() } });
 			break;
 		case special_num::root_2:
-			stack.push({ tess::expr_value{ tess::root_2() } });
+			stack.push({ tess::value_{ tess::root_2() } });
 			break;
 	}
 }
@@ -507,7 +507,7 @@ tess::string_expr::string_expr(std::string str) : val_(str)
 
 void tess::string_expr::compile(stack_machine::stack& stack) const
 {
-	stack.push(tess::expr_value{ val_ });
+	stack.push(tess::value_{ val_ });
 }
 
 std::string tess::string_expr::to_string() const {
@@ -610,13 +610,13 @@ void tess::and_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<val_func_op>(
 			n,
-			[](allocator& a, const std::vector<expr_value>& args)->expr_value {
+			[](allocator& a, const std::vector<value_>& args)->value_ {
 				for (const auto& conjunct : args) {
 					auto val = std::get<bool>(conjunct);
 					if (!val)
-						return tess::expr_value(false );
+						return tess::value_(false );
 				}
-				return tess::expr_value(true);
+				return tess::value_(true);
 			},
 			"<and>"
 		)
@@ -655,7 +655,7 @@ void tess::equality_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<val_func_op>(
 			n,
-			[](allocator& a, const std::vector<expr_value>& args) -> expr_value {
+			[](allocator& a, const std::vector<value_>& args) -> value_ {
 
 				std::vector<number> expressions;
 				expressions.reserve(args.size());
@@ -666,9 +666,9 @@ void tess::equality_expr::compile(stack_machine::stack& stack) const
 				auto first = expressions.front();
 				for (int i = 1; i < expressions.size(); ++i)
 					if (!equals(first, expressions[i]))
-						return tess::expr_value(false );
+						return tess::value_(false );
 
-				return tess::expr_value(true );
+				return tess::value_(true );
 			},
 			"<eq>"
 		)
@@ -706,13 +706,13 @@ void tess::or_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<val_func_op>(
 			static_cast<int>(disjuncts_.size()),
-			[](allocator& a, const std::vector<expr_value>& args) -> expr_value {
+			[](allocator& a, const std::vector<value_>& args) -> value_ {
 				for (const auto& disjunct : args) {
 					auto val = std::get<bool>(disjunct);
 					if (val)
-						return tess::expr_value(true );
+						return tess::value_(true );
 				}
-				return tess::expr_value(false);
+				return tess::value_(false);
 			},
 			"<or>"
 		)
@@ -771,7 +771,7 @@ void tess::relation_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<val_func_op>(
 			2,
-			[relation](allocator& a, const std::vector<expr_value>& args) -> expr_value {
+			[relation](allocator& a, const std::vector<value_>& args) -> value_ {
 				for (const auto& disjunct : args) {
 					auto lhs = std::get<number>(args[0]);
 					auto rhs = std::get<number>(args[1]);
@@ -794,9 +794,9 @@ void tess::relation_expr::compile(stack_machine::stack& stack) const
 						result = is_ne(lhs, rhs);
 						break;
 					}
-					return tess::expr_value{ result };
+					return tess::value_{ result };
 				}
-				return tess::expr_value(false );
+				return tess::value_(false );
 			},
 			"<relation>"
 		)
@@ -831,7 +831,7 @@ tess::expr_ptr tess::nil_expr::simplify() const
 
 void tess::nil_expr::compile(stack_machine::stack& stack) const
 {
-	stack.push(expr_value{ nil_val() });
+	stack.push(value_{ nil_val() });
 }
 
 void tess::nil_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
@@ -896,11 +896,11 @@ void tess::on_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<val_func_op>(
 			2,
-			[](allocator& a, const std::vector<expr_value>& args) -> expr_value {
+			[](allocator& a, const std::vector<value_>& args) -> value_ {
 				std::variant<tess::const_tile_ptr, tess::const_patch_ptr> tile_or_patch = variant_cast(args[0]);
 				std::variant<tess::const_edge_ptr, tess::const_cluster_ptr> arg = variant_cast(args[1]);
 				return std::visit(
-					[&](const auto& t)->expr_value {
+					[&](const auto& t)->value_ {
 						return t->get_on(a, arg);
 					},
 					tile_or_patch
@@ -940,7 +940,7 @@ tess::bool_lit_expr::bool_lit_expr(bool val) : val_(val)
 void tess::bool_lit_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(
-		tess::expr_value{ val_ }
+		tess::value_{ val_ }
 	);
 }
 
@@ -967,7 +967,7 @@ void tess::clone_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(
 		std::make_shared<one_param_op>(
-			[](allocator& a, const expr_value& v)->expr_value {
+			[](allocator& a, const value_& v)->value_ {
 				return tess::clone_value(a, v);
 			},
 			"clone"

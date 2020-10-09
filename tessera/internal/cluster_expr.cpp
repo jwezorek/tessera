@@ -17,14 +17,14 @@ void tess::cluster_expr::compile(stack_machine::stack& stack) const
     stack.push(
         std::make_shared<val_func_op>(
             n,
-            [](allocator& a, const std::vector<expr_value>& values)->expr_value {
+            [](allocator& a, const std::vector<value_>& values)->value_ {
                 //std::cout << "make_cluster\n";
                // for (auto& e : values) {
                 //    auto t = std::get<tess::tile>(e);
                 //    get_impl(t)->debug();
                // }
 
-                return expr_value(a.create<const_cluster_ptr>(values));
+                return value_(a.create<const_cluster_ptr>(values));
             },
             "<make_cluster " + std::to_string(n) + ">"
         )
@@ -75,20 +75,20 @@ void tess::num_range_expr::compile(stack_machine::stack& stack) const
     stack.push(
         std::make_shared<val_func_op>(
             2,
-            [](allocator& a, const std::vector<expr_value>& values)->expr_value {
+            [](allocator& a, const std::vector<value_>& values)->value_ {
                 int from = to_int(std::get<number>( values[0] ));
                 int to = to_int(std::get<number>( values[1] ));
                 int n = (to >= from) ? to - from + 1 : 0;
 
-                std::vector<expr_value> range;
+                std::vector<value_> range;
                 if (n == 0)
-                    return expr_value(a.create<const_cluster_ptr>(range));
+                    return value_(a.create<const_cluster_ptr>(range));
                 range.reserve(n);
 
                 for (int i = from; i <= to; i++)
-                    range.push_back(expr_value( tess::number(i) ));
+                    range.push_back(value_( tess::number(i) ));
 
-                return expr_value(a.create<const_cluster_ptr>(range) );
+                return value_(a.create<const_cluster_ptr>(range) );
             },
             "<make_range>"
         )
@@ -143,8 +143,8 @@ void tess::cluster_comprehension_expr::compile(stack_machine::stack& stack) cons
     stack.push(std::make_shared<pop_frame_op>());
     stack.push(std::make_shared<iterate_op>(var_, -1, body.pop_all()));
     range_expr_->compile(stack);
-    stack.push(expr_value());
-    stack.push(expr_value());
+    stack.push(value_());
+    stack.push(value_());
     stack.push(std::make_shared<push_frame_op>());
 }
 

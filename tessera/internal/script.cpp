@@ -31,7 +31,7 @@ namespace {
 	}
 
 
-	tess::result extract_tiles(const tess::expr_value& output) {
+	tess::result extract_tiles(const tess::value_& output) {
 
 		if (std::holds_alternative<tess::const_tile_ptr>(output))
 			return std::vector<tess::tile>{ tess::make_tess_obj<tess::tile>(std::get<tess::const_tile_ptr>(output)) };

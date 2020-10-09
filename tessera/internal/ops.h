@@ -10,8 +10,8 @@ namespace tess {
 
     template <typename T>
     T get_from_item(const stack_machine::item& item) {
-        if (std::holds_alternative<expr_value>(item)) {
-            auto ev = std::get<expr_value>(item);
+        if (std::holds_alternative<value_>(item)) {
+            auto ev = std::get<value_>(item);
             return std::get<T>(ev);
         } else {
             return std::get<T>(item);
@@ -20,7 +20,7 @@ namespace tess {
 
     template <typename T>
     stack_machine::item make_expr_val_item(const T& val) {
-        return stack_machine::item{ expr_value{ val } };
+        return stack_machine::item{ value_{ val } };
     }
 
     class make_lambda : public stack_machine::op_1 {
@@ -89,10 +89,10 @@ namespace tess {
 
     class one_param_op : public stack_machine::op_1 {
     public:
-        one_param_op(std::function<expr_value(allocator& a, const expr_value & v)> func, std::string name);
+        one_param_op(std::function<value_(allocator& a, const value_ & v)> func, std::string name);
     protected:
         std::string name_;
-        std::function<expr_value(allocator & a, const expr_value & v)> func_;
+        std::function<value_(allocator & a, const value_ & v)> func_;
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return name_; }
 
@@ -100,10 +100,10 @@ namespace tess {
 
     class val_func_op : public stack_machine::op_1 {
     public:
-        val_func_op(int n, std::function<expr_value(allocator& a, const std::vector<expr_value>& v)> func, std::string name);
+        val_func_op(int n, std::function<value_(allocator& a, const std::vector<value_>& v)> func, std::string name);
     protected:
         std::string name_;
-        std::function<expr_value(allocator& a, const std::vector<expr_value> & v)> func_;
+        std::function<value_(allocator& a, const std::vector<value_> & v)> func_;
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return name_; }
 

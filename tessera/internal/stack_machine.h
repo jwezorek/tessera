@@ -42,7 +42,7 @@ namespace tess {
         class op;
         using op_ptr = std::shared_ptr<op>;
 
-        class item : public std::variant<op_ptr, expr_value, error, variable>
+        class item : public std::variant<op_ptr, value_, error, variable>
         {
         public:
             std::string to_string() const;
@@ -113,7 +113,7 @@ namespace tess {
         {
         public:
             machine();
-            expr_value run(execution_state& state);
+            value_ run(execution_state& state);
         };
     };
 };

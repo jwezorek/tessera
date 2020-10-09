@@ -161,12 +161,12 @@ tess::stack_machine::machine::machine()
 }
 
 
-tess::expr_value tess::stack_machine::machine::run(execution_state& state)
+tess::value_ tess::stack_machine::machine::run(execution_state& state)
 {
     auto& contexts = state.context_stack();
     auto& main_stack = state.main_stack();
     auto& operands = state.operand_stack();
-    expr_value output;
+    value_ output;
 
     contexts.push(state.create_eval_context());
 
@@ -185,7 +185,7 @@ tess::expr_value tess::stack_machine::machine::run(execution_state& state)
         );
     }
 
-    output = std::get<expr_value>(operands.pop());
+    output = std::get<value_>(operands.pop());
 
     return output;
 }
@@ -198,7 +198,7 @@ std::string tess::stack_machine::item::to_string() const
             [&](op_ptr op) {
                 ss << op->to_string();
             },
-            [&](const expr_value& val) {
+            [&](const value_& val) {
                 ss << tess::to_string(val);
             },
             [&](const auto& val) {

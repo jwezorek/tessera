@@ -9,11 +9,11 @@ namespace tess {
 	public:
 		class impl_type;
 		field_ref_impl() {}
-		field_ref_impl( expr_value obj, std::string field);
-		void set( expr_value val);
+		field_ref_impl( value_ obj, std::string field);
+		void set( value_ val);
 
 	protected:
-		expr_value obj_;
+		value_ obj_;
 		std::string field_;
 	};
 

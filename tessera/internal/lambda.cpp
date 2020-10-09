@@ -11,7 +11,7 @@ const std::vector<std::string>& tess::lambda::parameters() const
     return impl_->parameters;
 }
 
-void tess::lambda::insert_field(const std::string& var, const expr_value& val)
+void tess::lambda::insert_field(const std::string& var, const value_& val)
 {
     impl_->insert_field(var, val);
 }
@@ -38,12 +38,12 @@ tess::detail::lambda_impl::lambda_impl(obj_id id, const std::vector<std::string>
 {
 }
 
-void tess::detail::lambda_impl::insert_field(const std::string& var, const expr_value& val)
+void tess::detail::lambda_impl::insert_field(const std::string& var, const value_& val)
 {
     closure.set(var, val);
 }
 
-tess::expr_value tess::detail::lambda_impl::get_field(allocator& allocator, const std::string& field) const
+tess::value_ tess::detail::lambda_impl::get_field(allocator& allocator, const std::string& field) const
 {
     auto maybe_value = closure.get(field);
     if (maybe_value.has_value())
