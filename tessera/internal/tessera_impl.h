@@ -49,12 +49,6 @@ namespace tess {
 	}
 
 	template<typename T>
-	T make_tess_obj(typename T::impl_type* impl) {
-		detail::tess_obj_maker maker;
-		return maker.make<T>(impl);
-	}
-
-	template<typename T>
 	T make_tess_obj(const typename T::impl_type* impl) {
 		detail::tess_obj_maker maker;
 		return maker.make<T>(impl);
