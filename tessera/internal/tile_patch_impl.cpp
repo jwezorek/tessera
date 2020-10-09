@@ -157,8 +157,7 @@ namespace {
 		return output;
 	}
 
-	//TODO
-	void propagate_edge_fields(tess::const_tile_ptr tile, tess::const_patch_ptr patch)
+	void propagate_edge_fields(tess::tile_ptr tile, tess::const_patch_ptr patch)
 	{
 		tess::edge_location_table edges;
 		for (const auto* t : patch->tiles())
@@ -182,7 +181,7 @@ namespace {
 				}
 			}
 			for (const auto& [var, val] : fields) {
-				const_cast<tess::edge::impl_type*>(edge)->insert_field(var, val);
+				edge->insert_field(var, val);
 			}
 		}
 	}
