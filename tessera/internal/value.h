@@ -31,25 +31,25 @@ namespace tess {
 	class field_ref_impl;
 	using field_ref_ptr = std::shared_ptr<field_ref_impl>;
 
-	using vertex_ptr = const detail::vertex_impl*;
-	using edge_ptr = const detail::edge_impl*;
-	using cluster_ptr = const detail::cluster_impl*;
-	using tile_ptr = const detail::tile_impl*;
-	using patch_ptr = const detail::patch_impl*;
-	using lambda_ptr = const detail::lambda_impl*;
+	using const_vertex_ptr = const detail::vertex_impl*;
+	using const_edge_ptr = const detail::edge_impl*;
+	using const_cluster_ptr = const detail::cluster_impl*;
+	using const_tile_ptr = const detail::tile_impl*;
+	using const_patch_ptr = const detail::patch_impl*;
+	using const_lambda_ptr = const detail::lambda_impl*;
 
-	using expr_val_var = std::variant<tile_ptr, patch_ptr, edge_ptr, vertex_ptr, lambda_ptr, cluster_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
+	using expr_val_var = std::variant<const_tile_ptr, const_patch_ptr, const_edge_ptr, const_vertex_ptr, const_lambda_ptr, const_cluster_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
 
 	class expr_value : public expr_val_var
 	{
 	public:
 		expr_value();
-		explicit expr_value(tile_ptr v);
-		explicit expr_value(patch_ptr v);
-		explicit expr_value(edge_ptr v);
-		explicit expr_value(vertex_ptr);
-		explicit expr_value(lambda_ptr);
-		explicit expr_value(cluster_ptr);
+		explicit expr_value(const_tile_ptr v);
+		explicit expr_value(const_patch_ptr v);
+		explicit expr_value(const_edge_ptr v);
+		explicit expr_value(const_vertex_ptr);
+		explicit expr_value(const_lambda_ptr);
+		explicit expr_value(const_cluster_ptr);
 		explicit expr_value(field_ref_ptr);
 		explicit expr_value(nil_val);
 		explicit expr_value(number);

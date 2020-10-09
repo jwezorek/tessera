@@ -70,7 +70,7 @@ namespace {
         moved.insert(get_key(obj));
     }
 
-    using edge_mapping = std::tuple<tess::edge_ptr, tess::edge_ptr>;
+    using edge_mapping = std::tuple<tess::const_edge_ptr, tess::const_edge_ptr>;
 
     std::optional<tess::error> apply_edge_mapping(const edge_mapping& mapping, std::unordered_set<tess::obj_id>& moved)
     {
@@ -131,7 +131,7 @@ tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_mac
     auto& ctxt = contexts.top();
     auto& alloc = contexts.top().allocator();
     try {
-        auto lambda = alloc.create<tess::lambda_ptr>(parameters_, body_, dependencies_);
+        auto lambda = alloc.create<tess::const_lambda_ptr>(parameters_, body_, dependencies_);
 
         for (auto dependency : dependencies_)
             if (ctxt.has(dependency))
@@ -186,8 +186,8 @@ std::vector<tess::stack_machine::item> tess::get_var::execute(const std::vector<
     auto ident = std::get<stack_machine::variable>(operands[0]);
     auto value = ctxt.get(ident.name());
 
-    if (eval_parameterless_funcs_ && std::holds_alternative<lambda_ptr>(value)) {
-        auto lambda_val = std::get<lambda_ptr>(value);
+    if (eval_parameterless_funcs_ && std::holds_alternative<const_lambda_ptr>(value)) {
+        auto lambda_val = std::get<const_lambda_ptr>(value);
         if (lambda_val->parameters.empty()) {
             return std::vector<tess::stack_machine::item>{
                 { std::make_shared<push_eval_context>() },
@@ -243,10 +243,10 @@ void tess::pop_eval_context::execute(const std::vector<stack_machine::item>& ope
 std::vector<tess::stack_machine::item> tess::call_func::execute(const std::vector<tess::stack_machine::item>& operands, tess::stack_machine::context_stack& contexts) const
 {
     //TODO: make a function that tests a stackitem for an expr_val containing type and throws if not there
-    if (!std::holds_alternative<expr_value>(operands[0]) || !std::holds_alternative<lambda_ptr>(std::get<expr_value>(operands[0])))
+    if (!std::holds_alternative<expr_value>(operands[0]) || !std::holds_alternative<const_lambda_ptr>(std::get<expr_value>(operands[0])))
         throw tess::error("Attempted to evaluate non-lambda");
 
-    lambda_ptr func = std::get<lambda_ptr>(std::get<expr_value>(operands[0]));
+    const_lambda_ptr func = std::get<const_lambda_ptr>(std::get<expr_value>(operands[0]));
     std::vector<expr_value> args = get_vector<expr_value>(operands.begin() + 1, operands.end());
 
     if (func->parameters.size() != args.size())
@@ -399,16 +399,16 @@ std::string tess::lay_op::to_string() const
 std::optional<tess::error> tess::lay_op::apply_mapping(const std::vector<stack_machine::item>& operands) const
 {
     auto values = get_vector<expr_value>(operands.begin(), operands.end());
-    std::vector<std::tuple<edge_ptr, edge_ptr>> edge_to_edge;
+    std::vector<std::tuple<const_edge_ptr, const_edge_ptr>> edge_to_edge;
 
     for (const auto& e : values) {
-        if (!std::holds_alternative<tess::edge_ptr>(e))
+        if (!std::holds_alternative<tess::const_edge_ptr>(e))
             throw tess::error("mapping argument in a lay or join expression does not evaluate to an edge.");
     }
 
     for (int i = 0; i < values.size(); i += 2) {
-        auto edge1 = std::get<edge_ptr>(values[i]);
-        auto edge2 = std::get<edge_ptr>(values[i+1]);
+        auto edge1 = std::get<const_edge_ptr>(values[i]);
+        auto edge2 = std::get<const_edge_ptr>(values[i+1]);
         edge_to_edge.push_back({ edge1, edge2} );
     }
 
@@ -498,7 +498,7 @@ tess::stack_machine::item tess::get_ary_item_op::execute(const std::vector<stack
 }
 
 
-std::vector<tess::stack_machine::item> tess::iterate_op::start_next_item(int index, tess::cluster_ptr ary) const
+std::vector<tess::stack_machine::item> tess::iterate_op::start_next_item(int index, tess::const_cluster_ptr ary) const
 {
     std::vector<stack_machine::item> output{
         { expr_value{number(index)} },
@@ -523,8 +523,8 @@ tess::iterate_op::iterate_op(std::string index_var, int index_val, const std::ve
 std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     auto& alloc = contexts.top().allocator();
-    auto src = std::get<tess::cluster_ptr>(std::get<expr_value>( operands[0] ));
-    auto* dst = (index_val_ > -1) ? std::get<tess::cluster_ptr>(std::get<expr_value>(operands[1])) : nullptr;
+    auto src = std::get<tess::const_cluster_ptr>(std::get<expr_value>( operands[0] ));
+    auto* dst = (index_val_ > -1) ? std::get<tess::const_cluster_ptr>(std::get<expr_value>(operands[1])) : nullptr;
     auto curr_item = std::get<expr_value>( operands[2] );
     
     auto n = src->get_ary_count();
@@ -545,7 +545,7 @@ std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vect
 
     stack_machine::item new_dst;
     if (!dst)
-        new_dst = { expr_value{ alloc.create<cluster_ptr>(std::vector<expr_value>{}) } };
+        new_dst = { expr_value{ alloc.create<const_cluster_ptr>(std::vector<expr_value>{}) } };
     else
         new_dst = operands[1];
 
@@ -577,9 +577,9 @@ void tess::set_dependencies_op::execute(const std::vector<stack_machine::item>& 
     auto& ctxt = contexts.top();
     auto& frame = ctxt.peek();
     for (auto& val : frame.values()) {
-        if (std::holds_alternative<lambda_ptr>(val)) {
+        if (std::holds_alternative<const_lambda_ptr>(val)) {
             std::vector<std::string> vars;
-            auto* func = std::get<tess::lambda_ptr>(val);
+            auto* func = std::get<tess::const_lambda_ptr>(val);
             for (const auto& var : func->unfulfilled_dependencies())   
                 const_cast<tess::lambda::impl_type*>(func)->insert_field(var, ctxt.get(var));
         }

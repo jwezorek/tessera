@@ -11,26 +11,26 @@ namespace tess {
         template<typename T>
         using impl_pool = std::vector<std::unique_ptr<typename std::remove_pointer<T>::type>>;
     private:
-        impl_pool<tile_ptr> tile_pool_;
-        impl_pool<patch_ptr> patch_pool_;
-        impl_pool<edge_ptr> edge_pool_;
-        impl_pool<vertex_ptr> vertex_pool_;
-        impl_pool<lambda_ptr> lambda_pool_;
-        impl_pool<cluster_ptr> cluster_pool_;
+        impl_pool<const_tile_ptr> tile_pool_;
+        impl_pool<const_patch_ptr> patch_pool_;
+        impl_pool<const_edge_ptr> edge_pool_;
+        impl_pool<const_vertex_ptr> vertex_pool_;
+        impl_pool<const_lambda_ptr> lambda_pool_;
+        impl_pool<const_cluster_ptr> cluster_pool_;
 
         template<typename T>
         impl_pool<T>& get_pool() {
-            if constexpr (std::is_same<T, tile_ptr>::value)
+            if constexpr (std::is_same<T, const_tile_ptr>::value)
                 return tile_pool_;
-            else if constexpr (std::is_same<T, patch_ptr>::value)
+            else if constexpr (std::is_same<T, const_patch_ptr>::value)
                 return patch_pool_;
-            else if constexpr (std::is_same<T, edge_ptr>::value)
+            else if constexpr (std::is_same<T, const_edge_ptr>::value)
                 return edge_pool_;
-            else if constexpr (std::is_same<T, vertex_ptr>::value)
+            else if constexpr (std::is_same<T, const_vertex_ptr>::value)
                 return vertex_pool_;
-            else if constexpr (std::is_same<T, lambda_ptr>::value)
+            else if constexpr (std::is_same<T, const_lambda_ptr>::value)
                 return lambda_pool_;
-            else if constexpr (std::is_same<T, cluster_ptr>::value)
+            else if constexpr (std::is_same<T, const_cluster_ptr>::value)
                 return cluster_pool_;
         };
 

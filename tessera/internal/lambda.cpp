@@ -64,7 +64,7 @@ void tess::detail::lambda_impl::get_all_referenced_allocations(std::unordered_se
 }
 
 //TODO
-void tess::detail::lambda_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, lambda_ptr clone) const
+void tess::detail::lambda_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, const_lambda_ptr clone) const
 {
     auto mutable_clone = const_cast<lambda::impl_type*>(clone);
 
