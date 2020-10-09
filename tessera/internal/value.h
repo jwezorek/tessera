@@ -2,6 +2,7 @@
 
 #include "tessera_impl.h"
 #include "number.h"
+#include "variant_util.h"
 #include <variant>
 #include <memory>
 #include <unordered_set>
@@ -37,6 +38,12 @@ namespace tess {
 	using const_tile_ptr = const detail::tile_impl*;
 	using const_patch_ptr = const detail::patch_impl*;
 	using const_lambda_ptr = const detail::lambda_impl*;
+	using vertex_ptr =  detail::vertex_impl*;
+	using edge_ptr =  detail::edge_impl*;
+	using cluster_ptr =  detail::cluster_impl*;
+	using tile_ptr =  detail::tile_impl*;
+	using patch_ptr =  detail::patch_impl*;
+	using lambda_ptr =  detail::lambda_impl*;
 
 	using value_variant = std::variant<const_tile_ptr, const_patch_ptr, const_edge_ptr, const_vertex_ptr, const_lambda_ptr, const_cluster_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
 
@@ -74,21 +81,25 @@ namespace tess {
 	bool operator==(const value_& lhs, const value_& rhs);
 	bool operator!=(const value_& lhs, const value_& rhs);
 
+	template<typename T>
+	auto get_mutable(value_ val) -> auto {
+		if constexpr ((std::is_same<T, field_ref_ptr>::value) || (std::is_same<T, nil_val>::value) || (std::is_same<T, number>::value) ||
+			(std::is_same<T, std::string>::value) || (std::is_same<T, bool>::value)) {
+			return std::get<T>(val);
+		} else {
+			using base_type = typename std::remove_const<typename std::remove_pointer<T>::type>::type;
+			return const_cast<base_type*>(std::get<T>(val));
+		}
+	}
+
 	template<typename T> T* from_void_star(void* ptr) {
 		return reinterpret_cast<T*>(ptr);
 	}
 
 	template<typename T>
 	T* clone(allocator& a, const T* tess_impl) {
-		tess::value_ val{ const_cast<T*>(tess_impl) };
-		auto const_ptr = std::get<const T*>(tess::clone_value(a, val));
-		return const_cast<T*>(const_ptr);
-	}
-
-	template<typename T>
-	T* clone(allocator& a, T* tess_impl) {
 		tess::value_ val{ tess_impl };
-		return std::get<T*>(tess::clone_value(a, val));
+		return get_mutable<const T*>(tess::clone_value(a, val));
 	}
 	
 }

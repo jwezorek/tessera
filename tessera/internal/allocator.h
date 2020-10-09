@@ -8,8 +8,13 @@
 namespace tess {
 
     class allocator {
+
+        template <typename T>
+        using base_type = typename std::remove_const<typename std::remove_pointer<T>::type>::type;
+
         template<typename T>
-        using impl_pool = std::vector<std::unique_ptr<typename std::remove_pointer<T>::type>>;
+        using impl_pool = std::vector<std::unique_ptr<base_type<T>>>;
+
     private:
         impl_pool<const_tile_ptr> tile_pool_;
         impl_pool<const_patch_ptr> patch_pool_;
@@ -40,9 +45,9 @@ namespace tess {
         allocator( int sz = 1024);
 
         template<typename T, typename... Args>
-        T create(Args&&... args) {
+        auto create(Args&&... args) {
             auto& imp_pool = get_pool<T>();
-            imp_pool.emplace_back(std::make_unique<std::remove_pointer<T>::type>(id_counter_++, std::forward<Args>(args)...));
+            imp_pool.emplace_back(std::make_unique<base_type<T>>(id_counter_++, std::forward<Args>(args)...));
             return imp_pool.back().get();
         }
 

@@ -36,7 +36,7 @@ namespace tess {
                 const_edge_ptr out_edge() const;
                 void insert_field(const std::string& var, const value_& val) {}
                 void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
-                void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, const_vertex_ptr clone) const;
+                void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, vertex_ptr clone) const;
                 const_patch_ptr grandparent() const;
                 void set_location(int vert_index);
                 void set_location(point pt);
@@ -66,7 +66,7 @@ namespace tess {
                 void insert_field(const std::string& var, const value_& val);
                 const std::map<std::string, value_>& fields() const;
                 void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
-                void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, const_edge_ptr clone) const;
+                void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, edge_ptr clone) const;
                 void flip();
                 edge_indices get_edge_location_indices() const;
                 std::string debug() const;
@@ -99,9 +99,9 @@ namespace tess {
                 void detach();
                 void insert_field(const std::string& var, const value_& val);
                 void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
-                void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, const_tile_ptr clone) const;
+                void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_ptr clone) const;
                 bool is_detached() const;
-                tess::const_tile_ptr clone_detached(tess::allocator& a) const;
+                tess::tile_ptr clone_detached(tess::allocator& a) const;
                 std::string debug() const;
                 const const_tile_ptr get_adjacent_tile(int edge_index) const;
                 const_edge_ptr get_edge_on(allocator& a, const_edge_ptr e) const;

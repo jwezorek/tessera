@@ -17,13 +17,20 @@ namespace {
 		return reinterpret_cast<void*>(non_const_ptr);
 	}
 
+	template <typename T>
+	using base_type = typename std::remove_const<typename std::remove_pointer<T>::type>::type;
+
+	template <typename T>
+	using mutable_ptr = typename std::add_pointer<base_type<T>>::type;
+
 	template<typename T>
 	T clone_aux(tess::allocator& allocator, std::unordered_map<tess::obj_id, void*>& orginal_to_clone, T original) {
+		using ptr = mutable_ptr<T>;
 		auto key = original->get_id();
-		T clone_impl = nullptr;
+		ptr clone_impl = nullptr;
 
 		if (orginal_to_clone.find(key) != orginal_to_clone.end()) {
-			clone_impl = reinterpret_cast<T>(orginal_to_clone[key]);
+			clone_impl = reinterpret_cast<ptr>(orginal_to_clone[key]);
 		} else {
 			clone_impl = allocator.create<T>();
 			orginal_to_clone[key] = const_obj_ptr_to_void_star(clone_impl);

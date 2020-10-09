@@ -18,12 +18,6 @@ void tess::cluster_expr::compile(stack_machine::stack& stack) const
         std::make_shared<val_func_op>(
             n,
             [](allocator& a, const std::vector<value_>& values)->value_ {
-                //std::cout << "make_cluster\n";
-               // for (auto& e : values) {
-                //    auto t = std::get<tess::tile>(e);
-                //    get_impl(t)->debug();
-               // }
-
                 return value_(a.create<const_cluster_ptr>(values));
             },
             "<make_cluster " + std::to_string(n) + ">"

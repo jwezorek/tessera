@@ -81,10 +81,8 @@ void tess::detail::tile_impl::get_all_referenced_allocations(std::unordered_set<
 		tess::get_all_referenced_allocations(val, alloc_set);
 }
 
-//TODO
-void tess::detail::tile_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, const_tile_ptr clone) const
+void tess::detail::tile_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_ptr mutable_clone) const
 {
-	auto mutable_clone = const_cast<tile::impl_type*>(clone);
 	for (const auto* v : vertices_) {
 		auto v_clone = std::get<const_vertex_ptr>(tess::clone_value(allocator, orginal_to_clone, value_(v)));
 		mutable_clone->vertices_.push_back(v_clone);
@@ -116,8 +114,7 @@ void* const_obj_ptr_to_void_star(const T* obj_ptr) {
 	return reinterpret_cast<void*>(non_const_ptr);
 }
 
-//TODO
-tess::const_tile_ptr tess::detail::tile_impl::clone_detached(tess::allocator& a) const
+tess::tile_ptr tess::detail::tile_impl::clone_detached(tess::allocator& a) const
 {
 	if (is_detached())
 		return tess::clone(a, this);
@@ -130,8 +127,8 @@ tess::const_tile_ptr tess::detail::tile_impl::clone_detached(tess::allocator& a)
 	value_ clone_value_ = tess::clone_value(a, original_to_clone, tile_value);
 
 	//now return the clone with the parent detached.
-	auto clone_tile = std::get<tess::const_tile_ptr>(clone_value_);
-	const_cast<tile::impl_type*>(clone_tile)->detach();
+	auto clone_tile = get_mutable<tess::const_tile_ptr>(clone_value_);
+	clone_tile->detach();
 
 	return clone_tile;
 }
@@ -249,16 +246,15 @@ void tess::detail::tile_impl::apply(const matrix& mat)
 	}
 }
 
-//TODO
 tess::const_tile_ptr tess::detail::tile_impl::flip(allocator& a) const
 {
-	tess::const_tile_ptr flippee;
+	tess::tile_ptr flippee;
 	if (is_detached()) {
 		flippee = tess::clone(a, this);
 	} else {
 		flippee = clone_detached(a);
 	}
-	const_cast<tile::impl_type*>(flippee)->flip();
+	flippee->flip();
 	return flippee;
 }
 
@@ -428,10 +424,9 @@ void tess::detail::edge_impl::get_all_referenced_allocations(std::unordered_set<
 	parent_->get_all_referenced_allocations(alloc_set);
 }
 
-//TODO
-void  tess::detail::edge_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, const_edge_ptr clone) const
+
+void  tess::detail::edge_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, edge_ptr mutable_clone) const
 {
-	auto mutable_clone = const_cast<edge::impl_type*>(clone);
 	mutable_clone->index_ = index_;
 	mutable_clone->u_ = u_;
 	mutable_clone->v_ = v_;
@@ -492,10 +487,8 @@ void tess::detail::vertex_impl::get_all_referenced_allocations(std::unordered_se
 	parent_->get_all_referenced_allocations(alloc_set);
 }
 
-//TODO
-void tess::detail::vertex_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, const_vertex_ptr clone) const
+void tess::detail::vertex_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, vertex_ptr mutable_clone) const
 {
-	auto mutable_clone = const_cast<vertex::impl_type*>(clone);
 	mutable_clone->index_ = index_;
 	mutable_clone->location_ = location_;
 	mutable_clone->parent_ = perform_clone<tile::impl_type>(allocator, orginal_to_clone, const_cast<tile::impl_type*>(parent_));

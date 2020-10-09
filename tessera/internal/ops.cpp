@@ -125,7 +125,6 @@ tess::make_lambda::make_lambda(const std::vector<std::string>& parameters, const
 {
 }
 
-//TODO
 tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     auto& ctxt = contexts.top();
@@ -135,7 +134,7 @@ tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_mac
 
         for (auto dependency : dependencies_)
             if (ctxt.has(dependency))
-                const_cast<lambda::impl_type*>(lambda)->insert_field(dependency, ctxt.get(dependency));
+                lambda->insert_field(dependency, ctxt.get(dependency));
 
         return  make_expr_val_item(lambda) ;
     }  catch (tess::error e) {
@@ -519,12 +518,11 @@ tess::iterate_op::iterate_op(std::string index_var, int index_val, const std::ve
 {
 }
 
-//TODO: ???
 std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     auto& alloc = contexts.top().allocator();
     auto src = std::get<tess::const_cluster_ptr>(std::get<value_>( operands[0] ));
-    auto* dst = (index_val_ > -1) ? std::get<tess::const_cluster_ptr>(std::get<value_>(operands[1])) : nullptr;
+    auto* dst = (index_val_ > -1) ? get_mutable<tess::const_cluster_ptr>(std::get<value_>(operands[1])) : nullptr;
     auto curr_item = std::get<value_>( operands[2] );
     
     auto n = src->get_ary_count();
@@ -535,7 +533,7 @@ std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vect
     // this is the only place where operands const-ness is an issue.
 
     if (dst) 
-        const_cast<cluster::impl_type*>(dst)->push_value(curr_item);
+        dst->push_value(curr_item);
     auto i = index_val_ + 1;
     
     if (i >= n)
@@ -571,7 +569,6 @@ tess::set_dependencies_op::set_dependencies_op() : stack_machine::op_0(0)
 {
 }
 
-//TODO
 void tess::set_dependencies_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
 {
     auto& ctxt = contexts.top();
@@ -579,9 +576,9 @@ void tess::set_dependencies_op::execute(const std::vector<stack_machine::item>& 
     for (auto& val : frame.values()) {
         if (std::holds_alternative<const_lambda_ptr>(val)) {
             std::vector<std::string> vars;
-            auto* func = std::get<tess::const_lambda_ptr>(val);
+            auto* func = get_mutable<tess::const_lambda_ptr>(val);
             for (const auto& var : func->unfulfilled_dependencies())   
-                const_cast<tess::lambda::impl_type*>(func)->insert_field(var, ctxt.get(var));
+                func->insert_field(var, ctxt.get(var));
         }
     }
 }

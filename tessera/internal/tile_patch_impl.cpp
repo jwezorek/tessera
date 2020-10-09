@@ -289,11 +289,11 @@ std::string tess::detail::patch_impl::debug() const
 	ss << "}\n\n";
 	return ss.str();
 }
-//TODO
+
 tess::const_patch_ptr tess::detail::patch_impl::flip(allocator& a) const {
 	value_ self = value_( this );
-	auto* clone = std::get<tess::const_patch_ptr>(tess::clone_value(a, self));
-	const_cast<tess::tile_patch::impl_type*>(clone)->flip();
+	auto* clone = get_mutable<tess::const_patch_ptr>(tess::clone_value(a, self));
+	clone->flip();
 	return clone;
 }
 
@@ -366,10 +366,8 @@ void tess::detail::patch_impl::get_all_referenced_allocations(std::unordered_set
 		tess::get_all_referenced_allocations(val, alloc_set);
 }
 
-//TODO
-void tess::detail::patch_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, const_patch_ptr clone) const
+void tess::detail::patch_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, patch_ptr mutable_clone) const
 {
-	auto mutable_clone = const_cast<tile_patch::impl_type*>(clone);
 	for (const auto& t : tiles_) {
 		auto t_clone = std::get<const_tile_ptr>(tess::clone_value(allocator, orginal_to_clone, value_{ t }));
 		mutable_clone->tiles_.push_back( t_clone );
@@ -460,10 +458,8 @@ void tess::detail::cluster_impl::get_all_referenced_allocations(std::unordered_s
 		tess::get_all_referenced_allocations(val, alloc_set);
 }
 
-//TODO
-void tess::detail::cluster_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, const_cluster_ptr clone) const
+void tess::detail::cluster_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, cluster_ptr mutable_clone) const
 {
-	auto mutable_clone = const_cast<detail::cluster_impl*>(clone);
 	for (const auto& value : values_) {
 		mutable_clone->values_.push_back(tess::clone_value(allocator, orginal_to_clone, value));
 	}
@@ -499,7 +495,7 @@ int count_tiles(const std::vector<tess::value_>& tiles_and_patches) {
 	return count;
 }
 
-//TODO
+//TODO:this is a bug I think
 tess::const_patch_ptr tess::flatten(tess::allocator& a, const std::vector<tess::value_>& tiles_and_patches, bool should_join_broken_tiles) {
 	for (const auto& v : tiles_and_patches)
 		if (!std::holds_alternative<tess::const_tile_ptr>(v) && !std::holds_alternative<tess::const_patch_ptr>(v))
