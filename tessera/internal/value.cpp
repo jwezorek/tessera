@@ -12,12 +12,6 @@
 namespace {
 
 	template <typename T>
-	void* const_obj_ptr_to_void_star(const T* obj_ptr) {
-		T* non_const_ptr = const_cast<T*>(obj_ptr);
-		return reinterpret_cast<void*>(non_const_ptr);
-	}
-
-	template <typename T>
 	using base_type = typename std::remove_const<typename std::remove_pointer<T>::type>::type;
 
 	template <typename T>
@@ -33,7 +27,7 @@ namespace {
 			clone_impl = reinterpret_cast<ptr>(orginal_to_clone[key]);
 		} else {
 			clone_impl = allocator.create<T>();
-			orginal_to_clone[key] = const_obj_ptr_to_void_star(clone_impl);
+			orginal_to_clone[key] = to_void_star(clone_impl);
 			original->clone_to(allocator, orginal_to_clone, clone_impl);
 		}
 

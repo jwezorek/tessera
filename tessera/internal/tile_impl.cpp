@@ -137,12 +137,6 @@ bool tess::detail::tile_impl::is_detached() const
 	return parent_ == nullptr;
 }
 
-template <typename T>
-void* const_obj_ptr_to_void_star(const T* obj_ptr) {
-	T* non_const_ptr = const_cast<T*>(obj_ptr);
-	return reinterpret_cast<void*>(non_const_ptr);
-}
-
 tess::tile_ptr tess::detail::tile_impl::clone_detached(tess::allocator& a) const
 {
 	if (is_detached())
@@ -152,7 +146,7 @@ tess::tile_ptr tess::detail::tile_impl::clone_detached(tess::allocator& a) const
 	auto tile_value = value_( this );
 	std::unordered_map<obj_id, void*> original_to_clone;
 	auto this_patch_key =  parent_->get_id();
-	original_to_clone[this_patch_key] = const_obj_ptr_to_void_star(parent_);
+	original_to_clone[this_patch_key] = to_void_star(parent_);
 	value_ clone_value_ = tess::clone_value(a, original_to_clone, tile_value);
 
 	//now return the clone with the parent detached.

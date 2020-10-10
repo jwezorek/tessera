@@ -92,6 +92,12 @@ namespace tess {
 		}
 	}
 
+	template <typename T>
+	void* to_void_star(const T* obj_ptr) {
+		T* non_const_ptr = const_cast<T*>(obj_ptr);
+		return reinterpret_cast<void*>(non_const_ptr);
+	}
+
 	template<typename T> T* from_void_star(void* ptr) {
 		return reinterpret_cast<T*>(ptr);
 	}
