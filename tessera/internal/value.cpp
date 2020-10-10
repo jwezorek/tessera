@@ -203,7 +203,7 @@ bool tess::operator!=(const value_& lhs, const value_& rhs)
 {
 	return !(lhs == rhs);
 }
-
+/*
 tess::value_::value_() : value_variant(tess::nil_val())
 {
 }
@@ -252,5 +252,5 @@ tess::value_::value_(std::string v) : value_variant(v)
 tess::value_::value_(bool v) : value_variant(v)
 {
 }
-
+*/
 

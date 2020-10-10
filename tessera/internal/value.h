@@ -45,24 +45,7 @@ namespace tess {
 	using patch_ptr =  detail::patch_impl*;
 	using lambda_ptr =  detail::lambda_impl*;
 
-	using value_variant = std::variant<const_tile_ptr, const_patch_ptr, const_edge_ptr, const_vertex_ptr, const_lambda_ptr, const_cluster_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
-
-	class value_ : public value_variant
-	{
-	public:
-		value_();
-		explicit value_(const_tile_ptr v);
-		explicit value_(const_patch_ptr v);
-		explicit value_(const_edge_ptr v);
-		explicit value_(const_vertex_ptr);
-		explicit value_(const_lambda_ptr);
-		explicit value_(const_cluster_ptr);
-		explicit value_(field_ref_ptr);
-		explicit value_(nil_val);
-		explicit value_(number);
-		explicit value_(std::string);
-		explicit value_(bool);
-	};
+	using value_ = std::variant<const_tile_ptr, const_patch_ptr, const_edge_ptr, const_vertex_ptr, const_lambda_ptr, const_cluster_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
 
 	bool is_simple_value(value_);
 	bool is_object_like(value_);
