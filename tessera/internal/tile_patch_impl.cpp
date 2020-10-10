@@ -80,7 +80,6 @@ namespace {
 		}
 		return output;
 	}
-
 	
 	template<typename T>
 	using assoc_map = boost::associative_property_map<T>;

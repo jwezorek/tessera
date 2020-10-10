@@ -15,19 +15,6 @@
 
 namespace {
 
-    tess::scope_frame get_closure(const std::vector<tess::stack_machine::item>& operands)
-    {
-        tess::scope_frame frame;
-        int i = 0;
-        while (i < operands.size()) {
-            auto var = std::get<tess::stack_machine::variable>(operands[i]);
-            auto val = std::get<tess::value_>(operands[i + 1]);
-            frame.set(var.name(), val);
-            i += 2;
-        }
-        return frame;
-    }
-
     using edge_parent_type = std::variant<tess::tile_ptr, tess::patch_ptr>;
 
     edge_parent_type parent_of_edge( tess::edge::impl_type& e) {
@@ -196,32 +183,6 @@ std::vector<tess::stack_machine::item> tess::get_var::execute(const std::vector<
 
     return std::vector<tess::stack_machine::item>{ {value} };
 }
-
-/*---------------------------------------------------------------------------------------------*/
-
-/*
-tess::make_scope_frame::make_scope_frame(int n) : op_1(2*n)
-{
-}
-
-tess::stack_machine::item tess::make_scope_frame::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
-{
-    int n = number_of_args_/2;
-    std::vector<std::string> vars(n);
-    std::vector<value_> vals(n);
-    try {
-        for (int i = 0; i < n; i += 2) {
-            vars[i] = std::get<stack_machine::identifier>(operands[i]).name;
-            vals[i] = std::get<value_>(operands[i + 1]);
-        }
-        return { scope_frame(vars, vals) };
-    } catch (tess::error e) {
-        return { e };
-    } catch (...) {
-        return { tess::error("bad get_var op") };
-    }
-}
-*/
 
 /*---------------------------------------------------------------------------------------------*/
 

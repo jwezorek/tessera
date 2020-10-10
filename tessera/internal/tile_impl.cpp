@@ -24,11 +24,6 @@ namespace {
 	}
 }
 
-std::vector<std::tuple<tess::number, tess::number>> get_regular_poly_vert_loc(int n) {
-	std::vector<std::tuple<tess::number, tess::number>> points(n);
-	return points;
-}
-
 tess::detail::tile_impl::tile_impl(obj_id id, tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations) :
 	tessera_impl(id),
 	parent_(nullptr),

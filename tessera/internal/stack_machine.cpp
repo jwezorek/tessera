@@ -160,7 +160,6 @@ tess::stack_machine::machine::machine()
 {
 }
 
-
 tess::value_ tess::stack_machine::machine::run(execution_state& state)
 {
     auto& contexts = state.context_stack();
