@@ -65,3 +65,50 @@ std::string tess::lay_expr::to_string() const
     return ss.str();
 }
 
+tess::map_lay_expr::map_lay_expr(tess::expr_ptr mapping_cluster) :
+    mapping_cluster_(mapping_cluster)
+{
+}
+
+void tess::map_lay_expr::compile(tess::stack_machine::stack& stack) const
+{
+}
+
+std::string tess::map_lay_expr::to_string() const
+{
+    return std::string( "<TODO>");
+}
+
+tess::expr_ptr tess::map_lay_expr::simplify() const
+{
+    return std::make_shared< map_lay_expr>(mapping_cluster_->simplify());
+}
+
+void tess::map_lay_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
+{
+    mapping_cluster_->get_dependencies(dependencies);
+}
+
+tess::partition_expr::partition_expr(expr_ptr cluster_expr) :
+    cluster_expr_(cluster_expr)
+{
+}
+
+void tess::partition_expr::compile(tess::stack_machine::stack& stack) const
+{
+}
+
+std::string tess::partition_expr::to_string() const
+{
+    return std::string("<TODO>");
+}
+
+tess::expr_ptr tess::partition_expr::simplify() const
+{
+    return std::make_shared< partition_expr>(cluster_expr_->simplify());
+}
+
+void tess::partition_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
+{
+    cluster_expr_->get_dependencies(dependencies);
+}

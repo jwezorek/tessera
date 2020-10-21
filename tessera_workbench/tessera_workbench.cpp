@@ -28,6 +28,7 @@ namespace {
 }
 
 int main(int argc, char** argv){
+
 	
 	auto [script_file_path, output_directory, tessera_args] = get_arguments(argc, argv);
 	auto script_name = fs::path(script_file_path).filename().string();

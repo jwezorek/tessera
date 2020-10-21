@@ -197,7 +197,7 @@ namespace {
 				auto locs = triangle_by_sides(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]), std::get<tess::number>(args[2]));
 				return tess::value_(a.create<tess::const_tile_ptr>(&a, locs) );
 			}
-		}
+		} 
 	};
 
 	std::optional<special_func_def> get_special_func_def(tess::parser::kw tok) {

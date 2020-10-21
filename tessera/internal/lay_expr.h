@@ -27,4 +27,30 @@ namespace tess {
 
 	};
 
+	class map_lay_expr : public tess::expression {
+	public:
+		map_lay_expr(expr_ptr mapping_cluster);
+		void compile(tess::stack_machine::stack& stack) const override;
+		std::string to_string() const override;
+		tess::expr_ptr simplify() const override;
+		void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
+
+	private:
+		expr_ptr mapping_cluster_;
+
+	};
+
+	class partition_expr : public tess::expression {
+	public:
+		partition_expr(expr_ptr cluster_expr);
+		void compile(tess::stack_machine::stack& stack) const override;
+		std::string to_string() const override;
+		tess::expr_ptr simplify() const override;
+		void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
+
+	private:
+		expr_ptr cluster_expr_;
+
+	};
+
 }

@@ -31,6 +31,19 @@ struct full_lay_params {
     tess::field_definitions with;
 };
 
+struct map_lay_params {
+    std::string kw;
+    tess::expr_ptr tiles;
+    tess::expr_ptr mapping;
+};
+
+struct full_map_lay_params {
+    std::string kw;
+    tess::expr_ptr tiles;
+    tess::expr_ptr mapping;
+    tess::field_definitions with;
+};
+
 BOOST_FUSION_ADAPT_STRUCT(layee_param,
     layee, alias
 )
@@ -41,6 +54,14 @@ BOOST_FUSION_ADAPT_STRUCT(lay_params,
 
 BOOST_FUSION_ADAPT_STRUCT(full_lay_params,
     kw, tiles, edge_mappings, with
+)
+
+BOOST_FUSION_ADAPT_STRUCT(map_lay_params, 
+    kw, tiles, mapping
+)
+
+BOOST_FUSION_ADAPT_STRUCT(full_map_lay_params,
+    kw, tiles, mapping, with
 )
 
 namespace tess {
@@ -90,6 +111,16 @@ namespace tess {
             _val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, std::make_shared<tess::lay_expr>(lp.edge_mappings), lp.with);
         };
 
+        auto make_map_lay = [&](auto& ctx) {
+            map_lay_params lp = _attr(ctx);
+            //_val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, std::make_shared<tess::lay_expr>(lp.edge_mappings), {});
+        };
+            
+        auto make_full_map_lay = [&](auto& ctx) {
+            full_map_lay_params lp = _attr(ctx);
+            //_val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, std::make_shared<tess::lay_expr>(lp.edge_mappings), {});
+        };
+
         x3::rule<class layee_param_, layee_param> layee = "layee_param";
         x3::rule<class obj_ref_pair_, std::tuple<expr_ptr, expr_ptr> > obj_ref_pair = "obj_ref_pair";
         x3::rule<class basic_lay_expr_aux_, lay_params> const basic_lay_expr_aux = "basic_lay_expr_aux";
@@ -97,6 +128,9 @@ namespace tess {
         x3::rule<class partial_lay_expr_aux_, std::tuple<std::string, std::vector<layee_param>>> const partial_lay_expr_aux = "partial_lay_expr_aux";
         x3::rule<class partial_lay_expr_, lay_params> const partial_lay_expr = "partial_lay_expr";
         x3::rule<class lay_stmt_, expr_ptr> const lay_expr = "lay_expr";
+
+        x3::rule<class map_lay_aux_, map_lay_params> const map_lay_aux = "map_lay_aux";
+        x3::rule<class full_map_lay_aux_, full_map_lay_params> const full_map_lay_aux = "full_map_lay_aux";
 
         auto const expr = expression_();
         const auto identifier = indentifier_str_();
@@ -108,7 +142,12 @@ namespace tess {
         auto const full_lay_expr_aux_def = lay_or_join >> (layee_def % x3::lit(",")) >> kw_lit<kw::such_that>() >> (obj_ref_pair % x3::lit(',')) >> trailing_with;
         auto const partial_lay_expr_aux_def = lay_or_join >> (layee_def % x3::lit(","));
         auto const partial_lay_expr_def = partial_lay_expr_aux [make_lay_params];
-        auto const lay_expr_def = (full_lay_expr_aux[make_full_lay_expr]) | (basic_lay_expr_aux[make_lay_expr]) | (partial_lay_expr[make_lay_expr]);
+
+        auto const map_lay_aux_def = lay_or_join >> expr >> kw_lit<kw::mapping>() >> expr;
+        auto const full_map_lay_aux_def = lay_or_join >> expr >> kw_lit<kw::mapping>() >> expr >> trailing_with;
+        
+        auto const lay_expr_def = (full_lay_expr_aux[make_full_lay_expr]) | (basic_lay_expr_aux[make_lay_expr]) | (partial_lay_expr[make_lay_expr]) |
+            (map_lay_aux[make_map_lay]) | (full_map_lay_aux[make_full_map_lay]);
 
         BOOST_SPIRIT_DEFINE(
             obj_ref_pair,
@@ -117,7 +156,9 @@ namespace tess {
             full_lay_expr_aux,
             partial_lay_expr,
             lay_expr,
-            layee
+            layee,
+            map_lay_aux,
+            full_map_lay_aux
         );
     }
 }
