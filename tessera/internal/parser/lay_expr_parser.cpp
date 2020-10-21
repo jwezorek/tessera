@@ -71,24 +71,23 @@ namespace tess {
             return tess::assignment_block(assignments);
         }
 
-        tess::expr_ptr make_lay_or_join(bool is_lay, const std::vector<layee_param>& args, const std::vector<std::tuple<expr_ptr, expr_ptr>>& edge_mappings, const field_definitions& with)
+        tess::expr_ptr make_lay_or_join(bool is_lay, const std::vector<layee_param>& args, expr_ptr lay_body, const field_definitions& with)
         {
-            expr_ptr body = std::make_shared<tess::lay_expr>(edge_mappings);
             if ( ! is_lay )
-                body = std::make_shared<special_function_expr>(parser::kw::join, body);
+                lay_body = std::make_shared<special_function_expr>(parser::kw::join, lay_body);
             if ( ! with.empty() )
-                body = std::make_shared<with_expr>(with, body);
-            return std::make_shared<where_expr>(get_placeholder_assignments(args), body);
+                lay_body = std::make_shared<with_expr>(with, lay_body);
+            return std::make_shared<where_expr>(get_placeholder_assignments(args), lay_body);
         }
 
         auto make_lay_expr = [&](auto& ctx) { 
             lay_params lp = _attr(ctx);
-            _val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, lp.edge_mappings, {});
+            _val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, std::make_shared<tess::lay_expr>(lp.edge_mappings), {});
         };
 
         auto make_full_lay_expr = [&](auto& ctx) {
             full_lay_params lp = _attr(ctx);
-            _val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, lp.edge_mappings, lp.with);
+            _val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, std::make_shared<tess::lay_expr>(lp.edge_mappings), lp.with);
         };
 
         x3::rule<class layee_param_, layee_param> layee = "layee_param";

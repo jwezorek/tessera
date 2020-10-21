@@ -58,6 +58,8 @@ namespace tess {
             true_,
             false_,
             triangle_by_sides,
+            map,
+            mapping,
             none
         };
 
