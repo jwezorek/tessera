@@ -160,3 +160,29 @@ void tess::cluster_comprehension_expr::get_dependencies(std::unordered_set<std::
             dependencies.insert(var);
     range_expr_->get_dependencies(dependencies);
 }
+
+tess::map_expr::map_expr(expr_ptr lambda, expr_ptr cluster) :
+    lambda_(lambda), cluster_(cluster)
+{
+}
+
+std::string tess::map_expr::to_string() const
+{
+    return std::string();
+}
+
+void tess::map_expr::compile(stack_machine::stack& stack) const
+{
+    //TODO
+}
+
+tess::expr_ptr tess::map_expr::simplify() const
+{
+    return std::make_shared<map_expr>(lambda_->simplify(), cluster_->simplify());
+}
+
+void tess::map_expr::get_dependencies(std::unordered_set<std::string>& dependencies) const
+{
+    lambda_->get_dependencies(dependencies);
+    cluster_->get_dependencies(dependencies);
+}

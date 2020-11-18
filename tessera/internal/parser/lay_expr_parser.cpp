@@ -7,6 +7,7 @@
 #include "../where_expr.h"
 #include "../with_expr.h"
 #include "../object_expr.h"
+#include "../cluster_expr.h"
 #include "skipper.h"
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -113,6 +114,10 @@ namespace tess {
 
         auto make_map_lay = [&](auto& ctx) {
             map_lay_params lp = _attr(ctx);
+
+            auto partitioned_layees = std::make_shared<tess::partition_expr>(lp.tiles);
+            auto apply_the_func = std::make_shared<tess::map_expr>(lp.mapping, partitioned_layees);
+
             //_val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, std::make_shared<tess::lay_expr>(lp.edge_mappings), {});
         };
             

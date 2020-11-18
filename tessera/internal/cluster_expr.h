@@ -42,4 +42,17 @@ namespace tess {
         expr_ptr simplify() const override;
         void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
     };
+
+    class map_expr : public expression
+    {
+    private:
+        expr_ptr lambda_;
+        expr_ptr cluster_;
+    public:
+        map_expr(expr_ptr lambda, expr_ptr cluster);
+        std::string to_string() const override;
+        void compile(stack_machine::stack& stack) const override;
+        expr_ptr simplify() const override;
+        void get_dependencies(std::unordered_set<std::string>& dependencies) const override;
+    };
 };
