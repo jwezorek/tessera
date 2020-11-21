@@ -137,7 +137,7 @@ std::string tess::make_lambda::to_string() const
     ss << ")> { ";
     auto body = body_;
     for (const auto& it : body) {
-        std::visit(
+        it.visit(
             overloaded{
                 [&](stack_machine::op_ptr op) {
                     ss << op->to_string();
@@ -148,8 +148,7 @@ std::string tess::make_lambda::to_string() const
                 [&](const auto& val) {
                     ss << val.to_string();
                 }
-            },
-            it
+            }
         );
         ss << "; ";
     }
@@ -401,7 +400,7 @@ std::string tess::if_op::to_string() const
     std::stringstream ss;
     ss << "<if> {";
     for (const auto& it : if_) {
-        std::visit(
+        it.visit(
             overloaded{
                 [&](stack_machine::op_ptr op) {
                     ss << op->to_string();
@@ -414,14 +413,13 @@ std::string tess::if_op::to_string() const
                 [&](const auto& val) {
                     ss << val.to_string();
                 }
-            },
-            it
+            }
         );
         ss << "; ";
     }
     ss << "} {";
     for (const auto& it : else_) {
-        std::visit(
+        it.visit(
             overloaded{
                 [&](stack_machine::op_ptr op) {
                     ss << op->to_string();
@@ -434,8 +432,7 @@ std::string tess::if_op::to_string() const
                 [&](const auto& val) {
                     ss << val.to_string();
                 }
-            },
-            it
+            }
         );
         ss << "; ";
     }

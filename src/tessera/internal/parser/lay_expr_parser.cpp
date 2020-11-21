@@ -67,9 +67,9 @@ BOOST_FUSION_ADAPT_STRUCT(full_map_lay_params,
 namespace tess {
     namespace parser {
         template<typename T>
-        auto make_ = [&](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
+        auto make_ = [](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
 
-        auto make_lay_params = [&](auto& ctx) { 
+        auto make_lay_params = [](auto& ctx) { 
             lay_params p;
             p.kw = std::get<0>(_attr(ctx));
             p.tiles = std::get<1>(_attr(ctx));
@@ -101,22 +101,22 @@ namespace tess {
             return std::make_shared<where_expr>(get_placeholder_assignments(args), lay_body);
         }
 
-        auto make_lay_expr = [&](auto& ctx) { 
+        auto make_lay_expr = [](auto& ctx) { 
             lay_params lp = _attr(ctx);
             _val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, std::make_shared<tess::lay_expr>(lp.edge_mappings), {});
         };
 
-        auto make_full_lay_expr = [&](auto& ctx) {
+        auto make_full_lay_expr = [](auto& ctx) {
             full_lay_params lp = _attr(ctx);
             _val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, std::make_shared<tess::lay_expr>(lp.edge_mappings), lp.with);
         };
 
-        auto make_map_lay = [&](auto& ctx) {
+        auto make_map_lay = [](auto& ctx) {
             map_lay_params lp = _attr(ctx);
             //_val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, std::make_shared<tess::lay_expr>(lp.edge_mappings), {});
         };
             
-        auto make_full_map_lay = [&](auto& ctx) {
+        auto make_full_map_lay = [](auto& ctx) {
             full_map_lay_params lp = _attr(ctx);
             //_val(ctx) = make_lay_or_join(lp.kw == keyword(kw::lay), lp.tiles, std::make_shared<tess::lay_expr>(lp.edge_mappings), {});
         };

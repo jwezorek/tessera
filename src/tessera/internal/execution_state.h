@@ -16,7 +16,7 @@ namespace tess {
         execution_state();
         evaluation_context create_eval_context();
         evaluation_context create_eval_context(const scope_frame& frame);
-        allocator& allocator();
+        class allocator& allocator();
         stack_machine::stack& main_stack();
         stack_machine::stack& operand_stack();
         stack_machine::context_stack& context_stack();

@@ -16,7 +16,7 @@ namespace tess {
     namespace parser {
 
 		template<typename T>
-		auto make_ = [&](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
+		auto make_ = [](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
 
 		x3::rule<class trailing_where__, tess::assignment_block> trailing_where = "trailing_where";
 		x3::rule<class single_assignment_, var_assignment> single_assignment = "single_assignment";
@@ -25,7 +25,7 @@ namespace tess {
 		x3::rule<class asgn_stmt_, var_assignment> assignment_stmt = "assignment_stmt";
 		x3::rule<class where_expression_, expr_ptr> where_expr = "where_expr";
 
-		auto make_vector = [&](auto& ctx) { _val(ctx) = std::vector<std::string>{ _attr(ctx) }; };
+		auto make_vector = [](auto& ctx) { _val(ctx) = std::vector<std::string>{ _attr(ctx) }; };
 
 		const auto expr = expression_();
 		const auto identifier = indentifier_str_();

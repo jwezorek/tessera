@@ -28,7 +28,7 @@ namespace tess {
         class impl_type;
     protected:
         
-        script(std::shared_ptr<impl_type> impl);
+        script(std::shared_ptr<impl_type>  impl);
         std::shared_ptr<impl_type> impl_;
     };
 

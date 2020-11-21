@@ -15,7 +15,7 @@ namespace tess {
     namespace parser
     {
         template<typename T>
-        auto make_ = [&](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
+        auto make_ = [](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
         using op_expr = std::tuple<char, expr_ptr>;
    
         x3::rule<class factor_, expr_ptr> const factor = "factor";

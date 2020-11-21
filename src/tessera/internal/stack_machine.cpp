@@ -171,7 +171,7 @@ tess::value_ tess::stack_machine::machine::run(execution_state& state)
 
     while (!main_stack.empty()) {
         auto stack_item = main_stack.pop();
-        std::visit(
+        stack_item.visit(
             overloaded{
                 [&](op_ptr op) {
                     op->execute(main_stack, operands, contexts);
@@ -179,8 +179,7 @@ tess::value_ tess::stack_machine::machine::run(execution_state& state)
                 [&](auto val) {
                     operands.push(stack_machine::item{ val });
                 }
-            },
-            stack_item
+            }
         );
     }
 
@@ -192,7 +191,7 @@ tess::value_ tess::stack_machine::machine::run(execution_state& state)
 std::string tess::stack_machine::item::to_string() const
 {
     std::stringstream ss;
-    std::visit(
+    this->visit(
         overloaded{
             [&](op_ptr op) {
                 ss << op->to_string();
@@ -203,9 +202,8 @@ std::string tess::stack_machine::item::to_string() const
             [&](const auto& val) {
                 ss << val.to_string();
             }
-        },
-        *this
-     );
+        }
+    );
     return ss.str();
 }
 

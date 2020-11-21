@@ -53,8 +53,8 @@ namespace {
 
 	std::tuple<double, double> rotate(const std::tuple<double, double>& pt, double theta) {
 		auto [x, y] = pt;
-		auto length = std::sqrtf(x * x + y * y);
-		auto new_angle = std::atan2f(y, x) + theta;
+		auto length = std::sqrt(x * x + y * y);
+		auto new_angle = std::atan2(y, x) + theta;
 		return { length * std::cos(new_angle) , length * std::sin(new_angle) };
 	}
 

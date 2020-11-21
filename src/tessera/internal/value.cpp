@@ -148,7 +148,7 @@ void tess::insert_field(value_ v, const std::string& var, value_ val)
 	std::variant<const_tile_ptr, const_patch_ptr, const_vertex_ptr, const_edge_ptr, const_cluster_ptr, const_lambda_ptr> obj_variant = variant_cast(v);
 	std::visit(
 		[&](const auto* obj) { 
-			using T = std::remove_const<std::remove_pointer<decltype(obj)>::type>::type;
+			using T = std::remove_const_t<std::remove_pointer_t<decltype(obj)>>;
 			const_cast<T*>(obj)->insert_field(var,val); 
 		},
 		obj_variant

@@ -19,7 +19,7 @@ namespace tess {
     namespace parser{
 
         template<typename T>
-        auto make_ = [&](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
+        auto make_ = [](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
 		auto make_nil = [](auto& ctx) { _val(ctx) = std::make_shared<tess::nil_expr>(); };
 
         x3::rule<class basic_expr_tag, expr_ptr> const basic_expr = "basic_expr";

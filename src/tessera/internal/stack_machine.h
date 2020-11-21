@@ -20,6 +20,9 @@ namespace tess {
 
     namespace stack_machine
     {
+        class op;
+        using op_ptr = std::shared_ptr<op>;
+        
         using context_stack = std::stack<evaluation_context>;
 
         struct variable {
@@ -39,13 +42,25 @@ namespace tess {
             }
         };
 
-        class op;
-        using op_ptr = std::shared_ptr<op>;
+        namespace detail {
+            using item_variant = std::variant<op_ptr, value_, error, variable>;
+        }
 
-        class item : public std::variant<op_ptr, value_, error, variable>
+
+        class item : public detail::item_variant
         {
         public:
             std::string to_string() const;
+
+            template <typename F>
+            decltype(auto) visit(F&& f) {
+                return std::visit(std::forward<F>(f), static_cast<detail::item_variant&>(*this));
+            }
+
+            template <typename F>
+            decltype(auto) visit(F&& f) const {
+                return std::visit(std::forward<F>(f), static_cast<const detail::item_variant&>(*this));
+            }
         };
 
         class stack {

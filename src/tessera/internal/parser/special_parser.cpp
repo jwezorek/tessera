@@ -11,7 +11,7 @@ namespace x3 = boost::spirit::x3;
 namespace tess {
 	namespace parser {
 		template<typename T>
-		auto make_ = [&](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
+		auto make_ = [](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
 		auto make_token = [](auto& ctx) { _val(ctx) = token(_attr(ctx)); };
 
 		const auto expr = expression_();

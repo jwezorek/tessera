@@ -44,15 +44,15 @@ namespace tess {
 		x3::rule<class with_expression_, tess::expr_ptr> with_expr = "with_expr";
 
 		expr_ptr unpack_obj_list(const obj_ref_list_t& ol);
-		auto make_lhs = [&](auto& ctx) { _val(ctx) = unpack_obj_list(_attr(ctx)); };
-		auto make_vector = [&](auto& ctx) {
+		auto make_lhs = [](auto& ctx) { _val(ctx) = unpack_obj_list(_attr(ctx)); };
+		auto make_vector = [](auto& ctx) {
 			std::vector<tess::expr_ptr> vec;
 			vec.push_back(_attr(ctx));
 			_val(ctx) = vec; 
 		};
 
 		template<typename T>
-		auto make_ = [&](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
+		auto make_ = [](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
 
 		const auto expr = expression_();
 		const auto identifier = indentifier_str_();

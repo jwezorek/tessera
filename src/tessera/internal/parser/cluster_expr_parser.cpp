@@ -14,7 +14,7 @@ namespace x3 = boost::spirit::x3;
 namespace tess {
 	namespace parser {
 		template<typename T>
-		auto make_ = [&](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
+		auto make_ = [](auto& ctx) { _val(ctx) = std::make_shared<T>(_attr(ctx)); };
 		
 		x3::rule<class cluster_expr_aux__, std::vector<expr_ptr>> cluster_expr_aux = "cluster_expr_aux";
 		x3::rule<class cluster_expr__, expr_ptr> cluster_expr = "cluster_expr";

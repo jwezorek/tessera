@@ -49,8 +49,8 @@ namespace tess {
         void push_scope(scope_frame&& scope);
         void push_scope(const scope_frame& scope);
         scope_frame pop_scope();
-        allocator& allocator();
-        execution_state& execution_state();
+        class allocator& allocator();
+        class execution_state& execution_state();
         bool empty() const;
         int num_frames() const;
     private:

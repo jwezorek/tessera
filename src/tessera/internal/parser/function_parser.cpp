@@ -15,7 +15,7 @@ namespace x3 = boost::spirit::x3;
 namespace tess {
 	namespace parser {
 
-		auto make_func = [&](auto& ctx) { 
+		auto make_func = [](auto& ctx) { 
 			auto [params, body, where, with] = _attr(ctx);
 			body = (with.has_value() ) ?
 				std::make_shared<tess::with_expr>(with.value(), body) :

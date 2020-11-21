@@ -1,9 +1,9 @@
 #include "tessera/script.h"
+#include <utility>
 #include "tessera/tile_patch.h"
 #include "tile_patch_impl.h"
 #include "script_impl.h"
 #include "function_def.h"
-#include "lambda.h"
 #include "where_expr.h"
 #include "parser/script_parser.h"
 #include "parser/expr_parser.h"
@@ -24,7 +24,7 @@ namespace {
 					return expr->simplify();
 				}
 			);
-		} catch (tess::error e) {
+		} catch (const tess::error& e) {
 			return e;
 		}
 		return output;
@@ -70,9 +70,9 @@ tess::result tess::script::execute(const std::vector<std::string>& arg_strings) 
 		auto args = std::get<std::vector<expr_ptr>>(maybe_args);
 
 		expr_ptr eval_script_expr = std::make_shared<where_expr>(
-			impl_->globals(),
+            impl_->globals(),
 			std::make_shared<func_call_expr>(impl_->tableau(), args)
-			);
+		);
 
 		auto& state = impl_->state();
 		std::string expr_str = eval_script_expr->to_string();
@@ -82,14 +82,14 @@ tess::result tess::script::execute(const std::vector<std::string>& arg_strings) 
 		auto output = sm.run(state);
 
 		return extract_tiles(output);
-	} catch (tess::error e) {
+	} catch (const tess::error& e) {
 		return e;
 	} catch(...) {
 		return tess::error("Unknown error");
 	}
 }
 
-tess::script::script(std::shared_ptr<impl_type> impl) : impl_(impl)
+tess::script::script(std::shared_ptr<impl_type>  impl) : impl_(std::move(impl))
 {
 }
 

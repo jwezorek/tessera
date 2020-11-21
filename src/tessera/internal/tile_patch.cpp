@@ -1,4 +1,4 @@
-#include "..\include\tessera\tile_patch.h"
+#include "tessera/tile_patch.h"
 #include "tile_patch_impl.h"
 
 std::vector<tess::tile> tess::tile_patch::tiles() const
