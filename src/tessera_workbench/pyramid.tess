@@ -1,0 +1,26 @@
+let triangle = {
+    regular_polygon(3)
+} with {
+    left, bottom, right is this.edges;
+    color is "pink";
+};
+
+let tri_pair = lay triangle , triangle such_that $1.right <-> $2.right;
+
+let tri_strip = func( n ) {
+    if (n == 1)
+        lay triangle
+    else
+        lay tri_pair , tri_strip(n-1) such_that $1[1].left <-> $2[0].left
+};
+
+let pyramid = func( n ) {
+    if (n == 1)
+        lay triangle
+    else
+        lay tri_strip(n) , pyramid(n-1) such_that $1[1].bottom <-> $2[0].bottom
+};
+
+tableau( num ) {
+    lay pyramid(num)
+}

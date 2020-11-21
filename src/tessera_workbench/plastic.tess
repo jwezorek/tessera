@@ -1,0 +1,130 @@
+
+
+let rho = ((9 + sqrt(69))/18)^(1/3) + ((9 - sqrt(69))/18)^(1/3);
+
+let iso = func(n) {
+    if (n==1)
+        {triangle_by_sides( 1/sqrt(rho), rho, rho)} with {
+            base, right, left is this.edges;
+            color is "blue";
+        }
+    else
+        lay iso(n-1), flip(s2(n-1)) such_that $1.left <-> $2.long with {
+            base on $1.right;
+            left on $2.short;
+            right on $2.base;
+        }
+};
+
+
+let q1 = func(n) {
+    if (n==1) 
+        { 
+            join i, i such_that $1.left <-> $2.left with {
+                top on $1.base;
+                left on $1.right;
+                bottom on $2.base;
+                right on $2.right;
+                color is "blue";
+            }
+        } where {
+            let i = 
+                {triangle_by_sides( 1/sqrt(rho), rho, rho)} with {
+                    base, right, left is this.edges;
+                    color is "blue";
+                };
+        }
+    else 
+        lay 
+            q1(n-1), q2(n-1), q1(n-1), s3(n-1), s2(n-1) 
+        such_that
+            $1.top <-> $4.short, $5.base <-> $4.base, $3.right <-> $4.long, $3.bottom <-> $2.top 
+        with {
+            left on $2.left;
+            bottom on $1.bottom;
+            right on $1.right;
+        }
+} ;
+
+let q2 = func(n) {
+        { 
+            join 
+                flip(t), flip(t), t , t
+            such_that
+                $1.base <-> $2.base,
+                $2.long <-> $3.short,
+                $3.base <-> $4.base
+            with {
+                top on $4.short;
+                bottom on $1.long;
+                left is this.top.next;
+                right is this.bottom.next;
+                color is "red";
+            }
+        } where {
+
+            let t = s2(1);
+        }
+} ;
+
+let s2 = func(n) {
+    if (n==1)
+        {triangle_by_sides( rho * rho, sqrt(rho), 1)} with {
+            base, long, short is this.edges;
+            color is "yellow";
+        }
+    else
+        lay 
+            flip(s3(n-1)), flip(s2(n-1)), s3(n-1), s3(n-1)
+        such_that 
+            $3.short <-> $1.long, $1.base <-> $2.base, $1.short <-> $4.long 
+        with {
+            long on $3.long;
+            base on $3.base;
+            short on $2.long;
+        }
+    };
+
+
+let s3 = func(n) {
+    if (n==1) 
+        {triangle_by_sides( rho * rho, sqrt(rho), 1)} with {
+            base, long, short is this.edges;
+            color is "green";
+        }
+    else
+        lay 
+            s2(n-1), q1(n-1), s2(n-1) 
+        such_that 
+            $1.long <-> $2.left, $2.bottom <-> $3.short 
+        with {
+            short on $1.short;
+            long on $2.right;
+            base on $1.base;
+        }
+};
+
+/* this is
+   a comment
+
+
+let s4 = func(n) {
+    {triangle_by_sides( rho * rho, sqrt(rho), 1)} with {
+            base, long, short is this.edges;
+            color is "purple";
+        }
+};
+
+let quad = {
+    lay 
+        tri, tri, tri, flip(tri)
+    such_that
+        $1.short <-> $2.long, $2.short <-> $3.long, $3.short <-> $4.long
+} where {
+    let tri = s2(1);
+};
+*/
+
+tableau(n) {
+    lay s2(4) 
+}
