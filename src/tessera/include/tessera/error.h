@@ -2,10 +2,11 @@
 #include <string>
 #include <iostream>
 #include <optional>
+#include <exception>
 
 namespace tess
 {
-	class error
+class error : public std::exception
 	{
 	private:
 		std::optional<int> line_;

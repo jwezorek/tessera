@@ -5,8 +5,6 @@
 #include "tile_impl.h"
 #include "tessera_impl.h"
 #include "parser/keywords.h"
-#include "parser/expr_parser.h"
-#include "execution_state.h"
 #include "ops.h"
 #include "allocator.h"
 #include "variant_util.h"

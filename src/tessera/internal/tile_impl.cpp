@@ -162,7 +162,7 @@ std::string tess::detail::tile_impl::debug() const
 	return ss.str();
 }
 
-const tess::const_tile_ptr tess::detail::tile_impl::get_adjacent_tile(int edge_index) const
+tess::const_tile_ptr tess::detail::tile_impl::get_adjacent_tile(int edge_index) const
 {
 	if (is_detached())
 		return nullptr;
@@ -171,13 +171,9 @@ const tess::const_tile_ptr tess::detail::tile_impl::get_adjacent_tile(int edge_i
 	int u = e->u()->location_index();
 	int v = e->v()->location_index();
 
-	auto maybe_adj_edge = parent_->get_edge_on(v, u);
-	if (!maybe_adj_edge)
-		return nullptr;
-
-	return maybe_adj_edge->parent();
+	auto adj_edge = parent_->get_edge_on(v, u);
+	return (adj_edge) ? adj_edge->parent() : nullptr;
 }
-
 
 tess::const_edge_ptr tess::detail::tile_impl::get_edge_on(tess::allocator& a,  const_edge_ptr edge) const
 {

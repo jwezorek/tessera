@@ -113,7 +113,7 @@ namespace tess {
                 bool is_detached() const;
                 tess::tile_ptr clone_detached(tess::allocator& a) const;
                 std::string debug() const;
-                const const_tile_ptr get_adjacent_tile(int edge_index) const;
+                const_tile_ptr get_adjacent_tile(int edge_index) const;
                 const_edge_ptr get_edge_on(allocator& a, const_edge_ptr e) const;
                 value_ get_on(allocator& a, std::variant<tess::const_edge_ptr, tess::const_cluster_ptr>& e) const;
         };
