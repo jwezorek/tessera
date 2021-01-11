@@ -156,6 +156,11 @@ std::string tess::make_lambda::to_string() const
     return ss.str();
 }
 
+void tess::make_lambda::get_references(std::unordered_set<tess::obj_id> &objects) const {
+    for(const auto& it : body_)
+        tess::stack_machine::get_references(it, objects);
+}
+
 /*---------------------------------------------------------------------------------------------*/
 
 tess::get_var::get_var(bool eval) : op_multi(1), eval_parameterless_funcs_(eval)
@@ -371,6 +376,10 @@ std::optional<tess::error> tess::lay_op::apply_mapping(const std::vector<stack_m
     return ::apply_mapping(edge_to_edge);
 }
 
+void tess::lay_op::get_references(std::unordered_set<tess::obj_id> &objects) const {
+
+}
+
 tess::val_func_op::val_func_op(int n, std::function<value_(tess::allocator& a, const std::vector<value_> & v)> func, std::string name) :
     stack_machine::op_1(n), name_(name), func_(func)
 {
@@ -438,6 +447,14 @@ std::string tess::if_op::to_string() const
     }
     ss << "}";
     return ss.str();
+}
+
+void tess::if_op::get_references(std::unordered_set<tess::obj_id> &objects) const {
+    for (const auto& it : if_)
+        stack_machine::get_references(it, objects);
+
+    for (const auto& it : else_)
+        stack_machine::get_references(it, objects);
 }
 
 tess::get_ary_item_op::get_ary_item_op() : stack_machine::op_1(2)
@@ -518,6 +535,10 @@ std::string tess::iterate_op::to_string() const
         ss << it.to_string() << ";";
     ss << "}>";
     return ss.str();
+}
+
+void tess::iterate_op::get_references(std::unordered_set<tess::obj_id> &objects) const {
+
 }
 
 tess::set_dependencies_op::set_dependencies_op() : stack_machine::op_0(0)

@@ -35,7 +35,7 @@ namespace tess {
                 const_edge_ptr in_edge() const;
                 const_edge_ptr out_edge() const;
                 void insert_field(const std::string& var, const value_& val) {}
-                void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
+                void get_references(std::unordered_set<obj_id>& alloc_set) const;
                 void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, vertex_ptr clone) const;
                 const_patch_ptr grandparent() const;
                 void set_location(int vert_index);
@@ -66,7 +66,7 @@ namespace tess {
                 tile_ptr parent();
                 void insert_field(const std::string& var, const value_& val);
                 const std::map<std::string, value_>& fields() const;
-                void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
+                void get_references(std::unordered_set<obj_id>& alloc_set) const;
                 void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, edge_ptr clone) const;
                 void flip();
                 edge_indices get_edge_location_indices() const;
@@ -108,7 +108,7 @@ namespace tess {
                 void set_parent(patch_ptr parent, int index);
                 void detach();
                 void insert_field(const std::string& var, const value_& val);
-                void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
+                void get_references(std::unordered_set<obj_id>& alloc_set) const;
                 void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_ptr clone) const;
                 bool is_detached() const;
                 tess::tile_ptr clone_detached(tess::allocator& a) const;

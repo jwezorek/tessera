@@ -92,19 +92,19 @@ void tess::detail::tile_impl::insert_field(const std::string& var, const value_&
 	fields_[var] = val;
 }
 
-void tess::detail::tile_impl::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
+void tess::detail::tile_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
 {
 	auto key = get_id();
 	if (alloc_set.find(key) != alloc_set.end())
 		return;
 	alloc_set.insert(key);
 
-	for (const auto& edge : edges_) 
-		 tess::get_all_referenced_allocations(value_{ edge }, alloc_set);
-	for (const auto& vertex : vertices_) 
-		tess::get_all_referenced_allocations(value_{ vertex }, alloc_set);
+	for (const auto& edge : edges_)
+        tess::get_references(value_{edge}, alloc_set);
+	for (const auto& vertex : vertices_)
+        tess::get_references(value_{vertex}, alloc_set);
 	for (const auto& [var, val] : fields_)
-		tess::get_all_referenced_allocations(val, alloc_set);
+        tess::get_references(val, alloc_set);
 }
 
 void tess::detail::tile_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_ptr mutable_clone) const
@@ -434,14 +434,14 @@ std::string tess::detail::edge_impl::debug() const
 	return ss.str();
 }
 
-void tess::detail::edge_impl::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
+void tess::detail::edge_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
 {
 	auto key = get_id();
 	if (alloc_set.find(key) != alloc_set.end())
 		return;
 	alloc_set.insert(key);
 
-	parent_->get_all_referenced_allocations(alloc_set);
+    parent_->get_references(alloc_set);
 }
 
 
@@ -497,14 +497,14 @@ tess::value_ tess::detail::vertex_impl::get_field(allocator& allocator, const st
 	return {};
 }
 
-void tess::detail::vertex_impl::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
+void tess::detail::vertex_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
 {
 	auto key = get_id();
 	if (alloc_set.find(key) != alloc_set.end())
 		return;
 	alloc_set.insert(key);
 
-	parent_->get_all_referenced_allocations(alloc_set);
+    parent_->get_references(alloc_set);
 }
 
 void tess::detail::vertex_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, vertex_ptr mutable_clone) const

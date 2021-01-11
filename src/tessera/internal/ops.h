@@ -26,6 +26,7 @@ namespace tess {
     class make_lambda : public stack_machine::op_1 {
     public:
         make_lambda(const std::vector<std::string>& parameters, const std::vector<stack_machine::item>& body, const std::vector<std::string>& deps);
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override;
     protected:
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override;
@@ -37,6 +38,7 @@ namespace tess {
     class get_var : public stack_machine::op_multi {
     public:
         get_var(bool eval_parameterless_funcs = true);
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
     protected:
        std::vector<stack_machine::item> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
        std::string to_string() const override { return "<get>"; }
@@ -46,6 +48,7 @@ namespace tess {
     class pop_eval_context : public stack_machine::op_0 {
     public:
         pop_eval_context();
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
         void execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<pop_context>"; }
     };
@@ -55,12 +58,14 @@ namespace tess {
         std::vector<stack_machine::item> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
     public:
         call_func(int num_args);
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
         std::string to_string() const override { return "<apply " + std::to_string(number_of_args_ - 1) + ">"; }
     };
 
     class push_eval_context : public stack_machine::op_0 {
     public:
         push_eval_context();
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
         void execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<push_context>"; }
     };
@@ -68,6 +73,7 @@ namespace tess {
     class pop_frame_op : public stack_machine::op_0 {
     public:
         pop_frame_op();
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
         void execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<pop_frame>"; }
     };
@@ -75,6 +81,7 @@ namespace tess {
     class push_frame_op : public stack_machine::op_0 {
     public:
         push_frame_op();
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
         void execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<push_frame>"; }
     };
@@ -82,6 +89,7 @@ namespace tess {
     class assign_op : public stack_machine::op_0 {
     public:
         assign_op(int num_vars);
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
     protected:
         void execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<assign " + std::to_string(number_of_args_-1) + ">"; }
@@ -90,6 +98,7 @@ namespace tess {
     class one_param_op : public stack_machine::op_1 {
     public:
         one_param_op(std::function<value_(allocator& a, const value_ & v)> func, std::string name);
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
     protected:
         std::string name_;
         std::function<value_(allocator & a, const value_ & v)> func_;
@@ -101,6 +110,7 @@ namespace tess {
     class val_func_op : public stack_machine::op_1 {
     public:
         val_func_op(int n, std::function<value_(allocator& a, const std::vector<value_>& v)> func, std::string name);
+        virtual void get_references(std::unordered_set<tess::obj_id>& objects) const override {};
     protected:
         std::string name_;
         std::function<value_(allocator& a, const std::vector<value_> & v)> func_;
@@ -112,6 +122,7 @@ namespace tess {
     class get_field_op : public stack_machine::op_1 {
     public:
         get_field_op(const std::string& field, bool get_ref);
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
     protected:
         std::string field_;
         bool get_ref_;
@@ -123,6 +134,7 @@ namespace tess {
     class set_field_op: public stack_machine::op_0{
     public:
         set_field_op(int fields);
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
     protected:
         void execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<set_field " + std::to_string(number_of_args_ - 1) + ">"; }
@@ -131,6 +143,7 @@ namespace tess {
     class lay_op : public stack_machine::op_1 {
     public:
         lay_op(int num_mappings);
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override;
     protected:
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override;
@@ -141,6 +154,7 @@ namespace tess {
     class if_op : public stack_machine::op_multi {
     public:
         if_op(const std::vector<stack_machine::item>& if_clause, const std::vector<stack_machine::item>& else_clause);
+        void get_references(std::unordered_set<tess::obj_id>& objects) const;
     protected:
         std::vector<stack_machine::item> execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override;
@@ -152,6 +166,7 @@ namespace tess {
     class get_ary_item_op : public stack_machine::op_1 {
     public:
         get_ary_item_op();
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
     protected:
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
         std::string to_string() const override { return "<get_ary_item>"; }
@@ -169,6 +184,7 @@ namespace tess {
 
     public:
         iterate_op(std::string index_var, int index_val, const std::vector<stack_machine::item>& body);
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override;
         std::string to_string() const override;
     };
 
@@ -177,6 +193,7 @@ namespace tess {
         set_dependencies_op();
     protected:
         void execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const override;
+        void get_references(std::unordered_set<tess::obj_id>& objects) const override {}
         std::string to_string() const override { return "<set dependencies>"; }
     };
 }

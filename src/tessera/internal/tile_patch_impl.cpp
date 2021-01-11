@@ -364,7 +364,7 @@ tess::value_ tess::detail::patch_impl::get_on(allocator& a, const std::variant<t
 	);
 }
 
-void tess::detail::patch_impl::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
+void tess::detail::patch_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
 {
 	auto key = get_id();
 	if (alloc_set.find(key) != alloc_set.end())
@@ -372,10 +372,10 @@ void tess::detail::patch_impl::get_all_referenced_allocations(std::unordered_set
 	alloc_set.insert(key);
 
 	for (const auto& tile : tiles_)
-		tess::get_all_referenced_allocations(value_{ tile }, alloc_set );
+        tess::get_references(value_{tile}, alloc_set);
 
 	for (const auto& [var, val] : fields_)
-		tess::get_all_referenced_allocations(val, alloc_set);
+        tess::get_references(val, alloc_set);
 }
 
 void tess::detail::patch_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, patch_ptr mutable_clone) const
@@ -459,7 +459,7 @@ const std::vector<tess::value_>& tess::detail::cluster_impl::values() const
 	return values_;
 }
 
-void tess::detail::cluster_impl::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
+void tess::detail::cluster_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
 {
 	auto key = get_id();
 	if (alloc_set.find(key) != alloc_set.end())
@@ -467,7 +467,7 @@ void tess::detail::cluster_impl::get_all_referenced_allocations(std::unordered_s
 	alloc_set.insert(key);
 
 	for (const auto& val : values_)
-		tess::get_all_referenced_allocations(val, alloc_set);
+        tess::get_references(val, alloc_set);
 }
 
 void tess::detail::cluster_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, cluster_ptr mutable_clone) const

@@ -3,12 +3,9 @@
 #include "ops.h"
 #include "execution_state.h"
 #include "allocator.h"
-#include <sstream>
 #include <variant>
 #include <unordered_set>
 #include <numeric>
-
-
 
 void tess::function_def::compile(stack_machine::stack& stack) const
 {

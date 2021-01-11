@@ -46,7 +46,7 @@ namespace tess {
             tess::const_edge_ptr get_edge_on(tess::point u, tess::point v) const;
             value_ get_on(allocator& a, const std::variant<tess::const_edge_ptr, tess::const_cluster_ptr>& e) const;
             void insert_field(const std::string& var, const value_& val);
-            void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
+            void get_references(std::unordered_set<obj_id>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, patch_ptr clone) const;
             point get_vertex_location(int index) const;
             tile_ptr join(allocator& allocator) const;
@@ -68,7 +68,7 @@ namespace tess {
             int get_ary_count() const;
             const std::vector<value_>& values() const;
             void insert_field(const std::string& var, const value_& val);
-            void get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const;
+            void get_references(std::unordered_set<obj_id>& alloc_set) const;
             void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, cluster_ptr clone) const;
             std::vector<value_>::const_iterator begin() const;
             std::vector<value_>::const_iterator end() const;

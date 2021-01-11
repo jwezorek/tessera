@@ -63,6 +63,8 @@ namespace tess {
             }
         };
 
+        void get_references(item v, std::unordered_set<obj_id>& alloc_set);
+
         class stack {
         public:
             item pop();
@@ -87,6 +89,7 @@ namespace tess {
             std::string to_string() const;
             std::string to_formatted_string() const;
             std::vector<item> pop_all();
+            std::unordered_set<tess::obj_id> get_references() const;
         private:
             std::vector<item> impl_;
         };
@@ -98,6 +101,7 @@ namespace tess {
                 op(int n) : number_of_args_(n) {}
                 virtual void execute(stack& main_stack, stack& operand_stack, context_stack& contexts) = 0;
                 virtual std::string to_string() const = 0;
+                virtual void get_references(std::unordered_set<tess::obj_id>& objects) const = 0;
         };
 
         class op_0 : public op {

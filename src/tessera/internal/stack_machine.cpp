@@ -58,6 +58,22 @@ namespace {
 
 }
 
+void tess::stack_machine::get_references(tess::stack_machine::item i, std::unordered_set<tess::obj_id>& objects)
+{
+    i.visit(
+        overloaded{
+            [&objects](op_ptr op) {
+                op->get_references(objects);
+            },
+            [&objects](value_ v) {
+               tess::get_references(v, objects);
+            },
+            [&](auto val) {
+            }
+        }
+    );
+}
+
 void tess::stack_machine::op_0::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
 {
     if (number_of_args_ > operand_stack.count())
@@ -152,6 +168,14 @@ std::string tess::stack_machine::stack::to_formatted_string() const
 std::vector<tess::stack_machine::item> tess::stack_machine::stack::pop_all()
 {
     return pop(static_cast<int>(impl_.size()));
+}
+
+std::unordered_set<tess::obj_id> tess::stack_machine::stack::get_references() const {
+    std::unordered_set<tess::obj_id> objects;
+    for (const auto& it : impl_) {
+        stack_machine::get_references(it, objects);
+    }
+    return objects;
 }
 
 /*------------------------------------------------------------------------------*/

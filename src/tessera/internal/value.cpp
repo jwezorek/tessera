@@ -155,20 +155,20 @@ void tess::insert_field(value_ v, const std::string& var, value_ val)
 	);
 }
 
-std::unordered_set<tess::obj_id> tess::get_all_referenced_allocations(value_ v)
+std::unordered_set<tess::obj_id> tess::get_references(value_ v)
 {
 	std::unordered_set<obj_id> references;
-	get_all_referenced_allocations(v, references);
+    get_references(v, references);
 	return references;
 }
 
-void tess::get_all_referenced_allocations(value_ v, std::unordered_set<obj_id>& alloc_set)
+void tess::get_references(value_ v, std::unordered_set<obj_id>& alloc_set)
 {
 	if (!is_object_like(v))
 		return;
 	std::variant<const_tile_ptr, const_patch_ptr, const_vertex_ptr, const_edge_ptr, const_cluster_ptr, const_lambda_ptr> obj_variant = variant_cast(v);
 	std::visit(
-		[&](auto&& obj) { obj->get_all_referenced_allocations(alloc_set); },
+		[&](auto&& obj) { obj->get_references(alloc_set); },
 		obj_variant
 	);
 }

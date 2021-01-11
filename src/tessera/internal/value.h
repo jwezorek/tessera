@@ -57,8 +57,8 @@ namespace tess {
 	int get_ary_count(value_ v);
 	value_ get_field(value_ v, allocator& allocator, const std::string& field) ;
 	void insert_field(value_ v, const std::string& var, value_ val);
-	std::unordered_set<obj_id> get_all_referenced_allocations(value_ v);
-	void get_all_referenced_allocations(value_ v, std::unordered_set<obj_id>& alloc_set);
+	std::unordered_set<obj_id> get_references(value_ v);
+	void get_references(value_ v, std::unordered_set<obj_id>& alloc_set);
 	std::string to_string(value_ v);
 
 	bool operator==(const value_& lhs, const value_& rhs);

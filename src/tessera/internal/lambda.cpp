@@ -34,7 +34,7 @@ tess::value_ tess::detail::lambda_impl::get_field(allocator& allocator, const st
         throw tess::error("referenced unknown lambda closure item: " + field);
 }
 
-void tess::detail::lambda_impl::get_all_referenced_allocations(std::unordered_set<obj_id>& alloc_set) const
+void tess::detail::lambda_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
 {
     auto key = this->get_id();
     if (alloc_set.find(key) != alloc_set.end())
@@ -42,7 +42,7 @@ void tess::detail::lambda_impl::get_all_referenced_allocations(std::unordered_se
     alloc_set.insert(key);
 
     for (const auto& [var, val] : closure)
-        tess::get_all_referenced_allocations(val, alloc_set);
+        tess::get_references(val, alloc_set);
 }
 
 void tess::detail::lambda_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, lambda_ptr mutable_clone) const
