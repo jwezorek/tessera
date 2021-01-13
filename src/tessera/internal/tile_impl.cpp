@@ -122,7 +122,7 @@ void tess::detail::tile_impl::clone_to(tess::allocator& allocator, std::unordere
 		mutable_clone->edges_.push_back( clone_object(allocator, orginal_to_clone, e) );
 	}
 
-	if (parent_ != nullptr) { // clone parent
+	if (parent_) { // clone parent
 		mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_);
 	} else {
 		mutable_clone->parent_ = nullptr;
@@ -527,7 +527,7 @@ void tess::detail::vertex_impl::clone_to(tess::allocator& allocator, std::unorde
 {
 	mutable_clone->index_ = index_;
 	mutable_clone->location_ = location_;
-	if (mutable_clone->parent_)
+	if (parent_)
 	    mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_); // parent
 	else
         mutable_clone->parent_ = nullptr;
