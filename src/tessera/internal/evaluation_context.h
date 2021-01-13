@@ -26,6 +26,7 @@ namespace tess {
         iterator begin() const;
         iterator end() const;
         std::string to_string() const;
+        void get_references(std::unordered_set<tess::obj_id>& objects) const;
     private:
         std::map<std::string, value_> definitions_;
     };
@@ -53,6 +54,7 @@ namespace tess {
         class execution_state& execution_state();
         bool empty() const;
         int num_frames() const;
+        void get_references(std::unordered_set<tess::obj_id>& objects) const;
     private:
         std::vector<scope_frame> scopes_;
         tess::execution_state& state_;
@@ -70,6 +72,7 @@ namespace tess {
         evaluation_context& top();
         void pop();
         void push(evaluation_context&& ctxt);
+        void get_references(std::unordered_set<tess::obj_id>& objects) const;
     private:
         std::vector<evaluation_context> impl_;
     };

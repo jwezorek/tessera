@@ -112,6 +112,12 @@ tess::scope_frame::scope_frame(const std::string& var, value_ val)
     definitions_[var] = val;
 }
 
+void tess::scope_frame::get_references(std::unordered_set<tess::obj_id> &objects) const {
+    for (const auto& [key, val] : definitions_) {
+        tess::get_references(val, objects);
+    }
+}
+
 /*------------------------------------------------------------------------------------------------------*/
 
 std::optional<tess::value_> tess::evaluation_context::get_maybe(const std::string& var) const
@@ -202,6 +208,12 @@ int tess::evaluation_context::num_frames() const
     return static_cast<int>(scopes_.size());
 }
 
+void tess::evaluation_context::get_references(std::unordered_set<tess::obj_id> &objects) const {
+    for (const auto& scope : scopes_) {
+        scope.get_references(objects);
+    }
+}
+
 const tess::evaluation_context& tess::context_stack::top() const {
     return impl_.back();
 }
@@ -221,4 +233,10 @@ void tess::context_stack::pop() {
 
 void tess::context_stack::push(tess::evaluation_context &&ctxt) {
     impl_.push_back( std::move(ctxt) );
+}
+
+void tess::context_stack::get_references(std::unordered_set<tess::obj_id> &objects) const {
+    for (const auto& ec : impl_) {
+        ec.get_references(objects);
+    }
 }
