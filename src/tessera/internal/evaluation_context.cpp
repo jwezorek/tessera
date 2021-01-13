@@ -201,3 +201,24 @@ int tess::evaluation_context::num_frames() const
 {
     return static_cast<int>(scopes_.size());
 }
+
+const tess::evaluation_context& tess::context_stack::top() const {
+    return impl_.back();
+}
+
+bool tess::context_stack::empty() const {
+    return impl_.empty();
+}
+
+tess::evaluation_context& tess::context_stack::top() {
+    auto const_this = const_cast<const tess::context_stack*>(this);
+    return *( const_cast<tess::evaluation_context*>( &(const_this->top()) ));
+}
+
+void tess::context_stack::pop() {
+    impl_.pop_back();
+}
+
+void tess::context_stack::push(tess::evaluation_context &&ctxt) {
+    impl_.push_back( std::move(ctxt) );
+}

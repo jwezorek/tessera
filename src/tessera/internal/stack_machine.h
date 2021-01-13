@@ -22,8 +22,6 @@ namespace tess {
     {
         class op;
         using op_ptr = std::shared_ptr<op>;
-        
-        using context_stack = std::stack<evaluation_context>;
 
         struct variable {
         private:
@@ -91,7 +89,9 @@ namespace tess {
             std::string to_string() const;
             std::string to_formatted_string() const;
             std::vector<item> pop_all();
-            std::unordered_set<tess::obj_id> get_references() const;
+
+            void get_references(std::unordered_set<tess::obj_id>& objects) const;
+
         private:
             std::vector<item> impl_;
         };

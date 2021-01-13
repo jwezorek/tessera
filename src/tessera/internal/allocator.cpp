@@ -3,6 +3,7 @@
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
 #include "lambda_impl.h"
+#include <iostream>
 
 namespace {
 
@@ -20,6 +21,14 @@ namespace {
         );
     }
 
+    template<typename T>
+    void generate_debug_output( const std::string& title, const std::vector<std::unique_ptr<T>>& pool) {
+        std::cout << title << "\n";
+        for (const auto& obj : pool) {
+            std::cout << "    " << obj->get_id() << "\n";
+        }
+    }
+
 }
 
 tess::allocator::allocator( int sz) : id_counter_(1), allocations_since_collection_(0)
@@ -33,17 +42,30 @@ tess::allocator::allocator( int sz) : id_counter_(1), allocations_since_collecti
 }
 
 void tess::allocator::collect(const std::unordered_set<tess::obj_id> &live_objects) {
+
     erase_unused_allocations( tile_pool_, live_objects);
     erase_unused_allocations( patch_pool_, live_objects);
     erase_unused_allocations( edge_pool_, live_objects);
     erase_unused_allocations( vertex_pool_, live_objects);
     erase_unused_allocations( cluster_pool_, live_objects);
     erase_unused_allocations( lambda_pool_, live_objects);
+
     allocations_since_collection_ = 0;
 }
 
 bool tess::allocator::should_collect() const {
     return allocations_since_collection_ > k_collection_freq_;
+}
+
+void tess::allocator::debug() const {
+    std::cout << "------ allocation pools ---------\n";
+    generate_debug_output( "tiles", tile_pool_);
+    generate_debug_output( "patches", patch_pool_);
+    generate_debug_output( "edges", edge_pool_);
+    generate_debug_output( "vertices", vertex_pool_);
+    generate_debug_output( "clusters", cluster_pool_);
+    generate_debug_output( "lambdas", lambda_pool_);
+    std::cout << "---------------------------------\n";
 }
 
 

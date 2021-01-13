@@ -75,21 +75,21 @@ void tess::stack_machine::get_references(tess::stack_machine::item i, std::unord
     );
 }
 
-void tess::stack_machine::op_0::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
+void tess::stack_machine::op_0::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::context_stack& contexts)
 {
     if (number_of_args_ > operand_stack.count())
         throw tess::error("operand stack underflow.");
     execute(operand_stack.pop(number_of_args_), contexts);
 }
 
-void tess::stack_machine::op_1::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
+void tess::stack_machine::op_1::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::context_stack& contexts)
 {
     if (number_of_args_ > operand_stack.count())
         throw tess::error("operand stack underflow.");
     main_stack.push(execute(operand_stack.pop(number_of_args_), contexts));
 }
 
-void tess::stack_machine::op_multi::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::stack_machine::context_stack& contexts)
+void tess::stack_machine::op_multi::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::context_stack& contexts)
 {
     if (number_of_args_ > operand_stack.count())
         throw tess::error("operand stack underflow.");
@@ -171,12 +171,15 @@ std::vector<tess::stack_machine::item> tess::stack_machine::stack::pop_all()
     return pop(static_cast<int>(impl_.size()));
 }
 
-std::unordered_set<tess::obj_id> tess::stack_machine::stack::get_references() const {
-    std::unordered_set<tess::obj_id> objects;
+void tess::stack_machine::stack::get_references(std::unordered_set<tess::obj_id>& objects) const {
     for (const auto& it : impl_) {
         stack_machine::get_references(it, objects);
     }
-    return objects;
+
+    std::cout << "\nrefs in stack\n"; // DEBUG
+    for (const auto& obj: objects) {
+        std::cout << "    " << obj << "\n";
+    }
 }
 
 /*------------------------------------------------------------------------------*/
@@ -209,7 +212,9 @@ tess::value_ tess::stack_machine::machine::run(execution_state& state)
         );
 
         if (allocator.should_collect()) {
+            //allocator.debug(); // DEBUG
             //allocator.collect( main_stack.get_references() );
+            //allocator.debug();
         }
 
     }

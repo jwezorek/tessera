@@ -62,4 +62,15 @@ namespace tess {
         {}
     };
 
+    class context_stack
+    {
+    public:
+        bool empty() const;
+        const evaluation_context& top() const;
+        evaluation_context& top();
+        void pop();
+        void push(evaluation_context&& ctxt);
+    private:
+        std::vector<evaluation_context> impl_;
+    };
 }

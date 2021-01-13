@@ -24,7 +24,7 @@ namespace tess {
         impl_pool<const_lambda_ptr> lambda_pool_;
         impl_pool<const_cluster_ptr> cluster_pool_;
         int allocations_since_collection_;
-        const int k_collection_freq_ = 1024;
+        const int k_collection_freq_ = 10;
 
         template<typename T>
         impl_pool<T>& get_pool() {
@@ -54,6 +54,8 @@ namespace tess {
             ++allocations_since_collection_;
             return imp_pool.back().get();
         }
+
+        void debug() const;
 
         bool should_collect() const;
 

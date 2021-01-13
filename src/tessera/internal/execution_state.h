@@ -6,6 +6,8 @@
 #include <string>
 #include "evaluation_context.h"
 #include "stack_machine.h"
+#include "tessera_impl.h"
+#include <unordered_set>
 
 namespace tess {
 
@@ -19,8 +21,8 @@ namespace tess {
         class allocator& allocator();
         stack_machine::stack& main_stack();
         stack_machine::stack& operand_stack();
-        stack_machine::context_stack& context_stack();
-
+        tess::context_stack& context_stack();
+        std::unordered_set<tess::obj_id> get_references() const;
     private:
         class impl_type;
         std::shared_ptr<impl_type> impl_;

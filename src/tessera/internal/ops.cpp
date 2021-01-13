@@ -109,7 +109,7 @@ tess::make_lambda::make_lambda(const std::vector<std::string>& parameters, const
 {
 }
 
-tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     auto& ctxt = contexts.top();
     auto& alloc = contexts.top().allocator();
@@ -167,7 +167,7 @@ tess::get_var::get_var(bool eval) : op_multi(1), eval_parameterless_funcs_(eval)
 {
 }
 
-std::vector<tess::stack_machine::item> tess::get_var::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+std::vector<tess::stack_machine::item> tess::get_var::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     auto& ctxt = contexts.top();
     auto ident = std::get<stack_machine::variable>(operands[0]);
@@ -194,14 +194,14 @@ tess::pop_eval_context::pop_eval_context() : op_0(0)
 {
 }
 
-void tess::pop_eval_context::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+void tess::pop_eval_context::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     contexts.pop();
 }
 
 /*---------------------------------------------------------------------------------------------*/
 
-std::vector<tess::stack_machine::item> tess::call_func::execute(const std::vector<tess::stack_machine::item>& operands, tess::stack_machine::context_stack& contexts) const
+std::vector<tess::stack_machine::item> tess::call_func::execute(const std::vector<tess::stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     //TODO: make a function that tests a stackitem for an expr_val containing type and throws if not there
     if (!std::holds_alternative<value_>(operands[0]) || !std::holds_alternative<const_lambda_ptr>(std::get<value_>(operands[0])))
@@ -231,7 +231,7 @@ tess::push_eval_context::push_eval_context() : stack_machine::op_0(0)
 {
 }
 
-void tess::push_eval_context::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const 
+void tess::push_eval_context::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     auto& ctxt = contexts.top();
     contexts.push(ctxt.execution_state().create_eval_context());
@@ -243,7 +243,7 @@ tess::pop_frame_op::pop_frame_op() : tess::stack_machine::op_0(0)
 {
 }
 
-void tess::pop_frame_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+void tess::pop_frame_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     if (contexts.empty())
         throw tess::error("context stack underflow");
@@ -260,7 +260,7 @@ tess::push_frame_op::push_frame_op() : tess::stack_machine::op_0(0)
 {
 }
 
-void tess::push_frame_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+void tess::push_frame_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     if (contexts.empty())
         throw tess::error("context stack underflow");
@@ -273,7 +273,7 @@ tess::assign_op::assign_op(int num_vars) : stack_machine::op_0(num_vars+1)
 {
 }
 
-void tess::assign_op::execute(const std::vector<tess::stack_machine::item>& operands, tess::stack_machine::context_stack& contexts) const
+void tess::assign_op::execute(const std::vector<tess::stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     int num_vars = static_cast<int>(operands.size() - 1);
     auto value = std::get<value_>(operands.back());
@@ -297,7 +297,7 @@ tess::one_param_op::one_param_op(std::function<value_(tess::allocator&, const va
 {
 }
 
-tess::stack_machine::item tess::one_param_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+tess::stack_machine::item tess::one_param_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     return {
         func_(contexts.top().allocator(), std::get<value_>(operands[0]))
@@ -309,7 +309,7 @@ tess::get_field_op::get_field_op(const std::string& field, bool get_ref) :
 {
 }
 
-tess::stack_machine::item tess::get_field_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+tess::stack_machine::item tess::get_field_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     value_ val = std::get<value_>(operands[0]);
     if (!get_ref_) {
@@ -340,7 +340,7 @@ std::vector<tess::value_> get_layees(const tess::evaluation_context& ctxt) {
     return values;
 }
 
-tess::stack_machine::item tess::lay_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+tess::stack_machine::item tess::lay_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 { 
     auto& ctxt = contexts.top();
     auto layees = get_layees(ctxt);
@@ -385,7 +385,7 @@ tess::val_func_op::val_func_op(int n, std::function<value_(tess::allocator& a, c
 {
 }
 
-tess::stack_machine::item tess::val_func_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+tess::stack_machine::item tess::val_func_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     std::vector<value_> args = get_vector<value_>(operands.begin(), operands.end());
     return { func_( contexts.top().allocator(), args ) };
@@ -396,7 +396,7 @@ tess::if_op::if_op(const std::vector<stack_machine::item>& if_clause, const std:
 {
 }
 
-std::vector<tess::stack_machine::item> tess::if_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+std::vector<tess::stack_machine::item> tess::if_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     bool cond = std::get<bool>(std::get<value_>(operands[0]));
     return (cond) ?
@@ -461,7 +461,7 @@ tess::get_ary_item_op::get_ary_item_op() : stack_machine::op_1(2)
 {
 }
 
-tess::stack_machine::item tess::get_ary_item_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+tess::stack_machine::item tess::get_ary_item_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     auto ary = std::get<value_>(operands[0]);
     auto index = std::get<tess::number>(std::get<value_>(operands[1]));
@@ -490,7 +490,7 @@ tess::iterate_op::iterate_op(std::string index_var, int index_val, const std::ve
 {
 }
 
-std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     auto& alloc = contexts.top().allocator();
     auto src = std::get<tess::const_cluster_ptr>(std::get<value_>( operands[0] ));
@@ -545,7 +545,7 @@ tess::set_dependencies_op::set_dependencies_op() : stack_machine::op_0(0)
 {
 }
 
-void tess::set_dependencies_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+void tess::set_dependencies_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     auto& ctxt = contexts.top();
     auto& frame = ctxt.peek();
@@ -563,7 +563,7 @@ tess::set_field_op::set_field_op(int num_fields) : stack_machine::op_0(num_field
 {
 }
 
-void tess::set_field_op::execute(const std::vector<stack_machine::item>& operands, stack_machine::context_stack& contexts) const
+void tess::set_field_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     int num_fields = static_cast<int>(operands.size() - 1);
     auto value = std::get<value_>(operands.back());
