@@ -97,32 +97,38 @@ void tess::detail::tile_impl::get_references(std::unordered_set<obj_id>& alloc_s
 	auto key = get_id();
 	if (alloc_set.find(key) != alloc_set.end())
 		return;
-	alloc_set.insert(key);
+	alloc_set.insert(key); // self
 
-	for (const auto& edge : edges_)
-        tess::get_references(value_{edge}, alloc_set);
-	for (const auto& vertex : vertices_)
+    for (const auto& vertex : vertices_) // vertices
         tess::get_references(value_{vertex}, alloc_set);
-	for (const auto& [var, val] : fields_)
+
+	for (const auto& edge : edges_) // edges
+        tess::get_references(value_{edge}, alloc_set);
+
+    if (parent_ != nullptr) { // parent
+        tess::get_references(value_{parent_}, alloc_set);
+    }
+
+	for (const auto& [var, val] : fields_) // fields
         tess::get_references(val, alloc_set);
 }
 
 void tess::detail::tile_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, tile_ptr mutable_clone) const
 {
-	for (auto* v : vertices_) {
+	for (auto* v : vertices_) { // clone vertices
 		mutable_clone->vertices_.push_back( clone_object(allocator, orginal_to_clone, v) );
 	}
-	for (auto& e : edges_) {
+	for (auto& e : edges_) { // clone edges
 		mutable_clone->edges_.push_back( clone_object(allocator, orginal_to_clone, e) );
 	}
 
-	if (parent_ != nullptr) {
+	if (parent_ != nullptr) { // clone parent
 		mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_);
 	} else {
 		mutable_clone->parent_ = nullptr;
 	}
 
-	for (const auto& [var, val] : fields_) {
+	for (const auto& [var, val] : fields_) { //clone fields
 		mutable_clone->fields_[var] = tess::clone_value(allocator, orginal_to_clone, val);
 	}
 }

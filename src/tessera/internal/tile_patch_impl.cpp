@@ -369,22 +369,23 @@ void tess::detail::patch_impl::get_references(std::unordered_set<obj_id>& alloc_
 	auto key = get_id();
 	if (alloc_set.find(key) != alloc_set.end())
 		return;
-	alloc_set.insert(key);
 
-	for (const auto& tile : tiles_)
+	alloc_set.insert(key); // self
+
+	for (const auto& tile : tiles_) // tiles
         tess::get_references(value_{tile}, alloc_set);
 
-	for (const auto& [var, val] : fields_)
+	for (const auto& [var, val] : fields_) // fields
         tess::get_references(val, alloc_set);
 }
 
 void tess::detail::patch_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, patch_ptr mutable_clone) const
 {
-	for (const auto& t : tiles_) {
+	for (const auto& t : tiles_) { // clone tiles
 		auto t_clone = get_mutable<const_tile_ptr>(tess::clone_value(allocator, orginal_to_clone, value_{ t }));
 		mutable_clone->tiles_.push_back( t_clone );
 	}
-	for (const auto& [var, val] : fields_) {
+	for (const auto& [var, val] : fields_) { // clone fields
 		mutable_clone->fields_[var] = tess::clone_value(allocator, orginal_to_clone, val);
 	}
 	mutable_clone->vert_tbl_ = vert_tbl_;

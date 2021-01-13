@@ -4,6 +4,7 @@
 #include <memory>
 #include <tuple>
 #include "value.h"
+#include "tessera_impl.h"
 
 namespace tess {
 
@@ -22,6 +23,8 @@ namespace tess {
         impl_pool<const_vertex_ptr> vertex_pool_;
         impl_pool<const_lambda_ptr> lambda_pool_;
         impl_pool<const_cluster_ptr> cluster_pool_;
+        int allocations_since_collection_;
+        const int k_collection_freq_ = 1024;
 
         template<typename T>
         impl_pool<T>& get_pool() {
@@ -48,9 +51,13 @@ namespace tess {
         auto create(Args&&... args) {
             auto& imp_pool = get_pool<T>();
             imp_pool.emplace_back(std::make_unique<base_type<T>>(id_counter_++, std::forward<Args>(args)...));
+            ++allocations_since_collection_;
             return imp_pool.back().get();
         }
 
+        bool should_collect() const;
+
+        void collect(const std::unordered_set<tess::obj_id>& live_objects);
     };
 
 };

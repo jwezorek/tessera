@@ -4,6 +4,7 @@
 #include "evaluation_context.h"
 #include "execution_state.h"
 #include "expression.h"
+#include "allocator.h"
 #include <sstream>
 
 namespace {
@@ -189,6 +190,7 @@ tess::value_ tess::stack_machine::machine::run(execution_state& state)
     auto& contexts = state.context_stack();
     auto& main_stack = state.main_stack();
     auto& operands = state.operand_stack();
+    auto& allocator = state.allocator();
     value_ output;
 
     contexts.push(state.create_eval_context());
@@ -205,6 +207,11 @@ tess::value_ tess::stack_machine::machine::run(execution_state& state)
                 }
             }
         );
+
+        if (allocator.should_collect()) {
+            //allocator.collect( main_stack.get_references() );
+        }
+
     }
 
     output = std::get<value_>(operands.pop());

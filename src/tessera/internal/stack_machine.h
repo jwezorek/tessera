@@ -77,8 +77,10 @@ namespace tess {
 
             template <typename Iter>
             void push(Iter beg, Iter end) {
-                std::copy(beg, end, std::back_inserter(impl_));
+                for (auto i = beg; i != end; ++i)
+                    push( *i );
             }
+
             void push(const std::vector<item>& item);
             void compile_and_push(const std::vector<std::shared_ptr<expression>>& exprs);
 
