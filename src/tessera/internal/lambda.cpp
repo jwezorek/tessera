@@ -39,10 +39,10 @@ void tess::detail::lambda_impl::get_references(std::unordered_set<obj_id>& alloc
     auto key = this->get_id();
     if (alloc_set.find(key) != alloc_set.end())
         return;
-    alloc_set.insert(key);
+    alloc_set.insert(key); // self
 
     for (const auto& [var, val] : closure)
-        tess::get_references(val, alloc_set);
+        tess::get_references(val, alloc_set); //fields
 }
 
 void tess::detail::lambda_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, lambda_ptr mutable_clone) const
@@ -52,7 +52,7 @@ void tess::detail::lambda_impl::clone_to(tess::allocator& allocator, std::unorde
     mutable_clone->body = body;
 
     for (const auto& [var, val] : closure) {
-        mutable_clone->closure.set(var, tess::clone_value(allocator, orginal_to_clone, val));
+        mutable_clone->closure.set(var, tess::clone_value(allocator, orginal_to_clone, val)); //clone fields
     }
 }
 

@@ -430,7 +430,7 @@ tess::detail::cluster_impl::cluster_impl(obj_id id, const std::vector<value_>& v
 
 tess::value_ tess::detail::cluster_impl::get_field(allocator& allocator, const std::string& field) const
 {
-	return value_();
+	return value_(); // TODO
 }
 
 
@@ -465,16 +465,16 @@ void tess::detail::cluster_impl::get_references(std::unordered_set<obj_id>& allo
 	auto key = get_id();
 	if (alloc_set.find(key) != alloc_set.end())
 		return;
-	alloc_set.insert(key);
+	alloc_set.insert(key); // self
 
 	for (const auto& val : values_)
-        tess::get_references(val, alloc_set);
+        tess::get_references(val, alloc_set); //items
 }
 
 void tess::detail::cluster_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, cluster_ptr mutable_clone) const
 {
 	for (const auto& value : values_) {
-		mutable_clone->values_.push_back(tess::clone_value(allocator, orginal_to_clone, value));
+		mutable_clone->values_.push_back(tess::clone_value(allocator, orginal_to_clone, value)); // items
 	}
 }
 

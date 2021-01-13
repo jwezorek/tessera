@@ -445,9 +445,14 @@ void tess::detail::edge_impl::get_references(std::unordered_set<obj_id>& alloc_s
 	auto key = get_id();
 	if (alloc_set.find(key) != alloc_set.end())
 		return;
-	alloc_set.insert(key);
+	alloc_set.insert(key); // self
 
-    parent_->get_references(alloc_set);
+	if (parent_)
+        parent_->get_references(alloc_set); //parent
+
+    for (const auto& [var, val] : fields_) {
+        tess::get_references(val, alloc_set); // fields...
+    }
 }
 
 
@@ -456,10 +461,14 @@ void  tess::detail::edge_impl::clone_to(tess::allocator& allocator, std::unorder
 	mutable_clone->index_ = index_;
 	mutable_clone->u_ = u_;
 	mutable_clone->v_ = v_;
-	mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_);
+
+	if (parent_)
+	    mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_); // clone parent
+	else
+        mutable_clone->parent_ = nullptr;
 
 	for (const auto& [var, val] : fields_) {
-		mutable_clone->fields_[var] = tess::clone_value(allocator, orginal_to_clone, val);
+		mutable_clone->fields_[var] = tess::clone_value(allocator, orginal_to_clone, val); // clone fields
 	}
 }
 
@@ -500,7 +509,7 @@ tess::point tess::detail::vertex_impl::pos() const
 
 tess::value_ tess::detail::vertex_impl::get_field(allocator& allocator, const std::string& field) const
 {
-	return {};
+	return {}; //TODO
 }
 
 void tess::detail::vertex_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
@@ -508,16 +517,20 @@ void tess::detail::vertex_impl::get_references(std::unordered_set<obj_id>& alloc
 	auto key = get_id();
 	if (alloc_set.find(key) != alloc_set.end())
 		return;
-	alloc_set.insert(key);
+	alloc_set.insert(key); // self
 
-    parent_->get_references(alloc_set);
+    if (parent_)
+        parent_->get_references(alloc_set); // parent
 }
 
 void tess::detail::vertex_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, vertex_ptr mutable_clone) const
 {
 	mutable_clone->index_ = index_;
 	mutable_clone->location_ = location_;
-	mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_);
+	if (mutable_clone->parent_)
+	    mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_); // parent
+	else
+        mutable_clone->parent_ = nullptr;
 };
 
 tess::const_patch_ptr tess::detail::vertex_impl::grandparent() const
