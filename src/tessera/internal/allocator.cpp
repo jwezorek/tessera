@@ -19,6 +19,7 @@ namespace {
             ),
             pool.end()
         );
+        pool.shrink_to_fit();
     }
 
     template<typename T>
@@ -66,6 +67,15 @@ void tess::allocator::debug() const {
     generate_debug_output( "clusters", cluster_pool_);
     generate_debug_output( "lambdas", lambda_pool_);
     std::cout << "---------------------------------\n";
+}
+
+size_t tess::allocator::size() const {
+    return tile_pool_.size() +
+        patch_pool_.size() +
+        edge_pool_.size() +
+        vertex_pool_.size() +
+        cluster_pool_.size() +
+        lambda_pool_.size();
 }
 
 

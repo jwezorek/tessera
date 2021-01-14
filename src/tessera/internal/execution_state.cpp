@@ -65,5 +65,23 @@ tess::evaluation_context tess::execution_state::create_eval_context(const scope_
     return ctxt;
 }
 
+std::unordered_set<tess::obj_id> tess::execution_state::get_references() const {
+    std::unordered_set<tess::obj_id> live_objects;
+
+    impl_->main_stack_.get_references(live_objects);
+    impl_->operand_stack_.get_references(live_objects);
+    impl_->context_stack_.get_references(live_objects);
+
+    return live_objects;
+}
+
+void tess::execution_state::debug() const {
+    auto live_objects = get_references();
+    std::cout << "\nlive objects\n";
+    for (const auto& obj: live_objects) {
+        std::cout << "    " << obj << "\n";
+    }
+}
+
 
 

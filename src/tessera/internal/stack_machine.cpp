@@ -175,11 +175,6 @@ void tess::stack_machine::stack::get_references(std::unordered_set<tess::obj_id>
     for (const auto& it : impl_) {
         stack_machine::get_references(it, objects);
     }
-
-    std::cout << "\nrefs in stack\n"; // DEBUG
-    for (const auto& obj: objects) {
-        std::cout << "    " << obj << "\n";
-    }
 }
 
 /*------------------------------------------------------------------------------*/
@@ -212,9 +207,11 @@ tess::value_ tess::stack_machine::machine::run(execution_state& state)
         );
 
         if (allocator.should_collect()) {
-            //allocator.debug(); // DEBUG
-            //allocator.collect( main_stack.get_references() );
-            //allocator.debug();
+            //auto before_sz = allocator.size();
+            allocator.collect( state.get_references() );
+            //auto after_sz = allocator.size();
+            //if (before_sz > after_sz)
+            //    std::cout << "collected " << before_sz - after_sz << " objects.\n";
         }
 
     }

@@ -23,6 +23,7 @@ namespace tess {
         stack_machine::stack& operand_stack();
         tess::context_stack& context_stack();
         std::unordered_set<tess::obj_id> get_references() const;
+        void debug() const;
     private:
         class impl_type;
         std::shared_ptr<impl_type> impl_;
