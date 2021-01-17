@@ -59,6 +59,8 @@ add_library(tessera
 target_include_directories(tessera
 	PRIVATE ${EIGEN3_INCLUDE_DIR}
 	PRIVATE ${Boost_INCLUDE_DIRS}
+	PRIVATE tessera/internal/third-party/gc/include
+	PRIVATE tessera/internal/third-party/gsl/include
 	PUBLIC tessera/include
 )
 
