@@ -32,7 +32,7 @@ namespace {
 
 }
 
-tess::allocator::allocator( int sz) : id_counter_(1), allocations_since_collection_(0)
+tess::allocator::allocator( int sz) : allocations_since_collection_(0)
 {
     tile_pool_.reserve(sz);
     patch_pool_.reserve(sz);

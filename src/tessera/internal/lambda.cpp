@@ -15,8 +15,8 @@ const tess::scope_frame& tess::lambda::closure() const
     return impl_->closure;
 }
 
-tess::detail::lambda_impl::lambda_impl(obj_id id, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
-    tessera_impl(id), parameters(params), body(bod), dependencies(deps)
+tess::detail::lambda_impl::lambda_impl( const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
+    parameters(params), body(bod), dependencies(deps)
 {
 }
 

@@ -14,8 +14,8 @@ namespace tess {
                 std::vector<std::string> dependencies;
                 std::vector<stack_machine::item> body;
 
-                lambda_impl(obj_id id) : tessera_impl(id) {};
-                lambda_impl(obj_id id, const std::vector<std::string>& param, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps);
+                lambda_impl()  {};
+                lambda_impl(const std::vector<std::string>& param, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps);
                 void insert_field(const std::string& var, const value_& val);
                 value_ get_field(allocator& allocator, const std::string& field) const;
                 void get_references(std::unordered_set<obj_id>& alloc_set) const;

@@ -237,7 +237,7 @@ void tess::detail::patch_impl::build_edge_table() const
 	}
 }
 
-tess::detail::patch_impl::patch_impl(obj_id id, const std::vector<tess::tile_ptr>& tiles) : tessera_impl(id) {
+tess::detail::patch_impl::patch_impl( const std::vector<tess::tile_ptr>& tiles) {
 	for ( auto& t : tiles)
 		insert_tile(t);
 }
@@ -422,8 +422,7 @@ void tess::detail::patch_impl::dfs(tile_visitor visit) const
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::detail::cluster_impl::cluster_impl(obj_id id, const std::vector<value_>& values) :
-	tessera_impl(id),
+tess::detail::cluster_impl::cluster_impl(const std::vector<value_>& values) :
 	values_(values)
 {}
 

@@ -30,8 +30,8 @@ namespace tess {
             void build_edge_table() const;
 
         public:
-            patch_impl(obj_id id) : tessera_impl(id) {};
-            patch_impl(obj_id id, const std::vector<tess::tile_ptr>& tiles);
+            patch_impl() {};
+            patch_impl(const std::vector<tess::tile_ptr>& tiles);
             void insert_tile(tess::tile_ptr t);
             int count() const;
             std::vector<tess::const_tile_ptr> tiles() const;
@@ -60,8 +60,8 @@ namespace tess {
         private:
             std::vector<value_> values_;
         public:
-            cluster_impl(obj_id id) : tessera_impl(id) {};
-            cluster_impl(obj_id id, const std::vector<value_>& tiles);
+            cluster_impl()  {};
+            cluster_impl( const std::vector<value_>& tiles);
             value_ get_field(allocator& allocator, const std::string& field) const;
             value_ get_ary_item(int i) const;
             void push_value(value_ val);

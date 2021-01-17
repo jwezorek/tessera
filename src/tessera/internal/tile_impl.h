@@ -25,8 +25,8 @@ namespace tess {
                 std::variant<int, point> location_;
 
             public:
-                vertex_impl(obj_id id) : tessera_impl(id) {};
-                vertex_impl(obj_id id, const_tile_ptr parent, int index, point loc);
+                vertex_impl() {};
+                vertex_impl(const_tile_ptr parent, int index, point loc);
                 std::tuple<double, double> to_floats() const;
                 point pos() const;
                 value_ get_field(allocator& allocator, const std::string& field) const;
@@ -51,8 +51,8 @@ namespace tess {
                 int u_, v_;
                 std::map<std::string, value_> fields_;
             public:
-                edge_impl(obj_id id) : tessera_impl(id), parent_(nullptr), index_(-1), u_(-1), v_(-1) {};
-                edge_impl(obj_id id, tile_ptr parent, int index, int u, int v);
+                edge_impl() {};
+                edge_impl(tile_ptr parent, int index, int u, int v);
                 const_vertex_ptr u() const;
                 const_vertex_ptr v() const;
                 vertex_ptr u();
@@ -82,8 +82,8 @@ namespace tess {
                 int index_;
 
             public:
-                tile_impl(obj_id id) : tessera_impl(id), parent_(nullptr), index_(-1) {};
-                tile_impl(obj_id id, tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
+                tile_impl() {};
+                tile_impl(tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
 
                 std::vector<tess::const_vertex_ptr> vertices() const;
                 std::vector<tess::const_edge_ptr> edges() const;

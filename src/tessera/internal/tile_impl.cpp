@@ -24,8 +24,7 @@ namespace {
 	}
 }
 
-tess::detail::tile_impl::tile_impl(obj_id id, tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations) :
-	tessera_impl(id),
+tess::detail::tile_impl::tile_impl( tess::allocator* allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations) :
 	parent_(nullptr),
 	index_(-1)
 {
@@ -315,8 +314,7 @@ tess::patch_ptr tess::detail::tile_impl::parent()  {
 
 /*--------------------------------------------------------------------------------*/
 
-tess::detail::edge_impl::edge_impl( obj_id id, tile_ptr parent, int index, int u, int v) :
-	tessera_impl(id),
+tess::detail::edge_impl::edge_impl( tile_ptr parent, int index, int u, int v) :
 	parent_(parent),
 	index_(index),
 	u_(u),
@@ -474,8 +472,7 @@ void  tess::detail::edge_impl::clone_to(tess::allocator& allocator, std::unorder
 
 /*--------------------------------------------------------------------------------*/
 
-tess::detail::vertex_impl::vertex_impl(obj_id id, const_tile_ptr parent, int n, std::tuple<number, number> loc) :
-	tessera_impl(id),
+tess::detail::vertex_impl::vertex_impl( const_tile_ptr parent, int n, std::tuple<number, number> loc) :
 	parent_(parent), index_(n), location_(loc)
 {
 }

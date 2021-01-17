@@ -7,13 +7,11 @@ namespace tess {
 	using obj_id = uint64_t;
 
     class tessera_impl {
-		private:
-			obj_id id_;
         public:
 
-			tessera_impl(obj_id id = 0) : id_(id) {}
-
-			obj_id get_id() const { return id_; }
+			obj_id get_id() const {
+			    return reinterpret_cast<obj_id>(this);
+			}
 
 			template<typename T>
 			T make_tess_obj(const typename T::impl_type* impl) const {

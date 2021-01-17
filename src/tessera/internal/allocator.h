@@ -42,15 +42,14 @@ namespace tess {
                 return cluster_pool_;
         };
 
-        obj_id id_counter_;
-
     public:
         allocator( int sz = 1024);
 
         template<typename T, typename... Args>
         auto create(Args&&... args) {
             auto& imp_pool = get_pool<T>();
-            imp_pool.emplace_back(std::make_unique<base_type<T>>(id_counter_++, std::forward<Args>(args)...));
+            //imp_pool.emplace_back(std::make_unique<base_type<T>>(*this, std::forward<Args>(args)...));
+            imp_pool.emplace_back(std::make_unique<base_type<T>>( std::forward<Args>(args)...));
             ++allocations_since_collection_;
             return imp_pool.back().get();
         }
