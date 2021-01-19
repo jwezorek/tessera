@@ -9,7 +9,7 @@ std::vector<tess::vertex> tess::tile::vertices() const
 	const auto& vertices = impl_->vertices();
 	std::vector<tess::vertex> wrapped_vertices(vertices.size());
 	std::transform(vertices.begin(), vertices.end(), wrapped_vertices.begin(),
-		[](auto v) -> tess::vertex { return tess::make_tess_obj<tess::vertex>(v); }
+		[](auto v) -> tess::vertex { return tess::make_tess_obj<tess::vertex>(v.get()); }
 	);
 	return wrapped_vertices;
 }
@@ -19,7 +19,7 @@ std::vector<tess::edge> tess::tile::edges() const
 	const auto& edges = impl_->edges();
 	std::vector<tess::edge> wrapped_edges(edges.size());
 	std::transform(edges.begin(), edges.end(), wrapped_edges.begin(),
-		[](auto v) -> tess::edge { return tess::make_tess_obj<tess::edge>(v); }
+		[](auto v) -> tess::edge { return tess::make_tess_obj<tess::edge>(v.get()); }
 	);
 	return wrapped_edges;
 }
@@ -56,24 +56,24 @@ tess::property_value tess::vertex::get_property_variant(const std::string& prop)
 
 tess::edge tess::vertex::out_edge() const
 {
-	return tess::make_tess_obj<tess::edge>(impl_->out_edge());
+	return tess::make_tess_obj<tess::edge>(impl_->out_edge().get());
 }
 
 tess::edge tess::vertex::in_edge() const
 {
-	return tess::make_tess_obj<tess::edge>(impl_->in_edge());
+	return tess::make_tess_obj<tess::edge>(impl_->in_edge().get());
 }
 
 /*--------------------------------------------------------------------------------*/
 
 tess::vertex tess::edge::u() const
 {
-	return tess::make_tess_obj<vertex>(impl_->u());
+	return tess::make_tess_obj<vertex>(impl_->u().get());
 }
 
 tess::vertex tess::edge::v() const
 {
-	return tess::make_tess_obj<vertex>(impl_->v());
+	return tess::make_tess_obj<vertex>(impl_->v().get());
 }
 
 tess::property_value tess::edge::get_property_variant(const std::string& prop) const

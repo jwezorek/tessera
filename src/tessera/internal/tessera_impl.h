@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include "allocator.h"
 
 namespace tess {
 

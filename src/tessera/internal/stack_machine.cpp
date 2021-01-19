@@ -58,7 +58,7 @@ namespace {
     }
 
 }
-
+/*
 void tess::stack_machine::get_references(tess::stack_machine::item i, std::unordered_set<tess::obj_id>& objects)
 {
     i.visit(
@@ -74,7 +74,7 @@ void tess::stack_machine::get_references(tess::stack_machine::item i, std::unord
         }
     );
 }
-
+*/
 void tess::stack_machine::op_0::execute(tess::stack_machine::stack& main_stack, tess::stack_machine::stack& operand_stack, tess::context_stack& contexts)
 {
     if (number_of_args_ > operand_stack.count())
@@ -170,13 +170,13 @@ std::vector<tess::stack_machine::item> tess::stack_machine::stack::pop_all()
 {
     return pop(static_cast<int>(impl_.size()));
 }
-
+/*
 void tess::stack_machine::stack::get_references(std::unordered_set<tess::obj_id>& objects) const {
     for (const auto& it : impl_) {
         stack_machine::get_references(it, objects);
     }
 }
-
+*/
 /*------------------------------------------------------------------------------*/
 
 tess::stack_machine::machine::machine()
@@ -205,15 +205,6 @@ tess::value_ tess::stack_machine::machine::run(execution_state& state)
                 }
             }
         );
-
-        if (allocator.should_collect()) {
-            //auto before_sz = allocator.size();
-            allocator.collect( state.get_references() );
-            //auto after_sz = allocator.size();
-            //if (before_sz > after_sz)
-            //    std::cout << "collected " << before_sz - after_sz << " objects.\n";
-        }
-
     }
 
     output = std::get<value_>(operands.pop());

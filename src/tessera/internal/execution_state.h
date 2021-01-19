@@ -1,13 +1,13 @@
 #pragma once
 
 #include <memory>
-#include <map>
 #include <vector>
 #include <string>
 #include "evaluation_context.h"
 #include "stack_machine.h"
 #include "tessera_impl.h"
 #include <unordered_set>
+#include "allocator.h"
 
 namespace tess {
 
@@ -18,12 +18,12 @@ namespace tess {
         execution_state();
         evaluation_context create_eval_context();
         evaluation_context create_eval_context(const scope_frame& frame);
-        class allocator& allocator();
+        tess::allocator& allocator();
         stack_machine::stack& main_stack();
         stack_machine::stack& operand_stack();
         tess::context_stack& context_stack();
-        std::unordered_set<tess::obj_id> get_references() const;
-        void debug() const;
+        //std::unordered_set<tess::obj_id> get_references() const;
+        //void debug() const;
     private:
         class impl_type;
         std::shared_ptr<impl_type> impl_;

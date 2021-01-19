@@ -1,3 +1,4 @@
+/*
 #include "allocator.h"
 #include "value.h"
 #include "tile_impl.h"
@@ -78,5 +79,5 @@ size_t tess::allocator::size() const {
         lambda_pool_.size();
 }
 
-
+*/
 

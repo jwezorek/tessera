@@ -6,7 +6,7 @@ std::vector<tess::tile> tess::tile_patch::tiles() const
 	const auto& tiles = impl_->tiles();
 	std::vector<tess::tile> wrapped_tiles(tiles.size());
 	std::transform(tiles.begin(), tiles.end(), wrapped_tiles.begin(),
-		[](auto v) -> tess::tile { return tess::make_tess_obj<tess::tile>(v); }
+		[](auto v) -> tess::tile { return tess::make_tess_obj<tess::tile>(v.get()); }
 	);
 	return wrapped_tiles;
 }

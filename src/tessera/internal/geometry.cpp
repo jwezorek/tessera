@@ -156,7 +156,7 @@ namespace {
 
 	geom::polygon vertices_to_polygon(const std::vector<tess::const_vertex_ptr>& vertices) {
 		geom::polygon poly;
-		for (const auto* vertex : vertices) {
+		for (const auto& vertex : vertices) {
 			const auto [x, y] = vertex->pos();
 			geom::bg::append(poly, geom::bg::make<geom::point>(x, y));
 		}
@@ -167,8 +167,8 @@ namespace {
 
 	geom::polygon tile_to_polygon(tess::const_tile_ptr tile) {
 		std::vector<tess::const_vertex_ptr> ordered_vertices;
-		auto* first = tile->vertices()[0];
-		auto* v = first;
+		auto first = tile->vertices()[0];
+		auto v = first;
 		do {
 			ordered_vertices.push_back(v);
 			v = v->out_edge()->v();

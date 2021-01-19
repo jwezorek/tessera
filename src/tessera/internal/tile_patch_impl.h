@@ -1,5 +1,6 @@
 #pragma once 
 
+#include "allocator.h"
 #include "tessera_impl.h"
 #include "tessera/tile.h"
 #include "cluster.h"
@@ -14,8 +15,6 @@
 
 namespace tess {
 
-    class allocator;
-
     using tile_visitor = std::function<void(const_tile_ptr)>;
 
     namespace detail {
@@ -26,16 +25,18 @@ namespace tess {
             std::map<std::string, value_> fields_;
             vertex_location_table vert_tbl_;
             mutable edge_table<const_edge_ptr> edge_tbl_;
-
+            patch_ptr self_;
             void build_edge_table() const;
 
         public:
-            patch_impl() {};
-            patch_impl(const std::vector<tess::tile_ptr>& tiles);
+            patch_impl(allocator& a) {};
+            patch_impl(allocator& a, const std::vector<tess::tile_ptr>& tiles);
+            void initialize(patch_ptr p) { self_ = p; }
+
             void insert_tile(tess::tile_ptr t);
             int count() const;
             std::vector<tess::const_tile_ptr> tiles() const;
-            const std::vector< tess::tile_ptr>& tiles();
+            const std::vector<tess::tile_ptr>& tiles();
             value_ get_field(allocator& allocator, const std::string& field) const;
             value_ get_ary_item(int i) const;
             int get_ary_count() const;
@@ -46,8 +47,8 @@ namespace tess {
             tess::const_edge_ptr get_edge_on(tess::point u, tess::point v) const;
             value_ get_on(allocator& a, const std::variant<tess::const_edge_ptr, tess::const_cluster_ptr>& e) const;
             void insert_field(const std::string& var, const value_& val);
-            void get_references(std::unordered_set<obj_id>& alloc_set) const;
-            void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, patch_ptr clone) const;
+            //void get_references(std::unordered_set<obj_id>& alloc_set) const;
+            void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, patch_ptr clone) const;
             point get_vertex_location(int index) const;
             tile_ptr join(allocator& allocator) const;
             void dfs(tile_visitor visit) const;
@@ -60,19 +61,21 @@ namespace tess {
         private:
             std::vector<value_> values_;
         public:
-            cluster_impl()  {};
-            cluster_impl( const std::vector<value_>& tiles);
+            cluster_impl(allocator& a) {};
+            cluster_impl( allocator& a, const std::vector<value_>& tiles);
+            void initialize( cluster_ptr p) {}
+
             value_ get_field(allocator& allocator, const std::string& field) const;
             value_ get_ary_item(int i) const;
             void push_value(value_ val);
             int get_ary_count() const;
-            const std::vector<value_>& values() const;
+            const std::vector<tess::value_>& values() const;
             void insert_field(const std::string& var, const value_& val);
-            void get_references(std::unordered_set<obj_id>& alloc_set) const;
-            void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, cluster_ptr clone) const;
-            std::vector<value_>::const_iterator begin() const;
-            std::vector<value_>::const_iterator end() const;
-            const std::vector<value_>& items() const;
+            //void get_references(std::unordered_set<obj_id>& alloc_set) const;
+            void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, cluster_ptr clone) const;
+            std::vector<tess::value_>::const_iterator begin() const;
+            std::vector<tess::value_>::const_iterator end() const;
+            const std::vector<tess::value_>& items() const;
         };
 
     }

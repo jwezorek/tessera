@@ -20,7 +20,9 @@ public:
     tess::context_stack context_stack_;
 
     impl_type(execution_state& state) 
-    {}
+    {
+        allocator_.set_collect_before_expand(true);
+    }
 };
 
 /*--------------------------------------------------------------------------------------------------------------------------------*/
@@ -64,7 +66,7 @@ tess::evaluation_context tess::execution_state::create_eval_context(const scope_
     ctxt.push_scope(frame);
     return ctxt;
 }
-
+/*
 std::unordered_set<tess::obj_id> tess::execution_state::get_references() const {
     std::unordered_set<tess::obj_id> live_objects;
 
@@ -82,6 +84,6 @@ void tess::execution_state::debug() const {
         std::cout << "    " << obj << "\n";
     }
 }
-
+*/
 
 

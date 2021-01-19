@@ -31,17 +31,17 @@ namespace {
 
     tess::matrix edge_to_edge_matrix(const tess::edge::impl_type& e1, const tess::edge::impl_type& e2)
     {
-        auto* u1 = e1.u();
-        auto* v1 = e1.v();
-        auto* u2 = e2.u();
-        auto* v2 = e2.v();
+        auto u1 = e1.u();
+        auto v1 = e1.v();
+        auto u2 = e2.u();
+        auto v2 = e2.v();
 
         return tess::line_seg_to_line_seg({ u1->pos() , v1->pos() }, { v2->pos() , u2->pos() });
     }
 
     tess::obj_id get_key(edge_parent_type obj)
     {
-        return std::visit([](auto* p)->tess::obj_id {return p->get_id(); }, obj);
+        return std::visit([](auto p)->tess::obj_id {return p->get_id(); }, obj);
     }
 
     bool is_untouched(edge_parent_type obj, const std::unordered_set<tess::obj_id>& moved)
@@ -114,7 +114,7 @@ tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_mac
     auto& ctxt = contexts.top();
     auto& alloc = contexts.top().allocator();
     try {
-        auto lambda = alloc.create<tess::const_lambda_ptr>(parameters_, body_, dependencies_);
+        auto lambda = tess::create_mutable<tess::const_lambda_ptr>(alloc, parameters_, body_, dependencies_);
 
         for (auto dependency : dependencies_)
             if (ctxt.has(dependency))
@@ -154,11 +154,6 @@ std::string tess::make_lambda::to_string() const
     }
     ss << "}";
     return ss.str();
-}
-
-void tess::make_lambda::get_references(std::unordered_set<tess::obj_id> &objects) const {
-    for(const auto& it : body_)
-        tess::stack_machine::get_references(it, objects);
 }
 
 /*---------------------------------------------------------------------------------------------*/
@@ -346,9 +341,9 @@ tess::stack_machine::item tess::lay_op::execute(const std::vector<stack_machine:
     auto layees = get_layees(ctxt);
     auto result = apply_mapping(operands);
     return  {
-        value_ {
+        tess::make_value(
             tess::flatten(ctxt.allocator(), layees, true)
-        }
+        )
     };
 }
 
@@ -374,10 +369,6 @@ std::optional<tess::error> tess::lay_op::apply_mapping(const std::vector<stack_m
     }
 
     return ::apply_mapping(edge_to_edge);
-}
-
-void tess::lay_op::get_references(std::unordered_set<tess::obj_id> &objects) const {
-
 }
 
 tess::val_func_op::val_func_op(int n, std::function<value_(tess::allocator& a, const std::vector<value_> & v)> func, std::string name) :
@@ -449,14 +440,6 @@ std::string tess::if_op::to_string() const
     return ss.str();
 }
 
-void tess::if_op::get_references(std::unordered_set<tess::obj_id> &objects) const {
-    for (const auto& it : if_)
-        stack_machine::get_references(it, objects);
-
-    for (const auto& it : else_)
-        stack_machine::get_references(it, objects);
-}
-
 tess::get_ary_item_op::get_ary_item_op() : stack_machine::op_1(2)
 {
 }
@@ -494,7 +477,7 @@ std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vect
 {
     auto& alloc = contexts.top().allocator();
     auto src = std::get<tess::const_cluster_ptr>(std::get<value_>( operands[0] ));
-    auto* dst = (index_val_ > -1) ? get_mutable<tess::const_cluster_ptr>(std::get<value_>(operands[1])) : nullptr;
+    auto dst = (index_val_ > -1) ? get_mutable<tess::const_cluster_ptr>(std::get<value_>(operands[1])) : nullptr;
     auto curr_item = std::get<value_>( operands[2] );
     
     auto n = src->get_ary_count();
@@ -515,7 +498,7 @@ std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vect
 
     stack_machine::item new_dst;
     if (!dst)
-        new_dst = { value_{ alloc.create<const_cluster_ptr>(std::vector<value_>{}) } };
+        new_dst = { value_{ tess::create_const<const_cluster_ptr>(alloc, std::vector<value_>{}) } };
     else
         new_dst = operands[1];
 
@@ -537,10 +520,6 @@ std::string tess::iterate_op::to_string() const
     return ss.str();
 }
 
-void tess::iterate_op::get_references(std::unordered_set<tess::obj_id> &objects) const {
-
-}
-
 tess::set_dependencies_op::set_dependencies_op() : stack_machine::op_0(0)
 {
 }
@@ -552,7 +531,7 @@ void tess::set_dependencies_op::execute(const std::vector<stack_machine::item>& 
     for (auto& val : frame.values()) {
         if (std::holds_alternative<const_lambda_ptr>(val)) {
             std::vector<std::string> vars;
-            auto* func = get_mutable<tess::const_lambda_ptr>(val);
+            auto func = get_mutable<tess::const_lambda_ptr>(val);
             for (const auto& var : func->unfulfilled_dependencies())   
                 func->insert_field(var, ctxt.get(var));
         }

@@ -466,7 +466,7 @@ namespace gcpp {
 
 		//	Copying with conversions (base -> derived, non-const -> const).
 		//
-		template<class U, class = typename std::enable_if<std::is_convertible<U*, T*>::value, void>::type>
+		template<class U /*, class = typename std::enable_if<std::is_convertible<U*, T*>::value, void>::type*/ > // JW
 		deferred_ptr(const deferred_ptr<U>& that)
 			: deferred_ptr_void(that)
 		{ }
@@ -882,6 +882,7 @@ namespace gcpp {
 
 		//	... and store the destructor
 		dtors.store(gsl::span<T>(p, 1));
+
 	}
 
 	template<class T>

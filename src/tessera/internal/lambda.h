@@ -23,8 +23,8 @@ namespace tess{
             friend class tessera_impl;
         public: 
 
-            const std::vector<std::string>& parameters() const;
-            const scope_frame& closure() const;
+            //const std::vector<std::string>& parameters() const;
+            //const scope_frame& closure() const;
             using impl_type = detail::lambda_impl;
 
         private:

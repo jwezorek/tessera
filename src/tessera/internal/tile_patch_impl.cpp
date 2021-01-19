@@ -83,31 +83,35 @@ namespace {
 	
 	template<typename T>
 	using assoc_map = boost::associative_property_map<T>;
-	using rank_map = std::unordered_map<tess::tile_ptr, int>;
-	using parent_map = std::unordered_map<tess::tile_ptr, tess::tile_ptr>;
+	using rank_map = std::unordered_map<tess::obj_id, int>;
+	using parent_map = std::unordered_map<tess::obj_id, tess::obj_id>;
 	using disjoint_sets = boost::disjoint_sets<assoc_map<rank_map>, assoc_map<parent_map>>;
 
 	std::vector<std::vector<tess::tile_ptr>> get_broken_tile_groups( const std::vector<tess::tile_ptr>& tiles) {
+
+	    std::unordered_map<tess::obj_id, tess::tile_ptr> id_to_tile;
+	    id_to_tile.reserve((tiles.size()));
 
 		rank_map rank;
 		parent_map parent;
 		disjoint_sets ds(boost::make_assoc_property_map(rank), boost::make_assoc_property_map(parent));
 
-		// insert all the vertices as single sets
-		for ( auto* t : tiles) {
-			ds.make_set( t );
+		// insert all the vertices as single sets, and build id -> tile map
+		for ( auto t : tiles) {
+			ds.make_set( t->get_id() );
+            id_to_tile[t->get_id()] = t;
 		}
 
 		// add each graph edge to the data structure
 		auto broken_tiles = get_broken_tiles(tiles);
 		for ( auto [u, v] : broken_tiles) {
-			ds.link(u, v);
+			ds.link(u->get_id(), v->get_id());
 		}
 
 		// build a map mapping representatives to a elements...
-		std::unordered_map<tess::tile_ptr, std::vector<tess::tile_ptr>> sets;
-		for ( auto* tile : tiles) {
-			auto v = tile;
+		std::unordered_map<tess::obj_id, std::vector<tess::obj_id>> sets;
+		for ( auto tile : tiles) {
+			auto v = tile->get_id();
 			auto parent = ds.find_set(v);
 			sets[parent].push_back(v);
 		}
@@ -115,9 +119,17 @@ namespace {
 		// return the values of the above, with the tile impelemntation wrapped in real tiles.
 		std::vector<std::vector<tess::tile_ptr>> output(sets.size());
 		std::transform(sets.begin(), sets.end(), output.begin(),
-			[](const std::unordered_map<tess::tile_ptr, std::vector<tess::tile_ptr>>::value_type& key_val) {
-				const std::vector<tess::tile_ptr>& val = key_val.second;
-				return val;
+			[&id_to_tile](const std::unordered_map<tess::obj_id, std::vector<tess::obj_id>>::value_type& key_val) {
+				const std::vector<tess::obj_id>& val = key_val.second;
+                std::vector<tess::tile_ptr> tiles(val.size());
+
+                std::transform(val.begin(), val.end(), tiles.begin(),
+                    [&id_to_tile](tess::obj_id id)->tess::tile_ptr {
+                        return id_to_tile.at(id);
+                    }
+                );
+
+				return tiles;
 			}
 		);
 
@@ -159,14 +171,15 @@ namespace {
 	void propagate_edge_fields(tess::tile_ptr tile, tess::const_patch_ptr patch)
 	{
 		tess::edge_location_table edges;
-		for (const auto* t : patch->tiles())
-			for (const auto* e : t->edges())
+		for (const auto t : patch->tiles())
+			for (const auto e : t->edges())
 				edges.insert(e);
-		for (auto* edge : tile->edges()) {
+
+		for (auto edge : tile->edges()) {
 			auto joined_edges = edges.get(edge);
 
 			std::unordered_map<std::string, tess::value_> fields;
-			for (const auto* e : joined_edges) {
+			for (const auto e : joined_edges) {
 				for (const auto& [var, val] : e->fields()) {
 					if (tess::is_simple_value(val)) {
 						if (fields.find(var) == fields.end()) {
@@ -225,8 +238,8 @@ std::vector<tess::const_tile_ptr> tess::detail::patch_impl::tiles() const
 void tess::detail::patch_impl::build_edge_table() const
 {
 	edge_tbl_.clear();
-	for (const auto* tile : tiles_) {
-		for (const auto* e : tile->edges()) {
+	for (const auto tile : tiles_) {
+		for (const auto e : tile->edges()) {
 
 			auto key = e->get_edge_location_indices();
 			if (edge_tbl_.find(key) == edge_tbl_.end())
@@ -237,7 +250,7 @@ void tess::detail::patch_impl::build_edge_table() const
 	}
 }
 
-tess::detail::patch_impl::patch_impl( const std::vector<tess::tile_ptr>& tiles) {
+tess::detail::patch_impl::patch_impl( tess::allocator& a, const std::vector<tess::tile_ptr>& tiles) {
 	for ( auto& t : tiles)
 		insert_tile(t);
 }
@@ -245,10 +258,10 @@ tess::detail::patch_impl::patch_impl( const std::vector<tess::tile_ptr>& tiles) 
 
 void tess::detail::patch_impl::insert_tile( tess::tile_ptr tile )
 {
-	tile->set_parent(this, static_cast<int>( tiles_.size()) );
+	tile->set_parent(self_, static_cast<int>( tiles_.size()) );
 
 	for (auto& v : tile->vertices()) {
-		auto* vert = v;
+		auto vert = v;
 		int new_vert_index = vert_tbl_.insert(vert->pos());
 		vert->set_location( new_vert_index );
 	}
@@ -279,7 +292,7 @@ tess::value_ tess::detail::patch_impl::get_field(allocator& allocator, const std
 
 tess::value_ tess::detail::patch_impl::get_ary_item(int i) const
 {
-	return value_(tiles_.at(i));
+	return tess::make_value(tiles_.at(i));
 }
 
 int tess::detail::patch_impl::get_ary_count() const
@@ -304,8 +317,8 @@ std::string tess::detail::patch_impl::debug() const
 }
 
 tess::patch_ptr tess::detail::patch_impl::flip(allocator& a) const {
-	value_ self = value_( this );
-	auto* clone = get_mutable<tess::const_patch_ptr>(tess::clone_value(a, self));
+	value_ self = make_value( self_ );
+	auto clone = get_mutable<tess::const_patch_ptr>(tess::clone_value(a, self));
 	clone->flip();
 	return clone;
 }
@@ -313,7 +326,7 @@ tess::patch_ptr tess::detail::patch_impl::flip(allocator& a) const {
 void  tess::detail::patch_impl::flip()  {
 	apply(flip_matrix());
 	for (auto& tile : tiles_)
-		for (auto* e : tile->edges())
+		for (auto& e : tile->edges())
 			e->flip();
 	edge_tbl_.clear();
 }
@@ -357,13 +370,13 @@ tess::value_ tess::detail::patch_impl::get_on(allocator& a, const std::variant<t
 						return this->get_on(a, edge_or_cluster);
 					}
 				);
-				return value_(a.create<tess::const_cluster_ptr>(on_edges) );
+				return value_( create_const<const_cluster_ptr>(a, on_edges) );
 			}
 		},
 		var
 	);
 }
-
+/*
 void tess::detail::patch_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
 {
 	auto key = get_id();
@@ -373,16 +386,16 @@ void tess::detail::patch_impl::get_references(std::unordered_set<obj_id>& alloc_
 	alloc_set.insert(key); // self
 
 	for (const auto& tile : tiles_) // tiles
-        tess::get_references(value_{tile}, alloc_set);
+        tess::get_references(tess::make_value(tile), alloc_set);
 
 	for (const auto& [var, val] : fields_) // fields
         tess::get_references(val, alloc_set);
 }
-
-void tess::detail::patch_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, patch_ptr mutable_clone) const
+*/
+void tess::detail::patch_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, patch_ptr mutable_clone) const
 {
 	for (const auto& t : tiles_) { // clone tiles
-		auto t_clone = get_mutable<const_tile_ptr>(tess::clone_value(allocator, orginal_to_clone, value_{ t }));
+		auto t_clone = get_mutable<const_tile_ptr>(tess::clone_value(allocator, orginal_to_clone, make_value(t)));
 		mutable_clone->tiles_.push_back( t_clone );
 	}
 	for (const auto& [var, val] : fields_) { // clone fields
@@ -397,23 +410,23 @@ tess::point tess::detail::patch_impl::get_vertex_location(int index) const {
 
 tess::tile_ptr tess::detail::patch_impl::join(tess::allocator& a) const
 {
-	auto points = tess::join(this);
-	auto joined_patch = a.create<tess::const_tile_ptr>(&a, points);
-	propagate_fields(joined_patch, this);
+	auto points = tess::join(self_);
+	auto joined_patch = tess::create_const<tess::const_tile_ptr>(a, points);
+	propagate_fields(joined_patch, self_);
 	return joined_patch;
 }
 
 void tess::detail::patch_impl::dfs(tile_visitor visit) const
 {
-	std::unordered_set<tess::const_tile_ptr> visited;
+	std::unordered_set<tess::obj_id> visited;
 
 	std::function<void(const_tile_ptr tile)> dfs_aux;
 	dfs_aux = [&](const_tile_ptr t) {
-		if (visited.find(t) != visited.end())
+		if (visited.find(t->get_id()) != visited.end())
 			return;
-		visited.insert(t);
+		visited.insert(t->get_id());
 		visit(t);
-		for (const auto* neighbor : get_neighbors(t)) {
+		for (const auto& neighbor : get_neighbors(t)) {
 			dfs_aux(neighbor);
 		}
 	};
@@ -422,9 +435,10 @@ void tess::detail::patch_impl::dfs(tile_visitor visit) const
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::detail::cluster_impl::cluster_impl(const std::vector<value_>& values) :
-	values_(values)
-{}
+tess::detail::cluster_impl::cluster_impl(allocator& a, const std::vector<value_>& values)
+{
+    std::copy(values.begin(), values.end(), std::back_inserter(values_) );
+}
 
 
 tess::value_ tess::detail::cluster_impl::get_field(allocator& allocator, const std::string& field) const
@@ -458,7 +472,7 @@ const std::vector<tess::value_>& tess::detail::cluster_impl::values() const
 {
 	return values_;
 }
-
+/*
 void tess::detail::cluster_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
 {
 	auto key = get_id();
@@ -469,8 +483,8 @@ void tess::detail::cluster_impl::get_references(std::unordered_set<obj_id>& allo
 	for (const auto& val : values_)
         tess::get_references(val, alloc_set); //items
 }
-
-void tess::detail::cluster_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, cluster_ptr mutable_clone) const
+*/
+void tess::detail::cluster_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, cluster_ptr mutable_clone) const
 {
 	for (const auto& value : values_) {
 		mutable_clone->values_.push_back(tess::clone_value(allocator, orginal_to_clone, value)); // items
@@ -519,7 +533,7 @@ tess::patch_ptr tess::flatten(tess::allocator& a, const std::vector<tess::value_
 			overloaded{
 				[&](tess::const_tile_ptr t) { tiles.push_back( tess::clone(a, t) ); },
 				[&](tess::const_patch_ptr patch) {
-					for (auto* t : patch->tiles()) {
+					for (auto t : patch->tiles()) {
 						auto clone = tess::clone(a, t);
 						clone->detach();
 						tiles.push_back(clone);
@@ -534,7 +548,7 @@ tess::patch_ptr tess::flatten(tess::allocator& a, const std::vector<tess::value_
 	if (should_join_broken_tiles)
 		tiles = join_broken_tiles(a, tiles);
 
-	auto patch_impl = a.create<tess::const_patch_ptr>();
+	auto patch_impl = tess::create_mutable<tess::const_patch_ptr>(a);
 	for (const auto& tile : tiles) {
 		patch_impl->insert_tile( tile );
 	}
@@ -551,7 +565,7 @@ tess::tile_ptr tess::join(tess::allocator& a, const std::vector<tile_ptr>& tiles
 	std::vector<tess::value_> tiles_as_vals(tiles.size());
 	std::transform(tiles.begin(), tiles.end(), tiles_as_vals.begin(),
 		[](tile_ptr t) -> tess::value_ {
-			return value_(t);
+			return tess::make_value(t);
 		}
 	);
 	return join(a, tiles_as_vals, false);

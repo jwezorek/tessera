@@ -6,6 +6,7 @@
 #include "lambda_impl.h"
 #include <variant>
 
+/*
 const std::vector<std::string>& tess::lambda::parameters() const
 {
     return impl_->parameters;
@@ -14,8 +15,9 @@ const tess::scope_frame& tess::lambda::closure() const
 {
     return impl_->closure;
 }
+*/
 
-tess::detail::lambda_impl::lambda_impl( const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
+tess::detail::lambda_impl::lambda_impl( allocator& a, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
     parameters(params), body(bod), dependencies(deps)
 {
 }
@@ -34,6 +36,7 @@ tess::value_ tess::detail::lambda_impl::get_field(allocator& allocator, const st
         throw tess::error("referenced unknown lambda closure item: " + field);
 }
 
+/*
 void tess::detail::lambda_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
 {
     auto key = this->get_id();
@@ -44,8 +47,9 @@ void tess::detail::lambda_impl::get_references(std::unordered_set<obj_id>& alloc
     for (const auto& [var, val] : closure)
         tess::get_references(val, alloc_set); //fields
 }
+*/
 
-void tess::detail::lambda_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, void*>& orginal_to_clone, lambda_ptr mutable_clone) const
+void tess::detail::lambda_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, lambda_ptr mutable_clone) const
 {
     mutable_clone->parameters = parameters;
     mutable_clone->dependencies = dependencies;
