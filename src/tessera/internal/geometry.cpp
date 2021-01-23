@@ -158,10 +158,10 @@ namespace {
 		geom::polygon poly;
 		for (const auto& vertex : vertices) {
 			const auto [x, y] = vertex->pos();
-			geom::bg::append(poly, geom::bg::make<geom::point>(x, y));
+			geom::bg::append(poly, geom::bg::make<geom::point>(static_cast<double>(x), static_cast<double>(y)));
 		}
 		auto [x_1, y_1] = vertices[0]->pos();
-		geom::bg::append(poly, geom::bg::make<geom::point>(x_1, y_1));
+		geom::bg::append(poly, geom::bg::make<geom::point>(static_cast<double>(x_1), static_cast<double>(y_1)));
 		return poly;
 	}
 
