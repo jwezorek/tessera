@@ -21,7 +21,6 @@ public:
 
     impl_type(execution_state& state) 
     {
-        allocator_.set_collect_before_expand(true);
     }
 };
 

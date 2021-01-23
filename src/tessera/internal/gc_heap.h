@@ -5,29 +5,29 @@
 
 namespace tess {
 
-    using gc_heap = gcpp::deferred_heap;
+    class gc_heap {
+    private:
+        gcpp::deferred_heap impl_;
 
-    /*
-    namespace detail {
-        template <typename T>
-        using base_type = typename std::remove_const<typename std::remove_pointer<T>::type>::type;
+    public:
 
-    }
-    */
+        gc_heap();
 
-    template<typename T, typename... Args>
-    auto create_mutable(gc_heap& a, Args&&... args) {
-        auto ptr = a.make<typename std::remove_const<typename T::value_type>::type>(a, std::forward<Args>(args)...);
-        ptr->initialize( ptr );
-        return ptr;
-    }
+        template<typename T, typename... Args>
+        auto create_mutable(Args&&... args) {
+            auto ptr = impl_.make<typename std::remove_const<typename T::value_type>::type>(*this, std::forward<Args>(args)...);
+            ptr->initialize(ptr);
+            return ptr;
+        }
 
-    template<typename T, typename... Args>
-    auto create_const(gc_heap& a, Args&&... args) {
-        using base_type = typename std::remove_const<typename T::value_type>::type;
-        auto ptr = a.make<base_type>(a, std::forward<Args>(args)...);
-        ptr->initialize( ptr );
-        return gcpp::deferred_ptr<const base_type>(ptr);
-    }
+        template<typename T, typename... Args>
+        auto create_const(Args&&... args) {
+            using base_type = typename std::remove_const<typename T::value_type>::type;
+            auto ptr = impl_.make<base_type>(*this, std::forward<Args>(args)...);
+            ptr->initialize(ptr);
+            return gcpp::deferred_ptr<const base_type>(ptr);
+        }
+
+    };
 
 };

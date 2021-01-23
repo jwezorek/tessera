@@ -20,7 +20,7 @@ namespace {
 		if (orginal_to_clone.find(key) != orginal_to_clone.end()) {
 			clone_impl = std::get<gcpp::deferred_ptr<T>>(orginal_to_clone[key]);
 		} else {
-			clone_impl = tess::create_mutable<gcpp::deferred_ptr<const T>>(allocator);
+			clone_impl = allocator.create_mutable<gcpp::deferred_ptr<const T>>();
 			orginal_to_clone[key] = clone_impl;
 			original->clone_to(allocator, orginal_to_clone, clone_impl);
 		}

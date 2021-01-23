@@ -14,8 +14,7 @@ namespace {
 		std::transform(begin_edges, end_edges, cluster_contents.begin(),
 			[](tess::const_edge_ptr e)->tess::value_ { return tess::value_(e); }
 		);
-		//return allocator.create<tess::const_cluster_ptr>( cluster_contents );
-		return tess::create_const<tess::const_cluster_ptr>(allocator, cluster_contents );
+		return allocator.create_const<tess::const_cluster_ptr>( cluster_contents );
 	}
 
 	template<typename T>
@@ -42,8 +41,8 @@ tess::detail::tile_impl::tile_impl( tess::gc_heap& a, const std::vector<std::tup
 	edges_.resize(n);
 
 	for (int i = 0; i < n; ++i) {
-		vertices_[i] = tess::create_mutable<vertex_ptr>( a, i, vertex_locations[i]);
-		edges_[i] = tess::create_mutable<edge_ptr>(a, i, i, (i + 1) % n);
+		vertices_[i] = a.create_mutable<vertex_ptr>( i, vertex_locations[i]);
+		edges_[i] = a.create_mutable<edge_ptr>( i, i, (i + 1) % n);
 	}
 }
 
@@ -246,7 +245,7 @@ tess::value_ tess::detail::tile_impl::get_on(tess::gc_heap& a,  std::variant<tes
 						return this->get_on(a, var);
 					}
 				);
-				return value_( tess::create_const<tess::const_cluster_ptr>(a, on_edges) );
+				return value_( a.create_const<tess::const_cluster_ptr>( on_edges) );
 			}
 		},
 		var
