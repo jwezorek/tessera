@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
 project(tessera_project LANGUAGES CXX)
 
-find_package(Eigen3 CONFIG REQUIRED)
+find_package(Eigen3 CONFIG)
 if (${Eigen3_FOUND})
    Message(STATUS "eigen found...")
 endif (${Eigen3_FOUND})
 
-find_package(Boost 1.7 CONFIG REQUIRED QUIET)
+find_package(Boost 1.7 CONFIG QUIET)
 if (${Boost_FOUND})
 	Message(STATUS "boost found...")
 endif (${Boost_FOUND})
