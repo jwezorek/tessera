@@ -14,18 +14,18 @@ namespace tess {
         gc_heap();
 
         template<typename T, typename... Args>
-        auto create_mutable(Args&&... args) {
+        auto make_mutable(Args&&... args) {
             auto ptr = impl_.make<typename std::remove_const<typename T::value_type>::type>(*this, std::forward<Args>(args)...);
             ptr->initialize(ptr);
             return ptr;
         }
 
         template<typename T, typename... Args>
-        auto create_const(Args&&... args) {
-            using base_type = typename std::remove_const<typename T::value_type>::type;
-            auto ptr = impl_.make<base_type>(*this, std::forward<Args>(args)...);
-            ptr->initialize(ptr);
-            return gcpp::deferred_ptr<const base_type>(ptr);
+        auto make_const(Args&&... args) {
+            using const_type = typename std::add_const<typename T::value_type>::type;
+            return gcpp::deferred_ptr<const_type>(
+                make_mutable<T>(std::forward<Args>(args)...)
+            );
         }
 
     };

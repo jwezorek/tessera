@@ -114,7 +114,7 @@ tess::stack_machine::item tess::make_lambda::execute(const std::vector<stack_mac
     auto& ctxt = contexts.top();
     auto& alloc = contexts.top().allocator();
     try {
-        auto lambda = alloc.create_mutable<tess::const_lambda_ptr>(parameters_, body_, dependencies_);
+        auto lambda = alloc.make_mutable<tess::const_lambda_ptr>(parameters_, body_, dependencies_);
 
         for (auto dependency : dependencies_)
             if (ctxt.has(dependency))
@@ -498,7 +498,7 @@ std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vect
 
     stack_machine::item new_dst;
     if (!dst)
-        new_dst = { value_{ alloc.create_const<const_cluster_ptr>( std::vector<value_>{}) } };
+        new_dst = { value_{ alloc.make_const<const_cluster_ptr>( std::vector<value_>{}) } };
     else
         new_dst = operands[1];
 

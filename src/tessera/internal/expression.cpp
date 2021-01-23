@@ -152,7 +152,7 @@ namespace {
 			tess::parser::kw::regular_polygon, 1,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = regular_polygon_vertices(std::get<tess::number>(args[0]));
-				return tess::value_( a.create_const<tess::const_tile_ptr>( locs) );
+				return tess::value_( a.make_const<tess::const_tile_ptr>( locs) );
 			}
 		} , {
 			tess::parser::kw::flip, 1,
@@ -163,25 +163,25 @@ namespace {
 			tess::parser::kw::isosceles_triangle, 1,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = isosceles_triangle(std::get<tess::number>(args[0]));
-				return tess::value_( a.create_const<tess::const_tile_ptr>(locs) );
+				return tess::value_( a.make_const<tess::const_tile_ptr>(locs) );
 			}
 		} , {
 			tess::parser::kw::isosceles_trapezoid, 2,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = isosceles_trapezoid(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]));
-				return tess::value_( a.create_const<tess::const_tile_ptr>(locs));
+				return tess::value_( a.make_const<tess::const_tile_ptr>(locs));
 			}
 		} , {
 			tess::parser::kw::rhombus, 1,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = rhombus(std::get<tess::number>(args[0]));
-				return tess::value_( a.create_const<tess::const_tile_ptr>(locs) );
+				return tess::value_( a.make_const<tess::const_tile_ptr>(locs) );
 			}
 		} , {
 			tess::parser::kw::polygon, 1,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = polygon(args[0]);
-				return tess::value_( a.create_const<tess::const_tile_ptr>(locs) );
+				return tess::value_( a.make_const<tess::const_tile_ptr>(locs) );
 			}
 		} , {
 			tess::parser::kw::join, 1,
@@ -193,7 +193,7 @@ namespace {
 			tess::parser::kw::triangle_by_sides, 3,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = triangle_by_sides(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]), std::get<tess::number>(args[2]));
-				return tess::value_(a.create_const<tess::const_tile_ptr>(locs) );
+				return tess::value_(a.make_const<tess::const_tile_ptr>(locs) );
 			}
 		} 
 	};

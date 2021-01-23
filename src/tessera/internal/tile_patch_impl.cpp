@@ -370,7 +370,7 @@ tess::value_ tess::detail::patch_impl::get_on(gc_heap& a, const std::variant<tes
 						return this->get_on(a, edge_or_cluster);
 					}
 				);
-				return value_( a.create_const<const_cluster_ptr>(on_edges) );
+				return value_( a.make_const<const_cluster_ptr>(on_edges) );
 			}
 		},
 		var
@@ -411,7 +411,7 @@ tess::point tess::detail::patch_impl::get_vertex_location(int index) const {
 tess::tile_ptr tess::detail::patch_impl::join(tess::gc_heap& a) const
 {
 	auto points = tess::join(self_);
-	auto joined_patch = a.create_const<tess::const_tile_ptr>(points);
+	auto joined_patch = a.make_const<tess::const_tile_ptr>(points);
 	propagate_fields(joined_patch, self_);
 	return joined_patch;
 }
@@ -548,7 +548,7 @@ tess::patch_ptr tess::flatten(tess::gc_heap& a, const std::vector<tess::value_>&
 	if (should_join_broken_tiles)
 		tiles = join_broken_tiles(a, tiles);
 
-	auto patch_impl = a.create_mutable<tess::const_patch_ptr>();
+	auto patch_impl = a.make_mutable<tess::const_patch_ptr>();
 	for (const auto& tile : tiles) {
 		patch_impl->insert_tile( tile );
 	}
