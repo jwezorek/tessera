@@ -7,7 +7,7 @@
 #include <memory>
 #include <unordered_set>
 #include <unordered_map>
-#include "allocator.h"
+#include "gc_heap.h"
 
 namespace tess {
 
@@ -53,11 +53,11 @@ namespace tess {
 	bool is_object_like(value_);
 	bool is_array_like(value_);
 	bool is_nil(value_);
-	value_ clone_value(allocator& allocator, value_ v);
-	value_ clone_value(allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& original_to_clone, value_ v);
+	value_ clone_value(gc_heap& allocator, value_ v);
+	value_ clone_value(gc_heap& allocator, std::unordered_map<obj_id, mutable_object_value>& original_to_clone, value_ v);
 	value_ get_ary_item(value_ v, int index);
 	int get_ary_count(value_ v);
-	value_ get_field(value_ v, allocator& allocator, const std::string& field) ;
+	value_ get_field(value_ v, gc_heap& allocator, const std::string& field) ;
 	void insert_field(value_ v, const std::string& var, value_ val);
 	//std::unordered_set<obj_id> get_references(value_ v);
 	//void get_references(value_ v, std::unordered_set<obj_id>& alloc_set);
@@ -83,13 +83,13 @@ namespace tess {
 	}
 
 	template<typename T>
-	gcpp::deferred_ptr<T> clone(allocator& a, gcpp::deferred_ptr<const T> tess_impl) {
+	gcpp::deferred_ptr<T> clone(gc_heap& a, gcpp::deferred_ptr<const T> tess_impl) {
 		tess::value_ val{ tess_impl };
 		return gcpp::deferred_ptr<T>(std::get<gcpp::deferred_ptr<const T>>(tess::clone_value(a, val)));
 	}
 
     template<typename T>
-    gcpp::deferred_ptr<T> clone(allocator& a, gcpp::deferred_ptr< T> tess_impl) {
+    gcpp::deferred_ptr<T> clone(gc_heap& a, gcpp::deferred_ptr< T> tess_impl) {
         return clone(a, gcpp::deferred_ptr<const T>(tess_impl));
     }
 	

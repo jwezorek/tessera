@@ -2,7 +2,7 @@
 #include "function_def.h"
 #include "lambda.h"
 #include "lambda_impl.h"
-#include "allocator.h"
+#include "gc_heap.h"
 #include "variant_util.h"
 #include "evaluation_context.h"
 #include "lay_expr.h"
@@ -287,7 +287,7 @@ void tess::assign_op::execute(const std::vector<tess::stack_machine::item>& oper
     }
 }
 
-tess::one_param_op::one_param_op(std::function<value_(tess::allocator&, const value_&)> func, std::string name) :
+tess::one_param_op::one_param_op(std::function<value_(tess::gc_heap&, const value_&)> func, std::string name) :
     stack_machine::op_1(1), func_(func), name_(name)
 {
 }
@@ -371,7 +371,7 @@ std::optional<tess::error> tess::lay_op::apply_mapping(const std::vector<stack_m
     return ::apply_mapping(edge_to_edge);
 }
 
-tess::val_func_op::val_func_op(int n, std::function<value_(tess::allocator& a, const std::vector<value_> & v)> func, std::string name) :
+tess::val_func_op::val_func_op(int n, std::function<value_(tess::gc_heap& a, const std::vector<value_> & v)> func, std::string name) :
     stack_machine::op_1(n), name_(name), func_(func)
 {
 }

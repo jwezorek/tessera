@@ -7,7 +7,7 @@
 #include "where_expr.h"
 #include "parser/script_parser.h"
 #include "parser/expr_parser.h"
-#include "allocator.h"
+#include "gc_heap.h"
 #include "execution_state.h"
 #include "object_expr.h"
 

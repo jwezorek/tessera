@@ -7,7 +7,7 @@
 #include "stack_machine.h"
 #include "tessera_impl.h"
 #include <unordered_set>
-#include "allocator.h"
+#include "gc_heap.h"
 
 namespace tess {
 
@@ -18,7 +18,7 @@ namespace tess {
         execution_state();
         evaluation_context create_eval_context();
         evaluation_context create_eval_context(const scope_frame& frame);
-        tess::allocator& allocator();
+        tess::gc_heap& allocator();
         stack_machine::stack& main_stack();
         stack_machine::stack& operand_stack();
         tess::context_stack& context_stack();

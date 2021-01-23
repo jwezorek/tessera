@@ -189,7 +189,7 @@ tess::scope_frame tess::evaluation_context::pop_scope()
     return frame;
 }
 
-tess::allocator& tess::evaluation_context::allocator()
+tess::gc_heap& tess::evaluation_context::allocator()
 {
     return state_.allocator();
 }

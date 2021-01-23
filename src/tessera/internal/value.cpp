@@ -3,7 +3,7 @@
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
 #include "lambda_impl.h"
-#include "allocator.h"
+#include "gc_heap.h"
 #include "execution_state.h"
 #include "tessera_impl.h"
 #include "field_ref.h"
@@ -12,7 +12,7 @@
 namespace {
 
 	template<typename T>
-    gcpp::deferred_ptr<T> clone_aux(tess::allocator& allocator, std::unordered_map<tess::obj_id, tess::mutable_object_value>& orginal_to_clone, gcpp::deferred_ptr<const T> original) {
+    gcpp::deferred_ptr<T> clone_aux(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, tess::mutable_object_value>& orginal_to_clone, gcpp::deferred_ptr<const T> original) {
 
 		auto key = original->get_id();
         gcpp::deferred_ptr<T>  clone_impl = nullptr;
@@ -69,7 +69,7 @@ bool tess::is_nil(value_ v)
 	return std::holds_alternative<tess::nil_val>(v);
 }
 
-tess::value_ tess::clone_value( allocator& allocator, value_ v) 
+tess::value_ tess::clone_value( gc_heap& allocator, value_ v) 
 {
 	if (is_simple_value(v))
 		return v;
@@ -81,7 +81,7 @@ tess::value_ tess::clone_value( allocator& allocator, value_ v)
 	return clone_value(allocator, original_to_clone, v);
 }
 
-tess::value_ tess::clone_value(allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& original_to_clone, value_ v)
+tess::value_ tess::clone_value(gc_heap& allocator, std::unordered_map<obj_id, mutable_object_value>& original_to_clone, value_ v)
 {
 	if (is_simple_value(v))
 		return v;
@@ -121,7 +121,7 @@ int tess::get_ary_count(value_ v)
 	);
 }
 
-tess::value_ tess::get_field(value_ v, allocator& allocator, const std::string& field)
+tess::value_ tess::get_field(value_ v, gc_heap& allocator, const std::string& field)
 {
 	if (!is_object_like(v)) {
 		throw tess::error("attempted reference to field of a non-object: " + field);

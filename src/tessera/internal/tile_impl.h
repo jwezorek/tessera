@@ -12,7 +12,7 @@
 #include <memory>
 #include <map>
 #include <variant>
-#include "allocator.h"
+#include "gc_heap.h"
 
 namespace tess {
 
@@ -24,21 +24,21 @@ namespace tess {
                 std::variant<int, point> location_;
 
             public:
-                vertex_impl(allocator& a) {};
-                vertex_impl(allocator& a, int index, point loc);
+                vertex_impl(gc_heap& a) {};
+                vertex_impl(gc_heap& a, int index, point loc);
                 void initialize( vertex_ptr p) {}
 
                 void set_parent(const_tile_ptr parent);
                 std::tuple<double, double> to_floats() const;
                 point pos() const;
-                value_ get_field(allocator& allocator, const std::string& field) const;
+                value_ get_field(gc_heap& allocator, const std::string& field) const;
                 void apply(const matrix& mat);
                 const_tile_ptr parent() const;
                 const_edge_ptr in_edge() const;
                 const_edge_ptr out_edge() const;
                 void insert_field(const std::string& var, const value_& val) {}
                 //void get_references(std::unordered_set<obj_id>& alloc_set) const;
-                void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, vertex_ptr clone) const;
+                void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, vertex_ptr clone) const;
                 const_patch_ptr grandparent() const;
                 void set_location(int vert_index);
                 void set_location(point pt);
@@ -53,8 +53,8 @@ namespace tess {
                 int u_, v_;
                 std::map<std::string, value_> fields_;
             public:
-                edge_impl(allocator& a) {};
-                edge_impl(allocator& a, int index, int u, int v);
+                edge_impl(gc_heap& a) {};
+                edge_impl(gc_heap& a, int index, int u, int v);
                 void initialize( edge_ptr p) {}
 
                 void set_parent(const_tile_ptr parent);
@@ -64,7 +64,7 @@ namespace tess {
                 vertex_ptr v();
                 const_edge_ptr next_edge() const;
                 const_edge_ptr prev_edge() const;
-                value_ get_field(allocator& allocator, const std::string& field) const;
+                value_ get_field(gc_heap& allocator, const std::string& field) const;
                 value_ get_field(const std::string& field) const;
                 bool has_property(const std::string& prop) const;
                 const_tile_ptr parent() const;
@@ -72,7 +72,7 @@ namespace tess {
                 void insert_field(const std::string& var, const value_& val);
                 const std::map<std::string, value_>& fields() const;
                 //void get_references(std::unordered_set<obj_id>& alloc_set) const;
-                void clone_to(tess::allocator& allocator, std::unordered_map<obj_id,mutable_object_value>& orginal_to_clone, edge_ptr clone) const;
+                void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id,mutable_object_value>& orginal_to_clone, edge_ptr clone) const;
                 void flip();
                 edge_indices get_edge_location_indices() const;
                 std::string debug() const;
@@ -88,8 +88,8 @@ namespace tess {
                 int index_;
 
             public:
-                tile_impl(allocator& a) {};
-                tile_impl(tess::allocator& allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
+                tile_impl(gc_heap& a) {};
+                tile_impl(tess::gc_heap& allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
                 void initialize( tile_ptr self);
 
                 std::vector<tess::const_vertex_ptr> vertices() const;
@@ -104,10 +104,10 @@ namespace tess {
                 edge_ptr edge(int index);
 
                 value_ get_field(const std::string& field) const;
-                value_ get_field(allocator& allocator, const std::string& field) const;
+                value_ get_field(gc_heap& allocator, const std::string& field) const;
                 const std::map<std::string, value_>& fields() const;
                 void apply(const matrix& mat);
-                tess::const_tile_ptr flip(allocator& a) const;
+                tess::const_tile_ptr flip(gc_heap& a) const;
                 void flip();
                 bool has_parent() const;
                 const_patch_ptr parent() const;
@@ -116,13 +116,13 @@ namespace tess {
                 void detach();
                 void insert_field(const std::string& var, const value_& val);
                 //void get_references(std::unordered_set<obj_id>& alloc_set) const;
-                void clone_to(tess::allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, tile_ptr clone) const;
+                void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, tile_ptr clone) const;
                 bool is_detached() const;
-                tess::tile_ptr clone_detached(tess::allocator& a) const;
+                tess::tile_ptr clone_detached(tess::gc_heap& a) const;
                 std::string debug() const;
                 const_tile_ptr get_adjacent_tile(int edge_index) const;
-                const_edge_ptr get_edge_on(allocator& a, const_edge_ptr e) const;
-                value_ get_on(allocator& a, std::variant<tess::const_edge_ptr, tess::const_cluster_ptr>& e) const;
+                const_edge_ptr get_edge_on(gc_heap& a, const_edge_ptr e) const;
+                value_ get_on(gc_heap& a, std::variant<tess::const_edge_ptr, tess::const_cluster_ptr>& e) const;
         };
 
     }

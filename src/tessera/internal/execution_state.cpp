@@ -4,7 +4,7 @@
 #include "lambda_impl.h"
 #include "tessera/error.h"
 #include "value.h"
-#include "allocator.h"
+#include "gc_heap.h"
 #include "stack_machine.h"
 #include <algorithm>
 #include <unordered_set>
@@ -14,7 +14,7 @@
 
 class tess::execution_state::impl_type {
 public:
-    tess::allocator allocator_;
+    tess::gc_heap allocator_;
     tess::stack_machine::stack main_stack_;
     tess::stack_machine::stack operand_stack_;
     tess::context_stack context_stack_;
@@ -32,7 +32,7 @@ tess::execution_state::execution_state() :
 {
 }
 
-tess::allocator& tess::execution_state::allocator()
+tess::gc_heap& tess::execution_state::allocator()
 {
     return impl_->allocator_;
 }

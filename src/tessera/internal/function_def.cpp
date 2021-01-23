@@ -2,7 +2,7 @@
 #include "value.h"
 #include "ops.h"
 #include "execution_state.h"
-#include "allocator.h"
+#include "gc_heap.h"
 #include <variant>
 #include <unordered_set>
 #include <numeric>

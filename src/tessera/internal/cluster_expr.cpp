@@ -2,7 +2,7 @@
 #include "object_expr.h"
 #include "value.h"
 #include "cluster.h"
-#include "allocator.h"
+#include "gc_heap.h"
 #include "execution_state.h"
 #include "ops.h"
 
@@ -17,7 +17,7 @@ void tess::cluster_expr::compile(stack_machine::stack& stack) const
     stack.push(
         std::make_shared<val_func_op>(
             n,
-            [](allocator& a, const std::vector<value_>& values)->value_ {
+            [](gc_heap& a, const std::vector<value_>& values)->value_ {
                 return value_(tess::create_const<const_cluster_ptr>(a, values));
             },
             "<make_cluster " + std::to_string(n) + ">"
@@ -69,7 +69,7 @@ void tess::num_range_expr::compile(stack_machine::stack& stack) const
     stack.push(
         std::make_shared<val_func_op>(
             2,
-            [](allocator& a, const std::vector<value_>& values)->value_ {
+            [](gc_heap& a, const std::vector<value_>& values)->value_ {
                 int from = to_int(std::get<number>( values[0] ));
                 int to = to_int(std::get<number>( values[1] ));
                 int n = (to >= from) ? to - from + 1 : 0;

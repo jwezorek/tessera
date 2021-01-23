@@ -6,7 +6,7 @@
 #include "tessera_impl.h"
 #include "parser/keywords.h"
 #include "ops.h"
-#include "allocator.h"
+#include "gc_heap.h"
 #include "variant_util.h"
 #include <sstream>
 
@@ -84,7 +84,7 @@ namespace {
 		return { {0,0}, {c,0}, {C_x,C_y} };
 	}
 
-	tess::value_ flip(tess::allocator& a, const tess::value_& arg)
+	tess::value_ flip(tess::gc_heap& a, const tess::value_& arg)
 	{
 		if (!std::holds_alternative<tess::const_tile_ptr>(arg) && !std::holds_alternative<tess::const_patch_ptr>(arg))
 			throw tess::error("attempted to flip a value that is not a tile or patch");
@@ -123,75 +123,75 @@ namespace {
 	struct special_func_def {
 		tess::parser::kw tok;
 		int num_parameters;
-		std::function<tess::value_(tess::allocator&, const std::vector<tess::value_>&)> func;
+		std::function<tess::value_(tess::gc_heap&, const std::vector<tess::value_>&)> func;
 	};
 
 	std::vector<special_func_def> g_special_function_definitions = {
 		{
 			tess::parser::kw::arccos, 1,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_( tess::acos(std::get<tess::number>(args[0])) ); }
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_( tess::acos(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::arcsin, 1,
-			[](tess::allocator& a,  const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::asin(std::get<tess::number>(args[0])) ); }
+			[](tess::gc_heap& a,  const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::asin(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::arctan, 1,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::atan(std::get<tess::number>(args[0])) ); }
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::atan(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::cos, 1,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::cos(std::get<tess::number>(args[0])) ); }
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::cos(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::sin, 1,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::sin(std::get<tess::number>(args[0])) ); }
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::sin(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::sqrt, 1,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::sqrt(std::get<tess::number>(args[0])) ); }
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::sqrt(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::tan, 1,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::tan(std::get<tess::number>(args[0])) ); }
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ { return tess::value_(tess::tan(std::get<tess::number>(args[0])) ); }
 		} , {
 			tess::parser::kw::regular_polygon, 1,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = regular_polygon_vertices(std::get<tess::number>(args[0]));
 				return tess::value_( tess::create_const<tess::const_tile_ptr>(a, locs) );
 			}
 		} , {
 			tess::parser::kw::flip, 1,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				return flip(a, args[0]);
 			}
 		} , {
 			tess::parser::kw::isosceles_triangle, 1,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = isosceles_triangle(std::get<tess::number>(args[0]));
 				return tess::value_( tess::create_const<tess::const_tile_ptr>(a, locs) );
 			}
 		} , {
 			tess::parser::kw::isosceles_trapezoid, 2,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = isosceles_trapezoid(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]));
 				return tess::value_( tess::create_const<tess::const_tile_ptr>(a, locs));
 			}
 		} , {
 			tess::parser::kw::rhombus, 1,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = rhombus(std::get<tess::number>(args[0]));
 				return tess::value_( tess::create_const<tess::const_tile_ptr>(a, locs) );
 			}
 		} , {
 			tess::parser::kw::polygon, 1,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = polygon(args[0]);
 				return tess::value_( tess::create_const<tess::const_tile_ptr>(a, locs) );
 			}
 		} , {
 			tess::parser::kw::join, 1,
-			[](tess::allocator& a,const std::vector<tess::value_>& args)->tess::value_ {
+			[](tess::gc_heap& a,const std::vector<tess::value_>& args)->tess::value_ {
 				auto patch = std::get<tess::const_patch_ptr>(args[0]);
 				return tess::make_value(patch->join(a) );
 			}
 		} , {
 			tess::parser::kw::triangle_by_sides, 3,
-			[](tess::allocator& a, const std::vector<tess::value_>& args)->tess::value_ {
+			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = triangle_by_sides(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]), std::get<tess::number>(args[2]));
 				return tess::value_(tess::create_const<tess::const_tile_ptr>( a, locs) );
 			}
@@ -262,7 +262,7 @@ void tess::addition_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(std::make_shared<val_func_op>( 
 		static_cast<int>(terms_.size()),
-		[](allocator& a, const std::vector<value_>& args)->value_ {
+		[](gc_heap& a, const std::vector<value_>& args)->value_ {
 			number sum = 0;
 			for (const auto& term : args) {
 				sum += std::get<number>(term);
@@ -277,7 +277,7 @@ void tess::addition_expr::compile(stack_machine::stack& stack) const
 			stack.push(
 				std::make_shared<val_func_op>(
 					1,
-					[](allocator& a, const std::vector<value_>& args)->value_ {
+					[](gc_heap& a, const std::vector<value_>& args)->value_ {
 						return tess::value_(-std::get<number>(args[0]) );
 					},
 					"<neg>"
@@ -344,7 +344,7 @@ void tess::multiplication_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(std::make_shared<val_func_op>(
 			static_cast<int>(factors_.size()),
-			[](allocator& a, const std::vector<value_>& args)->value_ {
+			[](gc_heap& a, const std::vector<value_>& args)->value_ {
 				number product = 1;
 				for (const auto& term : args) {
 					product *= std::get<number>(term);
@@ -359,7 +359,7 @@ void tess::multiplication_expr::compile(stack_machine::stack& stack) const
 			stack.push(
 				std::make_shared<val_func_op>(
 					1,
-					[](allocator& a, const std::vector<value_>& args)->value_ {
+					[](gc_heap& a, const std::vector<value_>& args)->value_ {
 						return tess::value_(number(1) / std::get<number>(args[0]) );
 					},
 					"<reciprocal>"
@@ -428,7 +428,7 @@ void tess::exponent_expr::compile(stack_machine::stack& stack) const
 	int n = static_cast<int>(exponents_.size() + 1);
 	stack.push(std::make_shared<val_func_op>(
 			n,
-			[](allocator& a, const std::vector<value_>& args)->value_ {
+			[](gc_heap& a, const std::vector<value_>& args)->value_ {
 				number power = std::get<number>(args[0]);
 				if (args.size() > 1) {
 					for (auto e = std::next(args.begin()); e != args.end(); e++) 
@@ -608,7 +608,7 @@ void tess::and_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<val_func_op>(
 			n,
-			[](allocator& a, const std::vector<value_>& args)->value_ {
+			[](gc_heap& a, const std::vector<value_>& args)->value_ {
 				for (const auto& conjunct : args) {
 					auto val = std::get<bool>(conjunct);
 					if (!val)
@@ -653,7 +653,7 @@ void tess::equality_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<val_func_op>(
 			n,
-			[](allocator& a, const std::vector<value_>& args) -> value_ {
+			[](gc_heap& a, const std::vector<value_>& args) -> value_ {
 
 				std::vector<number> expressions;
 				expressions.reserve(args.size());
@@ -704,7 +704,7 @@ void tess::or_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<val_func_op>(
 			static_cast<int>(disjuncts_.size()),
-			[](allocator& a, const std::vector<value_>& args) -> value_ {
+			[](gc_heap& a, const std::vector<value_>& args) -> value_ {
 				for (const auto& disjunct : args) {
 					auto val = std::get<bool>(disjunct);
 					if (val)
@@ -769,7 +769,7 @@ void tess::relation_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<val_func_op>(
 			2,
-			[relation](allocator& a, const std::vector<value_>& args) -> value_ {
+			[relation](gc_heap& a, const std::vector<value_>& args) -> value_ {
 				for (const auto& disjunct : args) {
 					auto lhs = std::get<number>(args[0]);
 					auto rhs = std::get<number>(args[1]);
@@ -894,7 +894,7 @@ void tess::on_expr::compile(stack_machine::stack& stack) const
 	stack.push(
 		std::make_shared<val_func_op>(
 			2,
-			[](allocator& a, const std::vector<value_>& args) -> value_ {
+			[](gc_heap& a, const std::vector<value_>& args) -> value_ {
 				std::variant<tess::const_tile_ptr, tess::const_patch_ptr> tile_or_patch = variant_cast(args[0]);
 				std::variant<tess::const_edge_ptr, tess::const_cluster_ptr> arg = variant_cast(args[1]);
 				return std::visit(
@@ -965,7 +965,7 @@ void tess::clone_expr::compile(stack_machine::stack& stack) const
 {
 	stack.push(
 		std::make_shared<one_param_op>(
-			[](allocator& a, const value_& v)->value_ {
+			[](gc_heap& a, const value_& v)->value_ {
 				return tess::clone_value(a, v);
 			},
 			"clone"

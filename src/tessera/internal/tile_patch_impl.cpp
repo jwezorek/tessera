@@ -1,6 +1,6 @@
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
-#include "allocator.h"
+#include "gc_heap.h"
 #include "variant_util.h"
 #include "stack_machine.h"
 #include "ops.h"
@@ -146,7 +146,7 @@ namespace {
 		std::cout << "]\n";
 	}
 
-	std::vector<tess::tile_ptr> join_broken_tiles(tess::allocator& a, const std::vector<tess::tile_ptr>& tiles) {
+	std::vector<tess::tile_ptr> join_broken_tiles(tess::gc_heap& a, const std::vector<tess::tile_ptr>& tiles) {
 		if (!has_broken_tile(tiles))
 			return tiles;
 
@@ -250,7 +250,7 @@ void tess::detail::patch_impl::build_edge_table() const
 	}
 }
 
-tess::detail::patch_impl::patch_impl( tess::allocator& a, const std::vector<tess::tile_ptr>& tiles) {
+tess::detail::patch_impl::patch_impl( tess::gc_heap& a, const std::vector<tess::tile_ptr>& tiles) {
 	for ( auto& t : tiles)
 		insert_tile(t);
 }
@@ -280,7 +280,7 @@ void tess::detail::patch_impl::insert_field(const std::string& var, const value_
 	fields_[var] = val;
 }
 
-tess::value_ tess::detail::patch_impl::get_field(allocator& allocator, const std::string& field) const
+tess::value_ tess::detail::patch_impl::get_field(gc_heap& allocator, const std::string& field) const
 {
 	auto iter = fields_.find(field);
 
@@ -316,7 +316,7 @@ std::string tess::detail::patch_impl::debug() const
 	return ss.str();
 }
 
-tess::patch_ptr tess::detail::patch_impl::flip(allocator& a) const {
+tess::patch_ptr tess::detail::patch_impl::flip(gc_heap& a) const {
 	value_ self = make_value( self_ );
 	auto clone = get_mutable<tess::const_patch_ptr>(tess::clone_value(a, self));
 	clone->flip();
@@ -349,7 +349,7 @@ tess::const_edge_ptr tess::detail::patch_impl::get_edge_on(tess::point u, tess::
 	return get_edge_on(u_index, v_index);
 }
 
-tess::value_ tess::detail::patch_impl::get_on(allocator& a, const std::variant<tess::const_edge_ptr, tess::const_cluster_ptr>& var) const
+tess::value_ tess::detail::patch_impl::get_on(gc_heap& a, const std::variant<tess::const_edge_ptr, tess::const_cluster_ptr>& var) const
 {
 	return std::visit(
 		overloaded{
@@ -392,7 +392,7 @@ void tess::detail::patch_impl::get_references(std::unordered_set<obj_id>& alloc_
         tess::get_references(val, alloc_set);
 }
 */
-void tess::detail::patch_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, patch_ptr mutable_clone) const
+void tess::detail::patch_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, patch_ptr mutable_clone) const
 {
 	for (const auto& t : tiles_) { // clone tiles
 		auto t_clone = get_mutable<const_tile_ptr>(tess::clone_value(allocator, orginal_to_clone, make_value(t)));
@@ -408,7 +408,7 @@ tess::point tess::detail::patch_impl::get_vertex_location(int index) const {
 	return vert_tbl_.get_location(index);
 }
 
-tess::tile_ptr tess::detail::patch_impl::join(tess::allocator& a) const
+tess::tile_ptr tess::detail::patch_impl::join(tess::gc_heap& a) const
 {
 	auto points = tess::join(self_);
 	auto joined_patch = tess::create_const<tess::const_tile_ptr>(a, points);
@@ -435,13 +435,13 @@ void tess::detail::patch_impl::dfs(tile_visitor visit) const
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::detail::cluster_impl::cluster_impl(allocator& a, const std::vector<value_>& values)
+tess::detail::cluster_impl::cluster_impl(gc_heap& a, const std::vector<value_>& values)
 {
     std::copy(values.begin(), values.end(), std::back_inserter(values_) );
 }
 
 
-tess::value_ tess::detail::cluster_impl::get_field(allocator& allocator, const std::string& field) const
+tess::value_ tess::detail::cluster_impl::get_field(gc_heap& allocator, const std::string& field) const
 {
 	return value_(); // TODO
 }
@@ -484,7 +484,7 @@ void tess::detail::cluster_impl::get_references(std::unordered_set<obj_id>& allo
         tess::get_references(val, alloc_set); //items
 }
 */
-void tess::detail::cluster_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, cluster_ptr mutable_clone) const
+void tess::detail::cluster_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, cluster_ptr mutable_clone) const
 {
 	for (const auto& value : values_) {
 		mutable_clone->values_.push_back(tess::clone_value(allocator, orginal_to_clone, value)); // items
@@ -521,7 +521,7 @@ int count_tiles(const std::vector<tess::value_>& tiles_and_patches) {
 	return count;
 }
 
-tess::patch_ptr tess::flatten(tess::allocator& a, const std::vector<tess::value_>& tiles_and_patches, bool should_join_broken_tiles) {
+tess::patch_ptr tess::flatten(tess::gc_heap& a, const std::vector<tess::value_>& tiles_and_patches, bool should_join_broken_tiles) {
 	for (const auto& v : tiles_and_patches)
 		if (!std::holds_alternative<tess::const_tile_ptr>(v) && !std::holds_alternative<tess::const_patch_ptr>(v))
 			throw tess::error("attempted to flatten a value that is not a tile or tile patch");
@@ -556,12 +556,12 @@ tess::patch_ptr tess::flatten(tess::allocator& a, const std::vector<tess::value_
 	return patch_impl;
 }
 
-tess::tile_ptr tess::join(tess::allocator& a, const std::vector<tess::value_>& tiles_and_patches, bool should_join_broken_tiles) {
+tess::tile_ptr tess::join(tess::gc_heap& a, const std::vector<tess::value_>& tiles_and_patches, bool should_join_broken_tiles) {
 	auto patch = flatten(a, tiles_and_patches, should_join_broken_tiles);
 	return patch->join(a);
 }
 
-tess::tile_ptr tess::join(tess::allocator& a, const std::vector<tile_ptr>& tiles) {
+tess::tile_ptr tess::join(tess::gc_heap& a, const std::vector<tile_ptr>& tiles) {
 	std::vector<tess::value_> tiles_as_vals(tiles.size());
 	std::transform(tiles.begin(), tiles.end(), tiles_as_vals.begin(),
 		[](tile_ptr t) -> tess::value_ {

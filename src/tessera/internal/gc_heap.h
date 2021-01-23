@@ -5,7 +5,7 @@
 
 namespace tess {
 
-    using allocator = gcpp::deferred_heap;
+    using gc_heap = gcpp::deferred_heap;
 
     /*
     namespace detail {
@@ -16,14 +16,14 @@ namespace tess {
     */
 
     template<typename T, typename... Args>
-    auto create_mutable(allocator& a, Args&&... args) {
+    auto create_mutable(gc_heap& a, Args&&... args) {
         auto ptr = a.make<typename std::remove_const<typename T::value_type>::type>(a, std::forward<Args>(args)...);
         ptr->initialize( ptr );
         return ptr;
     }
 
     template<typename T, typename... Args>
-    auto create_const(allocator& a, Args&&... args) {
+    auto create_const(gc_heap& a, Args&&... args) {
         using base_type = typename std::remove_const<typename T::value_type>::type;
         auto ptr = a.make<base_type>(a, std::forward<Args>(args)...);
         ptr->initialize( ptr );

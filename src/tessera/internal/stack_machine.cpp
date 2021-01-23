@@ -4,7 +4,7 @@
 #include "evaluation_context.h"
 #include "execution_state.h"
 #include "expression.h"
-#include "allocator.h"
+#include "gc_heap.h"
 #include <sstream>
 
 namespace {

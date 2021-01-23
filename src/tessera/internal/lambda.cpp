@@ -17,7 +17,7 @@ const tess::scope_frame& tess::lambda::closure() const
 }
 */
 
-tess::detail::lambda_impl::lambda_impl( allocator& a, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
+tess::detail::lambda_impl::lambda_impl( gc_heap& a, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
     parameters(params), body(bod), dependencies(deps)
 {
 }
@@ -27,7 +27,7 @@ void tess::detail::lambda_impl::insert_field(const std::string& var, const value
     closure.set(var, val);
 }
 
-tess::value_ tess::detail::lambda_impl::get_field(allocator& allocator, const std::string& field) const
+tess::value_ tess::detail::lambda_impl::get_field(gc_heap& allocator, const std::string& field) const
 {
     auto maybe_value = closure.get(field);
     if (maybe_value.has_value())
@@ -49,7 +49,7 @@ void tess::detail::lambda_impl::get_references(std::unordered_set<obj_id>& alloc
 }
 */
 
-void tess::detail::lambda_impl::clone_to(tess::allocator& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, lambda_ptr mutable_clone) const
+void tess::detail::lambda_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, lambda_ptr mutable_clone) const
 {
     mutable_clone->parameters = parameters;
     mutable_clone->dependencies = dependencies;

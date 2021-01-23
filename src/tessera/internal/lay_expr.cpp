@@ -4,7 +4,7 @@
 #include "tile_impl.h"
 #include "tile_patch_impl.h"
 #include "tessera/error.h"
-#include "allocator.h"
+#include "gc_heap.h"
 #include "execution_state.h"
 #include "ops.h"
 #include <variant>

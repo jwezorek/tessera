@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "allocator.h"
+#include "gc_heap.h"
 
 namespace tess {
 

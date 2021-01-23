@@ -3,7 +3,7 @@
 #include "stack_machine.h"
 #include "value.h"
 #include "tile_patch_impl.h"
-#include "allocator.h"
+#include "gc_heap.h"
 
 namespace tess {
 
@@ -89,10 +89,10 @@ namespace tess {
 
     class one_param_op : public stack_machine::op_1 {
     public:
-        one_param_op(std::function<value_(allocator& a, const value_ & v)> func, std::string name);
+        one_param_op(std::function<value_(gc_heap& a, const value_ & v)> func, std::string name);
     protected:
         std::string name_;
-        std::function<value_(allocator & a, const value_ & v)> func_;
+        std::function<value_(gc_heap & a, const value_ & v)> func_;
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const override;
         std::string to_string() const override { return name_; }
 
@@ -100,10 +100,10 @@ namespace tess {
 
     class val_func_op : public stack_machine::op_1 {
     public:
-        val_func_op(int n, std::function<value_(allocator& a, const std::vector<value_>& v)> func, std::string name);
+        val_func_op(int n, std::function<value_(gc_heap& a, const std::vector<value_>& v)> func, std::string name);
     protected:
         std::string name_;
-        std::function<value_(allocator& a, const std::vector<value_> & v)> func_;
+        std::function<value_(gc_heap& a, const std::vector<value_> & v)> func_;
         stack_machine::item execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const override;
         std::string to_string() const override { return name_; }
 

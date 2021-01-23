@@ -3,7 +3,7 @@
 #include "value.h"
 #include <optional>
 #include <map>
-#include "allocator.h"
+#include "gc_heap.h"
 
 namespace tess {
 
@@ -51,7 +51,7 @@ namespace tess {
         void push_scope(scope_frame&& scope);
         void push_scope(const scope_frame& scope);
         scope_frame pop_scope();
-        tess::allocator& allocator();
+        tess::gc_heap& allocator();
         class execution_state& execution_state();
         bool empty() const;
         int num_frames() const;
