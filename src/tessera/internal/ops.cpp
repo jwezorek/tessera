@@ -213,7 +213,12 @@ std::vector<tess::stack_machine::item> tess::call_func::execute(const std::vecto
         frame.set(var, val);
     contexts.top().push_scope(frame);
 
-    return func->body;
+    auto func_body = func->body;
+    func_body.push_back(
+        { std::make_shared<memoize_func_call_op>("") }
+    );
+
+    return func_body;
 }
 
 tess::call_func::call_func(int num_args) : op_multi(num_args+1)
@@ -561,4 +566,18 @@ void tess::set_field_op::execute(const std::vector<stack_machine::item>& operand
             field_ref->set(tess::get_ary_item(value, i++));
         }
     }
+}
+
+tess::memoize_func_call_op::memoize_func_call_op(std::string func_call_key) : stack_machine::op_1(1),
+    key_(func_call_key)
+{
+}
+
+tess::stack_machine::item tess::memoize_func_call_op::execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const
+{
+    auto val = std::get<value_>(operands[0]);
+    if (!key_.empty()) {
+        contexts.memos().insert(key_, val);
+    }
+    return { val };
 }

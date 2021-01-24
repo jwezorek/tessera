@@ -179,4 +179,14 @@ namespace tess {
         void execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const override;
         std::string to_string() const override { return "<set dependencies>"; }
     };
+
+    class memoize_func_call_op : public stack_machine::op_1 {
+    public:
+        memoize_func_call_op(std::string func_call_key);
+    protected:
+        std::string key_;
+
+        stack_machine::item execute(const std::vector<stack_machine::item>& operands, tess::context_stack& contexts) const override;
+        std::string to_string() const override { return "<get_ary_item " + key_ + ">"; }
+    };
 }

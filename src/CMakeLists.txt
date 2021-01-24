@@ -14,7 +14,7 @@ endif (${Boost_FOUND})
 #------------------------ the tessera library ----------------------------
 
 add_library(tessera 
-	"tessera/internal/gc_heap.cpp"
+	tessera/internal/gc_heap.cpp
 	tessera/internal/cluster.cpp
 	tessera/internal/cluster_expr.cpp
 	tessera/internal/error.cpp

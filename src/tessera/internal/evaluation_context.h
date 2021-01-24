@@ -65,6 +65,14 @@ namespace tess {
         {}
     };
 
+    class memoization_tbl
+    {
+    public:
+        void insert(const std::string& key, tess::value_ v);
+        bool contains(const std::string& key) const;
+        tess::value_ get(const std::string& key) const;
+    };
+
     class context_stack
     {
     public:
@@ -73,8 +81,9 @@ namespace tess {
         evaluation_context& top();
         void pop();
         void push(evaluation_context&& ctxt);
-        //void get_references(std::unordered_set<tess::obj_id>& objects) const;
+        memoization_tbl& memos();
     private:
         std::vector<evaluation_context> impl_;
+        memoization_tbl memos_;
     };
 }

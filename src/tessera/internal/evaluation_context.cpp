@@ -237,10 +237,22 @@ void tess::context_stack::pop() {
 void tess::context_stack::push(tess::evaluation_context &&ctxt) {
     impl_.push_back( std::move(ctxt) );
 }
-/*
-void tess::context_stack::get_references(std::unordered_set<tess::obj_id> &objects) const {
-    for (const auto& ec : impl_) {
-        ec.get_references(objects);
-    }
+
+tess::memoization_tbl& tess::context_stack::memos()
+{
+    return memos_;
 }
-*/
+
+void tess::memoization_tbl::insert(const std::string& key, tess::value_ v)
+{
+}
+
+bool tess::memoization_tbl::contains(const std::string& key) const
+{
+    return false;
+}
+
+tess::value_ tess::memoization_tbl::get(const std::string& key) const
+{
+    return tess::value_();
+}

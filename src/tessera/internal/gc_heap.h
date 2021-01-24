@@ -22,8 +22,7 @@ namespace tess {
 
         template<typename T, typename... Args>
         auto make_const(Args&&... args) {
-            using const_type = typename std::add_const<typename T::value_type>::type;
-            return gcpp::deferred_ptr<const_type>(
+            return gcpp::deferred_ptr<typename std::add_const<typename T::value_type>::type>(
                 make_mutable<T>(std::forward<Args>(args)...)
             );
         }
