@@ -534,8 +534,9 @@ tess::patch_ptr tess::flatten(tess::gc_heap& a, const std::vector<tess::value_>&
 				[&](tess::const_tile_ptr t) { tiles.push_back( tess::clone(a, t) ); },
 				[&](tess::const_patch_ptr patch) {
 					for (auto t : patch->tiles()) {
-						auto clone = tess::clone(a, t);
-						clone->detach();
+						//auto clone = tess::clone(a, t);
+						//clone->detach();
+						auto clone = t->clone_detached(a);
 						tiles.push_back(clone);
 					}
 				},

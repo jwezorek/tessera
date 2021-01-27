@@ -1,6 +1,6 @@
 #include "gc_heap.h"
 
-tess::gc_heap::gc_heap()
+tess::gc_heap::gc_heap() : allocations_since_collection_(0)
 {
-    impl_.set_collect_before_expand(true);
+    
 }

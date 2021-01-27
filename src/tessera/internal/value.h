@@ -20,6 +20,16 @@ namespace tess {
 		class lambda_impl;
 	}
 
+	class serialization_state {
+	public:
+		serialization_state();
+		std::optional<tess::obj_id> get_obj(tess::obj_id id) const;
+		tess::obj_id insert(tess::obj_id id);
+	private:
+		std::unordered_map<obj_id, tess::obj_id> tbl_;
+		tess::obj_id current_id_;
+	};
+
 	class execution_state;
 
     class nil_val {
@@ -59,9 +69,10 @@ namespace tess {
 	int get_ary_count(value_ v);
 	value_ get_field(value_ v, gc_heap& allocator, const std::string& field) ;
 	void insert_field(value_ v, const std::string& var, value_ val);
-	//std::unordered_set<obj_id> get_references(value_ v);
-	//void get_references(value_ v, std::unordered_set<obj_id>& alloc_set);
 	std::string to_string(value_ v);
+
+	std::string serialize(value_ v);
+	std::string serialize(serialization_state& state, value_ v);
 
 	bool operator==(const value_& lhs, const value_& rhs);
 	bool operator!=(const value_& lhs, const value_& rhs);

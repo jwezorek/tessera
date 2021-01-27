@@ -26,6 +26,7 @@ namespace tess {
                 void set_id(unsigned int id);
                 void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, lambda_ptr clone) const;
                 std::vector<std::string> unfulfilled_dependencies() const;
+                std::string serialize(serialization_state& state) const;
         };
     }
 }

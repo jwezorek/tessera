@@ -21,7 +21,7 @@
 
 #ifdef _MSC_VER
 //	This project is not currently compatible with MSVC's STL's iterator proxies.
-#define _ITERATOR_DEBUG_LEVEL 0
+//#define _ITERATOR_DEBUG_LEVEL 0
 #endif
 
 //	This project requires GSL, see: https://github.com/microsoft/gsl

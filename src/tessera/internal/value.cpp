@@ -162,6 +162,42 @@ std::string tess::to_string(value_ v)
 	return "#(some expr value)";
 }
 
+
+std::string tess::serialize(tess::serialization_state& state, tess::value_ val)
+{
+	return std::visit(
+		overloaded{
+			[&state](const const_lambda_ptr& lambda) -> std::string {
+				return lambda->serialize(state);
+			},
+			[](nil_val v) -> std::string {
+				return "<nil>";
+			},
+			[](number n) -> std::string {
+					std::stringstream ss;
+					ss << n;
+					return ss.str();
+			},
+			[](std::string s) -> std::string {
+				return "\"" + s + "\"";
+			},
+			[](bool v) -> std::string {
+				return v ? "<true>" : "<false>";
+			},
+			[](const auto& v) {
+				return std::string();
+			}
+		},
+		val
+	);
+}
+
+std::string tess::serialize(value_ val)
+{
+	serialization_state state;
+	return serialize(state, val);
+}
+
 bool tess::operator==(const value_& lhs, const value_& rhs)
 {
 	return std::visit(
@@ -181,3 +217,21 @@ bool tess::operator!=(const value_& lhs, const value_& rhs)
 	return !(lhs == rhs);
 }
 
+tess::serialization_state::serialization_state() : current_id_(0)
+{
+}
+
+std::optional<tess::obj_id> tess::serialization_state::get_obj(tess::obj_id id) const
+{
+	auto iter = tbl_.find(id);
+	if (iter != tbl_.end())
+		return iter->second;
+	else
+		return std::nullopt;
+}
+
+tess::obj_id tess::serialization_state::insert(tess::obj_id id)
+{
+	tbl_[id] = ++current_id_;
+	return current_id_;
+}

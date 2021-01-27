@@ -107,6 +107,19 @@ std::string tess::scope_frame::to_string() const
     return "# scope frame #";
 }
 
+std::string tess::scope_frame::serialize(serialization_state& state) const {
+    std::stringstream ss;
+    ss << "{";
+    for (const auto& [key, val] : definitions_) {
+        auto val_str = tess::serialize(state, val);
+        if (val_str.empty())
+            return {};
+        ss << "(" << key << "," << val_str << ")";
+    }
+    ss << "}";
+    return ss.str();
+}
+
 tess::scope_frame::scope_frame(const std::string& var, value_ val)
 {
     definitions_[var] = val;
@@ -245,14 +258,24 @@ tess::memoization_tbl& tess::context_stack::memos()
 
 void tess::memoization_tbl::insert(const std::string& key, tess::value_ v)
 {
+    tbl_[key] = v;
 }
 
 bool tess::memoization_tbl::contains(const std::string& key) const
 {
-    return false;
+    return tbl_.find(key) != tbl_.end();
 }
 
 tess::value_ tess::memoization_tbl::get(const std::string& key) const
 {
-    return tess::value_();
+    auto iter = tbl_.find(key);
+    if (iter != tbl_.end())
+        return iter->second;
+    else
+        return { tess::nil_val() };
+}
+
+std::size_t tess::memoization_tbl::size() const
+{
+    return tbl_.size();
 }

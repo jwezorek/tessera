@@ -196,6 +196,18 @@ void tess::pop_eval_context::execute(const std::vector<stack_machine::item>& ope
 
 /*---------------------------------------------------------------------------------------------*/
 
+std::string serialize_func_call(const tess::const_lambda_ptr& func, const std::vector<tess::value_>& args) {
+    std::stringstream ss;
+    ss << tess::serialize( {func} );
+    for (const auto& v : args) {
+        auto v_str = tess::serialize(v);
+        if (v_str.empty())
+            return {};
+        ss << " " << v_str;
+    }
+    return ss.str();
+}
+
 std::vector<tess::stack_machine::item> tess::call_func::execute(const std::vector<tess::stack_machine::item>& operands, tess::context_stack& contexts) const
 {
     //TODO: make a function that tests a stackitem for an expr_val containing type and throws if not there
@@ -205,20 +217,34 @@ std::vector<tess::stack_machine::item> tess::call_func::execute(const std::vecto
     const_lambda_ptr func = std::get<const_lambda_ptr>(std::get<value_>(operands[0]));
     std::vector<value_> args = get_vector<value_>(operands.begin() + 1, operands.end());
 
-    if (func->parameters.size() != args.size())
-        throw tess::error("func call arg count mismatch.");
+    auto key = serialize_func_call(func, args);
+    auto& memo_tbl = contexts.memos();
 
-    scope_frame frame(func->parameters, args);
-    for (const auto& [var, val] : func->closure) 
-        frame.set(var, val);
-    contexts.top().push_scope(frame);
+    //std::cout << key << "\n";
+    //std::cout << memo_tbl.size() << "\n";
 
-    auto func_body = func->body;
-    func_body.push_back(
-        { std::make_shared<memoize_func_call_op>("") }
-    );
+    if ((key.empty()) || (!memo_tbl.contains(key))) {
 
-    return func_body;
+        if (func->parameters.size() != args.size())
+            throw tess::error("func call arg count mismatch.");
+
+            scope_frame frame(func->parameters, args);
+            for (const auto& [var, val] : func->closure)
+                frame.set(var, val);
+            contexts.top().push_scope(frame);
+
+            auto func_body = func->body;
+            func_body.push_back(
+                { std::make_shared<memoize_func_call_op>(key) }
+        );
+
+        return func_body;
+    } else {
+        std::cout << "memoization hit\n";
+        auto memo_val = memo_tbl.get(key);
+        auto& heap = contexts.top().allocator();
+        return std::vector<tess::stack_machine::item>{ {tess::clone_value(heap, memo_val)} };
+    }
 }
 
 tess::call_func::call_func(int num_args) : op_multi(num_args+1)

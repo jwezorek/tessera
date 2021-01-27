@@ -163,14 +163,14 @@ tess::tile_ptr tess::detail::tile_impl::clone_detached(tess::gc_heap& a) const
 		return tess::clone(a, self_);
 	
 	// clone this tile such that its parent is only shallow copied.
-	auto tile_value = value_( this );
+	auto tile_value = value_( tess::const_tile_ptr(self_) );
 	std::unordered_map<obj_id, mutable_object_value> original_to_clone;
 	auto this_patch_key =  parent_->get_id();
 	original_to_clone[this_patch_key] = parent_;
-	value_ clone_value_ = tess::clone_value(a, original_to_clone, tile_value);
+	value_ clone_value = tess::clone_value(a, original_to_clone, tile_value);
 
 	//now return the clone with the parent detached.
-	auto clone_tile = get_mutable<tess::const_tile_ptr>(clone_value_);
+	auto clone_tile = get_mutable<tess::const_tile_ptr>(clone_value);
 	clone_tile->detach();
 
 	return clone_tile;

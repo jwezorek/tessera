@@ -36,6 +36,22 @@ void tess::detail::lambda_impl::set_id(unsigned int id)
     id_ = id;
 }
 
+tess::scope_frame remove_self(const tess::scope_frame& frame, const  tess::detail::lambda_impl* self) {
+    tess::scope_frame output_frame;
+    for (const auto& [k, v] : frame) {
+        if (std::holds_alternative<tess::const_lambda_ptr>(v)) {
+            if (std::get<tess::const_lambda_ptr>(v).get() == self) {
+                output_frame.set(k, std::string("<self>") );
+            } else {
+                output_frame.set(k, v);
+            }
+        } else {
+            output_frame.set(k, v);
+        }
+    }
+    return output_frame;
+}
+
 void tess::detail::lambda_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, mutable_object_value>& orginal_to_clone, lambda_ptr mutable_clone) const
 {
     mutable_clone->set_id(id_);
@@ -57,6 +73,24 @@ std::vector<std::string> tess::detail::lambda_impl::unfulfilled_dependencies() c
         }
     );
     return depends;
+}
+
+std::string tess::detail::lambda_impl::serialize(tess::serialization_state& state) const {
+    auto global_id = get_id();
+    auto serialization_id = state.get_obj(global_id);
+
+    std::stringstream ss;
+    if (!serialization_id) {
+        auto serialization_id = state.insert(global_id);
+        std::string serialized_closure = closure.serialize(state);
+        if (serialized_closure.empty())
+            return {};
+        ss << "<" << serialization_id << ":" << id_ << " " << serialized_closure << ">";
+    }  else {
+        ss << "<" << *serialization_id << ">";
+    }
+
+    return ss.str();
 }
 
 

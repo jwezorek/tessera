@@ -27,6 +27,7 @@ namespace tess {
         iterator begin() const;
         iterator end() const;
         std::string to_string() const;
+        std::string serialize(serialization_state& state) const;
         //void get_references(std::unordered_set<tess::obj_id>& objects) const;
     private:
         std::map<std::string, value_> definitions_;
@@ -71,6 +72,9 @@ namespace tess {
         void insert(const std::string& key, tess::value_ v);
         bool contains(const std::string& key) const;
         tess::value_ get(const std::string& key) const;
+        std::size_t size() const;
+    private:
+        std::unordered_map<std::string, tess::value_> tbl_;
     };
 
     class context_stack
