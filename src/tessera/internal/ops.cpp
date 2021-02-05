@@ -240,7 +240,6 @@ std::vector<tess::stack_machine::item> tess::call_func::execute(const std::vecto
 
         return func_body;
     } else {
-        std::cout << "memoization hit\n";
         auto memo_val = memo_tbl.get(key);
         auto& heap = contexts.top().allocator();
         return std::vector<tess::stack_machine::item>{ {tess::clone_value(heap, memo_val)} };
