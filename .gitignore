@@ -351,4 +351,4 @@ MigrationBackup/
 
 build/
 src/.idea
-/src/CMakeSettings.json
+CMakeSettings.json
