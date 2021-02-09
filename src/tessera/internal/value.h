@@ -4,6 +4,7 @@
 #include "number.h"
 #include "variant_util.h"
 #include <variant>
+#include <any>
 #include <memory>
 #include <unordered_set>
 #include <unordered_map>
@@ -18,6 +19,24 @@ namespace tess {
 		class tile_impl;
 		class patch_impl;
 		class lambda_impl;
+
+		template<typename T>
+		gcpp::deferred_ptr<T> clone_aux(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, gcpp::deferred_ptr<const T> original) {
+
+			auto key = original->get_id();
+			gcpp::deferred_ptr<T>  clone_impl = nullptr;
+
+			if (orginal_to_clone.find(key) != orginal_to_clone.end()) {
+				clone_impl = std::any_cast<gcpp::deferred_ptr<T>>(orginal_to_clone[key]);
+			}
+			else {
+				clone_impl = allocator.make_mutable<gcpp::deferred_ptr<const T>>();
+				orginal_to_clone[key] = clone_impl;
+				original->clone_to(allocator, orginal_to_clone, clone_impl);
+			}
+
+			return clone_impl;
+		};
 	}
 
 	class serialization_state {
@@ -32,10 +51,10 @@ namespace tess {
 
 	class execution_state;
 
-    class nil_val {
-    public:
-        nil_val();
-    };
+	class nil_val {
+	public:
+		nil_val();
+	};
 
 	bool operator==(nil_val lhs, nil_val rhs);
 
@@ -49,22 +68,61 @@ namespace tess {
 	using const_patch_ptr = gcpp::deferred_ptr<const detail::patch_impl>;
 	using const_lambda_ptr = gcpp::deferred_ptr<const detail::lambda_impl>;
 
-	using vertex_ptr =  gcpp::deferred_ptr<detail::vertex_impl>;
-	using edge_ptr =  gcpp::deferred_ptr<detail::edge_impl>;
-	using cluster_ptr =  gcpp::deferred_ptr<detail::cluster_impl>;
-	using tile_ptr =  gcpp::deferred_ptr<detail::tile_impl>;
-	using patch_ptr =  gcpp::deferred_ptr<detail::patch_impl>;
-	using lambda_ptr =  gcpp::deferred_ptr<detail::lambda_impl>;
+	using vertex_ptr = gcpp::deferred_ptr<detail::vertex_impl>;
+	using edge_ptr = gcpp::deferred_ptr<detail::edge_impl>;
+	using cluster_ptr = gcpp::deferred_ptr<detail::cluster_impl>;
+	using tile_ptr = gcpp::deferred_ptr<detail::tile_impl>;
+	using patch_ptr = gcpp::deferred_ptr<detail::patch_impl>;
+	using lambda_ptr = gcpp::deferred_ptr<detail::lambda_impl>;
 
 	using value_ = std::variant<const_tile_ptr, const_patch_ptr, const_edge_ptr, const_vertex_ptr, const_lambda_ptr, const_cluster_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
-	using mutable_object_value = std::variant<tile_ptr, patch_ptr, edge_ptr, vertex_ptr, lambda_ptr, cluster_ptr>;
+	using field_value = std::variant<const_tile_ptr, const_patch_ptr, const_edge_ptr, const_vertex_ptr, const_lambda_ptr, const_cluster_ptr, nil_val, number, std::string, bool>;
 
-	bool is_simple_value(value_);
-	bool is_object_like(value_);
-	bool is_array_like(value_);
-	bool is_nil(value_);
+	template <typename V>
+	bool is_simple_value(V v) {
+		return std::holds_alternative<nil_val>(v) ||
+			std::holds_alternative<number>(v) ||
+			std::holds_alternative<std::string>(v) ||
+			std::holds_alternative<bool>(v);
+	};
+
+	template <typename V>
+	bool is_object_like(V v) {
+		// by "object-like" we mean epression values that may have fields.
+		return std::holds_alternative<const_tile_ptr>(v) ||
+			std::holds_alternative<const_patch_ptr>(v) ||
+			std::holds_alternative<const_vertex_ptr>(v) ||
+			std::holds_alternative<const_edge_ptr>(v) ||
+			std::holds_alternative<const_cluster_ptr>(v) ||
+			std::holds_alternative<const_lambda_ptr>(v);
+	}
+
+	template <typename V>
+	bool is_array_like(V v) {
+		// by "array-like" we mean epression values that may be dereferenced via the [] operator.
+		return  std::holds_alternative<const_patch_ptr>(v) ||
+			std::holds_alternative<const_cluster_ptr>(v);
+	}
+
+	template <typename V>
+	bool is_nil(V v) {
+		return std::holds_alternative<tess::nil_val>(v);
+	}
+
 	value_ clone_value(gc_heap& allocator, value_ v);
-	value_ clone_value(gc_heap& allocator, std::unordered_map<obj_id, mutable_object_value>& original_to_clone, value_ v);
+
+	template<typename V>
+	V clone_value(gc_heap& allocator, std::unordered_map<obj_id, std::any>& original_to_clone, V v) {
+		if (is_simple_value(v))
+			return v;
+
+		std::variant<const_tile_ptr, const_patch_ptr, const_vertex_ptr, const_edge_ptr, const_cluster_ptr, const_lambda_ptr> obj_variant = variant_cast(v);
+		return std::visit(
+			[&](auto&& obj)->V { return make_value<V>(detail::clone_aux(allocator, original_to_clone, obj)); },
+			obj_variant
+		);
+	};
+
 	value_ get_ary_item(value_ v, int index);
 	int get_ary_count(value_ v);
 	value_ get_field(value_ v, gc_heap& allocator, const std::string& field) ;
@@ -77,8 +135,8 @@ namespace tess {
 	bool operator==(const value_& lhs, const value_& rhs);
 	bool operator!=(const value_& lhs, const value_& rhs);
 
-	template<typename T>
-	value_ make_value(gcpp::deferred_ptr<T> v) {
+	template<typename V = value_, typename T>
+	V make_value(gcpp::deferred_ptr<T> v) {
 	    return { gcpp::deferred_ptr<const T>(v) };
 	}
 
