@@ -51,7 +51,7 @@ namespace tess {
                 tile_ptr parent_;
                 int index_;
                 int u_, v_;
-                std::map<std::string, value_> fields_;
+                std::map<std::string, field_value> fields_;
             public:
                 edge_impl(gc_heap& a) {};
                 edge_impl(gc_heap& a, int index, int u, int v);
@@ -70,7 +70,7 @@ namespace tess {
                 const_tile_ptr parent() const;
                 tile_ptr parent();
                 void insert_field(const std::string& var, const value_& val);
-                const std::map<std::string, value_>& fields() const;
+                const std::map<std::string, field_value>& fields() const;
                 //void get_references(std::unordered_set<obj_id>& alloc_set) const;
                 void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, edge_ptr clone) const;
                 void flip();

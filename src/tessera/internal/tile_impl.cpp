@@ -382,17 +382,17 @@ tess::value_ tess::detail::edge_impl::get_field(gc_heap& allocator, const std::s
 tess::value_ tess::detail::edge_impl::get_field(const std::string& field) const
 {
 	if (fields_.find(field) != fields_.end())
-		return fields_.at(field);
+		return variant_cast(fields_.at(field));
 
 	return value_(nil_val());
 }
 
 void tess::detail::edge_impl::insert_field(const std::string& var, const value_& val)
 {
-	fields_[var] = val;
+	fields_[var] = variant_cast(val);
 }
 
-const std::map<std::string, tess::value_>& tess::edge::impl_type::fields() const
+const std::map<std::string, tess::field_value>& tess::edge::impl_type::fields() const
 {
 	return fields_;
 }

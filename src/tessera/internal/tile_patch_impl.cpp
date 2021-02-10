@@ -179,14 +179,13 @@ namespace {
 		for (auto edge : tile->edges()) {
 			auto joined_edges = edges.get(edge);
 
-			std::unordered_map<std::string, tess::value_> fields;
+			std::unordered_map<std::string, tess::field_value> fields;
 			for (const auto e : joined_edges) {
 				for (const auto& [var, val] : e->fields()) {
 					if (tess::is_simple_value(val)) {
 						if (fields.find(var) == fields.end()) {
 							fields[var] = val;
-						}
-						else {
+						} else {
 							if (fields[var] != val)
 								fields.erase(var);
 						}
@@ -194,7 +193,7 @@ namespace {
 				}
 			}
 			for (const auto& [var, val] : fields) {
-				edge->insert_field(var, val);
+				edge->insert_field( var, variant_cast(val) );
 			}
 		}
 	}
