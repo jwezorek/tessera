@@ -233,7 +233,7 @@ tess::value_ tess::detail::tile_impl::get_on(tess::gc_heap& a,  std::variant<tes
 tess::value_ tess::detail::tile_impl::get_field(const std::string& field) const
 {
 	if (fields_.find(field) != fields_.end())
-		return variant_cast(fields_.at(field));
+		return from_field_value(fields_.at(field));
 
 	return value_(nil_val());
 }

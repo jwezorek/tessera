@@ -12,6 +12,16 @@
 
 namespace tess {
 
+	template<typename T>
+	struct g_ptr {
+		g_ptr() {}
+		g_ptr(const gcpp::deferred_ptr<T>& p) : obj(p) {
+		}
+		auto operator->() { return obj.operator->(); }
+		const auto operator->() const { return obj.operator->(); }
+		gcpp::deferred_ptr<T> obj;
+	};
+
 	namespace detail {
 		class vertex_impl;
 		class edge_impl;
@@ -36,6 +46,13 @@ namespace tess {
 			}
 
 			return clone_impl;
+		};
+
+		template<typename T>
+		tess::g_ptr<T> clone_aux(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, tess::g_ptr<T> original) {
+			gcpp::deferred_ptr<T> val = original.obj;
+			auto clone = clone_aux(allocator, orginal_to_clone, val);
+			return tess::g_ptr<T>(clone);
 		};
 	}
 
@@ -76,7 +93,38 @@ namespace tess {
 	using lambda_ptr = gcpp::deferred_ptr<detail::lambda_impl>;
 
 	using value_ = std::variant<const_tile_ptr, const_patch_ptr, const_edge_ptr, const_vertex_ptr, const_lambda_ptr, const_cluster_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
-	using field_value = std::variant<const_tile_ptr, const_patch_ptr, const_edge_ptr, const_vertex_ptr, const_lambda_ptr, const_cluster_ptr, nil_val, number, std::string, bool>;
+
+
+
+	template<typename T>
+	bool operator==(const g_ptr<T>& lhs, const g_ptr<T>& rhs) {
+		return lhs.obj == rhs.obj;
+	}
+
+	template<typename T>
+	bool operator!=(const g_ptr<T>& lhs, const g_ptr<T>& rhs) {
+		return lhs.obj != rhs.obj;
+	}
+
+	using field_value = std::variant<g_ptr<const detail::tile_impl>, g_ptr<const detail::patch_impl>, g_ptr<const detail::edge_impl>, g_ptr<const detail::vertex_impl>, g_ptr<const detail::lambda_impl>, g_ptr<const detail::cluster_impl>, nil_val, number, std::string, bool>;
+
+	field_value to_field_value(const value_& v);
+	value_ from_field_value(const field_value& fv);
+
+	template <typename T>
+	struct value_traits {
+		using obj_variant = void;
+	};
+
+	template <>
+	struct value_traits<value_> {
+		using obj_variant = std::variant<const_tile_ptr, const_patch_ptr, const_edge_ptr, const_vertex_ptr, const_lambda_ptr, const_cluster_ptr>;
+	};
+
+	template <>
+	struct value_traits<field_value> {
+		using obj_variant = std::variant<g_ptr<const detail::tile_impl>, g_ptr<const detail::patch_impl>, g_ptr<const detail::edge_impl>, g_ptr<const detail::vertex_impl>, g_ptr<const detail::lambda_impl>, g_ptr<const detail::cluster_impl >>;
+	};
 
 	template <typename V>
 	bool is_simple_value(V v) {
@@ -113,10 +161,12 @@ namespace tess {
 
 	template<typename V>
 	V clone_value(gc_heap& allocator, std::unordered_map<obj_id, std::any>& original_to_clone, V v) {
+		using object_t = typename value_traits<V>::obj_variant;
+
 		if (is_simple_value(v))
 			return v;
 
-		std::variant<const_tile_ptr, const_patch_ptr, const_vertex_ptr, const_edge_ptr, const_cluster_ptr, const_lambda_ptr> obj_variant = variant_cast(v);
+		object_t obj_variant = variant_cast(v);
 		return std::visit(
 			[&](auto&& obj)->V { return make_value<V>(detail::clone_aux(allocator, original_to_clone, obj)); },
 			obj_variant
@@ -137,7 +187,18 @@ namespace tess {
 
 	template<typename V = value_, typename T>
 	V make_value(gcpp::deferred_ptr<T> v) {
-	    return { gcpp::deferred_ptr<const T>(v) };
+		if constexpr (!std::is_same<V, field_value>::value)
+			return { gcpp::deferred_ptr<const T>(v) };
+		else
+			return { g_ptr<const T>{v} };
+	}
+
+	template<typename V = value_, typename T>
+	V make_value(g_ptr<T> v) {
+		if constexpr (!std::is_same<V, field_value>::value)
+			return { v };
+		else
+			return { v.obj };
 	}
 
 	template<typename T>

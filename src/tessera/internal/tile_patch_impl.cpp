@@ -287,7 +287,7 @@ tess::value_ tess::detail::patch_impl::get_field(gc_heap& allocator, const std::
 	if (iter == fields_.end())
 		throw tess::error(std::string("referenced undefined tile patch field: ") + field);
 
-	return variant_cast(iter->second);
+	return from_field_value(iter->second);
 }
 
 tess::value_ tess::detail::patch_impl::get_ary_item(int i) const

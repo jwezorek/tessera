@@ -17,7 +17,33 @@ bool tess::operator==(nil_val lhs, nil_val rhs) {
 	return true;
 }
 
-tess::value_ tess::clone_value( gc_heap& allocator, value_ v) 
+tess::field_value tess::to_field_value(const value_& v)
+{
+	if (is_simple_value(v))
+		return variant_cast(v);
+	std::variant<const_tile_ptr, const_patch_ptr, const_vertex_ptr, const_edge_ptr, const_cluster_ptr, const_lambda_ptr> obj_variant = variant_cast(v);
+	return std::visit(
+		[]( auto ptr) {
+			return tess::field_value{ tess::g_ptr{ ptr } };
+		},
+		obj_variant
+	);
+}
+
+tess::value_ tess::from_field_value(const field_value& fv)
+{
+	if (is_simple_value(fv))
+		return variant_cast(fv);
+	std::variant<g_ptr<const detail::tile_impl>, g_ptr<const detail::patch_impl>, g_ptr<const detail::edge_impl>, g_ptr<const detail::vertex_impl>, g_ptr<const detail::lambda_impl>, g_ptr<const detail::cluster_impl>> obj_variant = variant_cast( fv );
+	return std::visit(
+		[](auto ptr) {
+			return tess::value_{ ptr.obj };
+		},
+		obj_variant
+	);
+}
+
+tess::value_ tess::clone_value( gc_heap& allocator, value_ v)
 {
 	if (is_simple_value(v))
 		return v;
