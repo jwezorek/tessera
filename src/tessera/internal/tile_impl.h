@@ -48,7 +48,7 @@ namespace tess {
 
         class edge_impl : public tessera_impl {
             private:
-                tile_root_ptr parent_;
+                tile_graph_ptr parent_;
                 int index_;
                 int u_, v_;
                 std::map<std::string, field_value> fields_;

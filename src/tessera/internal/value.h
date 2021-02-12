@@ -146,6 +146,11 @@ namespace tess {
 		return gptr.obj;
 	}
 
+	template<typename T>
+	g_ptr<T> to_graph_ptr(gcpp::deferred_ptr<T> ptr) {
+		return g_ptr<T>(ptr);
+	}
+
 	template <typename T>
 	struct value_traits {
 		using obj_variant = void;

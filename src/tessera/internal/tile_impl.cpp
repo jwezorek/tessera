@@ -339,7 +339,7 @@ tess::detail::edge_impl::edge_impl( gc_heap& a, int index, int u, int v) :
 
 void tess::detail::edge_impl::set_parent(tess::const_tile_root_ptr parent)
 {
-    parent_ = parent;
+    parent_ = to_graph_ptr(parent);
 }
 
 tess::const_vertex_root_ptr tess::detail::edge_impl::u() const
@@ -430,12 +430,12 @@ bool tess::detail::edge_impl::has_property(const std::string& prop) const
 
 tess::const_tile_root_ptr tess::detail::edge_impl::parent() const
 {
-	return parent_;
+	return to_root_ptr(parent_);
 }
 
 tess::tile_root_ptr tess::detail::edge_impl::parent()
 {
-	return parent_;
+	return to_root_ptr(parent_);
 }
 
 void  tess::edge::impl_type::flip()
@@ -484,7 +484,7 @@ void  tess::detail::edge_impl::clone_to(tess::gc_heap& allocator, std::unordered
 	if (parent_)
 	    mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_); // clone parent
 	else
-        mutable_clone->parent_ = nullptr;
+		mutable_clone->parent_ = {};
 
 	for (const auto& [var, val] : fields_) {
 		mutable_clone->fields_[var] = tess::clone_value(allocator, orginal_to_clone, val); // clone fields
