@@ -33,15 +33,15 @@ namespace {
 
 	tess::result extract_tiles(const tess::value_& output) {
 
-		if (std::holds_alternative<tess::const_tile_ptr>(output))
-			return std::vector<tess::tile>{ tess::make_tess_obj<tess::tile>( std::get<tess::const_tile_ptr>(output).get() ) };
-		if (!std::holds_alternative<tess::const_patch_ptr>(output))
+		if (std::holds_alternative<tess::const_tile_root_ptr>(output))
+			return std::vector<tess::tile>{ tess::make_tess_obj<tess::tile>( std::get<tess::const_tile_root_ptr>(output).get() ) };
+		if (!std::holds_alternative<tess::const_patch_root_ptr>(output))
 			return { tess::error("tableau does not evaulate to a tile patch.") };
 
-		const auto& tile_impls = std::get<tess::const_patch_ptr>(output)->tiles();
+		const auto& tile_impls = std::get<tess::const_patch_root_ptr>(output)->tiles();
 		std::vector<tess::tile> tiles( tile_impls.size() );
 		std::transform(tile_impls.begin(), tile_impls.end(), tiles.begin(),
-			[](tess::const_tile_ptr i) {
+			[](tess::const_tile_root_ptr i) {
 				return tess::make_tess_obj<tess::tile>(i.get());
 			}
 		);

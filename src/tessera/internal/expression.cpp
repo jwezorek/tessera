@@ -86,10 +86,10 @@ namespace {
 
 	tess::value_ flip(tess::gc_heap& a, const tess::value_& arg)
 	{
-		if (!std::holds_alternative<tess::const_tile_ptr>(arg) && !std::holds_alternative<tess::const_patch_ptr>(arg))
+		if (!std::holds_alternative<tess::const_tile_root_ptr>(arg) && !std::holds_alternative<tess::const_patch_root_ptr>(arg))
 			throw tess::error("attempted to flip a value that is not a tile or patch");
 
-		std::variant<tess::const_tile_ptr, tess::const_patch_ptr> flippable_val = variant_cast(arg);
+		std::variant<tess::const_tile_root_ptr, tess::const_patch_root_ptr> flippable_val = variant_cast(arg);
 		auto flipped = std::visit(
 			[&a](auto&& flippee)->tess::value_ {
 				return tess::make_value( flippee->flip(a) );
@@ -102,15 +102,15 @@ namespace {
 
 	std::vector<std::tuple<tess::number, tess::number>> polygon(const tess::value_& arg)
 	{
-		if (! std::holds_alternative<tess::const_cluster_ptr>(arg))
+		if (! std::holds_alternative<tess::const_cluster_root_ptr>(arg))
 			return {};
 
-		auto vertices = std::get<tess::const_cluster_ptr>(arg);
+		auto vertices = std::get<tess::const_cluster_root_ptr>(arg);
 		std::vector<std::tuple<tess::number, tess::number>> tuples(vertices->get_ary_count());
 		try {
 			std::transform(vertices->begin(), vertices->end(), tuples.begin(),
 				[&](const auto& ev)->std::tuple<tess::number, tess::number> {
-					auto pt = std::get<tess::const_cluster_ptr>(ev);
+					auto pt = std::get<tess::const_cluster_root_ptr>(ev);
 					return { std::get<tess::number>(pt->get_ary_item(0)),  std::get<tess::number>(pt->get_ary_item(1)) };
 				}
 			);
@@ -152,7 +152,7 @@ namespace {
 			tess::parser::kw::regular_polygon, 1,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = regular_polygon_vertices(std::get<tess::number>(args[0]));
-				return tess::value_( a.make_const<tess::const_tile_ptr>( locs) );
+				return tess::value_( a.make_const<tess::const_tile_root_ptr>( locs) );
 			}
 		} , {
 			tess::parser::kw::flip, 1,
@@ -163,37 +163,37 @@ namespace {
 			tess::parser::kw::isosceles_triangle, 1,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = isosceles_triangle(std::get<tess::number>(args[0]));
-				return tess::value_( a.make_const<tess::const_tile_ptr>(locs) );
+				return tess::value_( a.make_const<tess::const_tile_root_ptr>(locs) );
 			}
 		} , {
 			tess::parser::kw::isosceles_trapezoid, 2,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = isosceles_trapezoid(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]));
-				return tess::value_( a.make_const<tess::const_tile_ptr>(locs));
+				return tess::value_( a.make_const<tess::const_tile_root_ptr>(locs));
 			}
 		} , {
 			tess::parser::kw::rhombus, 1,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = rhombus(std::get<tess::number>(args[0]));
-				return tess::value_( a.make_const<tess::const_tile_ptr>(locs) );
+				return tess::value_( a.make_const<tess::const_tile_root_ptr>(locs) );
 			}
 		} , {
 			tess::parser::kw::polygon, 1,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = polygon(args[0]);
-				return tess::value_( a.make_const<tess::const_tile_ptr>(locs) );
+				return tess::value_( a.make_const<tess::const_tile_root_ptr>(locs) );
 			}
 		} , {
 			tess::parser::kw::join, 1,
 			[](tess::gc_heap& a,const std::vector<tess::value_>& args)->tess::value_ {
-				auto patch = std::get<tess::const_patch_ptr>(args[0]);
+				auto patch = std::get<tess::const_patch_root_ptr>(args[0]);
 				return tess::make_value(patch->join(a) );
 			}
 		} , {
 			tess::parser::kw::triangle_by_sides, 3,
 			[](tess::gc_heap& a, const std::vector<tess::value_>& args)->tess::value_ {
 				auto locs = triangle_by_sides(std::get<tess::number>(args[0]), std::get<tess::number>(args[1]), std::get<tess::number>(args[2]));
-				return tess::value_(a.make_const<tess::const_tile_ptr>(locs) );
+				return tess::value_(a.make_const<tess::const_tile_root_ptr>(locs) );
 			}
 		} 
 	};
@@ -895,8 +895,8 @@ void tess::on_expr::compile(stack_machine::stack& stack) const
 		std::make_shared<val_func_op>(
 			2,
 			[](gc_heap& a, const std::vector<value_>& args) -> value_ {
-				std::variant<tess::const_tile_ptr, tess::const_patch_ptr> tile_or_patch = variant_cast(args[0]);
-				std::variant<tess::const_edge_ptr, tess::const_cluster_ptr> arg = variant_cast(args[1]);
+				std::variant<tess::const_tile_root_ptr, tess::const_patch_root_ptr> tile_or_patch = variant_cast(args[0]);
+				std::variant<tess::const_edge_root_ptr, tess::const_cluster_root_ptr> arg = variant_cast(args[1]);
 				return std::visit(
 					[&](const auto& t)->value_ {
 						return t->get_on(a, arg);

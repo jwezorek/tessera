@@ -40,8 +40,8 @@ void tess::detail::lambda_impl::set_id(unsigned int id)
 tess::scope_frame remove_self(const tess::scope_frame& frame, const  tess::detail::lambda_impl* self) {
     tess::scope_frame output_frame;
     for (const auto& [k, v] : frame) {
-        if (std::holds_alternative<tess::const_lambda_ptr>(v)) {
-            if (std::get<tess::const_lambda_ptr>(v).get() == self) {
+        if (std::holds_alternative<tess::const_lambda_root_ptr>(v)) {
+            if (std::get<tess::const_lambda_root_ptr>(v).get() == self) {
                 output_frame.set(k, std::string("<self>") );
             } else {
                 output_frame.set(k, v);
@@ -53,7 +53,7 @@ tess::scope_frame remove_self(const tess::scope_frame& frame, const  tess::detai
     return output_frame;
 }
 
-void tess::detail::lambda_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, lambda_ptr mutable_clone) const
+void tess::detail::lambda_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, lambda_root_ptr mutable_clone) const
 {
     mutable_clone->set_id(id_);
     mutable_clone->parameters = parameters;

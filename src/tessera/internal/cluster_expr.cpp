@@ -18,7 +18,7 @@ void tess::cluster_expr::compile(stack_machine::stack& stack) const
         std::make_shared<val_func_op>(
             n,
             [](gc_heap& a, const std::vector<value_>& values)->value_ {
-                return value_(a.make_const<const_cluster_ptr>(values));
+                return value_(a.make_const<const_cluster_root_ptr>(values));
             },
             "<make_cluster " + std::to_string(n) + ">"
         )
@@ -76,13 +76,13 @@ void tess::num_range_expr::compile(stack_machine::stack& stack) const
 
                 std::vector<value_> range;
                 if (n == 0)
-                    return value_(a.make_const<const_cluster_ptr>(range));
+                    return value_(a.make_const<const_cluster_root_ptr>(range));
                 range.reserve(n);
 
                 for (int i = from; i <= to; i++)
                     range.push_back(value_( tess::number(i) ));
 
-                return value_(a.make_const<const_cluster_ptr>(range) );
+                return value_(a.make_const<const_cluster_root_ptr>(range) );
             },
             "<make_range>"
         )

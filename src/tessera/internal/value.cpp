@@ -21,7 +21,7 @@ tess::field_value tess::to_field_value(const value_& v)
 {
 	if (is_simple_value(v))
 		return variant_cast(v);
-	std::variant<const_tile_ptr, const_patch_ptr, const_vertex_ptr, const_edge_ptr, const_cluster_ptr, const_lambda_ptr> obj_variant = variant_cast(v);
+	std::variant<const_tile_root_ptr, const_patch_root_ptr, const_vertex_root_ptr, const_edge_root_ptr, const_cluster_root_ptr, const_lambda_root_ptr> obj_variant = variant_cast(v);
 	return std::visit(
 		[]( auto ptr) {
 			return tess::field_value{ tess::g_ptr{ ptr } };
@@ -62,7 +62,7 @@ tess::value_ tess::get_ary_item(value_ v, int index)
 	if (!is_array_like(v))
 		throw tess::error("attempted reference to a sub-tile of a value that is not a tile patch.");
 
-	std::variant<const_patch_ptr, const_cluster_ptr> ary_variant = variant_cast(v);
+	std::variant<const_patch_root_ptr, const_cluster_root_ptr> ary_variant = variant_cast(v);
 
 	return std::visit(
 		[&](auto&& obj)->value_ { return obj->get_ary_item(index); },
@@ -76,7 +76,7 @@ int tess::get_ary_count(value_ v)
 	if (!is_array_like(v))
 		return -1;
 
-	std::variant<const_patch_ptr, const_cluster_ptr> ary_variant = variant_cast(v);
+	std::variant<const_patch_root_ptr, const_cluster_root_ptr> ary_variant = variant_cast(v);
 
 	return std::visit(
 		[&](auto&& obj)->int { return obj->get_ary_count(); },
@@ -90,7 +90,7 @@ tess::value_ tess::get_field(value_ v, gc_heap& allocator, const std::string& fi
 		throw tess::error("attempted reference to field of a non-object: " + field);
 	}
 
-	std::variant<const_tile_ptr, const_patch_ptr, const_vertex_ptr, const_edge_ptr, const_cluster_ptr, const_lambda_ptr> obj_variant = variant_cast(v);
+	std::variant<const_tile_root_ptr, const_patch_root_ptr, const_vertex_root_ptr, const_edge_root_ptr, const_cluster_root_ptr, const_lambda_root_ptr> obj_variant = variant_cast(v);
 	
 	return std::visit(
 		[&](auto&& obj)->value_ { return obj->get_field(allocator, field); },
@@ -102,7 +102,7 @@ void tess::insert_field(value_ v, const std::string& var, value_ val)
 {
 	if (!is_object_like(v))
 		return;
-	std::variant<const_tile_ptr, const_patch_ptr, const_vertex_ptr, const_edge_ptr, const_cluster_ptr, const_lambda_ptr> obj_variant = variant_cast(v);
+	std::variant<const_tile_root_ptr, const_patch_root_ptr, const_vertex_root_ptr, const_edge_root_ptr, const_cluster_root_ptr, const_lambda_root_ptr> obj_variant = variant_cast(v);
 	std::visit(
 		[&](auto obj) {
 		    using obj_type = decltype(obj);
@@ -130,7 +130,7 @@ std::string tess::serialize(tess::serialization_state& state, tess::value_ val)
 {
 	return std::visit(
 		overloaded{
-			[&state](const const_lambda_ptr& lambda) -> std::string {
+			[&state](const const_lambda_root_ptr& lambda) -> std::string {
 				return lambda->serialize(state);
 			},
 			[](nil_val v) -> std::string {
