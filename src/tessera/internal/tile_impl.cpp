@@ -30,23 +30,13 @@ namespace {
 		return tess::get_mutable<ptr_t>(clone);
 	}
 
-	/*
-    template<typename T>
-    auto clone_object(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, gcpp::deferred_ptr<T> impl)
-    {
-        tess::value_ wrapper = tess::make_value(impl);
-		auto clone = tess::clone_value(allocator, orginal_to_clone, wrapper);
-        return tess::get_mutable<gcpp::deferred_ptr<const T>>(clone);
-    }
-
 	template<typename T>
-	auto clone_object(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, tess::g_ptr<T> impl)
+	auto clone_object(tess::gc_heap& a, T impl)
 	{
-		tess::field_value wrapper = tess::make_value<tess::field_value>(impl);
-		auto clone = tess::clone_value(allocator, orginal_to_clone, wrapper);
-		return tess::get_mutable<tess::g_ptr<const T>>(clone);
+		std::unordered_map<tess::obj_id, std::any> orginal_to_clone;
+		return clone_object(a, orginal_to_clone, impl);
 	}
-	*/
+
 }
 
 tess::detail::tile_impl::tile_impl( tess::gc_heap& a, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations) :
@@ -129,7 +119,7 @@ void tess::detail::tile_impl::insert_field(const std::string& var, const value_&
 	fields_[var] = variant_cast(val);
 }
 
-void tess::detail::tile_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, tile_root_ptr mutable_clone) const
+void tess::detail::tile_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, tile_raw_ptr mutable_clone) const
 {
 	for (auto v : vertices_) { // clone vertices
 		mutable_clone->vertices_.push_back( clone_object(allocator, orginal_to_clone, v) );
@@ -141,7 +131,7 @@ void tess::detail::tile_impl::clone_to(tess::gc_heap& allocator, std::unordered_
 	if (parent_) { // clone parent
 		mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_);
 	} else {
-		mutable_clone->parent_ = nullptr;
+		mutable_clone->parent_ = {};
 	}
 
 	for (const auto& [var, val] : fields_) { //clone fields
@@ -151,20 +141,20 @@ void tess::detail::tile_impl::clone_to(tess::gc_heap& allocator, std::unordered_
 
 bool tess::detail::tile_impl::is_detached() const
 {
-	return parent_ == nullptr;
+	return parent_ == patch_graph_ptr{};
 }
 
 
 tess::tile_root_ptr tess::detail::tile_impl::clone_detached(tess::gc_heap& a) const
 {
 	if (is_detached())
-		return tess::clone(a, self_);
+		return tess::to_root_ptr(clone_object(a, self_));
 	
 	// clone this tile such that its parent is only shallow copied.
-	auto tile_value = value_( tess::const_tile_root_ptr(self_) );
+	auto tile_value = value_( to_const(to_root_ptr(self_)) );
 	std::unordered_map<obj_id, std::any> original_to_clone;
 	auto this_patch_key =  parent_->get_id();
-	original_to_clone[this_patch_key] = parent_;
+	original_to_clone[this_patch_key] = to_root_ptr(parent_);
 	value_ clone_value = tess::clone_value(a, original_to_clone, tile_value);
 
 	//now return the clone with the parent detached.
@@ -288,7 +278,7 @@ tess::const_tile_root_ptr tess::detail::tile_impl::flip(gc_heap& a) const
 {
 	tess::tile_root_ptr flippee;
 	if (is_detached()) {
-		flippee = tess::clone(a, self_);
+		flippee = to_root_ptr(clone_object(a, self_));
 	} else {
 		flippee = clone_detached(a);
 	}
@@ -316,20 +306,20 @@ void tess::detail::tile_impl::detach()
 {
 	for (auto v : vertices_)
 		v->set_location(v->pos());
-	parent_ = nullptr;
+	parent_ = {};
 	index_ = -1;
 }
 
 bool tess::detail::tile_impl::has_parent() const {
-	return parent_ != nullptr;
+	return parent_ != tess::patch_graph_ptr{};
 }
 
 tess::const_patch_root_ptr tess::detail::tile_impl::parent() const {
-	return parent_;
+	return to_root_ptr(parent_);
 }
 
 tess::patch_root_ptr tess::detail::tile_impl::parent()  {
-	return parent_;
+	return to_root_ptr(parent_);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -463,24 +453,9 @@ std::string tess::detail::edge_impl::debug() const
 		<< " -> " << v_ << ":" << v()->debug() << " ]";
 	return ss.str();
 }
-/*
-void tess::detail::edge_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
-{
-	auto key = get_id();
-	if (alloc_set.find(key) != alloc_set.end())
-		return;
-	alloc_set.insert(key); // self
 
-	if (parent_)
-        parent_->get_references(alloc_set); //parent
 
-    for (const auto& [var, val] : fields_) {
-        tess::get_references(val, alloc_set); // fields...
-    }
-}
-*/
-
-void  tess::detail::edge_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, edge_root_ptr mutable_clone) const
+void  tess::detail::edge_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, edge_raw_ptr mutable_clone) const
 {
 	mutable_clone->index_ = index_;
 	mutable_clone->u_ = u_;
@@ -539,20 +514,9 @@ tess::value_ tess::detail::vertex_impl::get_field(gc_heap& allocator, const std:
 {
 	return {}; //TODO
 }
-/*
-void tess::detail::vertex_impl::get_references(std::unordered_set<obj_id>& alloc_set) const
-{
-	auto key = get_id();
-	if (alloc_set.find(key) != alloc_set.end())
-		return;
-	alloc_set.insert(key); // self
 
-    if (parent_)
-        parent_->get_references(alloc_set); // parent
-}
-*/
 
-void tess::detail::vertex_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, vertex_root_ptr mutable_clone) const
+void tess::detail::vertex_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, vertex_raw_ptr mutable_clone) const
 {
 	mutable_clone->index_ = index_;
 	mutable_clone->location_ = location_;

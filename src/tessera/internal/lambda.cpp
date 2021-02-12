@@ -53,7 +53,7 @@ tess::scope_frame remove_self(const tess::scope_frame& frame, const  tess::detai
     return output_frame;
 }
 
-void tess::detail::lambda_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, lambda_root_ptr mutable_clone) const
+void tess::detail::lambda_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, lambda_raw_ptr mutable_clone) const
 {
     mutable_clone->set_id(id_);
     mutable_clone->parameters = parameters;

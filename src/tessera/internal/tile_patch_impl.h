@@ -48,7 +48,7 @@ namespace tess {
             value_ get_on(gc_heap& a, const std::variant<tess::const_edge_root_ptr, tess::const_cluster_root_ptr>& e) const;
             void insert_field(const std::string& var, const value_& val);
             //void get_references(std::unordered_set<obj_id>& alloc_set) const;
-            void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, patch_root_ptr clone) const;
+            void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, patch_raw_ptr clone) const;
             point get_vertex_location(int index) const;
             tile_root_ptr join(gc_heap& allocator) const;
             void dfs(tile_visitor visit) const;
@@ -71,8 +71,7 @@ namespace tess {
             int get_ary_count() const;
             const std::vector<tess::value_>& values() const;
             void insert_field(const std::string& var, const value_& val);
-            //void get_references(std::unordered_set<obj_id>& alloc_set) const;
-            void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, cluster_root_ptr clone) const;
+            void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, cluster_raw_ptr clone) const;
             std::vector<tess::value_>::const_iterator begin() const;
             std::vector<tess::value_>::const_iterator end() const;
             const std::vector<tess::value_>& items() const;

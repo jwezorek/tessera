@@ -24,7 +24,7 @@ namespace tess {
                 std::variant<int, point> location_;
 
             public:
-                vertex_impl(gc_heap& a) {};
+                vertex_impl(gc_heap& a) : index_(-1) {};
                 vertex_impl(gc_heap& a, int index, point loc);
                 void initialize( vertex_root_ptr p) {}
 
@@ -37,8 +37,7 @@ namespace tess {
                 const_edge_root_ptr in_edge() const;
                 const_edge_root_ptr out_edge() const;
                 void insert_field(const std::string& var, const value_& val) {}
-                //void get_references(std::unordered_set<obj_id>& alloc_set) const;
-                void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, vertex_root_ptr clone) const;
+                void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, vertex_raw_ptr clone) const;
                 const_patch_root_ptr grandparent() const;
                 void set_location(int vert_index);
                 void set_location(point pt);
@@ -72,7 +71,7 @@ namespace tess {
                 void insert_field(const std::string& var, const value_& val);
                 const std::map<std::string, field_value>& fields() const;
                 //void get_references(std::unordered_set<obj_id>& alloc_set) const;
-                void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, edge_root_ptr clone) const;
+                void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, edge_raw_ptr clone) const;
                 void flip();
                 edge_indices get_edge_location_indices() const;
                 std::string debug() const;
@@ -83,8 +82,8 @@ namespace tess {
                 std::map<std::string, field_value> fields_;
                 std::vector<tess::vertex_graph_ptr> vertices_;
                 std::vector<tess::edge_graph_ptr> edges_;
-                patch_root_ptr parent_;
-                tile_root_ptr self_;
+                patch_graph_ptr parent_;
+                tile_graph_ptr self_;
                 int index_;
 
             public:
@@ -126,7 +125,7 @@ namespace tess {
                 void detach();
                 void insert_field(const std::string& var, const value_& val);
                 //void get_references(std::unordered_set<obj_id>& alloc_set) const;
-                void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, tile_root_ptr clone) const;
+                void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, tile_raw_ptr clone) const;
                 bool is_detached() const;
                 tess::tile_root_ptr clone_detached(tess::gc_heap& a) const;
                 std::string debug() const;

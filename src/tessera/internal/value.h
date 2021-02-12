@@ -71,7 +71,7 @@ namespace tess {
 			else {
 				clone_impl = allocator.make_mutable<gcpp::deferred_ptr<const T>>();
 				orginal_to_clone[key] = clone_impl;
-				original->clone_to(allocator, orginal_to_clone, clone_impl);
+				original->clone_to(allocator, orginal_to_clone, clone_impl.get());
 			}
 
 			return clone_impl;
@@ -83,6 +83,7 @@ namespace tess {
 			auto clone = clone_aux(allocator, orginal_to_clone, val);
 			return tess::g_ptr<T>(clone);
 		};
+
 	}
 
 	class serialization_state {
@@ -106,6 +107,13 @@ namespace tess {
 
 	class field_ref_impl;
 	using field_ref_ptr = std::shared_ptr<field_ref_impl>;
+
+	using vertex_raw_ptr = detail::vertex_impl*;
+	using edge_raw_ptr = detail::edge_impl*;
+	using cluster_raw_ptr = detail::cluster_impl*;
+	using tile_raw_ptr = detail::tile_impl*;
+	using patch_raw_ptr = detail::patch_impl*;
+	using lambda_raw_ptr = detail::lambda_impl*;
 
 	using const_vertex_root_ptr = gcpp::deferred_ptr<const detail::vertex_impl>;
 	using const_edge_root_ptr = gcpp::deferred_ptr<const detail::edge_impl>;
