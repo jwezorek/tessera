@@ -167,7 +167,7 @@ namespace {
 
 	geom::polygon tile_to_polygon(tess::const_tile_root_ptr tile) {
 		std::vector<tess::const_vertex_root_ptr> ordered_vertices;
-		auto first = *(tile->begin_vertices());
+		auto first = to_root_ptr(*(tile->begin_vertices()));
 		auto v = first;
 		do {
 			ordered_vertices.push_back(v);

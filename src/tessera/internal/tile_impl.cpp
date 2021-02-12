@@ -13,7 +13,7 @@ namespace {
 	tess::const_cluster_root_ptr edges_as_cluster(tess::gc_heap& allocator,  I begin_edges, I end_edges) {
 		std::vector<tess::value_> cluster_contents(std::distance(begin_edges, end_edges));
 		std::transform(begin_edges, end_edges, cluster_contents.begin(),
-			[](tess::const_edge_root_ptr e)->tess::value_ { return tess::value_(e); }
+			[](auto e)->tess::value_ { return tess::value_(to_const(to_root_ptr(e))); }
 		);
 		return allocator.make_const<tess::const_cluster_root_ptr>( cluster_contents );
 	}
@@ -106,22 +106,22 @@ tess::detail::tile_impl::edge_iter tess::detail::tile_impl::end_edges() {
 
 tess::const_vertex_root_ptr tess::detail::tile_impl::vertex(int index) const
 {
-	return vertices_.at(index);
+	return to_root_ptr( vertices_.at(index) );
 }
 
 tess::vertex_root_ptr tess::detail::tile_impl::vertex(int index)
 {
-	return vertices_.at(index);
+	return to_root_ptr(vertices_.at(index));
 }
 
 tess::const_edge_root_ptr tess::detail::tile_impl::edge(int index) const
 {
-	return edges_.at(index);
+	return to_root_ptr(edges_.at(index));
 }
 
 tess::edge_root_ptr tess::detail::tile_impl::edge(int index)
 {
-	return edges_.at(index);
+	return to_root_ptr(edges_.at(index));
 }
 
 void tess::detail::tile_impl::insert_field(const std::string& var, const value_& val)
@@ -217,7 +217,7 @@ tess::const_edge_root_ptr tess::detail::tile_impl::get_edge_on(tess::gc_heap& a,
 		auto e_v = e->v()->pos();
 
 		if (tess::distance(e_u, u) <= eps && tess::distance(e_v, v) <= eps)
-			return e;
+			return to_root_ptr(e);
 	}
 
 	return nullptr;;
@@ -616,7 +616,7 @@ tess::const_edge_root_ptr tess::detail::vertex_impl::in_edge() const
 			return e->v().get() == this;
 		}
 	);
-	return *iter;
+	return to_root_ptr(*iter);
 }
 
 tess::const_edge_root_ptr tess::detail::vertex_impl::out_edge() const
@@ -626,7 +626,7 @@ tess::const_edge_root_ptr tess::detail::vertex_impl::out_edge() const
 			return e->u().get() == this;
 		}
 	);
-	return *iter;
+	return to_root_ptr(*iter);
 }
 
 

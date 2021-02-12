@@ -28,7 +28,7 @@ namespace {
 		return std::find_if(tiles.begin(), tiles.end(), 
 			[](tess::const_tile_root_ptr tile) {
 				return std::find_if(tile->begin_edges(), tile->end_edges(),
-					[](tess::const_edge_root_ptr e) {
+					[](auto e) {
 						return e->has_property("broken");
 					}
 				) != tile->end_edges();
@@ -40,7 +40,7 @@ namespace {
 		std::vector<tess::edge_root_ptr> edges;
 		for (tess::tile_root_ptr t : tiles) {
 			for (auto iter = t->begin_edges(); iter != t->end_edges(); ++iter) {
-				auto e = *iter;
+				auto e = to_root_ptr(*iter);
 				if (e->has_property("broken")) {
 					edges.push_back(e);
 				}
@@ -174,12 +174,12 @@ namespace {
 		tess::edge_location_table edges;
 		for (const auto t : patch->tiles()) {
 			for (auto iter = t->begin_edges(); iter != t->end_edges(); ++iter) {
-				edges.insert(*iter);
+				edges.insert( to_root_ptr(*iter) );
 			}
 		}
 
 		for (auto iter = tile->begin_edges(); iter != tile->end_edges(); ++iter) {
-			auto edge = *iter;
+			auto edge = to_root_ptr(*iter);
 			auto joined_edges = edges.get(edge);
 
 			std::unordered_map<std::string, tess::field_value> fields;
@@ -246,7 +246,7 @@ void tess::detail::patch_impl::build_edge_table() const
 			auto e = *iter;
 			auto key = e->get_edge_location_indices();
 			if (edge_tbl_.find(key) == edge_tbl_.end())
-				edge_tbl_[key] = e; 
+				edge_tbl_[key] = to_root_ptr(e); 
 			else
 				throw tess::error("invalid tile patch");
 		}

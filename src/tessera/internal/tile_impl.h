@@ -81,8 +81,8 @@ namespace tess {
         class tile_impl : public tessera_impl {
             private:
                 std::map<std::string, field_value> fields_;
-                std::vector<tess::vertex_root_ptr> vertices_;
-                std::vector<tess::edge_root_ptr> edges_;
+                std::vector<tess::vertex_graph_ptr> vertices_;
+                std::vector<tess::edge_graph_ptr> edges_;
                 patch_root_ptr parent_;
                 tile_root_ptr self_;
                 int index_;
@@ -92,10 +92,10 @@ namespace tess {
                 tile_impl(tess::gc_heap& allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
                 void initialize( tile_root_ptr self);
 
-                using const_edge_iter = std::vector<tess::edge_root_ptr>::const_iterator;
-                using edge_iter = std::vector<tess::edge_root_ptr>::iterator;
-                using const_vertex_iter = std::vector<tess::vertex_root_ptr>::const_iterator;
-                using vertex_iter = std::vector<tess::vertex_root_ptr>::iterator;
+                using const_edge_iter = std::vector<tess::edge_graph_ptr>::const_iterator;
+                using edge_iter = std::vector<tess::edge_graph_ptr>::iterator;
+                using const_vertex_iter = std::vector<tess::vertex_graph_ptr>::const_iterator;
+                using vertex_iter = std::vector<tess::vertex_graph_ptr>::iterator;
 
                 const_vertex_iter begin_vertices() const;
                 const_vertex_iter end_vertices() const;

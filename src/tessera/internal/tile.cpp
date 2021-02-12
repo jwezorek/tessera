@@ -9,7 +9,7 @@ std::vector<tess::vertex> tess::tile::vertices() const
 	auto sz = impl_->end_vertices() - impl_->begin_vertices();
 	std::vector<tess::vertex> wrapped_vertices(sz);
 	std::transform(impl_->begin_vertices(), impl_->end_vertices(), wrapped_vertices.begin(),
-		[](auto v) -> tess::vertex { return tess::make_tess_obj<tess::vertex>(v.get()); }
+		[](auto v) -> tess::vertex { return tess::make_tess_obj<tess::vertex>(v.obj.get()); }
 	);
 	return wrapped_vertices;
 }
@@ -19,7 +19,7 @@ std::vector<tess::edge> tess::tile::edges() const
 	auto sz = impl_->end_edges() - impl_->begin_edges();
 	std::vector<tess::edge> wrapped_edges(sz);
 	std::transform( impl_->begin_edges(), impl_->end_edges(), wrapped_edges.begin(),
-		[](auto v) -> tess::edge { return tess::make_tess_obj<tess::edge>(v.get()); }
+		[](auto v) -> tess::edge { return tess::make_tess_obj<tess::edge>(v.obj.get()); }
 	);
 	return wrapped_edges;
 }

@@ -55,7 +55,6 @@ namespace tess {
     class edge_location_table {
     public:
         edge_location_table(number eps = tess::eps);
-        void insert(const tess::edge& edge);
         void insert(tess::const_edge_root_ptr edge);
         std::vector<tess::const_edge_root_ptr> get(tess::point a, tess::point b);
         std::vector<tess::const_edge_root_ptr> get(const tess::edge& edge);
