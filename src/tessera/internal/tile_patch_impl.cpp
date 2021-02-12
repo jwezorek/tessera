@@ -14,7 +14,7 @@
 namespace {
 
 	std::vector<tess::const_tile_root_ptr> get_neighbors(tess::const_tile_root_ptr t) {
-		int num_edges = static_cast<int>(t->edges().size());
+		int num_edges = static_cast<int>(t->end_edges() - t->begin_edges());
 		std::vector<tess::const_tile_root_ptr> neighbors;
 		for (int i = 0; i < num_edges; ++i) {
 			const auto adj = t->get_adjacent_tile(i);
@@ -27,12 +27,11 @@ namespace {
 	bool has_broken_tile(const std::vector<tess::tile_root_ptr>& tiles) {
 		return std::find_if(tiles.begin(), tiles.end(), 
 			[](tess::const_tile_root_ptr tile) {
-				const auto& edges = tile->edges();
-				return std::find_if(edges.begin(), edges.end(),
+				return std::find_if(tile->begin_edges(), tile->end_edges(),
 					[](tess::const_edge_root_ptr e) {
 						return e->has_property("broken");
 					}
-				) != edges.end();
+				) != tile->end_edges();
 			}
 		) != tiles.end();
 	}
@@ -40,7 +39,8 @@ namespace {
 	std::vector<tess::edge_root_ptr> get_broken_edges(const std::vector<tess::tile_root_ptr>& tiles) {
 		std::vector<tess::edge_root_ptr> edges;
 		for (tess::tile_root_ptr t : tiles) {
-			for (tess::edge_root_ptr e : t->edges()) {
+			for (auto iter = t->begin_edges(); iter != t->end_edges(); ++iter) {
+				auto e = *iter;
 				if (e->has_property("broken")) {
 					edges.push_back(e);
 				}
@@ -172,11 +172,14 @@ namespace {
 	void propagate_edge_fields(tess::tile_root_ptr tile, tess::const_patch_root_ptr patch)
 	{
 		tess::edge_location_table edges;
-		for (const auto t : patch->tiles())
-			for (const auto e : t->edges())
-				edges.insert(e);
+		for (const auto t : patch->tiles()) {
+			for (auto iter = t->begin_edges(); iter != t->end_edges(); ++iter) {
+				edges.insert(*iter);
+			}
+		}
 
-		for (auto edge : tile->edges()) {
+		for (auto iter = tile->begin_edges(); iter != tile->end_edges(); ++iter) {
+			auto edge = *iter;
 			auto joined_edges = edges.get(edge);
 
 			std::unordered_map<std::string, tess::field_value> fields;
@@ -239,8 +242,8 @@ void tess::detail::patch_impl::build_edge_table() const
 {
 	edge_tbl_.clear();
 	for (const auto tile : tiles_) {
-		for (const auto e : tile->edges()) {
-
+		for (auto iter = tile->begin_edges(); iter != tile->end_edges(); ++iter) {
+			auto e = *iter;
 			auto key = e->get_edge_location_indices();
 			if (edge_tbl_.find(key) == edge_tbl_.end())
 				edge_tbl_[key] = e; 
@@ -260,8 +263,8 @@ void tess::detail::patch_impl::insert_tile( tess::tile_root_ptr tile )
 {
 	tile->set_parent(self_, static_cast<int>( tiles_.size()) );
 
-	for (auto& v : tile->vertices()) {
-		auto vert = v;
+	for (auto iter = tile->begin_vertices(); iter != tile->end_vertices(); ++iter) {
+		auto vert = *iter;
 		int new_vert_index = vert_tbl_.insert(vert->pos());
 		vert->set_location( new_vert_index );
 	}
@@ -325,9 +328,12 @@ tess::patch_root_ptr tess::detail::patch_impl::flip(gc_heap& a) const {
 
 void  tess::detail::patch_impl::flip()  {
 	apply(flip_matrix());
-	for (auto& tile : tiles_)
-		for (auto& e : tile->edges())
+	for (auto& tile : tiles_) {
+		for (auto iter = tile->begin_edges(); iter != tile->end_edges(); ++iter) {
+			auto e = *iter;
 			e->flip();
+		}
+	}
 	edge_tbl_.clear();
 }
 

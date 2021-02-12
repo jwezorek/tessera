@@ -72,32 +72,36 @@ void tess::detail::tile_impl::initialize( tile_root_ptr self)
         e->set_parent( const_tile_root_ptr(self) );
 }
 
-std::vector<tess::const_vertex_root_ptr> tess::detail::tile_impl::vertices() const
-{
-	std::vector<tess::const_vertex_root_ptr> const_vertices(vertices_.size());
-	std::transform(vertices_.begin(), vertices_.end(), const_vertices.begin(), 
-		[](auto v) { return v; }
-	);
-	return const_vertices;
+tess::detail::tile_impl::const_vertex_iter tess::detail::tile_impl::begin_vertices() const {
+	return vertices_.begin();
 }
 
-std::vector<tess::const_edge_root_ptr> tess::detail::tile_impl::edges() const
-{
-	std::vector<tess::const_edge_root_ptr> const_edges(edges_.size());
-	std::transform(edges_.begin(), edges_.end(), const_edges.begin(),
-		[](auto v) { return v; }
-	);
-	return const_edges;
+tess::detail::tile_impl::const_vertex_iter tess::detail::tile_impl::end_vertices() const {
+	return vertices_.end();
 }
 
-const std::vector<tess::vertex_root_ptr>& tess::detail::tile_impl::vertices()
-{
-    return vertices_;
+tess::detail::tile_impl::const_edge_iter tess::detail::tile_impl::begin_edges() const {
+	return edges_.begin();
 }
 
-const std::vector<tess::edge_root_ptr>& tess::detail::tile_impl::edges()
-{
-    return edges_;
+tess::detail::tile_impl::const_edge_iter tess::detail::tile_impl::end_edges() const {
+	return edges_.end();
+}
+
+tess::detail::tile_impl::vertex_iter tess::detail::tile_impl::begin_vertices() {
+	return vertices_.begin();
+}
+
+tess::detail::tile_impl::vertex_iter tess::detail::tile_impl::end_vertices() {
+	return vertices_.end();
+}
+
+tess::detail::tile_impl::edge_iter tess::detail::tile_impl::begin_edges() {
+	return edges_.begin();
+}
+
+tess::detail::tile_impl::edge_iter tess::detail::tile_impl::end_edges() {
+	return edges_.end();
 }
 
 tess::const_vertex_root_ptr tess::detail::tile_impl::vertex(int index) const
@@ -207,7 +211,8 @@ tess::const_edge_root_ptr tess::detail::tile_impl::get_edge_on(tess::gc_heap& a,
 
 	static auto eps = static_cast<tess::number>(std::numeric_limits<float>::epsilon());
 
-	for ( auto e : edges()) {
+	for (auto iter = begin_edges(); iter != end_edges(); ++iter) {
+		auto e = *iter;
 		auto e_u = e->u()->pos();
 		auto e_v = e->v()->pos();
 
@@ -606,8 +611,7 @@ tess::const_tile_root_ptr tess::detail::vertex_impl::parent() const
 //TODO: maybe make some lazy created table for doing this in sublinear time for tiles more than k sides?
 tess::const_edge_root_ptr tess::detail::vertex_impl::in_edge() const
 {
-	auto edges = parent_->edges();
-	auto iter = std::find_if(edges.begin(), edges.end(),
+	auto iter = std::find_if(parent_->begin_edges(), parent_->end_edges(),
 		[this]( auto e) {
 			return e->v().get() == this;
 		}
@@ -617,8 +621,7 @@ tess::const_edge_root_ptr tess::detail::vertex_impl::in_edge() const
 
 tess::const_edge_root_ptr tess::detail::vertex_impl::out_edge() const
 {
-	auto edges = parent_->edges();
-	auto iter = std::find_if(edges.begin(), edges.end(),
+	auto iter = std::find_if(parent_->begin_edges(), parent_->end_edges(),
 		[this]( auto e) {
 			return e->u().get() == this;
 		}

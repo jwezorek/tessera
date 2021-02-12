@@ -92,10 +92,20 @@ namespace tess {
                 tile_impl(tess::gc_heap& allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
                 void initialize( tile_root_ptr self);
 
-                std::vector<tess::const_vertex_root_ptr> vertices() const;
-                std::vector<tess::const_edge_root_ptr> edges() const;
-                const std::vector<tess::vertex_root_ptr>& vertices();
-                const std::vector<tess::edge_root_ptr>& edges();
+                using const_edge_iter = std::vector<tess::edge_root_ptr>::const_iterator;
+                using edge_iter = std::vector<tess::edge_root_ptr>::iterator;
+                using const_vertex_iter = std::vector<tess::vertex_root_ptr>::const_iterator;
+                using vertex_iter = std::vector<tess::vertex_root_ptr>::iterator;
+
+                const_vertex_iter begin_vertices() const;
+                const_vertex_iter end_vertices() const;
+                const_edge_iter begin_edges() const;
+                const_edge_iter end_edges() const;
+
+                vertex_iter begin_vertices();
+                vertex_iter end_vertices();
+                edge_iter begin_edges();
+                edge_iter end_edges();
 
                 const_vertex_root_ptr vertex(int index) const;
                 vertex_root_ptr vertex(int index);
