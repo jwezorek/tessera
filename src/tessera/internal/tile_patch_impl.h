@@ -29,14 +29,21 @@ namespace tess {
             void build_edge_table() const;
 
         public:
+
+            using tile_iterator = std::vector<tess::tile_root_ptr>::iterator;
+            using const_tile_iterator = std::vector<tess::tile_root_ptr>::const_iterator;
+
             patch_impl(gc_heap& a) {};
             patch_impl(gc_heap& a, const std::vector<tess::tile_root_ptr>& tiles);
             void initialize(patch_root_ptr p) { self_ = p; }
 
+            tile_iterator begin_tiles();
+            tile_iterator end_tiles();
+            const_tile_iterator begin_tiles() const;
+            const_tile_iterator end_tiles() const;
+
             void insert_tile(tess::tile_root_ptr t);
             int count() const;
-            std::vector<tess::const_tile_root_ptr> tiles() const;
-            const std::vector<tess::tile_root_ptr>& tiles();
             value_ get_field(gc_heap& allocator, const std::string& field) const;
             value_ get_ary_item(int i) const;
             int get_ary_count() const;

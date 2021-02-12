@@ -3,9 +3,9 @@
 
 std::vector<tess::tile> tess::tile_patch::tiles() const
 {
-	const auto& tiles = impl_->tiles();
-	std::vector<tess::tile> wrapped_tiles(tiles.size());
-	std::transform(tiles.begin(), tiles.end(), wrapped_tiles.begin(),
+	auto sz = count();
+	std::vector<tess::tile> wrapped_tiles( sz );
+	std::transform(impl_->begin_tiles(), impl_->end_tiles(), wrapped_tiles.begin(),
 		[](auto v) -> tess::tile { return tess::make_tess_obj<tess::tile>(v.get()); }
 	);
 	return wrapped_tiles;
@@ -13,7 +13,7 @@ std::vector<tess::tile> tess::tile_patch::tiles() const
 
 int tess::tile_patch::count() const 
 {
-	return static_cast<int>( impl_->tiles().size() );
+	return static_cast<int>(impl_->end_tiles() - impl_->begin_tiles());
 }
 
 tess::property_value tess::tile_patch::get_property_variant(const std::string& prop) const

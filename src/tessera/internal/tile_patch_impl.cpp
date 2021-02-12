@@ -172,9 +172,10 @@ namespace {
 	void propagate_edge_fields(tess::tile_root_ptr tile, tess::const_patch_root_ptr patch)
 	{
 		tess::edge_location_table edges;
-		for (const auto t : patch->tiles()) {
-			for (auto iter = t->begin_edges(); iter != t->end_edges(); ++iter) {
-				edges.insert( to_root_ptr(*iter) );
+		for (auto j = patch->begin_tiles(); j != patch->end_tiles(); ++j) {
+			auto tile = *j;
+			for (auto i = tile->begin_edges(); i != tile->end_edges(); ++i) {
+				edges.insert( to_root_ptr(*i) );
 			}
 		}
 
@@ -204,7 +205,8 @@ namespace {
 	void propagate_fields(tess::tile_root_ptr tile, tess::const_patch_root_ptr patch)
 	{
 		std::unordered_map<std::string, tess::field_value> fields;
-		for (const auto& t : patch->tiles()) {
+		for (auto iter = patch->begin_tiles(); iter != patch->end_tiles(); ++iter) {
+			auto t = *iter;
 			for (const auto& [var, val] : t->fields()) {
 				if (tess::is_simple_value(val)) {
 					if (fields.find(var) == fields.end()) {
@@ -224,18 +226,20 @@ namespace {
 	}
 }
 
-const std::vector<tess::tile_root_ptr>& tess::detail::patch_impl::tiles()
-{
-	return tiles_;
+tess::detail::patch_impl::tile_iterator tess::detail::patch_impl::begin_tiles() {
+	return tiles_.begin();
 }
 
-std::vector<tess::const_tile_root_ptr> tess::detail::patch_impl::tiles() const
-{
-	std::vector<tess::const_tile_root_ptr> const_tiles(tiles_.size());
-	std::transform(tiles_.begin(), tiles_.end(), const_tiles.begin(),
-		[](auto t) { return t; }
-	);
-    return const_tiles;
+tess::detail::patch_impl::tile_iterator tess::detail::patch_impl::end_tiles() {
+	return tiles_.end();
+}
+
+tess::detail::patch_impl::const_tile_iterator tess::detail::patch_impl::begin_tiles() const {
+	return tiles_.begin();
+}
+
+tess::detail::patch_impl::const_tile_iterator tess::detail::patch_impl::end_tiles() const {
+	return tiles_.end();
 }
 
 void tess::detail::patch_impl::build_edge_table() const
@@ -513,8 +517,8 @@ tess::patch_root_ptr tess::flatten(tess::gc_heap& a, const std::vector<tess::val
 			overloaded{
 				[&](tess::const_tile_root_ptr t) { tiles.push_back( tess::clone(a, t) ); },
 				[&](tess::const_patch_root_ptr patch) {
-					for (auto t : patch->tiles()) {
-						auto clone = t->clone_detached(a);
+					for (auto i = patch->begin_tiles(); i != patch->end_tiles(); ++i) {
+						auto clone = (*i)->clone_detached(a);
 						tiles.push_back(clone);
 					}
 				},

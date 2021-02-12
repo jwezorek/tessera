@@ -38,9 +38,9 @@ namespace {
 		if (!std::holds_alternative<tess::const_patch_root_ptr>(output))
 			return { tess::error("tableau does not evaulate to a tile patch.") };
 
-		const auto& tile_impls = std::get<tess::const_patch_root_ptr>(output)->tiles();
-		std::vector<tess::tile> tiles( tile_impls.size() );
-		std::transform(tile_impls.begin(), tile_impls.end(), tiles.begin(),
+		auto patch = std::get<tess::const_patch_root_ptr>(output);
+		std::vector<tess::tile> tiles(patch->count());
+		std::transform(patch->begin_tiles(), patch->end_tiles(), tiles.begin(),
 			[](tess::const_tile_root_ptr i) {
 				return tess::make_tess_obj<tess::tile>(i.get());
 			}
