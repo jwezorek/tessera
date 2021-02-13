@@ -219,7 +219,7 @@ namespace {
 			}
 		}
 		for (const auto& [var, val] : fields) {
-			tile->insert_field(var, variant_cast(val));
+			tile->insert_field(var, from_field_value(val));
 		}
 
 		propagate_edge_fields(tile, patch);
