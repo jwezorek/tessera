@@ -159,7 +159,7 @@ namespace {
 		std::transform(grouped_tiles.begin(), grouped_tiles.end(), output.begin(),
 			[&a]( auto& tile_group)->tess::tile_root_ptr {
 				if (tile_group.size() == 1) {
-					return tess::clone(a, tile_group.front() );
+					return tess::clone_object(a, tile_group.front() );
 				} else {
 					return tess::join(a, tile_group);
 				}
@@ -507,7 +507,7 @@ tess::patch_root_ptr tess::flatten(tess::gc_heap& a, const std::vector<tess::val
 	for (const auto& tile_or_patch : tiles_and_patches) {
 		std::visit(
 			overloaded{
-				[&](tess::const_tile_root_ptr t) { tiles.push_back( tess::clone(a, t) ); },
+				[&](tess::const_tile_root_ptr t) { tiles.push_back( tess::clone_object(a, t) ); },
 				[&](tess::const_patch_root_ptr patch) {
 					for (auto i = patch->begin_tiles(); i != patch->end_tiles(); ++i) {
 						auto clone = (*i)->clone_detached(a);

@@ -265,13 +265,21 @@ namespace tess {
 	}
 
 	template<typename T>
-	gcpp::deferred_ptr<T> clone(gc_heap& a, gcpp::deferred_ptr<const T> tess_impl) {
-		tess::value_ val{ tess_impl };
-		return gcpp::deferred_ptr<T>(std::get<gcpp::deferred_ptr<const T>>(tess::clone_value(a, val)));
+	auto clone_object(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, T impl)
+	{
+		auto wrapper = tess::make_value(impl);
+
+		using base_type = typename T::value_type;
+		using ptr_t = typename tess::value_traits<decltype(wrapper)>::ptr_type<const base_type>;
+
+		auto clone = tess::clone_value(allocator, orginal_to_clone, wrapper);
+		return tess::get_mutable<ptr_t>(clone);
 	}
-	
-    template<typename T>
-    gcpp::deferred_ptr<T> clone(gc_heap& a, gcpp::deferred_ptr< T> tess_impl) {
-        return clone(a, gcpp::deferred_ptr<const T>(tess_impl));
-    }
+
+	template<typename T>
+	auto clone_object(tess::gc_heap& a, T impl)
+	{
+		std::unordered_map<tess::obj_id, std::any> orginal_to_clone;
+		return clone_object(a, orginal_to_clone, impl);
+	}
 }

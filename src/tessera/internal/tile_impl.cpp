@@ -18,25 +18,6 @@ namespace {
 		return allocator.make_const<tess::const_cluster_root_ptr>( cluster_contents );
 	}
 
-	template<typename T>
-	auto clone_object(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, T impl)
-	{
-		auto wrapper = tess::make_value(impl);
-
-		using base_type = typename T::value_type;
-		using ptr_t = typename tess::value_traits<decltype(wrapper)>::ptr_type<const base_type>;
-
-		auto clone = tess::clone_value(allocator, orginal_to_clone, wrapper);
-		return tess::get_mutable<ptr_t>(clone);
-	}
-
-	template<typename T>
-	auto clone_object(tess::gc_heap& a, T impl)
-	{
-		std::unordered_map<tess::obj_id, std::any> orginal_to_clone;
-		return clone_object(a, orginal_to_clone, impl);
-	}
-
 }
 
 tess::detail::tile_impl::tile_impl( tess::gc_heap& a, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations) :
