@@ -1,4 +1,3 @@
-#include "lambda.h"
 #include "function_def.h"
 #include "value.h"
 #include "tile_impl.h"
@@ -11,6 +10,17 @@ namespace {
 
     unsigned int g_id = 0;
 
+    tess::scope_frame to_scope_frame(const std::map<std::string, tess::field_value>& fields) {
+        std::vector<std::string> vars;
+        std::vector<tess::value_> vals;
+        vars.reserve(fields.size());
+        vals.reserve(fields.size());
+        for (const auto& [var, val] : fields) {
+            vars.push_back(var);
+            vals.push_back(from_field_value(val));
+        }
+        return { vars, vals };
+    }
 }
 
 tess::detail::lambda_impl::lambda_impl( gc_heap& a, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
@@ -20,14 +30,14 @@ tess::detail::lambda_impl::lambda_impl( gc_heap& a, const std::vector<std::strin
 
 void tess::detail::lambda_impl::insert_field(const std::string& var, const value_& val)
 {
-    closure_.set(var, val);
+    closure_[var] = to_field_value(val);
 }
 
 tess::value_ tess::detail::lambda_impl::get_field(gc_heap& allocator, const std::string& field) const
 {
-    auto maybe_value = closure_.get(field);
-    if (maybe_value.has_value())
-        return { maybe_value.value() };
+    auto iter = closure_.find(field);
+    if (iter != closure_.end())
+        return { from_field_value(iter->second) };
     else
         throw tess::error("referenced unknown lambda closure item: " + field);
 }
@@ -61,7 +71,7 @@ void tess::detail::lambda_impl::clone_to(tess::gc_heap& allocator, std::unordere
     mutable_clone->body_ = body_;
 
     for (const auto& [var, val] : closure_) {
-        mutable_clone->closure_.set(var, tess::clone_value(allocator, orginal_to_clone, val)); //clone fields
+        mutable_clone->closure_[var] = tess::clone_value(allocator, orginal_to_clone, val); //clone fields
     }
 }
 
@@ -70,7 +80,7 @@ std::vector<std::string> tess::detail::lambda_impl::unfulfilled_dependencies() c
     std::vector<std::string> depends;
     std::copy_if(dependencies_.begin(), dependencies_.end(), std::back_inserter(depends),
         [&](std::string var) {
-            return !closure_.has(var);
+            return closure_.find(var) == closure_.end();
         }
     );
     return depends;
@@ -83,7 +93,7 @@ std::string tess::detail::lambda_impl::serialize(tess::serialization_state& stat
     std::stringstream ss;
     if (!serialization_id) {
         auto serialization_id = state.insert(global_id);
-        std::string serialized_closure = closure_.serialize(state);
+        std::string serialized_closure = to_scope_frame(closure_).serialize(state);
         if (serialized_closure.empty())
             return {};
         ss << "<" << serialization_id << ":" << id_ << " " << serialized_closure << ">";
@@ -94,9 +104,14 @@ std::string tess::detail::lambda_impl::serialize(tess::serialization_state& stat
     return ss.str();
 }
 
-const tess::scope_frame& tess::detail::lambda_impl::closure() const
+tess::detail::lambda_impl::const_closure_iter tess::detail::lambda_impl::begin_closure() const
 {
-    return closure_;
+    return closure_.begin();
+}
+
+tess::detail::lambda_impl::const_closure_iter tess::detail::lambda_impl::end_closure() const
+{
+    return closure_.end();
 }
 
 const std::vector<std::string>& tess::detail::lambda_impl::parameters() const

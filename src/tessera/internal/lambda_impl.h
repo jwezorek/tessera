@@ -11,7 +11,7 @@ namespace tess {
         class lambda_impl : public tessera_impl {
             private:
                 unsigned int id_;
-                scope_frame closure_;
+                std::map<std::string, field_value> closure_;
                 std::vector<std::string> parameters_;
                 std::vector<std::string> dependencies_;
                 std::vector<stack_machine::item> body_;
@@ -27,7 +27,11 @@ namespace tess {
                 std::vector<std::string> unfulfilled_dependencies() const;
                 std::string serialize(serialization_state& state) const;
 
-                const scope_frame& closure() const;
+                using const_closure_iter = std::map<std::string, field_value>::const_iterator;
+
+                const_closure_iter begin_closure() const;
+                const_closure_iter end_closure() const;
+                
                 const std::vector<std::string>& parameters() const;
                 const std::vector<std::string>& dependencies() const;
                 const std::vector<stack_machine::item>& body() const;

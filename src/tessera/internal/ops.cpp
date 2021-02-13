@@ -1,6 +1,5 @@
 #include "ops.h"
 #include "function_def.h"
-#include "lambda.h"
 #include "lambda_impl.h"
 #include "gc_heap.h"
 #include "variant_util.h"
@@ -229,8 +228,10 @@ std::vector<tess::stack_machine::item> tess::call_func::execute(const std::vecto
             throw tess::error("func call arg count mismatch.");
 
             scope_frame frame(func->parameters(), args);
-            for (const auto& [var, val] : func->closure())
-                frame.set(var, val);
+            for (auto iter = func->begin_closure(); iter != func->end_closure(); ++iter) {
+                const auto& [var, val] = *iter;
+                frame.set(var, from_field_value(val));
+            }
             contexts.top().push_scope(frame);
 
             auto func_body = func->body();

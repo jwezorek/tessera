@@ -269,10 +269,9 @@ namespace tess {
 		tess::value_ val{ tess_impl };
 		return gcpp::deferred_ptr<T>(std::get<gcpp::deferred_ptr<const T>>(tess::clone_value(a, val)));
 	}
-
+	
     template<typename T>
     gcpp::deferred_ptr<T> clone(gc_heap& a, gcpp::deferred_ptr< T> tess_impl) {
         return clone(a, gcpp::deferred_ptr<const T>(tess_impl));
     }
-	
 }
