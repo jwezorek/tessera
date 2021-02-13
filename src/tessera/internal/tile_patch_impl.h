@@ -24,8 +24,8 @@ namespace tess {
             std::vector<tess::tile_graph_ptr> tiles_;
             std::map<std::string, field_value> fields_;
             vertex_location_table vert_tbl_;
-            mutable edge_table<const_edge_root_ptr> edge_tbl_;
-            patch_root_ptr self_;
+            mutable edge_table<const_edge_graph_ptr> edge_tbl_;
+            patch_graph_ptr self_;
             void build_edge_table() const;
 
         public:

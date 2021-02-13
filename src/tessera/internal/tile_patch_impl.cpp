@@ -250,7 +250,7 @@ void tess::detail::patch_impl::build_edge_table() const
 			auto e = *iter;
 			auto key = e->get_edge_location_indices();
 			if (edge_tbl_.find(key) == edge_tbl_.end())
-				edge_tbl_[key] = to_root_ptr(e); 
+				edge_tbl_[key] = to_const(e); 
 			else
 				throw tess::error("invalid tile patch");
 		}
@@ -265,7 +265,7 @@ tess::detail::patch_impl::patch_impl( tess::gc_heap& a, const std::vector<tess::
 
 void tess::detail::patch_impl::insert_tile( tess::tile_root_ptr tile )
 {
-	tile->set_parent(self_, static_cast<int>( tiles_.size()) );
+	tile->set_parent(to_root_ptr(self_), static_cast<int>( tiles_.size()) );
 
 	for (auto iter = tile->begin_vertices(); iter != tile->end_vertices(); ++iter) {
 		auto vert = *iter;
@@ -324,7 +324,7 @@ std::string tess::detail::patch_impl::debug() const
 }
 
 tess::patch_root_ptr tess::detail::patch_impl::flip(gc_heap& a) const {
-	value_ self = make_value( self_ );
+	value_ self = make_value( to_root_ptr(self_) );
 	auto clone = get_mutable<tess::const_patch_root_ptr>(tess::clone_value(a, self));
 	clone->flip();
 	return clone;
@@ -348,7 +348,7 @@ tess::const_edge_root_ptr tess::detail::patch_impl::get_edge_on(int u, int v) co
 
 	auto iter = edge_tbl_.find(edge_indices{ u, v });
 	if (iter != edge_tbl_.end())
-		return iter->second;
+		return to_root_ptr(iter->second);
 	else
 		return nullptr;
 }
@@ -405,9 +405,10 @@ tess::point tess::detail::patch_impl::get_vertex_location(int index) const {
 
 tess::tile_root_ptr tess::detail::patch_impl::join(tess::gc_heap& a) const
 {
-	auto points = tess::join(self_);
+	auto self_ptr = to_root_ptr(self_);
+	auto points = tess::join(self_ptr);
 	auto joined_patch = a.make_const<tess::const_tile_root_ptr>(points);
-	propagate_fields(joined_patch, self_);
+	propagate_fields(joined_patch, self_ptr);
 	return joined_patch;
 }
 
