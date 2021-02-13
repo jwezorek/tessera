@@ -228,8 +228,8 @@ tess::value_ tess::detail::tile_impl::get_on(tess::gc_heap& a,  std::variant<tes
 			[&]( tess::const_cluster_root_ptr c) -> value_ {
 				std::vector<tess::value_> on_edges( c->get_ary_count() );
 				std::transform(c->begin(), c->end(), on_edges.begin(),
-					[&](const value_& v) -> value_ {
-						std::variant<tess::const_edge_root_ptr, tess::const_cluster_root_ptr> var = variant_cast(v);
+					[&](const auto& v) -> value_ {
+						std::variant<tess::const_edge_root_ptr, tess::const_cluster_root_ptr> var = variant_cast(from_field_value(v));
 						return this->get_on(a, var);
 					}
 				);

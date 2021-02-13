@@ -66,7 +66,7 @@ namespace tess {
         class cluster_impl : public tessera_impl
         {
         private:
-            std::vector<value_> values_;
+            std::vector<field_value> values_;
         public:
             cluster_impl(gc_heap& a) {};
             cluster_impl( gc_heap& a, const std::vector<value_>& tiles);
@@ -76,11 +76,10 @@ namespace tess {
             value_ get_ary_item(int i) const;
             void push_value(value_ val);
             int get_ary_count() const;
-            const std::vector<tess::value_>& values() const;
             void insert_field(const std::string& var, const value_& val);
             void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, cluster_raw_ptr clone) const;
-            std::vector<tess::value_>::const_iterator begin() const;
-            std::vector<tess::value_>::const_iterator end() const;
+            std::vector<field_value>::const_iterator begin() const;
+            std::vector<field_value>::const_iterator end() const;
         };
 
     }

@@ -374,8 +374,8 @@ tess::value_ tess::detail::patch_impl::get_on(gc_heap& a, const std::variant<tes
 			[&](const tess::const_cluster_root_ptr c) -> value_ {
 				std::vector<tess::value_> on_edges(c->get_ary_count());
 				std::transform(c->begin(), c->end(), on_edges.begin(),
-					[&](const value_& v) -> value_ {
-						std::variant<tess::const_edge_root_ptr, tess::const_cluster_root_ptr> edge_or_cluster = variant_cast(v);
+					[&](const auto& v) -> value_ {
+						std::variant<tess::const_edge_root_ptr, tess::const_cluster_root_ptr> edge_or_cluster = variant_cast(from_field_value(v));
 						return this->get_on(a, edge_or_cluster);
 					}
 				);
@@ -432,7 +432,10 @@ void tess::detail::patch_impl::dfs(tile_visitor visit) const
 
 tess::detail::cluster_impl::cluster_impl(gc_heap& a, const std::vector<value_>& values)
 {
-    std::copy(values.begin(), values.end(), std::back_inserter(values_) );
+    std::transform(
+		values.begin(), values.end(), std::back_inserter(values_),
+		to_field_value
+	);
 }
 
 
@@ -450,22 +453,17 @@ tess::value_ tess::detail::cluster_impl::get_ary_item(int i) const
 {
 	if (i < 0 || i >= values_.size())
 		throw tess::error("array ref out of bounds");
-	return values_.at(i);
+	return from_field_value(values_.at(i));
 }
 
 void tess::detail::cluster_impl::push_value(value_ val)
 {
-	values_.push_back(val);
+	values_.push_back(to_field_value(val));
 }
 
 int tess::detail::cluster_impl::get_ary_count() const
 {
 	return static_cast<int>(values_.size());
-}
-
-const std::vector<tess::value_>& tess::detail::cluster_impl::values() const
-{
-	return values_;
 }
 
 void tess::detail::cluster_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, cluster_raw_ptr mutable_clone) const
@@ -475,12 +473,12 @@ void tess::detail::cluster_impl::clone_to(tess::gc_heap& allocator, std::unorder
 	}
 }
 
-std::vector<tess::value_>::const_iterator tess::detail::cluster_impl::begin() const
+std::vector<tess::field_value>::const_iterator tess::detail::cluster_impl::begin() const
 {
 	return values_.cbegin();
 }
 
-std::vector<tess::value_>::const_iterator tess::detail::cluster_impl::end() const
+std::vector<tess::field_value>::const_iterator tess::detail::cluster_impl::end() const
 {
 	return values_.cend();
 }
