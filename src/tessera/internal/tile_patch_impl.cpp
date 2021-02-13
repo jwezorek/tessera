@@ -372,9 +372,8 @@ tess::value_ tess::detail::patch_impl::get_on(gc_heap& a, const std::variant<tes
 				}
 			},
 			[&](const tess::const_cluster_root_ptr c) -> value_ {
-				const auto& items = c->items();
-				std::vector<tess::value_> on_edges(c->items().size());
-				std::transform(items.begin(), items.end(), on_edges.begin(),
+				std::vector<tess::value_> on_edges(c->get_ary_count());
+				std::transform(c->begin(), c->end(), on_edges.begin(),
 					[&](const value_& v) -> value_ {
 						std::variant<tess::const_edge_root_ptr, tess::const_cluster_root_ptr> edge_or_cluster = variant_cast(v);
 						return this->get_on(a, edge_or_cluster);
@@ -484,12 +483,6 @@ std::vector<tess::value_>::const_iterator tess::detail::cluster_impl::begin() co
 std::vector<tess::value_>::const_iterator tess::detail::cluster_impl::end() const
 {
 	return values_.cend();
-}
-
-
-const std::vector<tess::value_>& tess::detail::cluster_impl::items() const
-{
-	return values_;
 }
 
 int count_tiles(const std::vector<tess::value_>& tiles_and_patches) {

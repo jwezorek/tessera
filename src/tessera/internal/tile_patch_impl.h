@@ -81,7 +81,6 @@ namespace tess {
             void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, cluster_raw_ptr clone) const;
             std::vector<tess::value_>::const_iterator begin() const;
             std::vector<tess::value_>::const_iterator end() const;
-            const std::vector<tess::value_>& items() const;
         };
 
     }
