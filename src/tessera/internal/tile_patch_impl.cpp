@@ -13,7 +13,7 @@
 
 namespace {
 
-	std::vector<tess::const_tile_root_ptr> get_neighbors(tess::const_tile_root_ptr t) {
+	std::vector<tess::const_tile_root_ptr> get_neighbors(tess::const_tile_graph_ptr t) {
 		int num_edges = static_cast<int>(t->end_edges() - t->begin_edges());
 		std::vector<tess::const_tile_root_ptr> neighbors;
 		for (int i = 0; i < num_edges; ++i) {
@@ -299,7 +299,7 @@ tess::value_ tess::detail::patch_impl::get_field(gc_heap& allocator, const std::
 
 tess::value_ tess::detail::patch_impl::get_ary_item(int i) const
 {
-	return tess::make_value(tiles_.at(i));
+	return tess::make_value(to_root_ptr(tiles_.at(i)));
 }
 
 int tess::detail::patch_impl::get_ary_count() const
@@ -390,7 +390,7 @@ tess::value_ tess::detail::patch_impl::get_on(gc_heap& a, const std::variant<tes
 void tess::detail::patch_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, patch_raw_ptr mutable_clone) const
 {
 	for (const auto& t : tiles_) { // clone tiles
-		auto t_clone = get_mutable<const_tile_root_ptr>(tess::clone_value(allocator, orginal_to_clone, make_value(t)));
+		auto t_clone = get_mutable<const_tile_graph_ptr>(tess::clone_value(allocator, orginal_to_clone, make_value(t)));
 		mutable_clone->tiles_.push_back( t_clone );
 	}
 	for (const auto& [var, val] : fields_) { // clone fields
@@ -415,8 +415,8 @@ void tess::detail::patch_impl::dfs(tile_visitor visit) const
 {
 	std::unordered_set<tess::obj_id> visited;
 
-	std::function<void(const_tile_root_ptr tile)> dfs_aux;
-	dfs_aux = [&](const_tile_root_ptr t) {
+	std::function<void(const_tile_graph_ptr tile)> dfs_aux;
+	dfs_aux = [&](const_tile_graph_ptr t) {
 		if (visited.find(t->get_id()) != visited.end())
 			return;
 		visited.insert(t->get_id());
@@ -425,7 +425,7 @@ void tess::detail::patch_impl::dfs(tile_visitor visit) const
 			dfs_aux(neighbor);
 		}
 	};
-	dfs_aux(tiles_[0]);
+	dfs_aux(to_const(tiles_[0]));
 }
 
 /*---------------------------------------------------------------------------------------------*/

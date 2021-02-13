@@ -15,13 +15,13 @@
 
 namespace tess {
 
-    using tile_visitor = std::function<void(const_tile_root_ptr)>;
+    using tile_visitor = std::function<void(const_tile_graph_ptr)>;
 
     namespace detail {
         class patch_impl : public tessera_impl
         {
         private:
-            std::vector<tess::tile_root_ptr> tiles_;
+            std::vector<tess::tile_graph_ptr> tiles_;
             std::map<std::string, field_value> fields_;
             vertex_location_table vert_tbl_;
             mutable edge_table<const_edge_root_ptr> edge_tbl_;
@@ -30,8 +30,8 @@ namespace tess {
 
         public:
 
-            using tile_iterator = std::vector<tess::tile_root_ptr>::iterator;
-            using const_tile_iterator = std::vector<tess::tile_root_ptr>::const_iterator;
+            using tile_iterator = std::vector<tess::tile_graph_ptr>::iterator;
+            using const_tile_iterator = std::vector<tess::tile_graph_ptr>::const_iterator;
 
             patch_impl(gc_heap& a) {};
             patch_impl(gc_heap& a, const std::vector<tess::tile_root_ptr>& tiles);

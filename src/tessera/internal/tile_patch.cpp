@@ -6,7 +6,9 @@ std::vector<tess::tile> tess::tile_patch::tiles() const
 	auto sz = count();
 	std::vector<tess::tile> wrapped_tiles( sz );
 	std::transform(impl_->begin_tiles(), impl_->end_tiles(), wrapped_tiles.begin(),
-		[](auto v) -> tess::tile { return tess::make_tess_obj<tess::tile>(v.get()); }
+		[](auto v) -> tess::tile { 
+			return tess::make_tess_obj<tess::tile>(to_root_ptr(v).get()); 
+		}
 	);
 	return wrapped_tiles;
 }
