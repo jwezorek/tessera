@@ -170,7 +170,7 @@ std::vector<tess::stack_machine::item> tess::get_var::execute(const std::vector<
 
     if (eval_parameterless_funcs_ && std::holds_alternative<const_lambda_root_ptr>(value)) {
         auto lambda_val = std::get<const_lambda_root_ptr>(value);
-        if (lambda_val->parameters.empty()) {
+        if (lambda_val->parameters().empty()) {
             return std::vector<tess::stack_machine::item>{
                 { std::make_shared<push_eval_context>() },
                 { value },
@@ -225,15 +225,15 @@ std::vector<tess::stack_machine::item> tess::call_func::execute(const std::vecto
 
     if ((key.empty()) || (!memo_tbl.contains(key))) {
 
-        if (func->parameters.size() != args.size())
+        if (func->parameters().size() != args.size())
             throw tess::error("func call arg count mismatch.");
 
-            scope_frame frame(func->parameters, args);
-            for (const auto& [var, val] : func->closure)
+            scope_frame frame(func->parameters(), args);
+            for (const auto& [var, val] : func->closure())
                 frame.set(var, val);
             contexts.top().push_scope(frame);
 
-            auto func_body = func->body;
+            auto func_body = func->body();
             func_body.push_back(
                 { std::make_shared<memoize_func_call_op>(key) }
         );

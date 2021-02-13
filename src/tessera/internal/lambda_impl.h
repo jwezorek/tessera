@@ -11,12 +11,11 @@ namespace tess {
         class lambda_impl : public tessera_impl {
             private:
                 unsigned int id_;
+                scope_frame closure_;
+                std::vector<std::string> parameters_;
+                std::vector<std::string> dependencies_;
+                std::vector<stack_machine::item> body_;
             public:
-                scope_frame closure;
-                std::vector<std::string> parameters;
-                std::vector<std::string> dependencies;
-                std::vector<stack_machine::item> body;
-
                 lambda_impl(gc_heap& a) : id_(0) {};
                 lambda_impl(gc_heap& a, const std::vector<std::string>& param, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps);
                 void initialize( lambda_root_ptr p) {}
@@ -27,6 +26,11 @@ namespace tess {
                 void clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, lambda_raw_ptr clone) const;
                 std::vector<std::string> unfulfilled_dependencies() const;
                 std::string serialize(serialization_state& state) const;
+
+                const scope_frame& closure() const;
+                const std::vector<std::string>& parameters() const;
+                const std::vector<std::string>& dependencies() const;
+                const std::vector<stack_machine::item>& body() const;
         };
     }
 }
