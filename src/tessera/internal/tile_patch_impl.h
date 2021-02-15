@@ -15,17 +15,16 @@
 
 namespace tess {
 
-    using tile_visitor = std::function<void(const const_tile_graph_ptr&)>;
+    using tile_visitor = std::function<void(const tile_graph_ptr&)>;
 
     namespace detail {
-        class patch_impl : public tessera_impl
+        class patch_impl : public tessera_impl, public enable_self_ptr<patch_impl>
         {
         private:
             std::vector<tess::tile_graph_ptr> tiles_;
             std::map<std::string, field_value> fields_;
             vertex_location_table vert_tbl_;
-            mutable edge_table<const_edge_graph_ptr> edge_tbl_;
-            patch_graph_ptr self_;
+            mutable edge_table<edge_graph_ptr> edge_tbl_;
             void build_edge_table() const;
 
         public:
@@ -33,9 +32,8 @@ namespace tess {
             using tile_iterator = std::vector<tess::tile_graph_ptr>::iterator;
             using const_tile_iterator = std::vector<tess::tile_graph_ptr>::const_iterator;
 
-            patch_impl(gc_heap& a) {};
-            patch_impl(gc_heap& a, const std::vector<tess::tile_root_ptr>& tiles);
-            void initialize(patch_root_ptr p) { self_ = p; }
+            patch_impl() {};
+            void initialize(gc_heap& a, const std::vector<tess::tile_root_ptr>& tiles);
 
             tile_iterator begin_tiles();
             tile_iterator end_tiles();
@@ -63,14 +61,13 @@ namespace tess {
             std::string debug() const;
         };
 
-        class cluster_impl : public tessera_impl
+        class cluster_impl : public tessera_impl, public enable_self_ptr<cluster_impl>
         {
         private:
             std::vector<field_value> values_;
         public:
-            cluster_impl(gc_heap& a) {};
-            cluster_impl( gc_heap& a, const std::vector<value_>& tiles);
-            void initialize( cluster_root_ptr p) {}
+            cluster_impl() {};
+            void initialize( gc_heap& a, const std::vector<value_>& tiles);
 
             value_ get_field(gc_heap& allocator, const std::string& field) const;
             value_ get_ary_item(int i) const;

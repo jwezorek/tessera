@@ -20,29 +20,21 @@ namespace {
 
 }
 
-tess::detail::tile_impl::tile_impl( tess::gc_heap& a, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations) :
-	parent_(nullptr),
+tess::detail::tile_impl::tile_impl( ) :
 	index_(-1)
 {
+	
+}
+
+void tess::detail::tile_impl::initialize(tess::gc_heap& a, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations) {
 	auto n = static_cast<int>(vertex_locations.size());
 	vertices_.resize(n);
 	edges_.resize(n);
 
 	for (int i = 0; i < n; ++i) {
-		vertices_[i] = a.make_mutable<vertex_root_ptr>( i, vertex_locations[i]);
-		edges_[i] = a.make_mutable<edge_root_ptr>( i, i, (i + 1) % n);
+		vertices_[i] = a.make_graph_ptr<vertex_root_ptr>(self_graph_ptr(), i, vertex_locations[i]);
+		edges_[i] = a.make_graph_ptr<edge_root_ptr>(self_graph_ptr(), i, i, (i + 1) % n);
 	}
-}
-
-void tess::detail::tile_impl::initialize( tile_root_ptr self)
-{
-    self_ = self;
-
-	auto const_ptr = const_tile_root_ptr(self);
-    for (auto& v : vertices_)
-        v->set_parent(const_ptr);
-    for (auto& e : edges_)
-        e->set_parent(const_ptr);
 }
 
 tess::detail::tile_impl::const_vertex_iter tess::detail::tile_impl::begin_vertices() const {
@@ -79,7 +71,7 @@ tess::detail::tile_impl::edge_iter tess::detail::tile_impl::end_edges() {
 
 tess::const_vertex_root_ptr tess::detail::tile_impl::vertex(int index) const
 {
-	return to_root_ptr( vertices_.at(index) );
+	return to_const(to_root_ptr( vertices_.at(index) ));
 }
 
 tess::vertex_root_ptr tess::detail::tile_impl::vertex(int index)
@@ -89,7 +81,7 @@ tess::vertex_root_ptr tess::detail::tile_impl::vertex(int index)
 
 tess::const_edge_root_ptr tess::detail::tile_impl::edge(int index) const
 {
-	return to_root_ptr(edges_.at(index));
+	return to_const(to_root_ptr(edges_.at(index)));
 }
 
 tess::edge_root_ptr tess::detail::tile_impl::edge(int index)
@@ -105,39 +97,37 @@ void tess::detail::tile_impl::insert_field(const std::string& var, const value_&
 void tess::detail::tile_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, tile_raw_ptr mutable_clone) const
 {
 	for (auto& v : vertices_) { // clone vertices
-		mutable_clone->vertices_.push_back( clone_object(allocator, orginal_to_clone, v) );
+		mutable_clone->vertices_.push_back( clone_object(self_graph_ptr(), allocator, orginal_to_clone, v) );
 	}
 	for (auto& e : edges_) { // clone edges
-		mutable_clone->edges_.push_back( clone_object(allocator, orginal_to_clone, e) );
+		mutable_clone->edges_.push_back( clone_object(self_graph_ptr(), allocator, orginal_to_clone, e) );
 	}
 
 	if (parent_) { // clone parent
-		mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_);
+		mutable_clone->parent_ = clone_object(self_graph_ptr(), allocator, orginal_to_clone, parent_);
 	} else {
 		mutable_clone->parent_ = {};
 	}
 
-	
-
 	for (const auto& [var, val] : fields_) { //clone fields
-		auto v = tess::clone_value(allocator, orginal_to_clone, val);
+		auto v = tess::clone_value(self_graph_ptr(), allocator, orginal_to_clone, val);
 		mutable_clone->fields_[var] = std::move(v); // std::move(tess::clone_value(allocator, orginal_to_clone, val));
 	}
 }
 
 bool tess::detail::tile_impl::is_detached() const
 {
-	return parent_ == patch_graph_ptr{};
+	return parent_.get();
 }
 
 
 tess::tile_root_ptr tess::detail::tile_impl::clone_detached(tess::gc_heap& a) const
 {
 	if (is_detached())
-		return tess::to_root_ptr(clone_object(a, self_));
+		return tess::to_root_ptr(self_graph_ptr());
 	
 	// clone this tile such that its parent is only shallow copied.
-	auto tile_value = value_( to_const(to_root_ptr(self_)) );
+	auto tile_value = value_( to_const(to_root_ptr(self_graph_ptr())) );
 	std::unordered_map<obj_id, std::any> original_to_clone;
 	auto this_patch_key =  parent_->get_id();
 	original_to_clone[this_patch_key] = to_root_ptr(parent_);
@@ -165,14 +155,14 @@ std::string tess::detail::tile_impl::debug() const
 tess::const_tile_root_ptr tess::detail::tile_impl::get_adjacent_tile(int edge_index) const
 {
 	if (is_detached())
-		return nullptr;
+		return {};
 
 	const auto& e = edges_[edge_index];
 	int u = e->u()->location_index();
 	int v = e->v()->location_index();
 
 	auto adj_edge = parent_->get_edge_on(v, u);
-	return (adj_edge) ? adj_edge->parent() : nullptr;
+	return (adj_edge) ? adj_edge->parent() : tess::const_tile_root_ptr{};
 }
 
 tess::const_edge_root_ptr tess::detail::tile_impl::get_edge_on(tess::gc_heap& a,  const_edge_root_ptr edge) const
@@ -193,10 +183,10 @@ tess::const_edge_root_ptr tess::detail::tile_impl::get_edge_on(tess::gc_heap& a,
 		auto e_v = e->v()->pos();
 
 		if (tess::distance(e_u, u) <= eps && tess::distance(e_v, v) <= eps)
-			return to_root_ptr(e);
+			return to_const(to_root_ptr(e));
 	}
 
-	return nullptr;;
+	return {};
 }
 
 tess::value_ tess::detail::tile_impl::get_on(tess::gc_heap& a,  std::variant<tess::const_edge_root_ptr, tess::const_cluster_root_ptr>& var) const
@@ -219,7 +209,7 @@ tess::value_ tess::detail::tile_impl::get_on(tess::gc_heap& a,  std::variant<tes
 						return this->get_on(a, var);
 					}
 				);
-				return value_( a.make_const<tess::const_cluster_root_ptr>( on_edges) );
+				return value_{ a.make_const<tess::const_cluster_root_ptr>(on_edges) };
 			}
 		},
 		var
@@ -263,12 +253,12 @@ tess::const_tile_root_ptr tess::detail::tile_impl::flip(gc_heap& a) const
 {
 	tess::tile_root_ptr flippee;
 	if (is_detached()) {
-		flippee = to_root_ptr(clone_object(a, self_));
+		flippee = clone_object(a, to_const(to_root_ptr(self_graph_ptr())));
 	} else {
 		flippee = clone_detached(a);
 	}
 	flippee->flip();
-	return flippee;
+	return to_const(flippee);
 }
 
 void tess::detail::tile_impl::flip()
@@ -281,9 +271,9 @@ void tess::detail::tile_impl::flip()
 
 void tess::detail::tile_impl::set_parent(tess::patch_root_ptr parent, int index) {
 
-	if (parent == nullptr)
+	if (! parent)
 		throw tess::error("invalid tile parent");
-	parent_ = parent;
+	parent_ = tess::patch_graph_ptr(self_graph_ptr(), parent);
 	index_ = index;
 }
 
@@ -296,11 +286,11 @@ void tess::detail::tile_impl::detach()
 }
 
 bool tess::detail::tile_impl::has_parent() const {
-	return parent_ != tess::patch_graph_ptr{};
+	return parent_.get();
 }
 
 tess::const_patch_root_ptr tess::detail::tile_impl::parent() const {
-	return to_root_ptr(parent_);
+	return to_const(to_root_ptr(parent_));
 }
 
 tess::patch_root_ptr tess::detail::tile_impl::parent()  {
@@ -309,27 +299,26 @@ tess::patch_root_ptr tess::detail::tile_impl::parent()  {
 
 /*--------------------------------------------------------------------------------*/
 
-tess::detail::edge_impl::edge_impl( gc_heap& a, int index, int u, int v) :
-	parent_(nullptr),
-	index_(index),
-	u_(u),
-	v_(v)
-{
+void tess::detail::edge_impl::initialize( gc_heap& a, int index, int u, int v) {
+	parent_ = {};
+	index_ = index;
+	u_ = u;
+	v_ = v;
 }
 
-void tess::detail::edge_impl::set_parent(tess::const_tile_root_ptr parent)
+void tess::detail::edge_impl::set_parent(tess::tile_root_ptr parent)
 {
-	parent_ = to_graph_ptr(parent);
+	parent_ = tess::tile_graph_ptr(self_graph_ptr(), parent);
 }
 
 tess::const_vertex_root_ptr tess::detail::edge_impl::u() const
 {
-	return parent_->vertex(u_);
+	return to_const( parent_->vertex(u_) );
 }
 
 tess::const_vertex_root_ptr tess::detail::edge_impl::v() const
 {
-	return parent_->vertex(v_);
+	return to_const( parent_->vertex(v_) );
 }
 
 tess::vertex_root_ptr tess::detail::edge_impl::u()
@@ -385,7 +374,7 @@ tess::value_ tess::detail::edge_impl::get_field(const std::string& field) const
 
 void tess::detail::edge_impl::insert_field(const std::string& var, const value_& val)
 {
-	fields_[var] = to_field_value(val);
+	fields_[var] = to_field_value(self_graph_ptr(), val);
 }
 
 const std::map<std::string, tess::field_value>& tess::edge::impl_type::fields() const
@@ -410,7 +399,7 @@ bool tess::detail::edge_impl::has_property(const std::string& prop) const
 
 tess::const_tile_root_ptr tess::detail::edge_impl::parent() const
 {
-	return to_root_ptr(parent_);
+	return to_const(to_root_ptr(parent_));
 }
 
 tess::tile_root_ptr tess::detail::edge_impl::parent()
@@ -447,26 +436,28 @@ void  tess::detail::edge_impl::clone_to(tess::gc_heap& allocator, std::unordered
 	mutable_clone->v_ = v_;
 
 	if (parent_)
-	    mutable_clone->parent_ = clone_object(allocator, orginal_to_clone, parent_); // clone parent
+	    mutable_clone->parent_ = clone_object(self_graph_ptr(), allocator, orginal_to_clone, parent_); // clone parent
 	else
 		mutable_clone->parent_ = {};
 
 	for (const auto& [var, val] : fields_) {
-		auto v = tess::clone_value(allocator, orginal_to_clone, val);
+		auto v = tess::clone_value(self_graph_ptr(), allocator, orginal_to_clone, val);
 		mutable_clone->fields_[var] = std::move(v); // clone fields
 	}
 }
 
 /*--------------------------------------------------------------------------------*/
 
-tess::detail::vertex_impl::vertex_impl( gc_heap& a, int n, std::tuple<number, number> loc) :
-	parent_(nullptr), index_(n), location_(loc)
+void tess::detail::vertex_impl::initialize( gc_heap& a, int n, std::tuple<number, number> loc) 	
 {
+	parent_ = {};
+	index_ = n;
+	location_ = loc;
 }
 
-void tess::detail::vertex_impl::set_parent(const_tile_root_ptr parent)
+void tess::detail::vertex_impl::set_parent(tile_root_ptr parent)
 {
-    parent_ = parent;
+	parent_ = tile_graph_ptr(self_graph_ptr(), parent);
 }
 
 std::tuple<double, double> tess::detail::vertex_impl::to_floats() const
@@ -484,7 +475,7 @@ tess::point tess::detail::vertex_impl::pos() const
 		overloaded{
 			[&](int vert_index)->point { 
 				auto patch = this->grandparent();
-				if (patch == nullptr)
+				if (! patch)
 					throw error("corrupt tile patch");
 				return patch->get_vertex_location(vert_index);
 			},
@@ -507,8 +498,7 @@ void tess::detail::vertex_impl::clone_to(tess::gc_heap& allocator, std::unordere
 	mutable_clone->index_ = index_;
 	mutable_clone->location_ = location_;
 	if (parent_) {
-		tess::g_ptr<detail::tile_impl> parent_clone = clone_object(allocator, orginal_to_clone, parent_); // parent
-		mutable_clone->parent_ = to_const(parent_clone);
+		mutable_clone->parent_ = clone_object(self_graph_ptr(), allocator, orginal_to_clone, parent_); // parent
 	} else {
 		mutable_clone->parent_ = {};
 	}
@@ -517,8 +507,8 @@ void tess::detail::vertex_impl::clone_to(tess::gc_heap& allocator, std::unordere
 tess::const_patch_root_ptr tess::detail::vertex_impl::grandparent() const
 {
 	if (!parent_)
-		return nullptr;
-	return parent_->parent();
+		return {};
+	return to_const(parent_->parent());
 }
 
 void tess::detail::vertex_impl::set_location(int n)
@@ -555,7 +545,7 @@ void tess::detail::vertex_impl::apply(const tess::matrix& mat) {
 
 tess::const_tile_root_ptr tess::detail::vertex_impl::parent() const
 {
-	return to_root_ptr(parent_);
+	return to_const(to_root_ptr(parent_));
 }
 
 //TODO: maybe make some lazy created table for doing this in sublinear time for tiles more than k sides?
@@ -566,7 +556,7 @@ tess::const_edge_root_ptr tess::detail::vertex_impl::in_edge() const
 			return e->v().get() == this;
 		}
 	);
-	return to_root_ptr(*iter);
+	return to_const(to_root_ptr(*iter));
 }
 
 tess::const_edge_root_ptr tess::detail::vertex_impl::out_edge() const
@@ -576,7 +566,7 @@ tess::const_edge_root_ptr tess::detail::vertex_impl::out_edge() const
 			return e->u().get() == this;
 		}
 	);
-	return to_root_ptr(*iter);
+	return to_const(to_root_ptr(*iter));
 }
 
 

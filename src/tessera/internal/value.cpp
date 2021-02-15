@@ -17,40 +17,27 @@ bool tess::operator==(nil_val lhs, nil_val rhs) {
 	return true;
 }
 
-tess::field_value tess::to_field_value(const value_& v)
-{
-	if (is_simple_value(v))
-		return variant_cast(v);
-	std::variant<const_tile_root_ptr, const_patch_root_ptr, const_vertex_root_ptr, const_edge_root_ptr, const_cluster_root_ptr, const_lambda_root_ptr> obj_variant = variant_cast(v);
-	return std::visit(
-		[]( auto ptr) {
-			return tess::field_value{ tess::g_ptr{ ptr } };
-		},
-		obj_variant
-	);
-}
-
 tess::value_ tess::from_field_value(const field_value& fv)
 {
 	return std::visit(
 		overloaded{
-			[](const const_tile_graph_ptr& t) {
-				return tess::value_{ to_root_ptr(t) };
+			[](const tile_graph_ptr& t) {
+				return tess::value_{ to_const(to_root_ptr(t)) };
 			}, 
-			[](const const_patch_graph_ptr& t) {
-				return tess::value_{ to_root_ptr(t) };
+			[](const patch_graph_ptr& t) {
+				return tess::value_{ to_const(to_root_ptr(t)) };
 			},
-			[](const const_edge_graph_ptr& t) {
-				return tess::value_{ to_root_ptr(t) };
+			[](const edge_graph_ptr& t) {
+				return tess::value_{ to_const(to_root_ptr(t)) };
 			},
-			[](const const_vertex_graph_ptr& t) {
-				return tess::value_{ to_root_ptr(t) };
+			[](const vertex_graph_ptr& t) {
+				return tess::value_{ to_const(to_root_ptr(t)) };
 			},
-			[](const const_lambda_graph_ptr& t) {
-				return tess::value_{ to_root_ptr(t) };
+			[](const lambda_graph_ptr& t) {
+				return tess::value_{ to_const(to_root_ptr(t)) };
 			},
-			[](const const_cluster_graph_ptr& t) {
-				return tess::value_{ to_root_ptr(t) };
+			[](const cluster_graph_ptr& t) {
+				return tess::value_{ to_const(to_root_ptr(t)) };
 			}, 
 			[](auto v) {
 				return tess::value_{v };
@@ -76,12 +63,6 @@ tess::value_ tess::clone_value(tess::gc_heap& allocator, std::unordered_map<tess
 	);
 };
 
-tess::field_value tess::clone_value(gc_heap& a, std::unordered_map<tess::obj_id, std::any>& original_to_clone, const field_value& v) {
-	auto root_ptr_val = from_field_value(v);
-	auto clone = clone_value(a, original_to_clone, root_ptr_val);
-	return to_field_value(clone);
-}
-
 tess::field_value&& tess::copy_field(const field_value& fv)
 {
 	return std::visit(
@@ -103,10 +84,6 @@ tess::value_ tess::clone_value( gc_heap& allocator, const value_& v)
 	return clone_value(allocator, original_to_clone, v);
 }
 
-tess::field_value tess::clone_value(gc_heap& allocator, const field_value& v) {
-	std::unordered_map<obj_id, std::any> original_to_clone;
-	return clone_value(allocator, original_to_clone, v);
-}
 
 tess::value_ tess::get_ary_item(value_ v, int index)
 {
@@ -156,10 +133,12 @@ void tess::insert_field(value_ v, const std::string& var, value_ val)
 		return;
 	std::variant<const_tile_root_ptr, const_patch_root_ptr, const_vertex_root_ptr, const_edge_root_ptr, const_cluster_root_ptr, const_lambda_root_ptr> obj_variant = variant_cast(v);
 	std::visit(
-		[&](auto obj) {
+		[&](auto obj) { //TODO:GP
+			/*
 		    using obj_type = decltype(obj);
 			using base_type = std::remove_const_t<typename obj_type::value_type>;
 			gcpp::deferred_ptr<base_type>(obj)->insert_field(var,val);
+			*/
 		},
 		obj_variant
 	);

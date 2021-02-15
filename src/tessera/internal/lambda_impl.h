@@ -8,7 +8,7 @@
 
 namespace tess {
     namespace detail {
-        class lambda_impl : public tessera_impl {
+        class lambda_impl : public tessera_impl, public enable_self_ptr<lambda_impl> {
             private:
                 unsigned int id_;
                 std::map<std::string, field_value> closure_;
@@ -16,9 +16,8 @@ namespace tess {
                 std::vector<std::string> dependencies_;
                 std::vector<stack_machine::item> body_;
             public:
-                lambda_impl(gc_heap& a) : id_(0) {};
-                lambda_impl(gc_heap& a, const std::vector<std::string>& param, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps);
-                void initialize( lambda_root_ptr p) {}
+                lambda_impl() : id_(0) {};
+                void initialize(gc_heap& a, const std::vector<std::string>& param, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps);
 
                 void insert_field(const std::string& var, const value_& val);
                 value_ get_field(gc_heap& allocator, const std::string& field) const;

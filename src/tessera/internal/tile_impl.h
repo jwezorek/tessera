@@ -17,18 +17,16 @@
 namespace tess {
 
     namespace detail {
-        class vertex_impl : public tessera_impl {
+        class vertex_impl : public tessera_impl, public enable_self_ptr<vertex_impl> {
             private:
-                const_tile_graph_ptr parent_;
+                tile_graph_ptr parent_;
                 int index_;
                 std::variant<int, point> location_;
 
             public:
-                vertex_impl(gc_heap& a) : index_(-1) {};
-                vertex_impl(gc_heap& a, int index, point loc);
-                void initialize( vertex_root_ptr p) {}
-
-                void set_parent(const_tile_root_ptr parent);
+                vertex_impl() : index_(-1), location_(-1) {};
+                void initialize(gc_heap& a, int index, point loc);
+                void set_parent(tile_root_ptr parent);
                 std::tuple<double, double> to_floats() const;
                 point pos() const;
                 value_ get_field(gc_heap& allocator, const std::string& field) const;
@@ -45,18 +43,18 @@ namespace tess {
                 std::string debug() const;
         };
 
-        class edge_impl : public tessera_impl {
+        class edge_impl : public tessera_impl, public enable_self_ptr<edge_impl> {
             private:
                 tile_graph_ptr parent_;
                 int index_;
                 int u_, v_;
                 std::map<std::string, field_value> fields_;
             public:
-                edge_impl(gc_heap& a) {};
-                edge_impl(gc_heap& a, int index, int u, int v);
-                void initialize( edge_root_ptr p) {}
 
-                void set_parent(const_tile_root_ptr parent);
+                edge_impl() : index_(-1), u_(-1), v_(-1) {}
+                void initialize(gc_heap& a, int index, int u, int v);
+
+                void set_parent(tile_root_ptr parent);
                 const_vertex_root_ptr u() const;
                 const_vertex_root_ptr v() const;
                 vertex_root_ptr u();
@@ -77,19 +75,18 @@ namespace tess {
                 std::string debug() const;
         };
 
-        class tile_impl : public tessera_impl {
+        class tile_impl : public tessera_impl, public enable_self_ptr<tile_impl> {
             private:
                 std::map<std::string, field_value> fields_;
                 std::vector<tess::vertex_graph_ptr> vertices_;
                 std::vector<tess::edge_graph_ptr> edges_;
                 patch_graph_ptr parent_;
-                tile_graph_ptr self_;
                 int index_;
 
             public:
-                tile_impl(gc_heap& a) {};
-                tile_impl(tess::gc_heap& allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
-                void initialize( tile_root_ptr self);
+
+                tile_impl();
+                void initialize(tess::gc_heap& allocator, const std::vector<std::tuple<tess::number, tess::number>>& vertex_locations);
 
                 using const_edge_iter = std::vector<tess::edge_graph_ptr>::const_iterator;
                 using edge_iter = std::vector<tess::edge_graph_ptr>::iterator;

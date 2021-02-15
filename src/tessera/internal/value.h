@@ -13,57 +13,13 @@
 namespace tess {
 
 	template<typename T>
-	struct g_ptr {
-		using value_type = T;
-
-		g_ptr() {}
-		g_ptr(const gcpp::deferred_ptr<T>& p) : obj(p) {
-		}
-		
-		g_ptr(g_ptr&& other) noexcept : obj(other.obj)  {
-		}
-
-		g_ptr(const g_ptr& other) = delete;
-
-		g_ptr& operator=(const g_ptr& other) = delete;
-
-		g_ptr& operator=(g_ptr&& other) noexcept {
-			if (&other != this) {
-				obj = other.obj;
-				//other.obj.reset();
-			}
-			return *this;
-		}
-
-		template <typename U>
-		g_ptr( g_ptr<const U> u) {
-			obj = gcpp::deferred_ptr<U>(u.obj);
-		}
-
-		explicit operator bool() const { return obj.get(); }
-		auto operator->() { return obj.operator->(); }
-		const auto operator->() const { return obj.operator->(); }
-		gcpp::deferred_ptr<T> obj;
-	};
-
-	template<typename T>
-	g_ptr<const T> to_const(const g_ptr<T>& p) {
-		return g_ptr<const T>(p.obj);
+	tess::graph_root_ptr<const T> to_const(const tess::graph_root_ptr<T>& p) {
+		return tess::graph_pool::const_pointer_cast<const T>(p);
 	}
 
 	template<typename T>
-	gcpp::deferred_ptr<const T> to_const(gcpp::deferred_ptr<T> p) {
-		return gcpp::deferred_ptr<const T>(p);
-	}
-
-	template<typename T>
-	bool operator==(const g_ptr<T>& lhs, const g_ptr<T>& rhs) {
-		return lhs.obj == rhs.obj;
-	}
-
-	template<typename T>
-	bool operator!=(const g_ptr<T>& lhs, const g_ptr<T>& rhs) {
-		return lhs.obj != rhs.obj;
+	tess::graph_root_ptr<T> from_const(const tess::graph_root_ptr<const T>& p) {
+		return tess::graph_pool::const_pointer_cast<T>(p);
 	}
 
 	namespace detail {
@@ -75,16 +31,15 @@ namespace tess {
 		class lambda_impl;
 
 		template<typename T>
-		gcpp::deferred_ptr<T> clone_aux(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, gcpp::deferred_ptr<const T> original) {
+		tess::graph_root_ptr<T> clone_aux(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, const tess::graph_root_ptr<const T>& original) {
 
 			auto key = original->get_id();
-			gcpp::deferred_ptr<T>  clone_impl = nullptr;
+			tess::graph_root_ptr<T>  clone_impl = {};
 
 			if (orginal_to_clone.find(key) != orginal_to_clone.end()) {
-				clone_impl = std::any_cast<gcpp::deferred_ptr<T>>(orginal_to_clone[key]);
-			}
-			else {
-				clone_impl = allocator.make_mutable<gcpp::deferred_ptr<const T>>();
+				clone_impl = std::any_cast<tess::graph_root_ptr<T>>(orginal_to_clone[key]);
+			} else {
+				clone_impl = allocator.make_blank<tess::graph_root_ptr<const T>>();
 				orginal_to_clone[key] = clone_impl;
 				original->clone_to(allocator, orginal_to_clone, clone_impl.get());
 			}
@@ -92,11 +47,11 @@ namespace tess {
 			return clone_impl;
 		};
 
-		template<typename T>
-		tess::g_ptr<T> clone_aux(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, tess::g_ptr<T> original) {
-			gcpp::deferred_ptr<T> val = original.obj;
+		template<typename T, typename U>
+		tess::graph_ptr<T> clone_aux(const U& u, tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, const tess::graph_ptr<const T>& original) {
+			tess::graph_root_ptr<const T> val(original);
 			auto clone = clone_aux(allocator, orginal_to_clone, val);
-			return tess::g_ptr<T>(clone);
+			return tess::graph_ptr<T>(u, clone);
 		};
 
 	}
@@ -130,48 +85,55 @@ namespace tess {
 	using patch_raw_ptr = detail::patch_impl*;
 	using lambda_raw_ptr = detail::lambda_impl*;
 
-	using const_vertex_root_ptr = gcpp::deferred_ptr<const detail::vertex_impl>;
-	using const_edge_root_ptr = gcpp::deferred_ptr<const detail::edge_impl>;
-	using const_cluster_root_ptr = gcpp::deferred_ptr<const detail::cluster_impl>;
-	using const_tile_root_ptr = gcpp::deferred_ptr<const detail::tile_impl>;
-	using const_patch_root_ptr = gcpp::deferred_ptr<const detail::patch_impl>;
-	using const_lambda_root_ptr = gcpp::deferred_ptr<const detail::lambda_impl>;
+	using const_vertex_root_ptr = graph_root_ptr<const detail::vertex_impl>;
+	using const_edge_root_ptr = graph_root_ptr<const detail::edge_impl>;
+	using const_cluster_root_ptr = graph_root_ptr<const detail::cluster_impl>;
+	using const_tile_root_ptr = graph_root_ptr<const detail::tile_impl>;
+	using const_patch_root_ptr = graph_root_ptr<const detail::patch_impl>;
+	using const_lambda_root_ptr = graph_root_ptr<const detail::lambda_impl>;
 
-	using vertex_root_ptr = gcpp::deferred_ptr<detail::vertex_impl>;
-	using edge_root_ptr = gcpp::deferred_ptr<detail::edge_impl>;
-	using cluster_root_ptr = gcpp::deferred_ptr<detail::cluster_impl>;
-	using tile_root_ptr = gcpp::deferred_ptr<detail::tile_impl>;
-	using patch_root_ptr = gcpp::deferred_ptr<detail::patch_impl>;
-	using lambda_root_ptr = gcpp::deferred_ptr<detail::lambda_impl>;
+	using vertex_root_ptr = graph_root_ptr<detail::vertex_impl>;
+	using edge_root_ptr = graph_root_ptr<detail::edge_impl>;
+	using cluster_root_ptr = graph_root_ptr<detail::cluster_impl>;
+	using tile_root_ptr = graph_root_ptr<detail::tile_impl>;
+	using patch_root_ptr = graph_root_ptr<detail::patch_impl>;
+	using lambda_root_ptr = graph_root_ptr<detail::lambda_impl>;
 
-	using const_vertex_graph_ptr = g_ptr<const detail::vertex_impl>;
-	using const_edge_graph_ptr = g_ptr<const detail::edge_impl>;
-	using const_cluster_graph_ptr = g_ptr<const detail::cluster_impl>;
-	using const_tile_graph_ptr = g_ptr<const detail::tile_impl>;
-	using const_patch_graph_ptr = g_ptr<const detail::patch_impl>;
-	using const_lambda_graph_ptr = g_ptr<const detail::lambda_impl>;
-
-	using vertex_graph_ptr = g_ptr<detail::vertex_impl>;
-	using edge_graph_ptr = g_ptr<detail::edge_impl>;
-	using cluster_graph_ptr = g_ptr<detail::cluster_impl>;
-	using tile_graph_ptr = g_ptr<detail::tile_impl>;
-	using patch_graph_ptr = g_ptr<detail::patch_impl>;
-	using lambda_graph_ptr = g_ptr<detail::lambda_impl>;
+	using vertex_graph_ptr = graph_ptr<detail::vertex_impl>;
+	using edge_graph_ptr = graph_ptr<detail::edge_impl>;
+	using cluster_graph_ptr = graph_ptr<detail::cluster_impl>;
+	using tile_graph_ptr = graph_ptr<detail::tile_impl>;
+	using patch_graph_ptr = graph_ptr<detail::patch_impl>;
+	using lambda_graph_ptr = graph_ptr<detail::lambda_impl>;
 
 	using value_ = std::variant<const_tile_root_ptr, const_patch_root_ptr, const_edge_root_ptr, const_vertex_root_ptr, const_lambda_root_ptr, const_cluster_root_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
-	using field_value = std::variant<const_tile_graph_ptr, const_patch_graph_ptr, const_edge_graph_ptr, const_vertex_graph_ptr, const_lambda_graph_ptr, const_cluster_graph_ptr, nil_val, number, std::string, bool>;
+	using field_value = std::variant<tile_graph_ptr, patch_graph_ptr, edge_graph_ptr, vertex_graph_ptr, lambda_graph_ptr, cluster_graph_ptr, nil_val, number, std::string, bool>;
 
-	field_value to_field_value(const value_& v);
+	template<typename U>
+	field_value to_field_value(const tess::graph_ptr<U>& u, const value_& v)
+	{
+		if (is_simple_value(v))
+			return variant_cast(v);
+		std::variant<const_tile_root_ptr, const_patch_root_ptr, const_vertex_root_ptr, const_edge_root_ptr, const_cluster_root_ptr, const_lambda_root_ptr> obj_variant = variant_cast(v);
+		return std::visit(
+			[&u](auto ptr)->field_value {
+				using V = typename decltype(ptr)::value_type;
+				return tess::field_value( tess::graph_ptr<std::remove_const_t<V>>(u, from_const(ptr)) );
+			},
+			obj_variant
+		);
+	}
+
 	value_ from_field_value(const field_value& fv);
 
 	template<typename T>
-	gcpp::deferred_ptr<T> to_root_ptr(const g_ptr<T>& gptr) {
-		return gptr.obj;
+	graph_root_ptr<T> to_root_ptr(const graph_ptr<T>& gptr) {
+		return { }; // TODO:GP
 	}
 
 	template<typename T>
-	g_ptr<T>&& to_graph_ptr( gcpp::deferred_ptr<T> ptr) {
-		return g_ptr<T>{ptr};
+	graph_ptr<T>&& to_graph_ptr( const graph_root_ptr<T>& ptr) {
+		return{}; // TODO:GP
 	}
 
 	template <typename T>
@@ -187,15 +149,15 @@ namespace tess {
 		using obj_variant = std::variant<const_tile_root_ptr, const_patch_root_ptr, const_edge_root_ptr, const_vertex_root_ptr, const_lambda_root_ptr, const_cluster_root_ptr>;
 
 		template<typename U>
-		using ptr_type = gcpp::deferred_ptr<U>;
+		using ptr_type = graph_root_ptr<U>;
 	};
 
 	template <>
 	struct value_traits<field_value> {
-		using obj_variant = std::variant<const_tile_graph_ptr, const_patch_graph_ptr, const_edge_graph_ptr, const_vertex_graph_ptr, const_lambda_graph_ptr, const_cluster_graph_ptr>;
+		using obj_variant = std::variant<tile_graph_ptr, patch_graph_ptr, edge_graph_ptr,vertex_graph_ptr, lambda_graph_ptr, cluster_graph_ptr>;
 
 		template<typename U>
-		using ptr_type = g_ptr<U>;
+		using ptr_type = graph_ptr<U>;
 	};
 
 	template <typename V>
@@ -231,8 +193,20 @@ namespace tess {
 
 	value_ clone_value(gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& original_to_clone, const value_& v);
 	value_ clone_value(gc_heap& allocator, const value_& v);
-	field_value clone_value(gc_heap& allocator, const field_value& v);
-	field_value clone_value(gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& original_to_clone, const field_value& v);
+
+	template<typename U>
+	field_value clone_value(const tess::graph_ptr<U>& u, gc_heap& a,  std::unordered_map<tess::obj_id, std::any>& original_to_clone, const field_value& v) {
+		auto root_ptr_val = from_field_value(v);
+		auto clone = clone_value(a, original_to_clone, root_ptr_val);
+		return to_field_value(u, clone);
+	}
+
+	template <typename U>
+	field_value clone_value(const tess::graph_ptr<U>& u, gc_heap& allocator,  const field_value& v) {
+		std::unordered_map<obj_id, std::any> original_to_clone;
+		return clone_value(allocator, u, original_to_clone, v);
+	}
+
 	field_value&& copy_field(const field_value& fv);
 
 	value_ get_ary_item(value_ v, int index);
@@ -248,43 +222,55 @@ namespace tess {
 	bool operator!=(const value_& lhs, const value_& rhs);
 
 	template<typename T>
-	value_ make_value(const gcpp::deferred_ptr<T>& v) {
+	value_ make_value(const graph_root_ptr<T>& v) {
 		return { tess::to_const(v) };
 	}
 
 	template<typename T>
-	field_value make_value(const g_ptr<T>& v) {
-		return { tess::to_const(v) };
+	field_value&& make_value(graph_ptr<T>&& v) {
+		return { std::move(v) };
 	}
 
-	template<typename T, typename V>
-	auto get_mutable(V val) {
+	template<typename T>
+	auto get_mutable(value_ val) {
 		if constexpr ((std::is_same<T, field_ref_ptr>::value) || (std::is_same<T, nil_val>::value) || (std::is_same<T, number>::value) ||
 			(std::is_same<T, std::string>::value) || (std::is_same<T, bool>::value)) {
 			return std::get<T>(val);
 		} else {
-			using base_type = typename std::remove_const<typename T::value_type>::type;
-			using ptr_type = typename value_traits<V>::ptr_type<base_type>;
-			return ptr_type(std::move(std::get<T>(val)));
+			auto c_val = std::get<T>(val);
+			using base_type = typename decltype(c_val)::value_type;
+			using mutable_type = std::remove_const_t<base_type>;
+			return graph_pool::const_pointer_cast<mutable_type>(c_val);
 		}
 	}
 
 	template<typename T>
-	auto&& clone_object(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, T& impl)
+	auto clone_object(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, const graph_root_ptr<T>& impl)
 	{
-		auto wrapper = tess::make_value(impl);
-
-		using base_type = typename T::value_type;
-		using ptr_t = typename tess::value_traits<decltype(wrapper)>::ptr_type<const base_type>;
-
-		auto clone = tess::get_mutable<ptr_t>(tess::clone_value(allocator, orginal_to_clone, wrapper));
-		return std::move(clone);
+		value_ wrapper = to_const(impl);
+		auto clone = tess::get_mutable<graph_root_ptr<T>>(tess::clone_value(allocator, orginal_to_clone, wrapper));
+		return clone;
 	}
 
 	template<typename T>
-	auto&& clone_object(tess::gc_heap& a, T& impl)
+	auto clone_object(tess::gc_heap& a, const graph_root_ptr<T>& impl)
 	{
 		std::unordered_map<tess::obj_id, std::any> orginal_to_clone;
-		return std::move(clone_object(a, orginal_to_clone, impl));
+		return clone_object(a, orginal_to_clone, impl);
+	}
+
+	template<typename T, typename U>
+	graph_ptr<T> clone_object(const U& u, tess::gc_heap& a, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, const graph_ptr<T>& impl)
+	{
+		auto root_ptr = to_const(to_root_ptr(impl));
+		auto clone = clone_object(a, orginal_to_clone, root_ptr);
+		return graph_ptr<T>(u, clone);
+	}
+
+	template<typename T, typename U>
+	graph_ptr<T> clone_object(const U& u, tess::gc_heap& a, const graph_ptr<T>& impl)
+	{
+		std::unordered_map<tess::obj_id, std::any> orginal_to_clone;
+		return clone_object(u, a, orginal_to_clone, impl);
 	}
 }

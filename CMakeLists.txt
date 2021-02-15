@@ -15,6 +15,7 @@ endif (${Boost_FOUND})
 
 add_library(tessera 
 	src/tessera/internal/gc_heap.cpp
+	src/tessera/internal/graph_ptr.cpp
 	src/tessera/internal/cluster.cpp
 	src/tessera/internal/cluster_expr.cpp
 	src/tessera/internal/error.cpp
@@ -59,8 +60,6 @@ add_library(tessera
 target_include_directories(tessera
 	PRIVATE ${EIGEN3_INCLUDE_DIR}
 	PRIVATE ${Boost_INCLUDE_DIRS}
-	PRIVATE src/tessera/internal/third-party/gc/include
-	PRIVATE src/tessera/internal/third-party/gsl/include
 	PUBLIC src/tessera/include
 )
 
