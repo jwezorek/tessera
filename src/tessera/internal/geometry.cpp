@@ -181,7 +181,7 @@ namespace {
 	std::vector<tess::const_tile_root_ptr> topological_sort_tiles(tess::const_patch_root_ptr patch) {
 		std::vector<tess::const_tile_root_ptr> tiles;
 		patch->dfs(
-			[&tiles](tess::const_tile_graph_ptr t) {
+			[&tiles](const tess::const_tile_graph_ptr& t) {
 				tiles.push_back(to_root_ptr(t));
 			}
 		);

@@ -110,7 +110,7 @@ namespace {
 		try {
 			std::transform(vertices->begin(), vertices->end(), tuples.begin(),
 				[&](const auto& ev)->std::tuple<tess::number, tess::number> {
-					auto pt = std::get<tess::const_cluster_graph_ptr>(ev);
+					const auto& pt = std::get<tess::const_cluster_graph_ptr>(ev);
 					return { std::get<tess::number>(pt->get_ary_item(0)),  std::get<tess::number>(pt->get_ary_item(1)) };
 				}
 			);

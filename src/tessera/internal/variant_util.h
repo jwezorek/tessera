@@ -45,6 +45,12 @@ auto variant_cast(const std::variant<Args...>& v) -> variant_cast_proxy<Args...>
 	return { v };
 }
 
+template <class... Args>
+auto variant_cast( std::variant<Args...>&& v) -> variant_cast_proxy<Args...>
+{
+	return { std::move(v) };
+}
+
 template<typename T, typename Iter>
 std::vector<T> get_vector(Iter beg, Iter end) {
 	std::vector<T> output;

@@ -41,7 +41,7 @@ namespace {
 		auto patch = std::get<tess::const_patch_root_ptr>(output);
 		std::vector<tess::tile> tiles(patch->count());
 		std::transform(patch->begin_tiles(), patch->end_tiles(), tiles.begin(),
-			[](tess::tile_graph_ptr i)->tess::tile {
+			[](const auto& i)->tess::tile {
 				auto root_ptr = to_root_ptr(i);
 				return tess::make_tess_obj<tess::tile>(root_ptr.get());
 			}

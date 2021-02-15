@@ -13,7 +13,7 @@
 
 namespace {
 
-	std::vector<tess::const_tile_root_ptr> get_neighbors(tess::const_tile_graph_ptr t) {
+	std::vector<tess::const_tile_root_ptr> get_neighbors(const tess::const_tile_graph_ptr& t) {
 		int num_edges = static_cast<int>(t->end_edges() - t->begin_edges());
 		std::vector<tess::const_tile_root_ptr> neighbors;
 		for (int i = 0; i < num_edges; ++i) {
@@ -28,7 +28,7 @@ namespace {
 		return std::find_if(tiles.begin(), tiles.end(), 
 			[](tess::const_tile_root_ptr tile) {
 				return std::find_if(tile->begin_edges(), tile->end_edges(),
-					[](auto e) {
+					[](const auto& e) {
 						return e->has_property("broken");
 					}
 				) != tile->end_edges();
@@ -173,7 +173,7 @@ namespace {
 	{
 		tess::edge_location_table edges;
 		for (auto j = patch->begin_tiles(); j != patch->end_tiles(); ++j) {
-			auto tile = *j;
+			auto& tile = *j;
 			for (auto i = tile->begin_edges(); i != tile->end_edges(); ++i) {
 				edges.insert( to_root_ptr(*i) );
 			}
@@ -188,7 +188,7 @@ namespace {
 				for (const auto& [var, val] : e->fields()) {
 					if (tess::is_simple_value(val)) {
 						if (fields.find(var) == fields.end()) {
-							fields[var] = val;
+							fields[var] = copy_field(val);
 						} else {
 							if (fields[var] != val)
 								fields.erase(var);
@@ -197,7 +197,7 @@ namespace {
 				}
 			}
 			for (const auto& [var, val] : fields) {
-				edge->insert_field( var, variant_cast(val) );
+				edge->insert_field( var, from_field_value(val) );
 			}
 		}
 	}
@@ -206,11 +206,11 @@ namespace {
 	{
 		std::unordered_map<std::string, tess::field_value> fields;
 		for (auto iter = patch->begin_tiles(); iter != patch->end_tiles(); ++iter) {
-			auto t = *iter;
+			auto& t = *iter;
 			for (const auto& [var, val] : t->fields()) {
 				if (tess::is_simple_value(val)) {
 					if (fields.find(var) == fields.end()) {
-						fields[var] = val;
+						fields[var] = copy_field(val);
 					} else {
 						if (fields[var] != val)
 							fields.erase(var);
@@ -245,9 +245,9 @@ tess::detail::patch_impl::const_tile_iterator tess::detail::patch_impl::end_tile
 void tess::detail::patch_impl::build_edge_table() const
 {
 	edge_tbl_.clear();
-	for (const auto tile : tiles_) {
+	for (const auto& tile : tiles_) {
 		for (auto iter = tile->begin_edges(); iter != tile->end_edges(); ++iter) {
-			auto e = *iter;
+			const auto& e = *iter;
 			auto key = e->get_edge_location_indices();
 			if (edge_tbl_.find(key) == edge_tbl_.end())
 				edge_tbl_[key] = to_const(e); 
@@ -268,7 +268,7 @@ void tess::detail::patch_impl::insert_tile( tess::tile_root_ptr tile )
 	tile->set_parent(to_root_ptr(self_), static_cast<int>( tiles_.size()) );
 
 	for (auto iter = tile->begin_vertices(); iter != tile->end_vertices(); ++iter) {
-		auto vert = *iter;
+		auto& vert = *iter;
 		int new_vert_index = vert_tbl_.insert(vert->pos());
 		vert->set_location( new_vert_index );
 	}
@@ -334,7 +334,7 @@ void  tess::detail::patch_impl::flip()  {
 	apply(flip_matrix());
 	for (auto& tile : tiles_) {
 		for (auto iter = tile->begin_edges(); iter != tile->end_edges(); ++iter) {
-			auto e = *iter;
+			auto& e = *iter;
 			e->flip();
 		}
 	}
@@ -390,7 +390,7 @@ void tess::detail::patch_impl::clone_to(tess::gc_heap& allocator, std::unordered
 {
 	for (const auto& t : tiles_) { // clone tiles
 		auto t_clone = get_mutable<const_tile_graph_ptr>(tess::clone_value(allocator, orginal_to_clone, make_value(t)));
-		mutable_clone->tiles_.push_back( t_clone );
+		mutable_clone->tiles_.push_back( std::move(t_clone) );
 	}
 	for (const auto& [var, val] : fields_) { // clone fields
 		mutable_clone->fields_[var] = tess::clone_value(allocator, orginal_to_clone, val);
@@ -416,7 +416,7 @@ void tess::detail::patch_impl::dfs(tile_visitor visit) const
 	std::unordered_set<tess::obj_id> visited;
 
 	std::function<void(const_tile_graph_ptr tile)> dfs_aux;
-	dfs_aux = [&](const_tile_graph_ptr t) {
+	dfs_aux = [&](const const_tile_graph_ptr& t) {
 		if (visited.find(t->get_id()) != visited.end())
 			return;
 		visited.insert(t->get_id());

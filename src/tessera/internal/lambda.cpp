@@ -71,7 +71,8 @@ void tess::detail::lambda_impl::clone_to(tess::gc_heap& allocator, std::unordere
     mutable_clone->body_ = body_;
 
     for (const auto& [var, val] : closure_) {
-        mutable_clone->closure_[var] = tess::clone_value(allocator, orginal_to_clone, val); //clone fields
+        auto v = tess::clone_value(allocator, orginal_to_clone, val);
+        mutable_clone->closure_[var] = std::move(v); //clone fields
     }
 }
 

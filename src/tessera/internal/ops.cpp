@@ -53,13 +53,13 @@ namespace {
         moved.insert(get_key(obj));
     }
 
-    using edge_mapping = std::tuple<tess::const_edge_root_ptr, tess::const_edge_root_ptr>;
+    using edge_mapping = std::tuple<tess::edge_root_ptr, tess::edge_root_ptr>;
 
     std::optional<tess::error> apply_edge_mapping(const edge_mapping& mapping, std::unordered_set<tess::obj_id>& moved)
     {
         auto [ptr_edge1, ptr_edge2] = mapping;
-        auto edge1 = *ptr_edge1;
-        auto edge2 = *ptr_edge2;
+        auto& edge1 = *ptr_edge1;
+        auto& edge2 = *ptr_edge2;
         auto parent_1 = parent_of_edge(edge1);
         auto parent_2 = parent_of_edge(edge2);
 
@@ -386,7 +386,7 @@ std::string tess::lay_op::to_string() const
 std::optional<tess::error> tess::lay_op::apply_mapping(const std::vector<stack_machine::item>& operands) const
 {
     auto values = get_vector<value_>(operands.begin(), operands.end());
-    std::vector<std::tuple<const_edge_root_ptr, const_edge_root_ptr>> edge_to_edge;
+    std::vector<std::tuple<edge_root_ptr, edge_root_ptr>> edge_to_edge;
 
     for (const auto& e : values) {
         if (!std::holds_alternative<tess::const_edge_root_ptr>(e))

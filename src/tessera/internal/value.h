@@ -19,6 +19,21 @@ namespace tess {
 		g_ptr() {}
 		g_ptr(const gcpp::deferred_ptr<T>& p) : obj(p) {
 		}
+		
+		g_ptr(g_ptr&& other) noexcept : obj(other.obj)  {
+		}
+
+		g_ptr(const g_ptr& other) = delete;
+
+		g_ptr& operator=(const g_ptr& other) = delete;
+
+		g_ptr& operator=(g_ptr&& other) noexcept {
+			if (&other != this) {
+				obj = other.obj;
+				//other.obj.reset();
+			}
+			return *this;
+		}
 
 		template <typename U>
 		g_ptr( g_ptr<const U> u) {
@@ -32,7 +47,7 @@ namespace tess {
 	};
 
 	template<typename T>
-	g_ptr<const T> to_const(g_ptr<T> p) {
+	g_ptr<const T> to_const(const g_ptr<T>& p) {
 		return g_ptr<const T>(p.obj);
 	}
 
@@ -150,13 +165,13 @@ namespace tess {
 	value_ from_field_value(const field_value& fv);
 
 	template<typename T>
-	gcpp::deferred_ptr<T> to_root_ptr(g_ptr<T> gptr) {
+	gcpp::deferred_ptr<T> to_root_ptr(const g_ptr<T>& gptr) {
 		return gptr.obj;
 	}
 
 	template<typename T>
-	g_ptr<T> to_graph_ptr(gcpp::deferred_ptr<T> ptr) {
-		return g_ptr<T>(ptr);
+	g_ptr<T>&& to_graph_ptr( gcpp::deferred_ptr<T> ptr) {
+		return g_ptr<T>{ptr};
 	}
 
 	template <typename T>
@@ -184,7 +199,7 @@ namespace tess {
 	};
 
 	template <typename V>
-	bool is_simple_value(V v) {
+	bool is_simple_value(const V& v) {
 		return std::holds_alternative<nil_val>(v) ||
 			std::holds_alternative<number>(v) ||
 			std::holds_alternative<std::string>(v) ||
@@ -192,7 +207,7 @@ namespace tess {
 	};
 
 	template <typename V>
-	bool is_object_like(V v) {
+	bool is_object_like(const V& v) {
 		// by "object-like" we mean epression values that may have fields.
 		return std::holds_alternative<const_tile_root_ptr>(v) ||
 			std::holds_alternative<const_patch_root_ptr>(v) ||
@@ -203,32 +218,22 @@ namespace tess {
 	}
 
 	template <typename V>
-	bool is_array_like(V v) {
+	bool is_array_like(const V& v) {
 		// by "array-like" we mean epression values that may be dereferenced via the [] operator.
 		return  std::holds_alternative<const_patch_root_ptr>(v) ||
 			std::holds_alternative<const_cluster_root_ptr>(v);
 	}
 
 	template <typename V>
-	bool is_nil(V v) {
+	bool is_nil(const V& v) {
 		return std::holds_alternative<tess::nil_val>(v);
 	}
 
-	value_ clone_value(gc_heap& allocator, value_ v);
-
-	template<typename V>
-	V clone_value(gc_heap& allocator, std::unordered_map<obj_id, std::any>& original_to_clone, V v) {
-		using object_t = typename value_traits<V>::obj_variant;
-
-		if (is_simple_value(v))
-			return v;
-
-		object_t obj_variant = variant_cast(v);
-		return std::visit(
-			[&](auto&& obj)->V { return make_value(detail::clone_aux(allocator, original_to_clone, obj)); },
-			obj_variant
-		);
-	};
+	value_ clone_value(gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& original_to_clone, const value_& v);
+	value_ clone_value(gc_heap& allocator, const value_& v);
+	field_value clone_value(gc_heap& allocator, const field_value& v);
+	field_value clone_value(gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& original_to_clone, const field_value& v);
+	field_value&& copy_field(const field_value& fv);
 
 	value_ get_ary_item(value_ v, int index);
 	int get_ary_count(value_ v);
@@ -243,12 +248,12 @@ namespace tess {
 	bool operator!=(const value_& lhs, const value_& rhs);
 
 	template<typename T>
-	value_ make_value(gcpp::deferred_ptr<T> v) {
+	value_ make_value(const gcpp::deferred_ptr<T>& v) {
 		return { tess::to_const(v) };
 	}
 
 	template<typename T>
-	field_value make_value(g_ptr<T> v) {
+	field_value make_value(const g_ptr<T>& v) {
 		return { tess::to_const(v) };
 	}
 
@@ -260,26 +265,26 @@ namespace tess {
 		} else {
 			using base_type = typename std::remove_const<typename T::value_type>::type;
 			using ptr_type = typename value_traits<V>::ptr_type<base_type>;
-			return ptr_type(std::get<T>(val));
+			return ptr_type(std::move(std::get<T>(val)));
 		}
 	}
 
 	template<typename T>
-	auto clone_object(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, T impl)
+	auto&& clone_object(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& orginal_to_clone, T& impl)
 	{
 		auto wrapper = tess::make_value(impl);
 
 		using base_type = typename T::value_type;
 		using ptr_t = typename tess::value_traits<decltype(wrapper)>::ptr_type<const base_type>;
 
-		auto clone = tess::clone_value(allocator, orginal_to_clone, wrapper);
-		return tess::get_mutable<ptr_t>(clone);
+		auto clone = tess::get_mutable<ptr_t>(tess::clone_value(allocator, orginal_to_clone, wrapper));
+		return std::move(clone);
 	}
 
 	template<typename T>
-	auto clone_object(tess::gc_heap& a, T impl)
+	auto&& clone_object(tess::gc_heap& a, T& impl)
 	{
 		std::unordered_map<tess::obj_id, std::any> orginal_to_clone;
-		return clone_object(a, orginal_to_clone, impl);
+		return std::move(clone_object(a, orginal_to_clone, impl));
 	}
 }
