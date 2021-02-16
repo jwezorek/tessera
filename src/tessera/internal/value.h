@@ -109,6 +109,14 @@ namespace tess {
 	using value_ = std::variant<const_tile_root_ptr, const_patch_root_ptr, const_edge_root_ptr, const_vertex_root_ptr, const_lambda_root_ptr, const_cluster_root_ptr, field_ref_ptr, nil_val, number, std::string, bool>;
 	using field_value = std::variant<tile_graph_ptr, patch_graph_ptr, edge_graph_ptr, vertex_graph_ptr, lambda_graph_ptr, cluster_graph_ptr, nil_val, number, std::string, bool>;
 
+    template<typename V>
+    bool is_simple_value(const V& v) {
+        return std::holds_alternative<nil_val>(v) ||
+               std::holds_alternative<number>(v) ||
+               std::holds_alternative<std::string>(v) ||
+               std::holds_alternative<bool>(v);
+    }
+
 	template<typename U>
 	field_value to_field_value(const tess::graph_ptr<U>& u, const value_& v)
 	{
@@ -131,14 +139,6 @@ namespace tess {
 		if (!gptr)
 			return {};
 		return graph_root_ptr<T>(gptr);
-	}
-
-	template<typename V>
-	bool is_simple_value(const V& v) {
-		return std::holds_alternative<nil_val>(v) ||
-			std::holds_alternative<number>(v) ||
-			std::holds_alternative<std::string>(v) ||
-			std::holds_alternative<bool>(v);
 	}
 
 	bool is_object_like(const value_& v);
