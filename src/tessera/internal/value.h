@@ -133,60 +133,17 @@ namespace tess {
 		return graph_root_ptr<T>(gptr);
 	}
 
-	template <typename T>
-	struct value_traits {
-		using obj_variant = void;
-
-		template<typename U>
-		using ptr_type = void;
-	};
-
-	template <>
-	struct value_traits<value_> {
-		using obj_variant = std::variant<const_tile_root_ptr, const_patch_root_ptr, const_edge_root_ptr, const_vertex_root_ptr, const_lambda_root_ptr, const_cluster_root_ptr>;
-
-		template<typename U>
-		using ptr_type = graph_root_ptr<U>;
-	};
-
-	template <>
-	struct value_traits<field_value> {
-		using obj_variant = std::variant<tile_graph_ptr, patch_graph_ptr, edge_graph_ptr,vertex_graph_ptr, lambda_graph_ptr, cluster_graph_ptr>;
-
-		template<typename U>
-		using ptr_type = graph_ptr<U>;
-	};
-
-	template <typename V>
+	template<typename V>
 	bool is_simple_value(const V& v) {
 		return std::holds_alternative<nil_val>(v) ||
 			std::holds_alternative<number>(v) ||
 			std::holds_alternative<std::string>(v) ||
 			std::holds_alternative<bool>(v);
-	};
-
-	template <typename V>
-	bool is_object_like(const V& v) {
-		// by "object-like" we mean epression values that may have fields.
-		return std::holds_alternative<const_tile_root_ptr>(v) ||
-			std::holds_alternative<const_patch_root_ptr>(v) ||
-			std::holds_alternative<const_vertex_root_ptr>(v) ||
-			std::holds_alternative<const_edge_root_ptr>(v) ||
-			std::holds_alternative<const_cluster_root_ptr>(v) ||
-			std::holds_alternative<const_lambda_root_ptr>(v);
 	}
 
-	template <typename V>
-	bool is_array_like(const V& v) {
-		// by "array-like" we mean epression values that may be dereferenced via the [] operator.
-		return  std::holds_alternative<const_patch_root_ptr>(v) ||
-			std::holds_alternative<const_cluster_root_ptr>(v);
-	}
-
-	template <typename V>
-	bool is_nil(const V& v) {
-		return std::holds_alternative<tess::nil_val>(v);
-	}
+	bool is_object_like(const value_& v);
+	bool is_array_like(const value_& v);
+	bool is_nil(const value_& v);
 
 	value_ clone_value(gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& original_to_clone, const value_& v);
 	value_ clone_value(gc_heap& allocator, const value_& v);

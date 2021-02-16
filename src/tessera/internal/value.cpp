@@ -17,66 +17,71 @@ bool tess::operator==(nil_val lhs, nil_val rhs) {
 	return true;
 }
 
+struct from_field_visitor {
+	template<typename T>
+	tess::value_ operator()(T val) const {
+		return val;
+	}
+	template<typename T>
+	tess::value_ operator()(const tess::graph_ptr<T>& gptr) const {
+		return tess::to_const(tess::to_root_ptr(gptr));
+	}
+};
+
 tess::value_ tess::from_field_value(const field_value& fv)
 {
-	return std::visit(
-		overloaded{
-			[](const tile_graph_ptr& t) {
-				return tess::value_{ to_const(to_root_ptr(t)) };
-			}, 
-			[](const patch_graph_ptr& t) {
-				return tess::value_{ to_const(to_root_ptr(t)) };
-			},
-			[](const edge_graph_ptr& t) {
-				return tess::value_{ to_const(to_root_ptr(t)) };
-			},
-			[](const vertex_graph_ptr& t) {
-				return tess::value_{ to_const(to_root_ptr(t)) };
-			},
-			[](const lambda_graph_ptr& t) {
-				return tess::value_{ to_const(to_root_ptr(t)) };
-			},
-			[](const cluster_graph_ptr& t) {
-				return tess::value_{ to_const(to_root_ptr(t)) };
-			}, 
-			[](auto v) {
-				return tess::value_{v };
-			}
-		},
-		fv
-	);
+	return std::visit(from_field_visitor(), fv );
+}
+
+bool tess::is_object_like(const tess::value_& v) {
+	// by "object-like" we mean epression values that may have fields.
+	return std::holds_alternative<const_tile_root_ptr>(v) ||
+		std::holds_alternative<const_patch_root_ptr>(v) ||
+		std::holds_alternative<const_vertex_root_ptr>(v) ||
+		std::holds_alternative<const_edge_root_ptr>(v) ||
+		std::holds_alternative<const_cluster_root_ptr>(v) ||
+		std::holds_alternative<const_lambda_root_ptr>(v);
+}
+
+bool tess::is_array_like(const tess::value_& v) {
+	// by "array-like" we mean epression values that may be dereferenced via the [] operator.
+	return  std::holds_alternative<const_patch_root_ptr>(v) ||
+		std::holds_alternative<const_cluster_root_ptr>(v);
+}
+
+bool tess::is_nil(const tess::value_& v) {
+	return std::holds_alternative<tess::nil_val>(v);
 }
 
 tess::value_ tess::clone_value(tess::gc_heap& allocator, std::unordered_map<tess::obj_id, std::any>& original_to_clone, const tess::value_& v) {
-	using object_t = tess::value_traits<tess::value_>::obj_variant;
-
 	if (is_simple_value(v))
 		return v;
 
 	if (std::holds_alternative<field_ref_ptr>(v))
 		throw tess::error("attempted clone a field ref");
 
-	object_t obj_variant = variant_cast(v);
+	using object_variant_type = std::variant<const_tile_root_ptr, const_patch_root_ptr, const_edge_root_ptr, const_vertex_root_ptr, const_lambda_root_ptr, const_cluster_root_ptr>;
+	object_variant_type obj_variant = variant_cast(v);
 	return std::visit(
 		[&](auto&& obj)->tess::value_ { return tess::make_value(tess::detail::clone_aux(allocator, original_to_clone, obj)); },
 		obj_variant
 	);
 };
 
+struct copy_field_visitor {
+	template<typename T>
+	tess::field_value operator()(T val) const {
+		return val;
+	}
+	template<typename T>
+	tess::field_value operator()(const tess::graph_ptr<T>& gptr) const {
+		throw std::runtime_error("attempted to copy a field with and object value");
+	}
+};
+
 tess::field_value tess::copy_field(const field_value& fv)
 {
-	return std::visit(
-		overloaded{
-			[](const tess::nil_val& t)->tess::field_value { return tess::field_value{tess::nil_val()}; },
-			[](tess::number t)->tess::field_value { return tess::field_value{t}; },
-			[](const std::string& t)->tess::field_value { return tess::field_value{t}; },
-			[](bool t)->tess::field_value { return  tess::field_value{ t}; },
-			[](const auto& obj)->tess::field_value {
-				throw std::runtime_error("attempted to copy a field with and object value");
-			}
-		},
-		fv
-	);
+	return std::visit(copy_field_visitor(), fv);
 }
 
 tess::value_ tess::clone_value( gc_heap& allocator, const value_& v)
@@ -93,7 +98,6 @@ tess::value_ tess::get_ary_item(value_ v, int index)
 		throw tess::error("attempted reference to a sub-tile of a value that is not a tile patch.");
 
 	std::variant<const_patch_root_ptr, const_cluster_root_ptr> ary_variant = variant_cast(v);
-
 	return std::visit(
 		[&](auto&& obj)->value_ { return obj->get_ary_item(index); },
 		ary_variant
@@ -121,7 +125,6 @@ tess::value_ tess::get_field(value_ v, gc_heap& allocator, const std::string& fi
 	}
 
 	std::variant<const_tile_root_ptr, const_patch_root_ptr, const_vertex_root_ptr, const_edge_root_ptr, const_cluster_root_ptr, const_lambda_root_ptr> obj_variant = variant_cast(v);
-	
 	return std::visit(
 		[&](auto&& obj)->value_ { return obj->get_field(allocator, field); },
 		obj_variant
@@ -152,7 +155,6 @@ std::string tess::to_string(value_ v)
 	}
 	return "#(some expr value)";
 }
-
 
 std::string tess::serialize(tess::serialization_state& state, tess::value_ val)
 {
