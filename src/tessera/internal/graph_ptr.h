@@ -134,9 +134,12 @@ namespace gp {
 
             void make_self_ptr() {
                 if constexpr (std::is_base_of< enable_self_graph_ptr<T>, T>::value) {
-                    static_cast<enable_self_graph_ptr<T>*>(this->v_)->self_ = std::unique_ptr<graph_ptr<T>>(
-                        new graph_ptr<T>(this->pool_, this->v_, this->v_)
-                        );
+                    std::unique_ptr<graph_ptr<T>>& self_ptr = static_cast<enable_self_graph_ptr<T>*>(this->v_)->self_;
+                    if (!self_ptr.get()) {
+                        static_cast<enable_self_graph_ptr<T>*>(this->v_)->self_ = std::unique_ptr<graph_ptr<T>>(
+                            new graph_ptr<T>(this->pool_, this->v_, this->v_)
+                            );
+                    }
                 }
             }
 
