@@ -42,7 +42,7 @@ namespace {
 		std::vector<tess::tile> tiles(patch->count());
 		std::transform(patch->begin_tiles(), patch->end_tiles(), tiles.begin(),
 			[](const auto& i)->tess::tile {
-				auto root_ptr = to_root_ptr(i);
+				auto root_ptr = tess::to_root_ptr(i);
 				return tess::make_tess_obj<tess::tile>(root_ptr.get());
 			}
 		);

@@ -1,6 +1,8 @@
 #include "tessera/tile.h"
 #include "tile_impl.h"
 #include "variant_util.h"
+#include "lambda_impl.h"
+#include "tile_patch_impl.h"
 
 /*--------------------------------------------------------------------------------*/
 

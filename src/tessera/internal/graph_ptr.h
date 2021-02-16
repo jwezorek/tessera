@@ -97,7 +97,11 @@ namespace gp {
                 u_{ other.u_ }, base_graph_ptr<T>{ other.pool_, other.v_ } {
                 other.wipe();
             }
-
+            
+            bool operator==(const graph_ptr& other) const {
+                return u_ == other.u_ && v_ == other.v_;
+            }
+            
             graph_ptr& operator=(const graph_ptr& other) = delete;
 
             graph_ptr& operator=(graph_ptr&& other) noexcept {

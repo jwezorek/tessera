@@ -215,10 +215,11 @@ bool tess::operator==(const field_value& lhs, const field_value& rhs)
 {
 	return std::visit(
 		[&](const auto& left_val) -> bool {
-			using left_type_t = decltype(left_val);
+			using left_type_t = std::remove_const_t<std::remove_reference_t<decltype(left_val)>>;
 			if (!std::holds_alternative<left_type_t>(rhs))
 				return false;
-			return left_val == std::get<left_type_t>(rhs);
+			const left_type_t& r = std::get<left_type_t>(rhs);
+			return left_val == r;
 		},
 		lhs
 	);

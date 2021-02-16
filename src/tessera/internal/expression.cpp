@@ -1,6 +1,9 @@
 #include "number.h"
 #include "expression.h"
 #include "value.h"
+#include "lambda_impl.h"
+#include "tile_impl.h"
+#include "tile_patch_impl.h"
 #include "execution_state.h"
 #include "tile_impl.h"
 #include "tessera_impl.h"
@@ -109,8 +112,8 @@ namespace {
 		std::vector<std::tuple<tess::number, tess::number>> tuples(vertices->get_ary_count());
 		try {
 			std::transform(vertices->begin(), vertices->end(), tuples.begin(),
-				[&](const auto& ev)->std::tuple<tess::number, tess::number> {
-					const auto& pt = std::get<tess::const_cluster_graph_ptr>(ev);
+				[&](const tess::field_value& ev)->std::tuple<tess::number, tess::number> {
+					const auto& pt = std::get<tess::cluster_graph_ptr>(ev);
 					return { std::get<tess::number>(pt->get_ary_item(0)),  std::get<tess::number>(pt->get_ary_item(1)) };
 				}
 			);

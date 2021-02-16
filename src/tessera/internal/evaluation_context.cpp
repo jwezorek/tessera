@@ -1,6 +1,9 @@
 #include "evaluation_context.h"
 #include "execution_state.h"
 #include "value.h"
+#include "lambda_impl.h"
+#include "tile_impl.h"
+#include "tile_patch_impl.h"
 #include "tessera/error.h"
 #include <string>
 #include <vector>
