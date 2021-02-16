@@ -15,7 +15,7 @@
 
 namespace tess {
 
-    using tile_visitor = std::function<void(const tile_graph_ptr&)>;
+    using tile_visitor = std::function<void(const const_tile_root_ptr&)>;
 
     namespace detail {
         class patch_impl : public tessera_impl, public enable_self_ptr<patch_impl>

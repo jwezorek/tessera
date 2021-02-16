@@ -221,6 +221,9 @@ namespace tess {
 	bool operator==(const value_& lhs, const value_& rhs);
 	bool operator!=(const value_& lhs, const value_& rhs);
 
+	bool operator==(const field_value&lhs, const field_value& rhs);
+	bool operator!=(const field_value& lhs, const field_value& rhs);
+
 	template<typename T>
 	value_ make_value(const graph_root_ptr<T>& v) {
 		return { tess::to_const(v) };

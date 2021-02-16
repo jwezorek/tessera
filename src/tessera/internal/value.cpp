@@ -211,6 +211,24 @@ bool tess::operator!=(const value_& lhs, const value_& rhs)
 	return !(lhs == rhs);
 }
 
+bool tess::operator==(const field_value& lhs, const field_value& rhs)
+{
+	return std::visit(
+		[&](const auto& left_val) -> bool {
+			using left_type_t = decltype(left_val);
+			if (!std::holds_alternative<left_type_t>(rhs))
+				return false;
+			return left_val == std::get<left_type_t>(rhs);
+		},
+		lhs
+	);
+
+}
+
+bool tess::operator!=(const field_value& lhs, const field_value& rhs) {
+	return !(lhs == rhs);
+}
+
 tess::serialization_state::serialization_state() : current_id_(0)
 {
 }

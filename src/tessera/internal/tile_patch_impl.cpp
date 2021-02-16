@@ -13,12 +13,12 @@
 
 namespace {
 
-	std::vector<tess::const_tile_root_ptr> get_neighbors(const tess::const_tile_graph_ptr& t) {
+	std::vector<tess::const_tile_root_ptr> get_neighbors(const tess::const_tile_root_ptr& t) {
 		int num_edges = static_cast<int>(t->end_edges() - t->begin_edges());
 		std::vector<tess::const_tile_root_ptr> neighbors;
 		for (int i = 0; i < num_edges; ++i) {
 			const auto adj = t->get_adjacent_tile(i);
-			if (adj != nullptr)
+			if (adj)
 				neighbors.push_back(adj);
 		}
 		return neighbors;
@@ -26,7 +26,7 @@ namespace {
 
 	bool has_broken_tile(const std::vector<tess::tile_root_ptr>& tiles) {
 		return std::find_if(tiles.begin(), tiles.end(), 
-			[](tess::const_tile_root_ptr tile) {
+			[](tess::tile_root_ptr tile) {
 				return std::find_if(tile->begin_edges(), tile->end_edges(),
 					[](const auto& e) {
 						return e->has_property("broken");
@@ -159,7 +159,7 @@ namespace {
 		std::transform(grouped_tiles.begin(), grouped_tiles.end(), output.begin(),
 			[&a]( auto& tile_group)->tess::tile_root_ptr {
 				if (tile_group.size() == 1) {
-					return tess::clone_object(a, tile_group.front() );
+					return tess::clone_object(a, to_const(tile_group.front()) );
 				} else {
 					return tess::join(a, tile_group);
 				}
@@ -175,13 +175,13 @@ namespace {
 		for (auto j = patch->begin_tiles(); j != patch->end_tiles(); ++j) {
 			auto& tile = *j;
 			for (auto i = tile->begin_edges(); i != tile->end_edges(); ++i) {
-				edges.insert( to_root_ptr(*i) );
+				edges.insert( to_const(to_root_ptr(*i)) );
 			}
 		}
 
 		for (auto iter = tile->begin_edges(); iter != tile->end_edges(); ++iter) {
 			auto edge = to_root_ptr(*iter);
-			auto joined_edges = edges.get(edge);
+			auto joined_edges = edges.get(to_const(edge));
 
 			std::unordered_map<std::string, tess::field_value> fields;
 			for (const auto e : joined_edges) {
@@ -250,22 +250,21 @@ void tess::detail::patch_impl::build_edge_table() const
 			const auto& e = *iter;
 			auto key = e->get_edge_location_indices();
 			if (edge_tbl_.find(key) == edge_tbl_.end())
-				edge_tbl_[key] = to_const(e); 
+				edge_tbl_[key] = edge_graph_ptr(self_graph_ptr(), e);
 			else
 				throw tess::error("invalid tile patch");
 		}
 	}
 }
 
-tess::detail::patch_impl::patch_impl( tess::gc_heap& a, const std::vector<tess::tile_root_ptr>& tiles) {
+void tess::detail::patch_impl::initialize( tess::gc_heap& a, const std::vector<tess::tile_root_ptr>& tiles) {
 	for ( auto& t : tiles)
 		insert_tile(t);
 }
 
-
 void tess::detail::patch_impl::insert_tile( tess::tile_root_ptr tile )
 {
-	tile->set_parent(to_root_ptr(self_), static_cast<int>( tiles_.size()) );
+	tile->set_parent(to_root_ptr(self_graph_ptr()), static_cast<int>( tiles_.size()) );
 
 	for (auto iter = tile->begin_vertices(); iter != tile->end_vertices(); ++iter) {
 		auto& vert = *iter;
@@ -273,7 +272,9 @@ void tess::detail::patch_impl::insert_tile( tess::tile_root_ptr tile )
 		vert->set_location( new_vert_index );
 	}
 
-	tiles_.push_back(tile);
+	tiles_.push_back(
+		tile_graph_ptr(self_graph_ptr(), tile)
+	);
 }
 
 int tess::detail::patch_impl::count() const
@@ -324,7 +325,7 @@ std::string tess::detail::patch_impl::debug() const
 }
 
 tess::patch_root_ptr tess::detail::patch_impl::flip(gc_heap& a) const {
-	value_ self = make_value( to_root_ptr(self_) );
+	value_ self = to_const(to_root_ptr(self_graph_ptr()));
 	auto clone = get_mutable<tess::const_patch_root_ptr>(tess::clone_value(a, self));
 	clone->flip();
 	return clone;
@@ -348,9 +349,9 @@ tess::const_edge_root_ptr tess::detail::patch_impl::get_edge_on(int u, int v) co
 
 	auto iter = edge_tbl_.find(edge_indices{ u, v });
 	if (iter != edge_tbl_.end())
-		return to_root_ptr(iter->second);
+		return to_const(to_root_ptr(iter->second));
 	else
-		return nullptr;
+		return {};
 }
 
 tess::const_edge_root_ptr tess::detail::patch_impl::get_edge_on(tess::point u, tess::point v) const {
@@ -386,14 +387,15 @@ tess::value_ tess::detail::patch_impl::get_on(gc_heap& a, const std::variant<tes
 	);
 }
 
-void tess::detail::patch_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, patch_raw_ptr mutable_clone) const
+void tess::detail::patch_impl::clone_to(tess::gc_heap& a, std::unordered_map<obj_id, std::any>& orginal_to_clone, patch_raw_ptr mutable_clone) const
 {
 	for (const auto& t : tiles_) { // clone tiles
-		auto t_clone = get_mutable<const_tile_graph_ptr>(tess::clone_value(allocator, orginal_to_clone, make_value(t)));
-		mutable_clone->tiles_.push_back( std::move(t_clone) );
+		mutable_clone->tiles_.push_back( 
+			clone_object( self_graph_ptr(), a, orginal_to_clone, t )
+		);
 	}
 	for (const auto& [var, val] : fields_) { // clone fields
-		mutable_clone->fields_[var] = tess::clone_value(allocator, orginal_to_clone, val);
+		mutable_clone->fields_[var] = tess::clone_value(self_graph_ptr(), a, orginal_to_clone, val);
 	}
 	mutable_clone->vert_tbl_ = vert_tbl_;
 }
@@ -404,9 +406,9 @@ tess::point tess::detail::patch_impl::get_vertex_location(int index) const {
 
 tess::tile_root_ptr tess::detail::patch_impl::join(tess::gc_heap& a) const
 {
-	auto self_ptr = to_root_ptr(self_);
+	auto self_ptr = to_const(to_root_ptr( self_graph_ptr() ));
 	auto points = tess::join(self_ptr);
-	auto joined_patch = a.make_const<tess::const_tile_root_ptr>(points);
+	auto joined_patch = a.make_mutable<tess::const_tile_root_ptr>(points);
 	propagate_fields(joined_patch, self_ptr);
 	return joined_patch;
 }
@@ -415,8 +417,8 @@ void tess::detail::patch_impl::dfs(tile_visitor visit) const
 {
 	std::unordered_set<tess::obj_id> visited;
 
-	std::function<void(const_tile_graph_ptr tile)> dfs_aux;
-	dfs_aux = [&](const const_tile_graph_ptr& t) {
+	std::function<void( const const_tile_root_ptr& tile)> dfs_aux;
+	dfs_aux = [&](const const_tile_root_ptr& t) {
 		if (visited.find(t->get_id()) != visited.end())
 			return;
 		visited.insert(t->get_id());
@@ -425,16 +427,19 @@ void tess::detail::patch_impl::dfs(tile_visitor visit) const
 			dfs_aux(neighbor);
 		}
 	};
-	dfs_aux(to_const(tiles_[0]));
+	dfs_aux(to_const(to_root_ptr(tiles_[0])));
 }
 
 /*---------------------------------------------------------------------------------------------*/
 
-tess::detail::cluster_impl::cluster_impl(gc_heap& a, const std::vector<value_>& values)
+void tess::detail::cluster_impl::initialize(gc_heap& a, const std::vector<value_>& values)
 {
+	const auto& self = self_graph_ptr();
     std::transform(
 		values.begin(), values.end(), std::back_inserter(values_),
-		to_field_value
+		[&self](const value_ v) {
+			return to_field_value(self, v);
+		}
 	);
 }
 
@@ -458,7 +463,7 @@ tess::value_ tess::detail::cluster_impl::get_ary_item(int i) const
 
 void tess::detail::cluster_impl::push_value(value_ val)
 {
-	values_.push_back(to_field_value(val));
+	values_.push_back(to_field_value(self_graph_ptr(), val));
 }
 
 int tess::detail::cluster_impl::get_ary_count() const
@@ -469,7 +474,9 @@ int tess::detail::cluster_impl::get_ary_count() const
 void tess::detail::cluster_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, cluster_raw_ptr mutable_clone) const
 {
 	for (const auto& value : values_) {
-		mutable_clone->values_.push_back(tess::clone_value(allocator, orginal_to_clone, value)); // items
+		mutable_clone->values_.push_back(
+			tess::clone_value(self_graph_ptr(), allocator, orginal_to_clone, value)
+		); // items
 	}
 }
 
@@ -523,7 +530,7 @@ tess::patch_root_ptr tess::flatten(tess::gc_heap& a, const std::vector<tess::val
 	if (should_join_broken_tiles)
 		tiles = join_broken_tiles(a, tiles);
 
-	auto patch_impl = a.make_mutable<tess::const_patch_root_ptr>();
+	auto patch_impl = a.make_blank<tess::const_patch_root_ptr>();
 	for (const auto& tile : tiles) {
 		patch_impl->insert_tile( tile );
 	}
