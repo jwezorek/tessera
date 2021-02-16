@@ -180,9 +180,17 @@ namespace gp {
                 graph_root_ptr(v.pool_, v.v_) {
             }
 
+            graph_root_ptr(const graph_ptr<T>& v) :
+                graph_root_ptr(v.pool_, v.v_) {
+            }
+
             graph_root_ptr(graph_root_ptr&& other) noexcept :
                 base_graph_ptr<T>(other.pool_, other.v_) {
                 other.wipe();
+            }
+
+            bool operator==(const graph_root_ptr& other) const {
+                return v_ == other.v_;
             }
 
             graph_root_ptr& operator=(const graph_root_ptr& other) {
@@ -224,9 +232,12 @@ namespace gp {
 
             void make_self_ptr() {
                 if constexpr (std::is_base_of< enable_self_graph_ptr<T>, T>::value) {
-                    static_cast<enable_self_graph_ptr<T>*>(this->v_)->self_ = std::unique_ptr<graph_ptr<T>>(
-                        new graph_ptr<T>(this->pool_, this->v_, this->v_)
-                        );
+                    std::unique_ptr<graph_ptr<T>>& self_ptr = static_cast<enable_self_graph_ptr<T>*>(this->v_)->self_;
+                    if (!self_ptr.get()) {
+                        static_cast<enable_self_graph_ptr<T>*>(this->v_)->self_ = std::unique_ptr<graph_ptr<T>>(
+                            new graph_ptr<T>(this->pool_, this->v_, this->v_)
+                            );
+                    }
                 }
             }
 

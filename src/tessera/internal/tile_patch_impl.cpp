@@ -209,10 +209,11 @@ namespace {
 			auto& t = *iter;
 			for (const auto& [var, val] : t->fields()) {
 				if (tess::is_simple_value(val)) {
-					if (fields.find(var) == fields.end()) {
+					auto iter = fields.find(var);
+					if (iter == fields.end()) {
 						fields[var] = copy_field(val);
 					} else {
-						if (fields[var] != val)
+						if (iter->second != val)
 							fields.erase(var);
 					}
 				}
@@ -285,7 +286,7 @@ int tess::detail::patch_impl::count() const
 
 void tess::detail::patch_impl::insert_field(const std::string& var, const value_& val)
 {
-	fields_[var] = variant_cast(val);
+	fields_[var] = to_field_value(self_graph_ptr(), val);
 }
 
 tess::value_ tess::detail::patch_impl::get_field(gc_heap& allocator, const std::string& field) const
@@ -435,9 +436,10 @@ void tess::detail::patch_impl::dfs(tile_visitor visit) const
 void tess::detail::cluster_impl::initialize(gc_heap& a, const std::vector<value_>& values)
 {
 	const auto& self = self_graph_ptr();
+	auto lock = to_root_ptr(self);
     std::transform(
 		values.begin(), values.end(), std::back_inserter(values_),
-		[&self](const value_ v) {
+		[&self](const value_ v)->field_value {
 			return to_field_value(self, v);
 		}
 	);

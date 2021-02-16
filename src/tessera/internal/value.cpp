@@ -63,14 +63,15 @@ tess::value_ tess::clone_value(tess::gc_heap& allocator, std::unordered_map<tess
 	);
 };
 
-tess::field_value&& tess::copy_field(const field_value& fv)
+tess::field_value tess::copy_field(const field_value& fv)
 {
 	return std::visit(
 		overloaded{
-			[](const tess::nil_val& t)->tess::field_value&& { return std::move(tess::field_value{tess::nil_val()}); },
-			[](tess::number t)->tess::field_value&& { return std::move(tess::field_value{t}); },
-			[](bool t)->tess::field_value&& { return  std::move(tess::field_value{ t}); },
-			[](const auto& obj)->tess::field_value&& {
+			[](const tess::nil_val& t)->tess::field_value { return tess::field_value{tess::nil_val()}; },
+			[](tess::number t)->tess::field_value { return tess::field_value{t}; },
+			[](const std::string& t)->tess::field_value { return tess::field_value{t}; },
+			[](bool t)->tess::field_value { return  tess::field_value{ t}; },
+			[](const auto& obj)->tess::field_value {
 				throw std::runtime_error("attempted to copy a field with and object value");
 			}
 		},
@@ -133,12 +134,8 @@ void tess::insert_field(value_ v, const std::string& var, value_ val)
 		return;
 	std::variant<const_tile_root_ptr, const_patch_root_ptr, const_vertex_root_ptr, const_edge_root_ptr, const_cluster_root_ptr, const_lambda_root_ptr> obj_variant = variant_cast(v);
 	std::visit(
-		[&](auto obj) { //TODO:GP
-			/*
-		    using obj_type = decltype(obj);
-			using base_type = std::remove_const_t<typename obj_type::value_type>;
-			gcpp::deferred_ptr<base_type>(obj)->insert_field(var,val);
-			*/
+		[&](auto obj) { 
+			from_const(obj)->insert_field(var, val);
 		},
 		obj_variant
 	);
@@ -199,11 +196,12 @@ bool tess::operator==(const value_& lhs, const value_& rhs)
 			using left_type_t = decltype(left_val);
 			if (!std::holds_alternative<left_type_t>(rhs))
 				return false;
-			return left_val == std::get<left_type_t>(rhs);
+
+			const auto& right_val = std::get<left_type_t>(rhs);
+			return left_val == right_val;
 		},
 		lhs
 	);
-
 }
 
 bool tess::operator!=(const value_& lhs, const value_& rhs)

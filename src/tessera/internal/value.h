@@ -116,8 +116,8 @@ namespace tess {
 			return variant_cast(v);
 		std::variant<const_tile_root_ptr, const_patch_root_ptr, const_vertex_root_ptr, const_edge_root_ptr, const_cluster_root_ptr, const_lambda_root_ptr> obj_variant = variant_cast(v);
 		return std::visit(
-			[&u](auto ptr)->field_value {
-				using V = typename decltype(ptr)::value_type;
+			[&u](const auto& ptr)->field_value {
+				using V = typename std::remove_const_t<std::remove_reference_t<decltype(ptr)>>::value_type;
 				return tess::field_value( tess::graph_ptr<std::remove_const_t<V>>(u, from_const(ptr)) );
 			},
 			obj_variant
@@ -128,12 +128,9 @@ namespace tess {
 
 	template<typename T>
 	graph_root_ptr<T> to_root_ptr(const graph_ptr<T>& gptr) {
-		return { }; // TODO:GP
-	}
-
-	template<typename T>
-	graph_ptr<T>&& to_graph_ptr( const graph_root_ptr<T>& ptr) {
-		return{}; // TODO:GP
+		if (!gptr)
+			return {};
+		return graph_root_ptr<T>(gptr);
 	}
 
 	template <typename T>
@@ -207,7 +204,7 @@ namespace tess {
 		return clone_value(allocator, u, original_to_clone, v);
 	}
 
-	field_value&& copy_field(const field_value& fv);
+	field_value copy_field(const field_value& fv);
 
 	value_ get_ary_item(value_ v, int index);
 	int get_ary_count(value_ v);

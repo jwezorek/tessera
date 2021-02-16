@@ -1,5 +1,7 @@
 #include "tessera/tile_patch.h"
+#include "tile_impl.h"
 #include "tile_patch_impl.h"
+#include "lambda_impl.h"
 
 std::vector<tess::tile> tess::tile_patch::tiles() const
 {

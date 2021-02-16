@@ -1,7 +1,9 @@
 #include "tessera/script.h"
 #include <utility>
 #include "tessera/tile_patch.h"
+#include "tile_impl.h"
 #include "tile_patch_impl.h"
+#include "lambda_impl.h"
 #include "script_impl.h"
 #include "function_def.h"
 #include "where_expr.h"

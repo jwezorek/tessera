@@ -33,7 +33,9 @@ void tess::detail::tile_impl::initialize(tess::gc_heap& a, const std::vector<std
 
 	for (int i = 0; i < n; ++i) {
 		vertices_[i] = a.make_graph_ptr<vertex_root_ptr>(self_graph_ptr(), i, vertex_locations[i]);
+		vertices_[i]->set_parent(self_graph_ptr());
 		edges_[i] = a.make_graph_ptr<edge_root_ptr>(self_graph_ptr(), i, i, (i + 1) % n);
+		edges_[i]->set_parent(self_graph_ptr());
 	}
 }
 
@@ -91,7 +93,7 @@ tess::edge_root_ptr tess::detail::tile_impl::edge(int index)
 
 void tess::detail::tile_impl::insert_field(const std::string& var, const value_& val)
 {
-	fields_[var] = variant_cast(val);
+	fields_[var] = to_field_value(self_graph_ptr(), val);
 }
 
 void tess::detail::tile_impl::clone_to(tess::gc_heap& allocator, std::unordered_map<obj_id, std::any>& orginal_to_clone, tile_raw_ptr mutable_clone) const
@@ -117,7 +119,7 @@ void tess::detail::tile_impl::clone_to(tess::gc_heap& allocator, std::unordered_
 
 bool tess::detail::tile_impl::is_detached() const
 {
-	return parent_.get();
+	return !parent_.get();
 }
 
 
