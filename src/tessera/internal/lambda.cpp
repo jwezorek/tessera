@@ -23,14 +23,17 @@ namespace {
     }
 }
 
-tess::detail::lambda_impl::lambda_impl( gc_heap& a, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps) :
-    parameters_(params), body_(bod), dependencies_(deps), id_(++g_id)
+void tess::detail::lambda_impl::initialize( gc_heap& a, const std::vector<std::string>& params, const std::vector<stack_machine::item>& bod, const std::vector<std::string>& deps)
 {
+    parameters_ = params;
+    body_ = bod;
+    dependencies_ = deps;
+    id_ = ++g_id;
 }
 
 void tess::detail::lambda_impl::insert_field(const std::string& var, const value_& val)
 {
-    closure_[var] = to_field_value(val);
+    closure_[var] = to_field_value(self_graph_ptr(), val);
 }
 
 tess::value_ tess::detail::lambda_impl::get_field(gc_heap& allocator, const std::string& field) const
@@ -71,7 +74,7 @@ void tess::detail::lambda_impl::clone_to(tess::gc_heap& allocator, std::unordere
     mutable_clone->body_ = body_;
 
     for (const auto& [var, val] : closure_) {
-        auto v = tess::clone_value(allocator, orginal_to_clone, val);
+        auto v = tess::clone_value(self_graph_ptr(), allocator, orginal_to_clone, val);
         mutable_clone->closure_[var] = std::move(v); //clone fields
     }
 }

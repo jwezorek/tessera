@@ -167,7 +167,7 @@ namespace {
 
 	geom::polygon tile_to_polygon(tess::const_tile_root_ptr tile) {
 		std::vector<tess::const_vertex_root_ptr> ordered_vertices;
-		auto first = to_root_ptr(*(tile->begin_vertices()));
+		auto first = to_const(to_root_ptr(*(tile->begin_vertices())));
 		auto v = first;
 		do {
 			ordered_vertices.push_back(v);
@@ -181,8 +181,8 @@ namespace {
 	std::vector<tess::const_tile_root_ptr> topological_sort_tiles(tess::const_patch_root_ptr patch) {
 		std::vector<tess::const_tile_root_ptr> tiles;
 		patch->dfs(
-			[&tiles](const tess::const_tile_graph_ptr& t) {
-				tiles.push_back(to_root_ptr(t));
+			[&tiles](const tess::const_tile_root_ptr& t) {
+				tiles.push_back(t);
 			}
 		);
 		return tiles;

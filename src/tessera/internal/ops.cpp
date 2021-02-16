@@ -63,7 +63,9 @@ namespace {
         auto parent_1 = parent_of_edge(edge1);
         auto parent_2 = parent_of_edge(edge2);
 
-        if (parent_1 == parent_2)
+        //TODO: clean this up...
+        if (std::visit([](const auto& p) {return static_cast<void*>(p.get());}, parent_1) == 
+            std::visit([](const auto& p) {return static_cast<void*>(p.get()); }, parent_2))
             return tess::error("edge mapping internal to a single tile");
 
         bool both_are_touched = !is_untouched(parent_1, moved) && !is_untouched(parent_2, moved);
@@ -394,8 +396,8 @@ std::optional<tess::error> tess::lay_op::apply_mapping(const std::vector<stack_m
     }
 
     for (int i = 0; i < values.size(); i += 2) {
-        auto edge1 = std::get<const_edge_root_ptr>(values[i]);
-        auto edge2 = std::get<const_edge_root_ptr>(values[i+1]);
+        auto edge1 = from_const(std::get<const_edge_root_ptr>(values[i]));
+        auto edge2 = from_const(std::get<const_edge_root_ptr>(values[i+1]));
         edge_to_edge.push_back({ edge1, edge2} );
     }
 
@@ -508,7 +510,9 @@ std::vector<tess::stack_machine::item> tess::iterate_op::execute(const std::vect
 {
     auto& alloc = contexts.top().allocator();
     auto src = std::get<tess::const_cluster_root_ptr>(std::get<value_>( operands[0] ));
-    auto dst = (index_val_ > -1) ? get_mutable<tess::const_cluster_root_ptr>(std::get<value_>(operands[1])) : nullptr;
+    auto dst = (index_val_ > -1) ? 
+        get_mutable<tess::const_cluster_root_ptr>(std::get<value_>(operands[1])) : 
+tess::cluster_root_ptr{};
     auto curr_item = std::get<value_>( operands[2] );
     
     auto n = src->get_ary_count();
