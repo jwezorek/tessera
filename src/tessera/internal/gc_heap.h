@@ -25,33 +25,21 @@ namespace tess {
     using enable_self_ptr = graph_pool::enable_self_graph_ptr<T>;
 
     class gc_heap {
-    private:
-        graph_pool impl_;
-        int allocations_since_collection_;
+
     public:
 
         gc_heap();
 
         template<typename T, typename... Args>
         auto make_mutable(Args&&... args) {
-            if (allocations_since_collection_++ > 10000) {
+            if (allocations_since_collection_++ > k_collection_freq) {
                 impl_.collect();
                 allocations_since_collection_ = 0;
             }
 
             auto ptr = impl_.make_root<typename std::remove_const<typename T::value_type>::type>();
-            ptr->initialize(*this, std::forward<Args>(args)...);
+            call_initialize(ptr, std::forward<Args>(args)...);
 
-            return ptr;
-        }
-
-        template<typename T, typename... Args>
-        auto make_blank(Args&&... args) {
-            if (allocations_since_collection_++ > 10000) {
-                impl_.collect();
-                allocations_since_collection_ = 0;
-            }
-            auto ptr = impl_.make_root<typename std::remove_const<typename T::value_type>::type>();
             return ptr;
         }
 
@@ -68,6 +56,22 @@ namespace tess {
             using obj_type = typename decltype(root)::value_type;
             return graph_ptr<obj_type>(u, root);
         }
+
+    private:
+
+        template<typename P, typename... Args>
+        void call_initialize( P& ptr, Args&&... args) {
+            ptr->initialize(*this, std::forward<Args>(args)...);
+        }
+
+        template<typename P>
+        void call_initialize(P& ptr) {
+        }
+
+        graph_pool impl_;
+        int allocations_since_collection_;
+
+        const int k_collection_freq = 100000;
 
     };
 

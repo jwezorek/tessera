@@ -39,7 +39,7 @@ namespace tess {
 			if (orginal_to_clone.find(key) != orginal_to_clone.end()) {
 				clone_impl = std::any_cast<tess::graph_root_ptr<T>>(orginal_to_clone[key]);
 			} else {
-				clone_impl = allocator.make_blank<tess::graph_root_ptr<const T>>();
+				clone_impl = allocator.make_mutable<tess::graph_root_ptr<const T>>();
 				orginal_to_clone[key] = clone_impl;
 				original->clone_to(allocator, orginal_to_clone, clone_impl.get());
 			}

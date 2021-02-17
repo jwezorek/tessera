@@ -532,7 +532,7 @@ tess::patch_root_ptr tess::flatten(tess::gc_heap& a, const std::vector<tess::val
 	if (should_join_broken_tiles)
 		tiles = join_broken_tiles(a, tiles);
 
-	auto patch_impl = a.make_blank<tess::const_patch_root_ptr>();
+	auto patch_impl = a.make_mutable<tess::const_patch_root_ptr>();
 	for (const auto& tile : tiles) {
 		patch_impl->insert_tile( tile );
 	}
