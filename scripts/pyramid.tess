@@ -11,7 +11,6 @@ let tri_strip = func( n ) {
             bottom on $1.bottom;
             top on $2.bottom;
             left on $1.left;
-            right on $3.right;
         }
 };
 
