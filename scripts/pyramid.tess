@@ -1,24 +1,27 @@
-let triangle = {
-    regular_polygon(3)
-} with {
-    left, bottom, right is this.edges;
-    color is "pink";
-};
-
-let tri_pair = lay triangle , triangle such_that $1.right <-> $2.right;
 
 let tri_strip = func( n ) {
-    if (n == 1)
-        lay triangle
+    if (n == 1)  {
+            regular_polygon(3)
+        } with {
+            left, bottom, right is this.edges;
+            color is "pink";
+        }
     else
-        lay tri_pair , tri_strip(n-1) such_that $1[1].left <-> $2[0].left
+        lay tri_strip(1), tri_strip(1), tri_strip(n-1) such_that $1.right <-> $2.right, $2.left <-> $3.left with {
+            bottom on $1.bottom;
+            top on $2.bottom;
+            left on $1.left;
+            right on $3.right;
+        }
 };
 
 let pyramid = func( n ) {
     if (n == 1)
-        lay triangle
+        tri_strip(1)
     else
-        lay tri_strip(n) , pyramid(n-1) such_that $1[1].bottom <-> $2[0].bottom
+        lay tri_strip(n) , pyramid(n-1) such_that $1.top <-> $2.bottom with {
+            bottom on $1.bottom;
+        }
 };
 
 tableau( num ) {
