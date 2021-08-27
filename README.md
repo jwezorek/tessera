@@ -1,4 +1,5 @@
 # tessera
 tessera is functional programming language for defining tilings of the plane. It's a work in progress.
 
-More documentation to come.
+See here
+http://jwezorek.com/2021/08/tessera/
